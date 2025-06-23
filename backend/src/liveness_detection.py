@@ -16,7 +16,7 @@ def liveness_detection(frame):
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = face_mesh.process(frame_rgb)
     return bool(result.multi_face_landmarks)
-
+    
 capture = cv2.VideoCapture(0)
 
 while True:
