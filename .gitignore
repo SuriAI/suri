@@ -1,3 +1,3 @@
-backend/venv
+server/venv
 runs/
-backend/assets/datasets/WIDER_val/
+server/assets/datasets/WIDER_val/
