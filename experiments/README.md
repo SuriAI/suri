@@ -58,11 +58,12 @@ Validation was done in **two phases**. before and after fine-tuning. to compare 
 |                                 | Recall                   | 0.599                                         | 0.587                                          |
 |                                 | mAP\@0.5           | 0.686                                         | 0.670                                          |
 |                                 | mAP\@0.5:0.95   | 0.385                                         | 0.374                                          |
-| **DARKFACE**        | Precision             | 0.528                                         | 0.581                                          |
 |                                 |                             |                                                  |                                                    |
+| **DARKFACE**        | Precision             | 0.528                                         | 0.581                                          |
 |                                 | Recall                   | 0.109                                        | 0.294                                          |
 |                                 | mAP\@0.5           | 0.130                                        | 0.319                                          |
 |                                 | mAP\@0.5:0.95   | 0.041                                         | 0.132                                          |
+|                                 |                             |                                                  |                                                    |
 | **ALL DATASETS** | Precision             | 0.843                                         | 0.826                                          |
 |                                 | Recall                  | 0.518                                         | 0.538                                          |
 |                                 | mAP\@0.5          | 0.596                                         | 0.613                                          |
@@ -126,3 +127,4 @@ experiments/
 ├── runs/         # Trained Model
 ├── validate/     # PR curves, confusion matrix, etc.
 ```
+
