@@ -118,6 +118,32 @@ SURI is meant to run on **standard laptops and classroom PCs** — not gaming ri
 
 ---
 
+### 🏆 The Final Push: PyTorch → ONNX
+
+After sweating through those 2 weeks of training, I realized something kinda obvious - no teacher's gonna install PyTorch just to take attendance. Like, seriously? That'd kill the whole point of making this accessible.
+
+So I went down the [ONNX](https://onnx.ai/about.html) rabbit hole. Turns out you can convert PyTorch models to this format that runs basically anywhere without the original framework. Spent a weekend figuring it out with this janky script in `experiments/models/pt-onnx.py`. The results were insane:
+
+- **File size:** Dropped from 6.2MB → 4.7MB (not life-changing but hey)
+- **Speed:** Like 30% faster on CPU (HUGE for ancient school computers)
+- **Setup:** No more "pip install torch" nightmare for non-technical users
+
+Best thing? Didn't lose ANY accuracy. Ran the ONNX version through all the same [validation tests](https://github.com/johnraivenolazo/suri/blob/main/experiments/validate/comparison.txt) - exact same numbers. I was honestly shocked it worked first try.
+
+If anyone's curious how I did the conversion (it's way simpler than I expected):
+
+```python
+# From pt-onnx.py - nothing fancy
+from ultralytics import YOLO
+
+model = YOLO("experiments\models\wider300e+300e-unisets.pt")
+model.export(format="onnx")  # lol that's literally it
+```
+
+That ONNX version is what's actually running in schools now. Seeing it work on real students, in real classrooms (even the poorly lit ones!) is pretty damn satisfying after all that work.
+
+---
+
 ## 🗂 Folder Structure
 
 ```
@@ -128,3 +154,33 @@ experiments/
 ├── validate/     # PR curves, confusion matrix, etc.
 ```
 
+---
+
+## ⚠️ Stuff That Could Be Way Better
+
+Not gonna lie, I'm kinda amazed this works at all after the Colab crashes and 2am debugging sessions. But there's a bunch of stuff I'd fix if I had more time:
+
+- **Size vs Power Tradeoff**: I went with YOLOv8n because anything bigger would choke on classroom PCs. But man, YOLOv8s looks so much better in tests. Maybe someday.
+
+- **Dataset Issues**: WIDERFACE makes up like 70% of my training data. That's why it performs decent there but struggles with other stuff. Need way more dark images and masked faces to balance things out.
+
+- **No Quantization**: Didn't even attempt INT8 quantization. Been reading about it - could probably cut the model size in half without tanking accuracy. Just ran out of time and patience after 2 weeks of babysitting Colab.
+
+- **Learning Rate Hacks**: Had to restart training so many times that I stuck with basic cosine decay. The stopping/starting definitely hurt convergence. Next time I'd use a proper warmup strategy.
+
+If you're picking this up to improve it, those would be my first targets. Even better, if you've got access to a decent GPU (anything better than a T4, really), you could probably complete the training in days instead of weeks.
+
+But hey, it works! And sometimes that's the most important part of a project like this. The model runs on basic hardware, detects faces in challenging classroom conditions, and serves as the foundation for SURI's attendance system.
+
+---
+## 🤝 Wanna Help Out?
+
+Listen, this thing isn't perfect and far from it. I hacked this together during my free time, between classes and during late-night coding sessions. If you're thinking "I could probably make this better," **you're absolutely right!** 
+
+Got an idea? Just shoot a DM or open an issue. No fancy process here. The [contribution page](https://github.com/johnraivenolazo/suri/blob/main/CONTRIBUTING.md) has some basics, but honestly, I'm just looking for people who give a damn about making tech work for everyone, not just folks with expensive hardware.
+
+Some stuff I'd love help with:
+- Making this run even faster on potato laptops (you know the ones)
+- More face samples, especially from different ethnicities and with masks/glasses
+- Better nighttime detection (still kinda sucks tbh)
+- Actual documentation (yeah, I know this README is all we've got right now)
