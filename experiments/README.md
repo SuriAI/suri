@@ -21,7 +21,7 @@ The training process started with the **YOLOv8n model**.
 
   I didn’t continue with this model because the results weren’t great. Later I realized that **larger datasets** like WIDERFACE just need **more epochs** to start showing real gains. So I retrained it.
 
-* **Phase 2**: Extended training to **[300 epochs on the same dataset](https://github.com/johnraivenolazo/suri/blob/main/experiments/models/wider300e.pt)** to improve generalization. This checkpoint became the base model for all future fine-tuning.
+* **Phase 2**: Extended training to **[300 epochs on the same dataset](https://github.com/johnraivenolazo/suri/blob/main/experiments/models/wider300e.pt)** to improve generalization. This checkpoint became the [base model](https://github.com/johnraivenolazo/suri/blob/main/experiments/models/wider300e.pt) for all future fine-tuning.
 
 * **Phase 3**: Using the 300e checkpoint, I trained it for another **300 epochs** on a **combined dataset** made from **WIDERFACE, FDDB, MAFA, and DARKFACE**, totaling **600 epochs overall**.
   Final training logs:
@@ -52,23 +52,26 @@ Validation was done in **two phases**. before and after fine-tuning. to compare 
 
 ### 📊 Model Validation Comparison
 
-| Dataset          | Metric        | **Base Model** (WIDER only) | **Finetuned Model** (WIDER+FDDB+DARKFACE+MAFA) |
-| ---------------- | ------------- | --------------------------- | ---------------------------------------------- |
-| **WIDERFACE**    | Precision     | 0.861                       | 0.852                                          |
-|                  | Recall        | 0.599                       | 0.587                                          |
-|                  | mAP\@0.5      | 0.686                       | 0.670                                          |
-|                  | mAP\@0.5:0.95 | 0.385                       | 0.374                                          |
-| **DARKFACE**     | Precision     | 0.528                       | 0.581                                          |
-|                  | Recall        | 0.109                       | 0.294                                          |
-|                  | mAP\@0.5      | 0.130                       | 0.319                                          |
-|                  | mAP\@0.5:0.95 | 0.041                       | 0.132                                          |
-| **ALL DATASETS** | Precision     | 0.843                       | 0.826                                          |
-|                  | Recall        | 0.518                       | 0.538                                          |
-|                  | mAP\@0.5      | 0.596                       | 0.613                                          |
-|                  | mAP\@0.5:0.95 | 0.320                       | 0.338                                          |
+| Dataset                    | Metric                  | **Base Model** (WIDER only) | **Finetuned Model** (WIDER+FDDB+DARKFACE+MAFA) |
+| --------------------- | ------------------- | --------------------------------- | ---------------------------------------------------------------  |
+| **WIDERFACE**      | Precision              | 0.861                                        | 0.852                                          |
+|                                 | Recall                   | 0.599                                         | 0.587                                          |
+|                                 | mAP\@0.5           | 0.686                                         | 0.670                                          |
+|                                 | mAP\@0.5:0.95   | 0.385                                         | 0.374                                          |
+| **DARKFACE**        | Precision             | 0.528                                         | 0.581                                          |
+|                                 |                             |                                                  |                                                    |
+|                                 | Recall                   | 0.109                                        | 0.294                                          |
+|                                 | mAP\@0.5           | 0.130                                        | 0.319                                          |
+|                                 | mAP\@0.5:0.95   | 0.041                                         | 0.132                                          |
+| **ALL DATASETS** | Precision             | 0.843                                         | 0.826                                          |
+|                                 | Recall                  | 0.518                                         | 0.538                                          |
+|                                 | mAP\@0.5          | 0.596                                         | 0.613                                          |
+|                                 |  mAP\@0.5:0.95  | 0.320                                         | 0.338                                          |
 
 
 **Note:** Fine-tuning on **WIDER + FDDB + DARKFACE + MAFA** gave the model a **serious boost**. **DARKFACE mAP\@0.5 more than doubled**!!. Yeah, **WIDERFACE** dipped a bit, but not enough to care. Overall, the fine-tuned model just handles more diverse and harder samples better.
+
+![Results](https://raw.githubusercontent.com/johnraivenolazo/suri/main/experiments/runs/train_wider300e_on_widerface-fddb-darkface-mafa_as-300e/results.png)
 
 ---
 
@@ -76,10 +79,8 @@ Validation was done in **two phases**. before and after fine-tuning. to compare 
 
 The goal was to build a **face detection model** that actually works in **real-world classroom environments**. That means:
 
-* Low light
-* Weird angles
-* Occlusions (masks, hair, shadows)
-* Webcam-quality resolutions like **640×640**
+* Weird angles, Occlusions masks, hair, shadows ![](https://raw.githubusercontent.com/johnraivenolazo/suri/main/experiments/validate/val-wider300e%2B300e-unisets_on_wider%20(BASE%20%2B%20FINETUNED)/val_batch0_pred.jpg)
+* Low light ![](https://raw.githubusercontent.com/johnraivenolazo/suri/main/experiments/validate/val-wider300e%2B300e-unisets_on_darkface%20(BASE%20%2B%20FINETUNED)/val_batch1_pred.jpg)
 
 Generic pretrained models couldn’t handle these edge cases consistently. Training our own allowed us to **tailor the model** to these challenges.
 
@@ -112,7 +113,7 @@ SURI is meant to run on **standard laptops and classroom PCs** — not gaming ri
 * **DARKFACE (Low-light)** – [Roboflow Download](https://universe.roboflow.com/school-g4vy0/dark_face_detection/dataset/1)
 * **MAFA (Masked Faces)** – [Kaggle](https://www.kaggle.com/datasets/revanthrex/mafadataset)
 
-> **Note:** All annotations were **converted to YOLO format**, manually cleaned for broken labels, and **merged into a single unified dataset (uniset)** with over **50,000** diverse face annotations.
+> **Note:** All annotations were **converted to [YOLO format](https://yolov8.org/yolov8-label-format/)**, manually cleaned for broken labels, and **merged into a single unified dataset (uniset)** with over **50,000** diverse face annotations.
 
 ---
 
