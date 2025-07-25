@@ -10,7 +10,7 @@ I stuck with this setup on purpose. The model meant to run in real-world, low-re
 
 ## 🧠 TRAINING PROCESS
 
-The training process started with the **YOLOv8n model**.
+The training process started with the **YOLOv8n model**. You can find the yaml settings for training **[here](https://github.com/johnraivenolazo/suri/blob/main/experiments/runs/train_wider300e_on_widerface-fddb-darkface-mafa_as-300e/args.yaml)**.
 
 * **Phase 1**: Trained on the **WIDERFACE** dataset for **100 epochs** to establish a performance baseline. Here's the [validation result](https://github.com/johnraivenolazo/suri/blob/main/experiments/logs/metrics/yolov8n_widerface100e_val-widerface.txt):
 
