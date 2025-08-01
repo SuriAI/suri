@@ -20,8 +20,8 @@ from experiments.prototype.utils import (
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
-YOLO_MODEL_PATH = os.path.join(BASE_DIR, "experiments", "models", "wider300e+300e-unisets.onnx")
-RECOG_MODEL_PATH = os.path.join(BASE_DIR, "experiments", "models", "edgeface-s.onnx")
+YOLO_MODEL_PATH = os.path.join(BASE_DIR, "experiments", "detection", "models", "wider300e+300e-unisets.onnx")
+RECOG_MODEL_PATH = os.path.join(BASE_DIR, "experiments", "recognition", "models", "edgeface-s.onnx")
 FACE_DATABASE_DIR = os.path.join(BASE_DIR, "face_database")
 ATTENDANCE_LOG = os.path.join(FACE_DATABASE_DIR, "attendance_log.json")
 

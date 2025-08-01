@@ -7,8 +7,8 @@
 
 You can find the details of the model here:
 
-- **[Face Detection Training](experiments/README.md)** - Model training logs & datasets
-- **[Face Recognition Model](experiments/README_RECOGNITION.md)** - Encoding & matching pipeline
+- **[Face Detection Training](experiments/detection/README.md)** - Model training logs & datasets
+- **[Face Recognition Model](experiments/recognition/README.md)** - Encoding & matching pipeline
 
 ## 🎯 Features
 

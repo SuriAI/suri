@@ -42,7 +42,7 @@ Nothing fancy or bureaucratic here. I'm a student, not a big tech company.
 
 If you're looking to retrain or improve the model:
 
-- The training logs and process are documented in `experiments/README.md`
+- The training logs and process are documented in `experiments/detection/README.md`
 - You'll need datasets from WIDERFACE, FDDB, DARKFACE, and MAFA (links in the docs)
 - Google Colab free tier works, but it's a pain with the session timeouts
 

@@ -34,8 +34,8 @@ So I built this one to handle the stuff that breaks other systems:
 - Works on Windows, Mac, Linux
 
 **Required model files:**
-- `wider300e+300e-unisets.onnx` (face detection)
-- `edgeface-s.onnx` (face recognition)
+- `wider300e+300e-unisets.onnx` (face detection - located in ../detection/models/)
+- `edgeface-s.onnx` (face recognition - located in ../recognition/models/)
 
 **Installation:**
 ```bash
