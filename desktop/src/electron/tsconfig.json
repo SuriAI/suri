@@ -1,9 +1,11 @@
 {
-      "compilerOptions": {
+  "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
     "skipLibCheck": true,
     "strict": true,
-    "outDir": "'../../dist-electron"
+    "outDir": "../../dist-electron"
   },
+  "include": ["**/*.ts"],
+  "exclude": ["../../dist-electron"]
 }
