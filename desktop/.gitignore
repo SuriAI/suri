@@ -9,8 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-react
 dist-electron
-dist-ssr
 *.local
 
 # Editor directories and files
