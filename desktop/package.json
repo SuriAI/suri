@@ -10,7 +10,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "transpile-electron": "tsc --project tsconfig.node.json"
+    "transpile:electron": "tsc --project src/electron/tsconfig.json"
   },
   "dependencies": {
     "react": "^19.1.0",
