@@ -1,0 +1,383 @@
+import { useState, useRef } from 'react'
+
+interface BatchImageProcessingProps {
+  onBack: () => void
+}
+
+interface BatchResult {
+  filename: string
+  faces_detected: number
+  faces_recognized: number
+  processing_time: number
+  faces: Array<{
+    name: string | null
+    confidence: number
+    quality: number
+    method: string
+    shouldLog: boolean
+  }>
+}
+
+interface BatchSummary {
+  total_images: number
+  total_faces: number
+  total_recognized: number
+  processing_time: number
+  recognition_rate: number
+}
+
+export default function BatchImageProcessing({ onBack }: BatchImageProcessingProps) {
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [results, setResults] = useState<BatchResult[]>([])
+  const [summary, setSummary] = useState<BatchSummary | null>(null)
+  const [currentProgress, setCurrentProgress] = useState(0)
+  const [currentFile, setCurrentFile] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      setSelectedFiles(files)
+      setResults([])
+      setSummary(null)
+      setCurrentProgress(0)
+    }
+  }
+
+  const processBatch = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) return
+
+    setIsProcessing(true)
+    setResults([])
+    setSummary(null)
+    setCurrentProgress(0)
+
+    const batchResults: BatchResult[] = []
+    const startTime = Date.now()
+
+    try {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i]
+        setCurrentFile(file.name)
+        setCurrentProgress(((i + 1) / selectedFiles.length) * 100)
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        try {
+          const response = await fetch('http://127.0.0.1:8770/recognize/image', {
+            method: 'POST',
+            body: formData
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.success) {
+              type ApiFace = { name?: string; confidence?: number; similarity?: number; quality?: number; method?: string; shouldLog?: boolean; should_log?: boolean }
+              const raw = (data.results || data.faces || []) as ApiFace[]
+              const faces = raw.map((f) => ({
+                name: f.name ?? null,
+                confidence: f.confidence ?? f.similarity ?? 0,
+                quality: f.quality ?? 0,
+                method: f.method ?? 'unknown',
+                shouldLog: f.shouldLog ?? f.should_log ?? false
+              }))
+              const result: BatchResult = {
+                filename: file.name,
+                faces_detected: faces.length,
+                faces_recognized: faces.filter((f) => f.shouldLog).length,
+                processing_time: (data.processing_info?.time_ms ?? data.processing_time ?? 0),
+                faces
+              }
+              batchResults.push(result)
+              setResults([...batchResults])
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${file.name}:`, error)
+          const errorResult: BatchResult = {
+            filename: file.name,
+            faces_detected: 0,
+            faces_recognized: 0,
+            processing_time: 0,
+            faces: []
+          }
+          batchResults.push(errorResult)
+          setResults([...batchResults])
+        }
+
+        // Small delay to prevent overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+
+      // Calculate summary
+      const totalTime = (Date.now() - startTime) / 1000
+      const totalFaces = batchResults.reduce((sum, r) => sum + r.faces_detected, 0)
+      const totalRecognized = batchResults.reduce((sum, r) => sum + r.faces_recognized, 0)
+
+      setSummary({
+        total_images: selectedFiles.length,
+        total_faces: totalFaces,
+        total_recognized: totalRecognized,
+        processing_time: totalTime,
+        recognition_rate: totalFaces > 0 ? (totalRecognized / totalFaces) * 100 : 0
+      })
+
+    } catch (error) {
+      console.error('Batch processing error:', error)
+      alert('❌ Batch processing failed')
+    } finally {
+      setIsProcessing(false)
+      setCurrentFile('')
+      setCurrentProgress(0)
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedFiles(null)
+    setResults([])
+    setSummary(null)
+    setCurrentProgress(0)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const exportResults = () => {
+    if (!results.length) return
+
+    const csvContent = [
+      'Filename,Faces Detected,Faces Recognized,Recognition Rate,Processing Time (ms)',
+      ...results.map(r => 
+        `"${r.filename}",${r.faces_detected},${r.faces_recognized},${r.faces_detected > 0 ? ((r.faces_recognized / r.faces_detected) * 100).toFixed(1) : 0}%,${r.processing_time}`
+      )
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `batch_recognition_results_${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={onBack}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+          >
+            ← Back
+          </button>
+          <h1 className="text-2xl font-bold text-white">📁 Batch Image Processing</h1>
+        </div>
+      </div>
+
+      {/* File Upload Section */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Select Images</h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              📁 Select Multiple Images
+            </button>
+            
+            {selectedFiles && (
+              <>
+                <button
+                  onClick={processBatch}
+                  disabled={isProcessing}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                >
+                  {isProcessing ? '⏳ Processing...' : '🔍 Process All Images'}
+                </button>
+                
+                <button
+                  onClick={clearSelection}
+                  disabled={isProcessing}
+                  className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  🗑️ Clear
+                </button>
+
+                {results.length > 0 && (
+                  <button
+                    onClick={exportResults}
+                    className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    📊 Export CSV
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {selectedFiles && (
+            <div className="text-sm text-slate-300">
+              <span className="font-medium text-white">Selected:</span> {selectedFiles.length} images
+              <span className="ml-4 text-slate-400">
+                ({(Array.from(selectedFiles).reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB total)
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Progress Section */}
+      {isProcessing && (
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Processing Progress</h3>
+          
+          <div className="space-y-4">
+            <div className="w-full bg-slate-700 rounded-full h-3">
+              <div 
+                className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${currentProgress}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-300">
+                {currentProgress.toFixed(1)}% Complete
+              </span>
+              <span className="text-slate-300">
+                {results.length} / {selectedFiles?.length || 0} processed
+              </span>
+            </div>
+            
+            {currentFile && (
+              <div className="text-sm text-slate-400">
+                Currently processing: <span className="text-white">{currentFile}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Summary Section */}
+      {summary && (
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">📊 Batch Summary</h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-400">{summary.total_images}</div>
+              <div className="text-xs text-slate-400 mt-1">Images Processed</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-400">{summary.total_faces}</div>
+              <div className="text-xs text-slate-400 mt-1">Faces Detected</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-400">{summary.total_recognized}</div>
+              <div className="text-xs text-slate-400 mt-1">Faces Recognized</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-400">{summary.recognition_rate.toFixed(1)}%</div>
+              <div className="text-xs text-slate-400 mt-1">Recognition Rate</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-cyan-400">{summary.processing_time.toFixed(1)}s</div>
+              <div className="text-xs text-slate-400 mt-1">Total Time</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results Section */}
+      {results.length > 0 && (
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Processing Results</h3>
+          
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {results.map((result, index) => (
+              <div
+                key={index}
+                className="bg-slate-700/50 rounded-lg p-4 border border-slate-600"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium text-white truncate mr-4">
+                    {result.filename}
+                  </span>
+                  <div className="flex space-x-2 text-sm">
+                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                      {result.faces_detected} faces
+                    </span>
+                    <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                      {result.faces_recognized} recognized
+                    </span>
+                    {result.faces_detected > 0 && (
+                      <span className="px-2 py-1 bg-purple-500/20 text-purple-400 rounded">
+                        {((result.faces_recognized / result.faces_detected) * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {result.faces.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    {result.faces.map((face, faceIndex) => (
+                      <div key={faceIndex} className="text-sm text-slate-300 flex justify-between">
+                        <span>{face.name || `Unknown #${faceIndex + 1}`}</span>
+                        <span className={face.shouldLog ? 'text-green-400' : face.name ? 'text-yellow-400' : 'text-red-400'}>
+                          {(face.confidence * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Instructions */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
+        <h3 className="text-lg font-semibold text-white mb-4">📝 Instructions</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+          <div>
+            <h4 className="font-medium text-white mb-2">How to Use:</h4>
+            <ul className="space-y-1">
+              <li>• Select multiple images using the file picker</li>
+              <li>• Click "Process All Images" to start batch recognition</li>
+              <li>• Monitor progress in real-time</li>
+              <li>• Export results to CSV for analysis</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-medium text-white mb-2">Performance Tips:</h4>
+            <ul className="space-y-1">
+              <li>• Process images in smaller batches for better performance</li>
+              <li>• Ensure stable internet connection</li>
+              <li>• Use consistent image quality for best results</li>
+              <li>• Check server load if processing seems slow</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
