@@ -1,5 +1,5 @@
 import base64
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -13,8 +13,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
 
-from scripts.run import (
-    AttendanceSystem, 
+from experiments.prototype.main import (
+    Main, 
     preprocess_yolo, 
     non_max_suppression, 
     yolo_sess, 
@@ -36,6 +36,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -46,7 +47,7 @@ app.add_middleware(
 )
 
 # Initialize your attendance system globally
-attendance_system = AttendanceSystem()
+attendance_system = Main()
 
 # Pydantic models for request/response
 class RecognitionResult(BaseModel):
