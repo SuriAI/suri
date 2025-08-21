@@ -37,7 +37,7 @@ class Main:
         self.attendance_log = []
         self.last_recognition = {}  # To prevent duplicate entries
         self.multi_templates = defaultdict(list)  # Enhanced multi-template storage
-        self.recognition_stats = defaultdict(lambda: {'attempts': 0, 'successes': 0})
+        self.recognition_stats = {}  # Changed from defaultdict to regular dict
         self.setup_directories()
         self.load_face_database()
         self.load_multi_templates()
@@ -74,11 +74,9 @@ class Main:
         
         if os.path.exists(stats_file):
             with open(stats_file, 'r') as f:
-                stats_dict = json.load(f)
-                self.recognition_stats = defaultdict(
-                    lambda: {'attempts': 0, 'successes': 0}, 
-                    stats_dict
-                )
+                self.recognition_stats = json.load(f)
+        else:
+            self.recognition_stats = {}
         
         total_templates = sum(len(templates) for templates in self.multi_templates.values())
         if total_templates > 0:
