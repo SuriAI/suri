@@ -320,7 +320,7 @@ export default function LiveCameraRecognition() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 px-8 pb-8 gap-8">
+      <div className="flex flex-1 px-8 pb-8 gap-6">
         {/* Glass Video Feed */}
         <div className="flex-1">
           <div className="h-[70vh] bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden">
@@ -361,27 +361,28 @@ export default function LiveCameraRecognition() {
               </div>
             )}
           </div>
+        </div>
         
-        {/* Glass Attendance Panel */}
-        <div className="w-80">
+        {/* Narrow Glass Attendance Panel */}
+        <div className="w-64">
           <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl h-[70vh] flex flex-col">
-            <div className="p-6 border-b border-white/[0.05]">
-              <h3 className="text-xs font-light text-white/60 uppercase tracking-[0.15em]">Today's Activity</h3>
-              <div className="text-3xl font-extralight text-white mt-3">{todayAttendance.length}</div>
+            <div className="p-4 border-b border-white/[0.05]">
+              <h3 className="text-[10px] font-light text-white/60 uppercase tracking-[0.15em]">Today's Activity</h3>
+              <div className="text-2xl font-extralight text-white mt-2">{todayAttendance.length}</div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3">
               {todayAttendance.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {todayAttendance.slice().reverse().map((record, index) => (
                     <div key={index} className="group">
-                      <div className="flex items-center justify-between py-4 px-5 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-light text-white">{record.name}</div>
-                          <div className="text-xs text-white/50 mt-1 font-light">{record.time}</div>
-                        </div>
-                        <div className="text-xs font-light text-white/60">
-                          {(record.confidence * 100).toFixed(0)}%
+                      <div className="py-3 px-3 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
+                        <div className="text-sm font-light text-white truncate">{record.name}</div>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="text-xs text-white/50 font-light">{record.time}</div>
+                          <div className="text-xs font-light text-white/60">
+                            {(record.confidence * 100).toFixed(0)}%
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -390,8 +391,8 @@ export default function LiveCameraRecognition() {
               ) : (
                 <div className="h-full flex items-center justify-center text-center">
                   <div className="text-white/40">
-                    <div className="text-4xl mb-4">●</div>
-                    <p className="text-sm font-light">No activity today</p>
+                    <div className="text-3xl mb-3">●</div>
+                    <p className="text-xs font-light">No activity today</p>
                   </div>
                 </div>
               )}
@@ -447,7 +448,6 @@ export default function LiveCameraRecognition() {
           </div>
         </div>
       )}
-      </div>
     </div>
   )
 }
