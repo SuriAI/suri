@@ -63,16 +63,8 @@ export default function MainMenu({
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Compact Header */}
         <div className="px-6 pt-8 pb-6">
-          <div className="max-w-7xl mx-auto">
-            {/* Minimalist Header */}
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center space-x-5">
-                <div className="relative group">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] flex items-center justify-center">
-                    <div className="w-5 h-5 rounded-lg bg-white/90"></div>
-                  </div>
-                  <div className="absolute -inset-1 bg-white/[0.05] rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
                 <div>
                   <h1 className="text-5xl font-extralight text-white tracking-[-0.02em]">
                     SURI
@@ -99,6 +91,8 @@ export default function MainMenu({
                 </button>
               </div>
             </div>
+          <div className="max-w-7xl mx-auto">
+            {/* Minimalist Header */}
 
             {/* Glass Stats Cards */}
             {systemStats && (
@@ -201,7 +195,7 @@ export default function MainMenu({
         <div className="px-6 pb-8">
           <div className="max-w-7xl mx-auto text-center">
             <p className="text-[10px] text-white/30 font-light tracking-[0.15em] uppercase">
-              Enterprise Face Recognition • Real-time Processing • Advanced Analytics
+              Face Recognition • Real-time Detection • Advanced Analytics
             </p>
           </div>
         </div>
