@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
 import os
 import sys
 
@@ -1475,6 +1476,18 @@ async def get_system_stats():
                 "message": "Attendance system is not initialized"
             }
 
+        # Initialize default stats if none exist
+        if not hasattr(attendance_system, 'recognition_stats'):
+            attendance_system.recognition_stats = {}
+
+        # Get recognition stats with proper default handling
+        recognition_stats = attendance_system.recognition_stats
+        total_attempts = sum(stats.get('attempts', 0) for stats in recognition_stats.values())
+        total_successes = sum(stats.get('successes', 0) for stats in recognition_stats.values())
+        
+        # Calculate success rate safely
+        success_rate = total_successes / total_attempts if total_attempts > 0 else 0.0
+
         # Safely access attendance system components with default values
         stats = {
             "legacy_faces": len(getattr(attendance_system, 'face_database', {}) or {}),
@@ -1485,9 +1498,8 @@ async def get_system_stats():
                 if record.get("date") == datetime.now().strftime("%Y-%m-%d")
             ]),
             "total_attendance": len(getattr(attendance_system, 'attendance_log', [])),
-            "success_rate": sum(stats['successes'] for stats in getattr(attendance_system, 'recognition_stats', {}).values()) /
-                          max(1, sum(stats['attempts'] for stats in getattr(attendance_system, 'recognition_stats', {}).values())),
-            "recognition_stats": dict(getattr(attendance_system, 'recognition_stats', defaultdict(lambda: {'attempts': 0, 'successes': 0}))),
+            "success_rate": success_rate,
+            "recognition_stats": recognition_stats.copy(),  # Make a copy to avoid any reference issues
             "database_info": {
                 "multi_templates_people": list(getattr(attendance_system, 'multi_templates', {}).keys()),
                 "legacy_people": list(getattr(attendance_system, 'face_database', {}).keys())
@@ -1496,13 +1508,7 @@ async def get_system_stats():
         return {"success": True, "stats": stats}
     except Exception as e:
         logger.error(f"Error getting system stats: {e}")
-        return {
-            "success": False,
-            "error": "INTERNAL_ERROR",
-            "message": f"Failed to get system stats: {str(e)}"
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Stats error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get system stats: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
