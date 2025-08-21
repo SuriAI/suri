@@ -120,7 +120,7 @@ function App() {
       case 'batch-processing':
         return <BatchImageProcessing onBack={() => setCurrentMenu('main')} />
       case 'system-management':
-        return <SystemManagement />
+        return <SystemManagement onBack={() => setCurrentMenu('main')} />
       default:
         return (
           <MainMenu 

@@ -694,6 +694,120 @@ async def recognize_from_base64(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Recognition failed: {str(e)}")
 
+@app.post("/recognize/batch", response_model=Dict[str, Any])
+async def recognize_batch_images(files: List[UploadFile] = File(...)):
+    """
+    📁 Batch process multiple images for face recognition
+    
+    Upload multiple image files and get recognition results for all.
+    Replicates the prototype's batch processing functionality.
+    """
+    try:
+        if len(files) > 50:  # Reasonable limit
+            raise HTTPException(status_code=400, detail="Maximum 50 images allowed per batch")
+        
+        batch_results = []
+        total_faces = 0
+        total_recognized = 0
+        start_time = time.time()
+        
+        for i, file in enumerate(files):
+            try:
+                # Process each image
+                frame = await process_uploaded_file(file)
+                orig = frame.copy()
+                h, w = frame.shape[:2]
+                
+                # Run YOLO detection
+                input_blob, scale, dx, dy = preprocess_yolo(frame)
+                preds = yolo_sess.run(None, {'images': input_blob})[0]
+                faces = non_max_suppression(preds, conf_thresh, iou_thresh, 
+                                           img_shape=(h, w), input_shape=(input_size, input_size), 
+                                           pad=(dx, dy), scale=scale)
+
+                scene_crowding = len(faces)
+                image_results = []
+                recognized_count = 0
+                
+                # Process each detected face
+                for j, box in enumerate(faces):
+                    x1, y1, x2, y2, conf = box
+                    
+                    if x2 <= x1 or y2 <= y1:
+                        continue
+
+                    face_img = orig[y1:y2, x1:x2]
+                    if face_img.size == 0:
+                        continue
+                    
+                    quality = calculate_quality_score(face_img, conf)
+                    identified_name, similarity, should_log, info = attendance_system.identify_face_enhanced(
+                        face_img, conf, scene_crowding
+                    )
+                    
+                    # Log attendance if recognized
+                    attendance_logged = False
+                    if identified_name and should_log:
+                        attendance_logged = attendance_system.log_attendance(identified_name, similarity, info)
+                        if attendance_logged:
+                            recognized_count += 1
+                    
+                    result = {
+                        "face_id": j + 1,
+                        "name": identified_name,
+                        "confidence": float(similarity),
+                        "bbox": [int(x1), int(y1), int(x2), int(y2)],
+                        "quality": float(quality),
+                        "method": info.get('method', 'unknown'),
+                        "should_log": should_log,
+                        "attendance_logged": attendance_logged
+                    }
+                    image_results.append(result)
+                
+                # Store results for this image
+                batch_results.append({
+                    "filename": file.filename,
+                    "image_index": i + 1,
+                    "faces_detected": len(faces),
+                    "faces_recognized": recognized_count,
+                    "faces": image_results,
+                    "processing_successful": True
+                })
+                
+                total_faces += len(faces)
+                total_recognized += recognized_count
+                
+            except Exception as e:
+                # Handle individual image errors
+                batch_results.append({
+                    "filename": file.filename,
+                    "image_index": i + 1,
+                    "faces_detected": 0,
+                    "faces_recognized": 0,
+                    "faces": [],
+                    "processing_successful": False,
+                    "error": str(e)
+                })
+        
+        processing_time = time.time() - start_time
+        
+        return {
+            "success": True,
+            "message": f"Processed {len(files)} images in {processing_time:.2f}s",
+            "summary": {
+                "total_images": len(files),
+                "successful_images": sum(1 for r in batch_results if r["processing_successful"]),
+                "total_faces_detected": total_faces,
+                "total_faces_recognized": total_recognized,
+                "recognition_rate": (total_recognized / max(total_faces, 1)) * 100,
+                "processing_time_seconds": processing_time
+            },
+            "results": batch_results
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Batch processing failed: {str(e)}")
+
 @app.post("/person/add", response_model=ApiResponse)
 async def add_person(
     name: str = Form(...),
@@ -1147,6 +1261,451 @@ async def optimize_templates():
         return ApiResponse(success=True, message="Templates optimized", data={"removed_count": removed})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Optimization failed: {str(e)}")
+
+@app.get("/system/management", response_model=Dict[str, Any])
+async def get_system_management_overview():
+    """
+    ⚙️ Get comprehensive system management overview
+    
+    Provides all data needed for system management dashboard.
+    """
+    try:
+        # Get today's attendance
+        today_records = attendance_system.get_today_attendance()
+        
+        # Get people statistics
+        legacy_count = len(attendance_system.face_database)
+        template_count = sum(len(templates) for templates in attendance_system.multi_templates.values())
+        total_people = max(legacy_count, len(attendance_system.multi_templates))
+        
+        # Calculate recognition statistics
+        total_attempts = sum(stats.get('attempts', 0) for stats in attendance_system.recognition_stats.values())
+        total_successes = sum(stats.get('successes', 0) for stats in attendance_system.recognition_stats.values())
+        success_rate = (total_successes / max(total_attempts, 1)) * 100
+        
+        # Get person details with performance stats
+        people_details = []
+        for person_name in set(list(attendance_system.face_database.keys()) + list(attendance_system.multi_templates.keys())):
+            summary = attendance_system.get_person_summary(person_name)
+            people_details.append(summary)
+        
+        return {
+            "success": True,
+            "data": {
+                "overview": {
+                    "total_people": total_people,
+                    "legacy_faces": legacy_count,
+                    "enhanced_templates": template_count,
+                    "today_attendance": len(today_records),
+                    "total_attendance": len(attendance_system.attendance_log),
+                    "overall_success_rate": success_rate
+                },
+                "today_attendance": today_records,
+                "people": people_details,
+                "system_stats": {
+                    "total_recognition_attempts": total_attempts,
+                    "total_recognition_successes": total_successes,
+                    "database_files": {
+                        "legacy_db": os.path.exists(os.path.join("face_database", "embeddings.pkl")),
+                        "multi_templates": os.path.exists(os.path.join("face_database", "multi_templates.pkl")),
+                        "attendance_log": os.path.exists("attendance_log.json")
+                    }
+                }
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get management overview: {str(e)}")
+
+@app.get("/person/search/{name}", response_model=Dict[str, Any])
+async def search_person_details(name: str):
+    """
+    🔍 Search for detailed person information
+    
+    Get comprehensive details about a specific person including templates and performance.
+    """
+    try:
+        summary = attendance_system.get_person_summary(name)
+        
+        if not summary['in_legacy'] and summary['num_templates'] == 0:
+            raise HTTPException(status_code=404, detail=f"Person '{name}' not found")
+        
+        # Get recent attendance for this person
+        person_attendance = [
+            record for record in attendance_system.attendance_log 
+            if record.get('name', '').lower() == name.lower()
+        ]
+        
+        # Get today's attendance
+        today_attendance = [
+            record for record in attendance_system.get_today_attendance()
+            if record.get('name', '').lower() == name.lower()
+        ]
+        
+        # Get template details if available
+        template_details = []
+        if name in attendance_system.multi_templates:
+            for i, template in enumerate(attendance_system.multi_templates[name]):
+                template_details.append({
+                    "template_id": i + 1,
+                    "cluster_size": template.get('cluster_size', 1),
+                    "avg_quality": template.get('avg_quality', 0),
+                    "usage_count": template.get('usage_count', 0),
+                    "success_rate": template.get('success_rate', 0),
+                    "created_date": template.get('created_date', 'Unknown')
+                })
+        
+        return {
+            "success": True,
+            "data": {
+                "person": summary,
+                "templates": template_details,
+                "attendance": {
+                    "today": today_attendance,
+                    "recent": person_attendance[-10:],  # Last 10 records
+                    "total_records": len(person_attendance)
+                }
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to search person: {str(e)}")
+
+@app.post("/system/clear-attendance", response_model=ApiResponse)
+async def clear_all_attendance():
+    """
+    🗑️ Clear all attendance records
+    
+    Permanently delete all attendance logs. Use with caution!
+    """
+    try:
+        record_count = len(attendance_system.attendance_log)
+        attendance_system.attendance_log = []
+        attendance_system.save_attendance_log()
+        
+        return ApiResponse(
+            success=True,
+            message=f"Successfully cleared {record_count} attendance records"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear attendance: {str(e)}")
+
+@app.get("/system/advanced-stats", response_model=Dict[str, Any])
+async def get_advanced_system_statistics():
+    """
+    📊 Get detailed system statistics and analytics
+    
+    Provides comprehensive system performance and usage analytics.
+    """
+    try:
+        # Calculate detailed statistics
+        legacy_count = len(attendance_system.face_database)
+        template_count = sum(len(templates) for templates in attendance_system.multi_templates.values())
+        total_people = max(legacy_count, len(attendance_system.multi_templates))
+        
+        # Recognition performance by person
+        person_performance = []
+        for person_name, stats in attendance_system.recognition_stats.items():
+            if stats['attempts'] > 0:
+                person_performance.append({
+                    "name": person_name,
+                    "attempts": stats['attempts'],
+                    "successes": stats['successes'],
+                    "success_rate": (stats['successes'] / stats['attempts']) * 100
+                })
+        
+        # Sort by success rate
+        person_performance.sort(key=lambda x: x['success_rate'], reverse=True)
+        
+        # Template quality analysis
+        template_analysis = {
+            "high_quality": 0,  # > 0.7 quality
+            "medium_quality": 0,  # 0.4 - 0.7 quality
+            "low_quality": 0,  # < 0.4 quality
+            "total_templates": template_count
+        }
+        
+        for templates in attendance_system.multi_templates.values():
+            for template in templates:
+                quality = template.get('avg_quality', 0)
+                if quality > 0.7:
+                    template_analysis["high_quality"] += 1
+                elif quality > 0.4:
+                    template_analysis["medium_quality"] += 1
+                else:
+                    template_analysis["low_quality"] += 1
+        
+        # Attendance analytics
+        today_count = len(attendance_system.get_today_attendance())
+        total_attendance = len(attendance_system.attendance_log)
+        
+        # Daily attendance trend (last 7 days)
+        from collections import defaultdict
+        daily_counts = defaultdict(int)
+        for record in attendance_system.attendance_log:
+            date = record.get('date', '')
+            if date:
+                daily_counts[date] += 1
+        
+        # Get last 7 days
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        daily_trend = []
+        for i in range(7):
+            date = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+            daily_trend.append({
+                "date": date,
+                "count": daily_counts.get(date, 0)
+            })
+        daily_trend.reverse()
+        
+        return {
+            "success": True,
+            "data": {
+                "database_stats": {
+                    "total_people": total_people,
+                    "legacy_faces": legacy_count,
+                    "enhanced_templates": template_count,
+                    "people_with_both": len([
+                        name for name in attendance_system.multi_templates.keys()
+                        if name in attendance_system.face_database
+                    ])
+                },
+                "recognition_performance": {
+                    "top_performers": person_performance[:10],
+                    "bottom_performers": person_performance[-5:] if len(person_performance) > 5 else [],
+                    "average_success_rate": sum(p['success_rate'] for p in person_performance) / max(len(person_performance), 1)
+                },
+                "template_quality": template_analysis,
+                "attendance_analytics": {
+                    "today": today_count,
+                    "total": total_attendance,
+                    "daily_trend": daily_trend,
+                    "unique_people_today": len(set(r['name'] for r in attendance_system.get_today_attendance())),
+                    "avg_daily_attendance": total_attendance / max(len(daily_counts), 1)
+                }
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get advanced statistics: {str(e)}")
+
+@app.put("/person/{name}/edit", response_model=ApiResponse)
+async def edit_person_name(name: str, new_name: str = Form(...)):
+    """
+    ✏️ Edit person's name in the system
+    
+    Update a person's name across all databases and records.
+    """
+    try:
+        # Validate new name
+        new_name = new_name.strip()
+        if not new_name:
+            raise HTTPException(status_code=400, detail="New name cannot be empty")
+        
+        if name == new_name:
+            raise HTTPException(status_code=400, detail="New name is the same as current name")
+        
+        # Check if person exists
+        summary = attendance_system.get_person_summary(name)
+        if not summary['in_legacy'] and summary['num_templates'] == 0:
+            raise HTTPException(status_code=404, detail=f"Person '{name}' not found")
+        
+        # Check if new name already exists
+        new_summary = attendance_system.get_person_summary(new_name)
+        if new_summary['in_legacy'] or new_summary['num_templates'] > 0:
+            raise HTTPException(status_code=409, detail=f"Person '{new_name}' already exists")
+        
+        # Update in legacy database
+        if name in attendance_system.face_database:
+            person_data = attendance_system.face_database[name]
+            del attendance_system.face_database[name]
+            attendance_system.face_database[new_name] = person_data
+        
+        # Update in multi-templates
+        if name in attendance_system.multi_templates:
+            templates = attendance_system.multi_templates[name]
+            del attendance_system.multi_templates[name]
+            attendance_system.multi_templates[new_name] = templates
+        
+        # Update in recognition stats
+        if name in attendance_system.recognition_stats:
+            stats = attendance_system.recognition_stats[name]
+            del attendance_system.recognition_stats[name]
+            attendance_system.recognition_stats[new_name] = stats
+        
+        # Update attendance records
+        for record in attendance_system.attendance_log:
+            if record.get('name') == name:
+                record['name'] = new_name
+        
+        # Save all changes
+        attendance_system.save_face_database()
+        attendance_system.save_multi_templates()
+        attendance_system.save_attendance_log()
+        
+        # Rename face image file if it exists
+        old_face_path = os.path.join("face_database", f"{name}.jpg")
+        new_face_path = os.path.join("face_database", f"{new_name}.jpg")
+        if os.path.exists(old_face_path):
+            try:
+                os.rename(old_face_path, new_face_path)
+            except Exception as e:
+                print(f"[WARNING] Could not rename face image: {e}")
+        
+        return ApiResponse(
+            success=True,
+            message=f"Successfully renamed '{name}' to '{new_name}'",
+            data={
+                "old_name": name,
+                "new_name": new_name,
+                "updated_records": len([r for r in attendance_system.attendance_log if r.get('name') == new_name])
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to edit person: {str(e)}")
+
+@app.delete("/person/{name}/delete", response_model=ApiResponse)
+async def delete_person_completely(name: str, confirm: bool = Form(False)):
+    """
+    🗑️ Completely delete person from the system
+    
+    Removes person from all databases and optionally their attendance records.
+    """
+    try:
+        if not confirm:
+            raise HTTPException(status_code=400, detail="Confirmation required to delete person")
+        
+        # Check if person exists
+        summary = attendance_system.get_person_summary(name)
+        if not summary['in_legacy'] and summary['num_templates'] == 0:
+            raise HTTPException(status_code=404, detail=f"Person '{name}' not found")
+        
+        deleted_items = []
+        
+        # Remove from legacy database
+        if name in attendance_system.face_database:
+            del attendance_system.face_database[name]
+            deleted_items.append("legacy_database")
+        
+        # Remove from multi-templates
+        if name in attendance_system.multi_templates:
+            template_count = len(attendance_system.multi_templates[name])
+            del attendance_system.multi_templates[name]
+            deleted_items.append(f"{template_count}_templates")
+        
+        # Remove from recognition stats
+        if name in attendance_system.recognition_stats:
+            del attendance_system.recognition_stats[name]
+            deleted_items.append("recognition_stats")
+        
+        # Count attendance records for this person
+        attendance_count = len([r for r in attendance_system.attendance_log if r.get('name') == name])
+        
+        # Remove face image file if it exists
+        face_image_path = os.path.join("face_database", f"{name}.jpg")
+        if os.path.exists(face_image_path):
+            try:
+                os.remove(face_image_path)
+                deleted_items.append("face_image")
+            except Exception as e:
+                print(f"[WARNING] Could not delete face image: {e}")
+        
+        # Save all changes
+        attendance_system.save_face_database()
+        attendance_system.save_multi_templates()
+        
+        return ApiResponse(
+            success=True,
+            message=f"Successfully deleted '{name}' from the system",
+            data={
+                "deleted_person": name,
+                "deleted_items": deleted_items,
+                "attendance_records_found": attendance_count,
+                "note": "Attendance records preserved for historical data"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete person: {str(e)}")
+
+@app.delete("/person/{name}/delete-all", response_model=ApiResponse)
+async def delete_person_and_records(name: str, confirm: bool = Form(False)):
+    """
+    💥 Completely delete person AND all their attendance records
+    
+    Nuclear option: removes everything related to this person.
+    """
+    try:
+        if not confirm:
+            raise HTTPException(status_code=400, detail="Confirmation required for complete deletion")
+        
+        # Check if person exists
+        summary = attendance_system.get_person_summary(name)
+        if not summary['in_legacy'] and summary['num_templates'] == 0:
+            raise HTTPException(status_code=404, detail=f"Person '{name}' not found")
+        
+        deleted_items = []
+        
+        # Remove from legacy database
+        if name in attendance_system.face_database:
+            del attendance_system.face_database[name]
+            deleted_items.append("legacy_database")
+        
+        # Remove from multi-templates
+        if name in attendance_system.multi_templates:
+            template_count = len(attendance_system.multi_templates[name])
+            del attendance_system.multi_templates[name]
+            deleted_items.append(f"{template_count}_templates")
+        
+        # Remove from recognition stats
+        if name in attendance_system.recognition_stats:
+            del attendance_system.recognition_stats[name]
+            deleted_items.append("recognition_stats")
+        
+        # Remove ALL attendance records for this person
+        original_count = len(attendance_system.attendance_log)
+        attendance_system.attendance_log = [
+            record for record in attendance_system.attendance_log 
+            if record.get('name') != name
+        ]
+        records_deleted = original_count - len(attendance_system.attendance_log)
+        
+        if records_deleted > 0:
+            deleted_items.append(f"{records_deleted}_attendance_records")
+        
+        # Remove face image file if it exists
+        face_image_path = os.path.join("face_database", f"{name}.jpg")
+        if os.path.exists(face_image_path):
+            try:
+                os.remove(face_image_path)
+                deleted_items.append("face_image")
+            except Exception as e:
+                print(f"[WARNING] Could not delete face image: {e}")
+        
+        # Save all changes
+        attendance_system.save_face_database()
+        attendance_system.save_multi_templates()
+        attendance_system.save_attendance_log()
+        
+        return ApiResponse(
+            success=True,
+            message=f"Successfully deleted '{name}' and all related data",
+            data={
+                "deleted_person": name,
+                "deleted_items": deleted_items,
+                "attendance_records_deleted": records_deleted
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to completely delete person: {str(e)}")
 
 @app.get("/video/stream")
 async def video_stream(device: Optional[int] = None):
