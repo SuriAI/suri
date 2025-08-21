@@ -45,6 +45,74 @@ export default function BatchImageProcessing({ onBack }: BatchImageProcessingPro
     }
   }
 
+  const processBatchOptimized = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) return
+
+    setIsProcessing(true)
+    setResults([])
+    setSummary(null)
+    setCurrentProgress(0)
+
+    const startTime = Date.now()
+
+    try {
+      // Use the new batch endpoint for better performance
+      const formData = new FormData()
+      for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append('files', selectedFiles[i])
+      }
+
+      const response = await fetch('http://127.0.0.1:8770/recognize/batch', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          // Convert API response to our format
+          const batchResults: BatchResult[] = data.results.map((result: any) => ({
+            filename: result.filename,
+            faces_detected: result.faces_detected,
+            faces_recognized: result.faces_recognized,
+            processing_time: data.summary.processing_time_seconds * 1000, // Convert to ms
+            faces: result.faces.map((face: any) => ({
+              name: face.name,
+              confidence: face.confidence,
+              quality: face.quality,
+              method: face.method,
+              shouldLog: face.should_log
+            }))
+          }))
+
+          setResults(batchResults)
+          setCurrentProgress(100)
+
+          // Create summary
+          const processingTime = Date.now() - startTime
+          const summary: BatchSummary = {
+            totalImages: data.summary.total_images,
+            totalFaces: data.summary.total_faces_detected,
+            totalRecognized: data.summary.total_faces_recognized,
+            processingTime,
+            recognitionRate: data.summary.recognition_rate
+          }
+          setSummary(summary)
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error('Batch processing error:', error)
+      alert('❌ Batch processing failed. Falling back to individual processing...')
+      // Fallback to individual processing
+      processBatch()
+    } finally {
+      setIsProcessing(false)
+      setCurrentFile('')
+    }
+  }
+
   const processBatch = async () => {
     if (!selectedFiles || selectedFiles.length === 0) return
 
@@ -205,7 +273,7 @@ export default function BatchImageProcessing({ onBack }: BatchImageProcessingPro
             {selectedFiles && (
               <>
                 <button
-                  onClick={processBatch}
+                  onClick={processBatchOptimized}
                   disabled={isProcessing}
                   className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
                 >
