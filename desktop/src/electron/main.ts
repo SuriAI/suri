@@ -40,7 +40,8 @@ function startVideoWorker() {
     })
     videoProc.stdout.on('data', (data) => {
         try {
-            const str = data.toString().trim()
+            // Try to convert to string, if it fails it's likely binary data
+            const str = data.toString('utf8').trim()
             if (!str) return
             
             const lines = str.split('\n')
@@ -54,12 +55,15 @@ function startVideoWorker() {
                         mainWindowRef.webContents.send('video:event', msg)
                     }
                 } catch {
-                    // Not a JSON message, log as plain text
-                    console.log('[video][out]', line)
+                    // Only log if it looks like text data
+                    if (/^[\x20-\x7E\n\r\t]*$/.test(line)) {
+                        console.log('[video][out]', line)
+                    }
                 }
             }
-        } catch (e) {
-            console.error('[video] stdout parse error:', e)
+        } catch {
+            // Silently ignore binary data parsing errors
+            return
         }
     })
     videoProc.stderr.on('data', (d) => console.error('[video][err]', d.toString()))
@@ -69,28 +73,34 @@ function startVideoWorker() {
     })
 }
 
-function startBackend() {
-    const args = [
-        '-m', 'uvicorn',
-        'src.api.api_server:app',
-        '--host', '127.0.0.1',
-        '--port', '8770'
-    ]
-    
-    // Try to use virtual environment python first, fallback to system python
-    const pythonCmd = resolvePythonCmd()
-    
-    backendProc = spawn(pythonCmd, args, {
-        cwd: path.join(app.getAppPath(), '..'),
-        env: { ...process.env },
-        stdio: 'pipe'
-    })
-    backendProc.stdout.on('data', (d) => console.log('[py][out]', d.toString()))
-    backendProc.stderr.on('data', (d) => console.error('[py][err]', d.toString()))
-    backendProc.on('exit', (code, signal) => {
-        console.log('[py] exited', { code, signal })
+function startBackend(): void {
+    try {
+        const args = [
+            '-m', 'uvicorn',
+            'src.api.api_server:app',
+            '--host', '127.0.0.1',
+            '--port', '8770'
+        ]
+        
+        // Try to use virtual environment python first, fallback to system python
+        const pythonCmd = resolvePythonCmd()
+        
+        backendProc = spawn(pythonCmd, args, {
+            cwd: path.join(app.getAppPath(), '..'),
+            env: { ...process.env },
+            stdio: 'pipe'
+        })
+
+        backendProc.stdout.on('data', (d) => console.log('[py][out]', d.toString()))
+        backendProc.stderr.on('data', (d) => console.error('[py][err]', d.toString()))
+        backendProc.on('exit', (code, signal) => {
+            console.log('[py] exited', { code, signal })
+            backendProc = null
+        })
+    } catch (err) {
+        console.error('[py] Failed to start backend:', err)
         backendProc = null
-    })
+    }
 }
 
 function stopBackend() {
