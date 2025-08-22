@@ -64,34 +64,34 @@ export default function TitleBar({ title = 'SURI' }: TitleBarProps) {
       >
         <button
           onClick={handleMinimize}
-          className="w-12 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.05] transition-all duration-200 group"
+          className="titlebar-btn w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.08] rounded transition-all duration-200"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 16 16" strokeWidth={1.2}>
+            <path d="M4 8h8" strokeLinecap="round" />
           </svg>
         </button>
 
         <button
           onClick={handleMaximize}
-          className="w-12 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.05] transition-all duration-200 group"
+          className="titlebar-btn w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/[0.08] rounded transition-all duration-200"
         >
           {isMaximized ? (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 16 16" strokeWidth={1.2}>
+              <path d="M5 3h8v8M3 5h8v8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0l5.25 5.25M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15m-11.25 5.25h4.5m-4.5 0v-4.5m0 4.5L9 15" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 16 16" strokeWidth={1.2}>
+              <rect x="3" y="3" width="10" height="10" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </button>
 
         <button
           onClick={handleClose}
-          className="w-12 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-red-500/20 transition-all duration-200 group"
+          className="titlebar-btn w-7 h-7 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500/15 rounded transition-all duration-200"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 16 16" strokeWidth={1.2}>
+            <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       </div>

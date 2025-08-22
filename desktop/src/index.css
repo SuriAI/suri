@@ -97,6 +97,31 @@ button {
   overflow: hidden;
 }
 
+/* Title bar buttons - override global button styles */
+.titlebar-btn {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  position: static !important;
+  overflow: visible !important;
+}
+
+.titlebar-btn:hover {
+  transform: none !important;
+  border: none !important;
+}
+
+.titlebar-btn:active {
+  transform: none !important;
+}
+
+.titlebar-btn:focus-visible {
+  box-shadow: none !important;
+}
+
 button:hover {
   background-color: var(--bg-hover);
   border-color: var(--border-hover);
