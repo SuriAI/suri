@@ -4,6 +4,7 @@ import LiveCameraRecognition from './components/LiveCameraRecognition.tsx'
 import SingleImageRecognition from './components/SingleImageRecognition.tsx'
 import BatchImageProcessing from './components/BatchImageProcessing.tsx'
 import SystemManagement from './components/SystemManagement.tsx'
+import AppDropdown from './components/AppDropdown.tsx'
 import './App.css'
 
 export type MenuOption = 
@@ -150,7 +151,7 @@ function App() {
             </button>
             
             <div className="flex items-center space-x-3">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-white animate-pulse' : 'bg-white/40'} transition-all duration-300`}></div>
+              <AppDropdown isConnected={isConnected} onRefreshStats={fetchSystemStats} />
             </div>
           </div>
         </div>
