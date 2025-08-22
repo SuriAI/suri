@@ -1,4 +1,5 @@
 import type { MenuOption } from '../App'
+import AppDropdown from './AppDropdown.tsx'
 
 interface MainMenuProps {
   onMenuSelect: (menu: MenuOption) => void
@@ -98,20 +99,7 @@ export default function MainMenu({
 
               {/* Glass Status */}
               <div className="flex items-center space-x-4">
-                <div className="px-6 py-3 rounded-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-white animate-pulse' : 'bg-white/40'}`}></div>
-                  <span className="text-xs font-light tracking-widest text-white/90 uppercase">
-                    {isConnected ? 'Online' : 'Offline'}
-                  </span>
-                </div>
-                <button 
-                  onClick={onRefreshStats}
-                  className="p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] text-white/60 hover:text-white transition-all duration-300"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
+                <AppDropdown isConnected={isConnected} onRefreshStats={onRefreshStats} />
               </div>
             </div>
           <div className="max-w-7xl mx-auto">
