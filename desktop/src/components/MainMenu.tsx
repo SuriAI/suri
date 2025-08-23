@@ -146,7 +146,7 @@ export default function MainMenu({
                   key={item.id}
                   onClick={() => !item.disabled && onMenuSelect(item.id)}
                   disabled={item.disabled}
-                  className={`group relative overflow-hidden rounded-2xl transition-all duration-700 ${
+                  className={`group relative overflow-hidden rounded-2xl transition-all duration-500 ${
                     item.disabled 
                       ? 'opacity-30 cursor-not-allowed' 
                       : 'hover:scale-[1.02] hover:-translate-y-1'
@@ -157,17 +157,17 @@ export default function MainMenu({
                   
                   {/* Hover Glass Enhancement */}
                   {!item.disabled && (
-                    <div className="absolute inset-0 bg-white/[0.03] backdrop-blur-xl border border-white/[0.12] opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+                    <div className="absolute inset-0 bg-white/[0.03] backdrop-blur-xl border border-white/[0.12] opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                   )}
                   
                   {/* Content */}
                   <div className="relative z-10 p-8 h-full flex flex-col min-h-[200px]">
                     <div className="flex items-start justify-between mb-8">
-                      <div className="transition-transform duration-700 group-hover:scale-110">
+                      <div className="transition-transform duration-500 group-hover:scale-110">
                         {item.icon}
                       </div>
                       {!item.disabled && (
-                        <div className="w-8 h-8 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.1] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-x-2 group-hover:translate-x-0">
+                        <div className="w-8 h-8 rounded-full bg-white/[0.05] backdrop-blur-xl border border-white/[0.1] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
                           <svg className="w-3 h-3 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
@@ -195,7 +195,7 @@ export default function MainMenu({
                   )}
 
                   {/* Subtle Hover Glow */}
-                  <div className="absolute inset-0 rounded-2xl bg-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                  <div className="absolute inset-0 rounded-2xl bg-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                 </button>
               ))}
             </div>
