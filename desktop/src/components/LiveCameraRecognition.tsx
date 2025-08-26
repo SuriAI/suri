@@ -18,6 +18,17 @@ interface AttendanceRecord {
   time: string
 }
 
+interface CameraDevice {
+  index: number
+  name: string
+  backend: string
+  backend_id?: number
+  works: boolean
+  width: number
+  height: number
+  fps: number
+}
+
 export default function LiveCameraRecognition() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [recognitionResults] = useState<RecognitionResult[]>([])
@@ -27,11 +38,16 @@ export default function LiveCameraRecognition() {
   const [isAddingPerson, setIsAddingPerson] = useState(false)
   const [systemStats, setSystemStats] = useState({ today_records: 0, total_people: 0 })
   const [cameraStatus, setCameraStatus] = useState<'stopped' | 'starting' | 'preview' | 'recognition'>('stopped')
+  const [availableCameras, setAvailableCameras] = useState<CameraDevice[]>([])
+  const [currentCamera, setCurrentCamera] = useState<number>(0)
+  const [showCameraSelector, setShowCameraSelector] = useState(false)
+  const [isLoadingCameras, setIsLoadingCameras] = useState(false)
   
   const imgRef = useRef<HTMLImageElement>(null)
   const frameUrlRef = useRef<string | null>(null)
   const streamingRef = useRef(false)
   const wsUnsubRef = useRef<(() => void) | null>(null)
+  const cameraSelectorRef = useRef<HTMLDivElement>(null)
 
   const connectWebSocket = useCallback(() => {
     try {
@@ -130,7 +146,7 @@ export default function LiveCameraRecognition() {
     window.__suriOffFrame = offFrame
     
     // Start camera with fast startup (this should trigger frames immediately)
-    await window.suriVideo.startFast({ device: 0, annotate: true })
+    await window.suriVideo.startFast({ device: currentCamera, annotate: true })
     
     } catch (error) {
       console.error('Failed to start stream:', error)
@@ -138,11 +154,12 @@ export default function LiveCameraRecognition() {
       streamingRef.current = false
       setCameraStatus('stopped')
     }
-  }, [stopStream])
+  }, [stopStream, currentCamera])
 
   useEffect(() => {
     connectWebSocket()
     fetchTodayAttendance()
+    fetchAvailableCameras()
     
     // Listen for video events to update camera status
     const handleVideoEvent = (evt: Record<string, unknown>) => {
@@ -167,6 +184,20 @@ export default function LiveCameraRecognition() {
       stopStream()
     }
   }, [connectWebSocket, fetchTodayAttendance, stopStream])
+
+  // Close camera selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cameraSelectorRef.current && !cameraSelectorRef.current.contains(event.target as Node)) {
+        setShowCameraSelector(false)
+      }
+    }
+
+    if (showCameraSelector) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showCameraSelector])
 
   const addPersonFromCamera = async () => {
     if (!newPersonName.trim()) return
@@ -278,6 +309,71 @@ export default function LiveCameraRecognition() {
     }
   }
 
+  const fetchAvailableCameras = async () => {
+    setIsLoadingCameras(true)
+    try {
+      const response = await fetch('http://127.0.0.1:8770/video/devices')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setAvailableCameras(data.devices)
+          setCurrentCamera(data.current_device)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch cameras:', error)
+    } finally {
+      setIsLoadingCameras(false)
+    }
+  }
+
+  const switchCamera = async (deviceIndex: number) => {
+    try {
+      // Stop current stream if running
+      if (isStreaming) {
+        await stopStream()
+        // Small delay to ensure clean shutdown
+        await new Promise(resolve => setTimeout(resolve, 200))
+      }
+      
+      const response = await fetch('http://127.0.0.1:8770/video/set_device', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ device_index: deviceIndex })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setCurrentCamera(deviceIndex)
+          setShowCameraSelector(false)
+          
+          // If we were streaming before, restart with new camera
+          if (streamingRef.current) {
+            // Small delay before restarting
+            setTimeout(() => {
+              startStream()
+            }, 300)
+          }
+          
+          // Show success message
+          const camera = availableCameras.find(c => c.index === deviceIndex)
+          alert(`✅ Switched to: ${camera?.name || `Camera ${deviceIndex}`}`)
+        } else {
+          alert(`❌ Failed to switch camera: ${data.message || 'Unknown error'}`)
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        alert(`❌ Failed to switch camera: ${errorData.detail || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Failed to switch camera:', error)
+      alert('❌ Failed to switch camera: Network error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Glass Morphism Control Bar */}
@@ -327,6 +423,67 @@ export default function LiveCameraRecognition() {
             <div className="text-sm font-extralight text-white">{systemStats.today_records}</div>
           </div>
           
+          <div className="relative" ref={cameraSelectorRef}>
+            <button
+              onClick={() => setShowCameraSelector(!showCameraSelector)}
+              className="px-4 py-2 rounded-xl text-xs font-light text-white/60 hover:text-white bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] transition-all duration-300 flex items-center gap-2"
+            >
+              📷 {availableCameras.find(c => c.index === currentCamera)?.name?.split(' ')[0] || `Camera ${currentCamera}`}
+              <span className="text-white/40">▼</span>
+            </button>
+            
+            {showCameraSelector && (
+              <div className="absolute top-full left-0 mt-2 min-w-[280px] bg-black/80 backdrop-blur-xl border border-white/[0.15] rounded-xl overflow-hidden z-50">
+                <div className="p-3 border-b border-white/[0.10]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/70 font-light">Select Camera</span>
+                    <button
+                      onClick={fetchAvailableCameras}
+                      disabled={isLoadingCameras}
+                      className="text-xs text-white/50 hover:text-white/80 transition-colors"
+                    >
+                      {isLoadingCameras ? '⟳' : '↻'}
+                    </button>
+                  </div>
+                </div>
+                
+                {isLoadingCameras ? (
+                  <div className="p-4 text-center">
+                    <div className="text-sm text-white/60">Scanning cameras...</div>
+                  </div>
+                ) : availableCameras.length === 0 ? (
+                  <div className="p-4 text-center">
+                    <div className="text-sm text-white/60">No cameras found</div>
+                    <div className="text-xs text-white/40 mt-1">Check camera connections</div>
+                  </div>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto">
+                    {availableCameras.map((camera) => (
+                      <button
+                        key={camera.index}
+                        onClick={() => switchCamera(camera.index)}
+                        className={`w-full p-3 text-left hover:bg-white/[0.05] transition-colors border-b border-white/[0.05] last:border-b-0 ${
+                          camera.index === currentCamera ? 'bg-white/[0.08] text-white' : 'text-white/80'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="text-sm font-light">{camera.name}</div>
+                            <div className="text-xs text-white/50 mt-1">
+                              {camera.width}x{camera.height} • {camera.backend}
+                              {camera.index === currentCamera && ' • Active'}
+                            </div>
+                          </div>
+                          <div className={`w-2 h-2 rounded-full ${camera.works ? 'bg-green-400' : 'bg-red-400'}`} />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setShowAddPerson(true)}
             disabled={!isStreaming}

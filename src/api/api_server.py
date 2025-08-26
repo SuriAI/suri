@@ -368,44 +368,266 @@ def robust_frame_read(cap: cv2.VideoCapture, max_retries: int = 5) -> tuple[bool
     
     return False, None
 
-def detect_available_cameras(max_index: int = 5) -> list[dict]:
-    """Simple camera detection like the prototype - just check if camera 0 works"""
+def detect_available_cameras(max_index: int = 10) -> list[dict]:
+    """Enhanced camera detection - scans multiple indices and backends"""
     found = []
-    try:
-        cap = cv2.VideoCapture(0)
-        if cap.isOpened():
-            found.append({"index": 0, "backend": "default", "works": True})
-            cap.release()
-    except Exception:
-        pass
+    
+    # Test multiple camera indices
+    for idx in range(max_index):
+        camera_info = test_camera_device(idx)
+        if camera_info:
+            found.append(camera_info)
+    
+    # If no cameras found with standard method, try alternative backends on Windows
+    if not found and os.name == 'nt':
+        print("[DEBUG] No cameras found with default backend, trying DirectShow...")
+        for idx in range(max_index):
+            camera_info = test_camera_device(idx, cv2.CAP_DSHOW)
+            if camera_info:
+                found.append(camera_info)
+    
     return found
 
-def get_windows_camera_names() -> list[str]:
-    """Best-effort fetch of camera friendly names on Windows via PowerShell CIM.
-    Returns a list of names; order may not strictly match OpenCV indices but is often similar.
+def test_camera_device(idx: int, backend: Optional[int] = None) -> Optional[dict]:
+    """Test a specific camera device and return info if it works"""
+    cap = None
+    try:
+        print(f"[DEBUG] Testing camera {idx} with backend {backend or 'default'}")
+        
+        # Try to open camera with specified backend
+        if backend is not None:
+            cap = cv2.VideoCapture(idx, backend)
+        else:
+            cap = cv2.VideoCapture(idx)
+        
+        if not cap or not cap.isOpened():
+            return None
+        
+        # Try to read a frame to verify camera actually works
+        ret, frame = cap.read()
+        if not ret or frame is None or frame.size == 0:
+            return None
+        
+        # Get camera properties for additional info
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        
+        backend_name = "default"
+        if backend == cv2.CAP_DSHOW:
+            backend_name = "DirectShow"
+        elif backend == cv2.CAP_V4L2:
+            backend_name = "V4L2"
+        elif backend == cv2.CAP_GSTREAMER:
+            backend_name = "GStreamer"
+        
+        print(f"[DEBUG] Camera {idx} working: {width}x{height} @ {fps}fps")
+        
+        return {
+            "index": idx,
+            "backend": backend_name,
+            "backend_id": backend,
+            "works": True,
+            "width": width,
+            "height": height,
+            "fps": fps
+        }
+        
+    except Exception as e:
+        print(f"[DEBUG] Camera {idx} failed: {e}")
+        return None
+    finally:
+        if cap:
+            try:
+                cap.release()
+            except Exception:
+                pass
+
+def get_camera_friendly_names() -> dict[int, str]:
+    """Get friendly names for camera devices across different platforms.
+    Returns a dictionary mapping camera index to friendly name.
     """
-    if os.name != 'nt':
-        return []
+    names = {}
+    
+    if os.name == 'nt':  # Windows
+        names.update(get_windows_camera_names())
+    elif os.name == 'posix':  # Linux/macOS
+        names.update(get_unix_camera_names())
+    
+    return names
+
+def get_windows_camera_names() -> dict[int, str]:
+    """Enhanced Windows camera name detection with multiple fallback methods"""
+    names = {}
+    
     try:
         import subprocess
+        # Method 1: Enhanced PowerShell query with device enumeration
         ps_cmd = [
             'powershell',
             '-NoProfile',
             '-Command',
-            "Get-CimInstance Win32_PnPEntity | Where-Object { $_.PNPClass -eq 'Camera' -or $_.Name -match 'Webcam|Camera|USB Video' } | Select-Object -ExpandProperty Name"
+            '''
+            $cameras = Get-CimInstance Win32_PnPEntity | Where-Object { 
+                $_.PNPClass -eq "Camera" -or 
+                $_.Name -match "Webcam|Camera|USB Video|Integrated Camera" 
+            } | Select-Object Name, DeviceID, Status | Sort-Object Name
+            
+            $index = 0
+            foreach ($cam in $cameras) {
+                if ($cam.Status -eq "OK" -or $cam.Status -eq $null) {
+                    Write-Output "$index|$($cam.Name)"
+                    $index++
+                }
+            }
+            '''
         ]
-        out = subprocess.check_output(ps_cmd, stderr=subprocess.DEVNULL, text=True, encoding='utf-8', timeout=3)
-        names = [line.strip() for line in out.splitlines() if line.strip()]
-        # Deduplicate while preserving order
-        seen = set()
-        uniq = []
-        for n in names:
-            if n not in seen:
-                seen.add(n)
-                uniq.append(n)
-        return uniq
-    except Exception:
-        return []
+        
+        out = subprocess.check_output(ps_cmd, stderr=subprocess.DEVNULL, text=True, encoding='utf-8', timeout=5)
+        
+        for line in out.splitlines():
+            if line.strip() and '|' in line:
+                try:
+                    index_str, name = line.strip().split('|', 1)
+                    index = int(index_str)
+                    clean_name = clean_camera_name(name)
+                    if clean_name:
+                        names[index] = clean_name
+                except (ValueError, IndexError):
+                    continue
+                    
+    except Exception as e:
+        print(f"[DEBUG] Enhanced PowerShell camera query failed: {e}")
+        
+        # Fallback to simple method
+        try:
+            ps_cmd_simple = [
+                'powershell',
+                '-NoProfile', 
+                '-Command',
+                "Get-CimInstance Win32_PnPEntity | Where-Object { $_.PNPClass -eq 'Camera' -or $_.Name -match 'Webcam|Camera|USB Video' } | Select-Object -ExpandProperty Name"
+            ]
+            out = subprocess.check_output(ps_cmd_simple, stderr=subprocess.DEVNULL, text=True, encoding='utf-8', timeout=3)
+            raw_names = [line.strip() for line in out.splitlines() if line.strip()]
+            
+            # Map to indices
+            for i, name in enumerate(raw_names):
+                clean_name = clean_camera_name(name)
+                if clean_name:
+                    names[i] = clean_name
+                    
+        except Exception as e2:
+            print(f"[DEBUG] Fallback PowerShell query also failed: {e2}")
+    
+    # If still no names found, try WMI
+    if not names:
+        try:
+            import subprocess
+            wmic_result = subprocess.run([
+                'wmic', 'path', 'Win32_PnPEntity', 'where', 
+                'PNPClass="Camera" OR Name LIKE "%camera%" OR Name LIKE "%webcam%"', 
+                'get', 'Name', '/format:list'
+            ], capture_output=True, text=True, timeout=10)
+            
+            if wmic_result.returncode == 0:
+                device_index = 0
+                for line in wmic_result.stdout.split('\n'):
+                    if line.startswith('Name=') and len(line) > 5:
+                        device_name = clean_camera_name(line[5:].strip())
+                        if device_name:
+                            names[device_index] = device_name
+                            device_index += 1
+        except Exception as e:
+            print(f"[DEBUG] WMI camera query failed: {e}")
+    
+    return names
+
+def get_unix_camera_names() -> dict[int, str]:
+    """Get camera names on Linux/macOS systems"""
+    names = {}
+    
+    try:
+        # Linux V4L2 devices
+        if os.path.exists('/sys/class/video4linux'):
+            device_index = 0
+            for device_dir in sorted(os.listdir('/sys/class/video4linux')):
+                if device_dir.startswith('video'):
+                    try:
+                        name_file = f'/sys/class/video4linux/{device_dir}/name'
+                        if os.path.exists(name_file):
+                            with open(name_file, 'r') as f:
+                                device_name = f.read().strip()
+                                if device_name:
+                                    names[device_index] = clean_camera_name(device_name)
+                                    device_index += 1
+                    except Exception:
+                        continue
+        
+        # macOS - try system_profiler
+        elif hasattr(os, 'uname') and os.uname().sysname == 'Darwin':
+            try:
+                import subprocess
+                result = subprocess.run([
+                    'system_profiler', 'SPCameraDataType', '-json'
+                ], capture_output=True, text=True, timeout=10)
+                
+                if result.returncode == 0:
+                    import json
+                    data = json.loads(result.stdout)
+                    device_index = 0
+                    for item in data.get('SPCameraDataType', []):
+                        if '_name' in item:
+                            device_name = clean_camera_name(item['_name'])
+                            names[device_index] = device_name
+                            device_index += 1
+            except Exception as e:
+                print(f"[DEBUG] macOS camera detection failed: {e}")
+                
+    except Exception as e:
+        print(f"[DEBUG] Unix camera name detection failed: {e}")
+    
+    return names
+
+def clean_camera_name(name: str) -> str:
+    """Clean and standardize camera device names"""
+    if not name or name.strip() == "":
+        return ""
+    
+    # Remove common unnecessary parts
+    name = name.strip()
+    
+    # Common replacements for better readability
+    replacements = {
+        'USB\\VID_': '',
+        'USB Video Device': 'USB Camera',
+        'Integrated Webcam': 'Built-in Camera',
+        'Integrated Camera': 'Built-in Camera',
+        'HD WebCam': 'HD Camera',
+        'USB2.0 Camera': 'USB Camera',
+        'UVC Camera': 'USB Camera'
+    }
+    
+    for old, new in replacements.items():
+        name = name.replace(old, new)
+    
+    # Remove duplicate words
+    words = name.split()
+    seen = set()
+    cleaned_words = []
+    for word in words:
+        word_lower = word.lower()
+        if word_lower not in seen:
+            seen.add(word_lower)
+            cleaned_words.append(word)
+    
+    cleaned_name = " ".join(cleaned_words)
+    
+    # Ensure it ends with "Camera" or "Webcam" for clarity
+    lower_name = cleaned_name.lower()
+    if not any(term in lower_name for term in ['camera', 'webcam', 'cam']):
+        cleaned_name += ' Camera'
+    
+    return cleaned_name
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -1899,16 +2121,21 @@ async def video_stream_status():
 def list_video_devices():
     """Probe and return a list of working cameras with friendly names when possible."""
     try:
-        devices = detect_available_cameras(5)
-        names = get_windows_camera_names()
+        devices = detect_available_cameras(10)
+        friendly_names = get_camera_friendly_names()
         
         # Map friendly names to working devices, preserving backend info
         result = []
-        name_idx = 0
         for dev in devices:
             if dev['works']:
-                name = names[name_idx] if name_idx < len(names) else f"Camera {dev['index']} ({dev['backend']})"
-                name_idx += 1
+                # Try to get friendly name, fallback to descriptive name
+                name = friendly_names.get(dev['index'])
+                if not name:
+                    # Generate a fallback name based on device info
+                    if dev['backend'] == 'DirectShow':
+                        name = f"Camera {dev['index']} (DirectShow - {dev['width']}x{dev['height']})"
+                    else:
+                        name = f"Camera {dev['index']} ({dev['backend']} - {dev['width']}x{dev['height']})"
             else:
                 name = f"Camera {dev['index']} (Not working)"
             
@@ -1916,11 +2143,87 @@ def list_video_devices():
                 "index": dev['index'],
                 "name": name,
                 "backend": dev['backend'],
-                "works": dev['works']
+                "backend_id": dev.get('backend_id'),
+                "works": dev['works'],
+                "width": dev.get('width', 0),
+                "height": dev.get('height', 0),
+                "fps": dev.get('fps', 0)
             })
-        return {"success": True, "devices": result}
+        
+        # Sort by index to ensure consistent ordering
+        result.sort(key=lambda x: x['index'])
+        
+        return {"success": True, "devices": result, "current_device": camera_manager.device}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Device probe error: {str(e)}")
+
+@app.post("/video/set_device")
+async def set_camera_device(request: dict):
+    """Set the active camera device"""
+    try:
+        device_index = request.get("device_index")
+        backend_id = request.get("backend_id")
+        
+        if device_index is None:
+            raise HTTPException(status_code=400, detail="device_index is required")
+        
+        # Validate device exists and works
+        devices = detect_available_cameras(10)
+        target_device = None
+        for dev in devices:
+            if dev['index'] == device_index and dev['works']:
+                target_device = dev
+                break
+        
+        if not target_device:
+            raise HTTPException(status_code=400, detail=f"Camera device {device_index} not found or not working")
+        
+        # Stop current camera if running
+        if camera_manager.running:
+            camera_manager.stop()
+            # Small delay to ensure clean shutdown
+            await asyncio.sleep(0.1)
+        
+        # Start with new device
+        success = camera_manager.start(device_index)
+        if not success:
+            raise HTTPException(status_code=500, detail=f"Failed to start camera device {device_index}")
+        
+        return {
+            "success": True, 
+            "message": f"Camera device set to {device_index}",
+            "device": target_device
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to set camera device: {str(e)}")
+
+@app.get("/video/current_device")
+def get_current_camera_device():
+    """Get information about the currently active camera device"""
+    try:
+        if not camera_manager.running:
+            return {"success": True, "device": None, "status": "stopped"}
+        
+        # Get device info
+        devices = detect_available_cameras(10)
+        current_device = None
+        for dev in devices:
+            if dev['index'] == camera_manager.device and dev['works']:
+                current_device = dev
+                break
+        
+        return {
+            "success": True,
+            "device": current_device,
+            "status": "running" if camera_manager.running else "stopped",
+            "device_index": camera_manager.device
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get current device info: {str(e)}")
 
 # Add endpoint for single image processing that matches your run.py
 @app.post("/process/single")
