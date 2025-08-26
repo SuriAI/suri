@@ -43,6 +43,8 @@ if sys.platform.startswith('win'):
     os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
     # Disable MSMF to avoid latency/warnings and force DirectShow path
     os.environ.setdefault('OPENCV_VIDEOIO_MSMF_ENABLE', '0')
+    # Add better error handling for Windows camera issues
+    os.environ.setdefault('OPENCV_LOG_LEVEL', 'WARNING')
 
 # Add parent-of-src to path to import experiments
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
