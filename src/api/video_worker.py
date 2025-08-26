@@ -229,10 +229,8 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
     db_check_interval = 2.0  # Check for database updates every 2 seconds
     
     # Performance optimization variables
-    last_recognition_time = 0
-    recognition_interval = 0.2  # Run recognition every 200ms (5 FPS recognition)
     last_frame_time = time.time()
-    target_fps = 25  # Target streaming FPS
+    target_fps = 25  # Target streaming FPS for smooth display
     frame_interval = 1.0 / target_fps
     
     while True:
@@ -317,13 +315,10 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
         # In fast preview mode, skip heavy processing for first few seconds
         skip_recognition = opts.fast_preview and frame_count < 90  # ~3 seconds at 30fps
         
-        # Intelligent recognition: only run every recognition_interval to maintain performance
-        should_run_recognition = (current_time - last_recognition_time) >= recognition_interval
-        
-        if opts.annotate and not skip_recognition and should_run_recognition:
-            last_recognition_time = current_time
+        # Run continuous recognition on every frame for maximum detection accuracy
+        if opts.annotate and not skip_recognition:
             try:
-                # Preprocess for YOLO (same as prototype)
+                # Optimized preprocessing for continuous recognition
                 input_blob, scale, dx, dy = preprocess_yolo(frame)
                 
                 # Run YOLO inference (same as prototype)
@@ -334,16 +329,17 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
 
                 scene_crowding = len(faces)
                 
-                # Process each detected face (same as prototype)
+                # Process each detected face with optimized checks
                 for box in faces:
                     x1, y1, x2, y2, conf = box
                     
-                    if x2 <= x1 or y2 <= y1:
+                    # Quick bounds checking for efficiency
+                    if x2 <= x1 or y2 <= y1 or x1 < 0 or y1 < 0 or x2 > w or y2 > h:
                         continue
 
                     face_img = orig[y1:y2, x1:x2]
-                    if face_img.size == 0:
-                        continue
+                    if face_img.size == 0 or face_img.shape[0] < 20 or face_img.shape[1] < 20:
+                        continue  # Skip very small faces for efficiency
                     
                     # Calculate quality score (same as prototype)
                     quality = calculate_quality_score(face_img, conf)
@@ -389,11 +385,11 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
                     cv2.putText(orig, f"Q:{quality:.2f} T:{threshold_used:.2f}", (x1, y1 - 5), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
                 
-                # Enhanced UI overlay (same as prototype)
-                cv2.putText(orig, "Mode: STREAMING", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                # Enhanced UI overlay with continuous recognition indicator
+                cv2.putText(orig, "Mode: CONTINUOUS RECOGNITION", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 
-                # Performance metrics (same as prototype)
-                fps_text = f"Faces: {len(faces)} | Crowding: {scene_crowding}"
+                # Performance metrics showing continuous recognition
+                fps_text = f"Faces: {len(faces)} | Every Frame Analyzed"
                 cv2.putText(orig, fps_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                 
                 # Show today's attendance count (same as prototype)
@@ -413,12 +409,6 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
             # Signal when switching to full recognition mode
             if frame_count == 90:
                 print(f"EVT {json.dumps({'type': 'video.recognition_ready'})}", file=sys.stderr)
-        elif not should_run_recognition and opts.annotate:
-            # Frame skipped for performance - show smooth preview with indicator
-            cv2.putText(orig, "Mode: REAL-TIME PREVIEW", (10, 30), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-            cv2.putText(orig, f"Recognition: {1/recognition_interval:.0f} FPS", (10, 60), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         else:
             # Basic streaming mode without annotation
             cv2.putText(orig, "Mode: PREVIEW ONLY", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
@@ -532,12 +522,14 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
                 scene_crowding = len(faces)
                 for box in faces:
                     x1, y1, x2, y2, conf = box
-                    if x2 <= x1 or y2 <= y1:
+                    
+                    # Quick bounds checking for efficiency
+                    if x2 <= x1 or y2 <= y1 or x1 < 0 or y1 < 0 or x2 > w or y2 > h:
                         continue
 
                     face_img = orig[y1:y2, x1:x2]
-                    if face_img.size == 0:
-                        continue
+                    if face_img.size == 0 or face_img.shape[0] < 20 or face_img.shape[1] < 20:
+                        continue  # Skip very small faces for efficiency
                     
                     quality = calculate_quality_score(face_img, conf)
                     identified_name, similarity, should_log, info = attendance.identify_face_enhanced(
@@ -563,10 +555,10 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
                     cv2.putText(orig, label, (x1, y1 - 10), 
                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                 
-                # Status overlay for full recognition mode
-                cv2.putText(orig, "Mode: FULL RECOGNITION", (10, 30), 
+                # Status overlay for continuous recognition mode
+                cv2.putText(orig, "Mode: CONTINUOUS RECOGNITION", (10, 30), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-                cv2.putText(orig, f"Faces: {len(faces)}", (10, 60), 
+                cv2.putText(orig, f"Faces: {len(faces)} | Every Frame Analyzed", (10, 60), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
                 
             except Exception as e:
