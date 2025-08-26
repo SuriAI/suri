@@ -93,6 +93,61 @@ class ControlState:
             return d
 
 
+def open_camera_robust(device: int) -> cv2.VideoCapture:
+    """
+    Open camera with robust fallback methods to avoid obsensor/UVC conflicts.
+    Uses DirectShow on Windows to prevent obsensor_uvc_stream_channel errors.
+    """
+    cap = None
+    
+    try:
+        # Method 1: Try DirectShow on Windows (most reliable)
+        if os.name == 'nt':
+            print(f"LOG Trying camera {device} with DirectShow backend", file=sys.stderr)
+            cap = cv2.VideoCapture(device, cv2.CAP_DSHOW)
+            if cap and cap.isOpened():
+                # Test if we can actually read a frame
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    print(f"LOG Camera {device} opened successfully with DirectShow", file=sys.stderr)
+                    return cap
+                else:
+                    print(f"LOG Camera {device} opened but no frame with DirectShow", file=sys.stderr)
+                    cap.release()
+                    cap = None
+        
+        # Method 2: Try default backend as fallback
+        if cap is None:
+            print(f"LOG Trying camera {device} with default backend", file=sys.stderr)
+            cap = cv2.VideoCapture(device)
+            if cap and cap.isOpened():
+                # Test if we can actually read a frame
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    print(f"LOG Camera {device} opened successfully with default backend", file=sys.stderr)
+                    return cap
+                else:
+                    print(f"LOG Camera {device} opened but no frame with default backend", file=sys.stderr)
+                    cap.release()
+                    cap = None
+        
+        # Method 3: If all else fails, return a non-working capture for error handling
+        if cap is None:
+            print(f"LOG All methods failed for camera {device}, returning empty capture", file=sys.stderr)
+            return cv2.VideoCapture()
+        
+    except Exception as e:
+        print(f"LOG Camera {device} opening failed with error: {e}", file=sys.stderr)
+        if cap:
+            try:
+                cap.release()
+            except Exception:
+                pass
+        return cv2.VideoCapture()
+    
+    return cap
+
+
 def control_loop(ctrl: ControlState):
     """Read JSON control messages from stdin (blocking in a thread)."""
     while True:
@@ -144,7 +199,8 @@ def write_frame(jpeg: bytes):
 
 def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
     """Adapted from prototype's live_camera_recognition for streaming"""
-    cap = cv2.VideoCapture(opts.device)
+    # Use robust camera opening with DirectShow on Windows to avoid obsensor conflicts
+    cap = open_camera_robust(opts.device)
     if not cap.isOpened():
         print(f"EVT {json.dumps({'type': 'video.error', 'message': f'Could not open camera {opts.device}'})}", file=sys.stderr)
         return 2
@@ -180,7 +236,7 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
             try:
                 if cap is not None:
                     cap.release()
-                cap = cv2.VideoCapture(nd)
+                cap = open_camera_robust(nd)
                 if not cap or not cap.isOpened():
                     print(f"EVT {json.dumps({'type': 'video.error', 'message': f'Failed to switch to camera {nd}'})}", file=sys.stderr)
                 else:
@@ -203,7 +259,7 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
                         cap.release()
                 except Exception:
                     pass
-                cap = cv2.VideoCapture(opts.device)
+                cap = open_camera_robust(opts.device)
                 consecutive_fail = 0
             else:
                 time.sleep(0.005)
@@ -361,7 +417,8 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
 
 def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: ControlState):
     """Fast preview mode - start camera immediately, add recognition when models load"""
-    cap = cv2.VideoCapture(opts.device)
+    # Use robust camera opening with DirectShow on Windows to avoid obsensor conflicts
+    cap = open_camera_robust(opts.device)
     if not cap.isOpened():
         print(f"EVT {json.dumps({'type': 'video.error', 'message': f'Could not open camera {opts.device}'})}", file=sys.stderr)
         return 2
@@ -403,7 +460,7 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
             try:
                 if cap is not None:
                     cap.release()
-                cap = cv2.VideoCapture(nd)
+                cap = open_camera_robust(nd)
                 if not cap or not cap.isOpened():
                     print(f"EVT {json.dumps({'type': 'video.error', 'message': f'Failed to switch to camera {nd}'})}", file=sys.stderr)
                 else:
