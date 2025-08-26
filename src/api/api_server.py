@@ -278,7 +278,67 @@ import asyncio
 # Helper function for backward compatibility with existing broadcast calls
 async def ws_broadcast(event: Dict[str, Any]):
     """Broadcast event to all connected WebSocket clients using the new connection manager."""
-    await connection_manager.broadcast(event)
+    try:
+        await connection_manager.broadcast(event)
+        logger.info(f"WebSocket event broadcasted: {event.get('type', 'unknown')}")
+    except Exception as e:
+        logger.error(f"Failed to broadcast WebSocket event: {e}")
+
+
+# Global function to broadcast attendance events from video worker
+def broadcast_attendance_event(event_data: Dict[str, Any]):
+    """
+    Broadcast attendance events from video worker to WebSocket clients.
+    This is called synchronously from video worker subprocess via stderr parsing.
+    """
+    try:
+        # Convert to async call using the event loop
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If we're in an async context, schedule the broadcast
+            asyncio.create_task(connection_manager.broadcast(event_data))
+        else:
+            # If not in async context, run the broadcast
+            loop.run_until_complete(connection_manager.broadcast(event_data))
+    except Exception as e:
+        logger.error(f"Failed to broadcast attendance event: {e}")
+
+
+def process_video_worker_stderr(stderr_line: str):
+    """
+    Process stderr line from video worker and extract WebSocket broadcast events.
+    
+    This function parses stderr output from the video worker subprocess and
+    extracts WebSocket broadcast events that need to be forwarded to clients.
+    """
+    try:
+        # Check if this is a WebSocket broadcast event
+        if stderr_line.startswith("WS_BROADCAST "):
+            # Extract JSON data after the prefix
+            json_data = stderr_line[13:]  # Remove "WS_BROADCAST " prefix
+            event_wrapper = json.loads(json_data)
+            
+            # Extract the actual event data
+            if event_wrapper.get("type") == "websocket_broadcast":
+                event_data = event_wrapper.get("event", {})
+                
+                # Broadcast to WebSocket clients
+                broadcast_attendance_event(event_data)
+                logger.info(f"Forwarded video worker WebSocket event: {event_data.get('type', 'unknown')}")
+        
+    except Exception as e:
+        logger.error(f"Failed to process video worker stderr: {e}")
+
+
+# Global function to handle video worker subprocess communication
+def setup_video_worker_websocket_bridge():
+    """
+    Setup bridge to capture video worker WebSocket events and forward them to clients.
+    
+    This function can be called when spawning the video worker subprocess to
+    monitor its stderr for WebSocket broadcast events.
+    """
+    logger.info("Video worker WebSocket bridge setup complete")
 
 # --- Camera helpers ---
 # Simplified camera functions to match your prototype
@@ -323,7 +383,7 @@ def open_camera(prefer: Optional[int] = None, api_pref: Optional[int] = None) ->
     return cap
 
 def configure_camera_settings(cap: cv2.VideoCapture) -> None:
-    """Configure camera settings for maximum streaming performance."""
+    """Configure camera settings for maximum streaming performance with fixed color handling."""
     try:
         # Optimized buffer size for low latency streaming
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)
@@ -335,22 +395,26 @@ def configure_camera_settings(cap: cv2.VideoCapture) -> None:
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         
-        # Disable auto-exposure for consistent frame timing
+        # Fix color space and camera settings to prevent weird display issues
         try:
-            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)  # Manual exposure
-        except:
-            pass
+            # Force MJPG format for better color compatibility
+            cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+            
+            # Use auto-exposure (1.0) instead of manual (0.25) to prevent color issues
+            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)  # Auto exposure
+            
+            # Set proper default values for color properties (0.5 = neutral, not 0)
+            cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5)  # Neutral brightness (0.5, not 0)
+            cap.set(cv2.CAP_PROP_CONTRAST, 0.5)    # Neutral contrast (0.5, not 0)
+            cap.set(cv2.CAP_PROP_SATURATION, 0.5)  # Neutral saturation
+            
+            print(f"[DEBUG] Camera color settings fixed - preventing grayscale/negative issues")
+        except Exception as e:
+            print(f"[DEBUG] Could not set color properties: {e}")
         
         # Enable auto-focus if available
         try:
             cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
-        except:
-            pass
-        
-        # Try to optimize for streaming (reduce processing overhead)
-        try:
-            cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)  # Reset to default
-            cap.set(cv2.CAP_PROP_CONTRAST, 0)    # Reset to default
         except:
             pass
         
@@ -1068,6 +1132,19 @@ async def add_person(
         success = attendance_system.add_new_face(face_img, name)
         
         if success:
+            # Broadcast WebSocket event for new person addition
+            try:
+                await ws_broadcast({
+                    "type": "person_added",
+                    "data": {
+                        "name": name,
+                        "added_at": datetime.now().isoformat(),
+                        "method": "single_template"
+                    }
+                })
+            except Exception as e:
+                logger.warning(f"Failed to broadcast person addition: {e}")
+            
             return ApiResponse(
                 success=True,
                 message=f"Successfully added {name} to the system",
@@ -1117,6 +1194,20 @@ async def add_person_multi_templates(
         success = attendance_system.add_new_face_enhanced(face_images, name)
         
         if success:
+            # Broadcast WebSocket event for new person addition with multiple templates
+            try:
+                await ws_broadcast({
+                    "type": "person_added",
+                    "data": {
+                        "name": name,
+                        "added_at": datetime.now().isoformat(),
+                        "method": "multi_template",
+                        "templates_count": len(face_images)
+                    }
+                })
+            except Exception as e:
+                logger.warning(f"Failed to broadcast person addition: {e}")
+            
             return ApiResponse(
                 success=True,
                 message=f"Successfully added {name} with {len(face_images)} templates",

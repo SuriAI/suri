@@ -33,6 +33,7 @@ import json
 import time
 import struct
 import threading
+import asyncio
 from dataclasses import dataclass
 from typing import Optional
 
@@ -198,6 +199,17 @@ def open_camera_robust(device: int) -> cv2.VideoCapture:
                 # Test if we can actually read a frame
                 ret, frame = cap.read()
                 if ret and frame is not None:
+                    # Force reset camera properties to prevent color issues
+                    try:
+                        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+                        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+                        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5)
+                        cap.set(cv2.CAP_PROP_CONTRAST, 0.5)
+                        cap.set(cv2.CAP_PROP_SATURATION, 0.5)
+                        print(f"LOG Camera {device} color properties reset", file=sys.stderr)
+                    except Exception as e:
+                        print(f"LOG Could not reset camera properties: {e}", file=sys.stderr)
+                    
                     print(f"LOG Camera {device} opened successfully with DirectShow", file=sys.stderr)
                     return cap
                 else:
@@ -213,6 +225,16 @@ def open_camera_robust(device: int) -> cv2.VideoCapture:
                 # Test if we can actually read a frame
                 ret, frame = cap.read()
                 if ret and frame is not None:
+                    # Force reset camera properties to prevent color issues
+                    try:
+                        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+                        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5)
+                        cap.set(cv2.CAP_PROP_CONTRAST, 0.5)
+                        cap.set(cv2.CAP_PROP_SATURATION, 0.5)
+                        print(f"LOG Camera {device} color properties reset (default backend)", file=sys.stderr)
+                    except Exception as e:
+                        print(f"LOG Could not reset camera properties: {e}", file=sys.stderr)
+                    
                     print(f"LOG Camera {device} opened successfully with default backend", file=sys.stderr)
                     return cap
                 else:
@@ -286,6 +308,52 @@ def write_frame(jpeg: bytes):
         raise
 
 
+def broadcast_websocket_event(event_data):
+    """
+    Broadcast WebSocket event to all connected clients.
+    This function sends events via stderr that the main process can capture and forward.
+    """
+    try:
+        # Send WebSocket events via stderr with a special prefix
+        ws_event = {
+            "type": "websocket_broadcast",
+            "event": event_data
+        }
+        print(f"WS_BROADCAST {json.dumps(ws_event)}", file=sys.stderr)
+    except Exception as e:
+        print(f"LOG WebSocket broadcast error: {e}", file=sys.stderr)
+
+
+def notify_attendance_logged(person_name, confidence, attendance_record):
+    """Notify WebSocket clients about new attendance record."""
+    try:
+        broadcast_websocket_event({
+            "type": "attendance_logged",
+            "data": {
+                "person_name": person_name,
+                "confidence": float(confidence),
+                "record": attendance_record,
+                "timestamp": time.time()
+            }
+        })
+    except Exception as e:
+        print(f"LOG Attendance notification error: {e}", file=sys.stderr)
+
+
+def notify_database_updated(stats):
+    """Notify WebSocket clients about database updates."""
+    try:
+        broadcast_websocket_event({
+            "type": "database_updated", 
+            "data": {
+                "stats": stats,
+                "timestamp": time.time()
+            }
+        })
+    except Exception as e:
+        print(f"LOG Database update notification error: {e}", file=sys.stderr)
+
+
 def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
     """Optimized streaming with intelligent frame processing"""
     # Use robust camera opening with DirectShow on Windows to avoid obsensor conflicts
@@ -300,11 +368,22 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    # Try to disable auto-exposure for consistent performance
+    # Fix color space and camera settings to prevent weird display issues
     try:
-        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)  # Manual exposure
-    except:
-        pass
+        # Force BGR color format (default for OpenCV)
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        
+        # Reset auto-exposure to default (value 1 = auto, 0.25 can cause issues)
+        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)  # Enable auto exposure
+        
+        # Reset other properties that might cause color issues
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5)  # Neutral brightness
+        cap.set(cv2.CAP_PROP_CONTRAST, 0.5)    # Neutral contrast
+        cap.set(cv2.CAP_PROP_SATURATION, 0.5)  # Neutral saturation
+        
+        print(f"LOG Camera properties reset to prevent color issues", file=sys.stderr)
+    except Exception as e:
+        print(f"LOG Could not reset camera properties: {e}", file=sys.stderr)
 
     print(f"EVT {json.dumps({'type': 'video.started', 'device': opts.device, 'fast_preview': opts.fast_preview})}", file=sys.stderr)
     
@@ -371,6 +450,29 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
 
         consecutive_fail = 0
         
+        # Enhanced frame validation and color correction
+        if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 3:
+            try:
+                # Check if frame has unusual color distribution (indicating wrong color space)
+                mean_values = cv2.mean(frame)[:3]  # Get mean of BGR channels
+                
+                # Check for common color space issues
+                if abs(mean_values[0] - mean_values[1]) < 5 and abs(mean_values[1] - mean_values[2]) < 5:
+                    # All channels very similar - might be grayscale in BGR format
+                    if mean_values[0] < 15 or mean_values[0] > 240:
+                        # Very dark or very bright uniform image - likely corrupted
+                        continue
+                
+                # Check for inverted/negative colors (common DirectShow issue)
+                if mean_values[0] > 200 and mean_values[1] > 200 and mean_values[2] > 200:
+                    # Very bright image might be inverted - skip this frame
+                    print(f"LOG Detected potential color inversion, skipping frame", file=sys.stderr)
+                    continue
+                    
+            except Exception as e:
+                print(f"LOG Frame color validation error: {e}", file=sys.stderr)
+                continue
+        
         # Frame rate limiting for smooth streaming
         current_time = time.time()
         time_since_last_frame = current_time - last_frame_time
@@ -394,6 +496,15 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
                 
                 if new_face_count != old_face_count or new_template_count != old_template_count:
                     print(f"LOG Database reloaded: {new_face_count} faces, {new_template_count} templates", file=sys.stderr)
+                    
+                    # Notify WebSocket clients about database changes
+                    notify_database_updated({
+                        "old_face_count": old_face_count,
+                        "new_face_count": new_face_count,
+                        "old_template_count": old_template_count,
+                        "new_template_count": new_template_count,
+                        "people_count": len(app.multi_templates)
+                    })
                 
                 last_db_check = current_time
             except Exception as e:
@@ -447,8 +558,17 @@ def streaming_camera_recognition(app, opts: Options, ctrl: ControlState):
                     
                     if can_log:
                         # Log attendance with enhanced info (with cooldown protection)
-                        app.log_attendance(identified_name, similarity, info)
-                        print(f"LOG Attendance logged: {identified_name} (confidence: {similarity:.3f})", file=sys.stderr)
+                        logged_successfully = app.log_attendance(identified_name, similarity, info)
+                        if logged_successfully:
+                            print(f"LOG Attendance logged: {identified_name} (confidence: {similarity:.3f})", file=sys.stderr)
+                            
+                            # Get the latest attendance record for WebSocket notification
+                            try:
+                                latest_record = app.attendance_log[-1] if app.attendance_log else None
+                                if latest_record:
+                                    notify_attendance_logged(identified_name, similarity, latest_record)
+                            except Exception as e:
+                                print(f"LOG Failed to get latest attendance record: {e}", file=sys.stderr)
                     
                     # Enhanced visualization with attendance status
                     attendance_logged = can_log
@@ -555,11 +675,22 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    # Try to disable auto-exposure for consistent performance
+    # Fix color space and camera settings to prevent weird display issues
     try:
-        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-    except:
-        pass
+        # Force BGR color format (default for OpenCV)
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        
+        # Reset auto-exposure to default (value 1 = auto, 0.25 can cause issues)
+        cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)  # Enable auto exposure
+        
+        # Reset other properties that might cause color issues
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5)  # Neutral brightness
+        cap.set(cv2.CAP_PROP_CONTRAST, 0.5)    # Neutral contrast
+        cap.set(cv2.CAP_PROP_SATURATION, 0.5)  # Neutral saturation
+        
+        print(f"LOG Camera properties reset to prevent color issues", file=sys.stderr)
+    except Exception as e:
+        print(f"LOG Could not reset camera properties: {e}", file=sys.stderr)
 
     print(f"EVT {json.dumps({'type': 'video.started', 'device': opts.device, 'fast_preview': True})}", file=sys.stderr)
     print(f"EVT {json.dumps({'type': 'video.fast_preview_ready'})}", file=sys.stderr)
@@ -614,6 +745,29 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
             time.sleep(0.005)
             continue
         
+        # Enhanced frame validation and color correction
+        if frame is not None and len(frame.shape) == 3 and frame.shape[2] == 3:
+            try:
+                # Check if frame has unusual color distribution (indicating wrong color space)
+                mean_values = cv2.mean(frame)[:3]  # Get mean of BGR channels
+                
+                # Check for common color space issues
+                if abs(mean_values[0] - mean_values[1]) < 5 and abs(mean_values[1] - mean_values[2]) < 5:
+                    # All channels very similar - might be grayscale in BGR format
+                    if mean_values[0] < 15 or mean_values[0] > 240:
+                        # Very dark or very bright uniform image - likely corrupted
+                        continue
+                
+                # Check for inverted/negative colors (common DirectShow issue)
+                if mean_values[0] > 200 and mean_values[1] > 200 and mean_values[2] > 200:
+                    # Very bright image might be inverted - skip this frame
+                    print(f"LOG Detected potential color inversion, skipping frame", file=sys.stderr)
+                    continue
+                    
+            except Exception as e:
+                print(f"LOG Frame color validation error: {e}", file=sys.stderr)
+                continue
+        
         orig = frame.copy()
         h, w = frame.shape[:2]
         frame_count += 1
@@ -649,8 +803,17 @@ def streaming_camera_recognition_fast(model_future, opts: Options, ctrl: Control
                     can_log = identified_name and should_log and attendance_cooldown.can_log_attendance(identified_name)
                     
                     if can_log:
-                        attendance.log_attendance(identified_name, similarity, info)
-                        print(f"LOG Attendance logged: {identified_name} (confidence: {similarity:.3f})", file=sys.stderr)
+                        logged_successfully = attendance.log_attendance(identified_name, similarity, info)
+                        if logged_successfully:
+                            print(f"LOG Attendance logged: {identified_name} (confidence: {similarity:.3f})", file=sys.stderr)
+                            
+                            # Get the latest attendance record for WebSocket notification
+                            try:
+                                latest_record = attendance.attendance_log[-1] if attendance.attendance_log else None
+                                if latest_record:
+                                    notify_attendance_logged(identified_name, similarity, latest_record)
+                            except Exception as e:
+                                print(f"LOG Failed to get latest attendance record: {e}", file=sys.stderr)
                     
                     # Enhanced visualization with attendance status
                     attendance_logged = can_log

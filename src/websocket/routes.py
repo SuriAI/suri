@@ -84,6 +84,10 @@ async def handle_websocket_message(websocket: WebSocket, message_data: Dict[str,
             return await handle_get_system_status(request_id, payload)
         elif action == "get_connection_info":
             return await handle_get_connection_info(request_id, payload)
+        elif action == "get_today_attendance":
+            return await handle_get_today_attendance(request_id, payload)
+        elif action == "subscribe_attendance_updates":
+            return await handle_subscribe_attendance_updates(request_id, payload)
         else:
             return create_error_response(
                 request_id, 
@@ -234,6 +238,71 @@ async def handle_get_connection_info(request_id: str, payload: Dict[str, Any]) -
     """Handle get_connection_info action - return WebSocket connection information."""
     connection_info = connection_manager.get_connection_info()
     return create_success_response(request_id, "get_connection_info", connection_info)
+
+
+async def handle_get_today_attendance(request_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle get_today_attendance action - return today's attendance records."""
+    if not attendance_system:
+        return create_error_response(
+            request_id, 
+            "get_today_attendance", 
+            "Attendance system not initialized", 
+            "SYSTEM_NOT_READY"
+        )
+    
+    try:
+        # Get today's attendance records
+        today_records = attendance_system.get_today_attendance()
+        
+        # Get additional stats
+        unique_people = set(record['name'] for record in today_records)
+        
+        attendance_data = {
+            "date": datetime.now().strftime('%Y-%m-%d'),
+            "total_records": len(today_records),
+            "unique_people": len(unique_people),
+            "people_present": list(unique_people),
+            "records": today_records,
+            "last_updated": datetime.now().isoformat()
+        }
+        
+        return create_success_response(request_id, "get_today_attendance", attendance_data)
+        
+    except Exception as e:
+        logger.error(f"Get today attendance failed: {e}")
+        return create_error_response(
+            request_id, 
+            "get_today_attendance", 
+            f"Failed to get today's attendance: {str(e)}", 
+            "ATTENDANCE_ERROR"
+        )
+
+
+async def handle_subscribe_attendance_updates(request_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Handle subscription to real-time attendance updates."""
+    try:
+        # This action doesn't need any special handling beyond the response
+        # The connection manager will handle broadcasting to all connected clients
+        subscription_info = {
+            "message": "Successfully subscribed to real-time attendance updates",
+            "events": [
+                "attendance_logged",
+                "database_updated",
+                "person_added"
+            ],
+            "subscribed_at": datetime.now().isoformat()
+        }
+        
+        return create_success_response(request_id, "subscribe_attendance_updates", subscription_info)
+        
+    except Exception as e:
+        logger.error(f"Subscribe to attendance updates failed: {e}")
+        return create_error_response(
+            request_id, 
+            "subscribe_attendance_updates", 
+            f"Subscription failed: {str(e)}", 
+            "SUBSCRIPTION_ERROR"
+        )
 
 
 async def websocket_endpoint(websocket: WebSocket):
