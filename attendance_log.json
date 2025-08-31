@@ -1,10 +1,30 @@
 [
   {
-    "name": "gago",
-    "timestamp": "2025-08-31T15:57:18.116262",
-    "confidence": 0.877163736459491,
+    "name": "RAIVEN",
+    "timestamp": "2025-08-31T16:55:54.122931",
+    "confidence": 0.9694394103897163,
     "date": "2025-08-31",
-    "time": "15:57:18",
+    "time": "16:55:54",
+    "recognition_info": {
+      "method": "enhanced_templates",
+      "conditions": [],
+      "threshold_used": 0.75,
+      "quality": 0.6383585819735427,
+      "template_info": {
+        "best_template_idx": 0,
+        "num_templates": 1,
+        "individual_similarities": [
+          0.9694394103897163
+        ]
+      }
+    }
+  },
+  {
+    "name": "RAIVEN",
+    "timestamp": "2025-08-31T16:56:29.731473",
+    "confidence": 0.8363609695538291,
+    "date": "2025-08-31",
+    "time": "16:56:29",
     "recognition_info": {
       "method": "enhanced_templates",
       "conditions": [
@@ -12,12 +32,35 @@
         "motion_blur"
       ],
       "threshold_used": 0.805,
-      "quality": 0.37989093588964934,
+      "quality": 0.5403478568157952,
       "template_info": {
         "best_template_idx": 0,
         "num_templates": 1,
         "individual_similarities": [
-          0.877163736459491
+          0.8363609695538291
+        ]
+      }
+    }
+  },
+  {
+    "name": "RAIVEN",
+    "timestamp": "2025-08-31T16:57:03.379390",
+    "confidence": 0.9221794072461679,
+    "date": "2025-08-31",
+    "time": "16:57:03",
+    "recognition_info": {
+      "method": "enhanced_templates",
+      "conditions": [
+        "low_light",
+        "motion_blur"
+      ],
+      "threshold_used": 0.805,
+      "quality": 0.5057870549896277,
+      "template_info": {
+        "best_template_idx": 0,
+        "num_templates": 1,
+        "individual_similarities": [
+          0.9221794072461679
         ]
       }
     }
