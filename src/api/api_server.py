@@ -1108,8 +1108,48 @@ async def add_person(
                 error="DUPLICATE_PERSON"
             )
         
-        # Process image
-        face_img = await process_uploaded_file(file)
+        # Process image and detect face
+        full_image = await process_uploaded_file(file)
+        
+        # Detect face in the uploaded image
+        h, w = full_image.shape[:2]
+        input_blob, scale, dx, dy = preprocess_yolo(full_image)
+        preds = yolo_sess.run(None, {'images': input_blob})[0]
+        faces = non_max_suppression(preds, conf_thresh, iou_thresh, 
+                                   img_shape=(h, w), input_shape=(input_size, input_size), 
+                                   pad=(dx, dy), scale=scale)
+        
+        if not faces:
+            return ApiResponse(
+                success=False,
+                message="No face detected in the uploaded image",
+                error="NO_FACE_DETECTED"
+            )
+        
+        # Take the largest face (most prominent)
+        largest_face = max(faces, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]))
+        x1, y1, x2, y2, conf = largest_face
+        
+        # Add padding around the face to include more context
+        face_width = x2 - x1
+        face_height = y2 - y1
+        padding_x = int(face_width * 0.2)  # 20% padding horizontally
+        padding_y = int(face_height * 0.3)  # 30% padding vertically (more for top/bottom)
+        
+        # Apply padding with bounds checking
+        x1_padded = max(0, x1 - padding_x)
+        y1_padded = max(0, y1 - padding_y)
+        x2_padded = min(w, x2 + padding_x)
+        y2_padded = min(h, y2 + padding_y)
+        
+        # Crop the face region with padding
+        face_img = full_image[y1_padded:y2_padded, x1_padded:x2_padded]
+        if face_img.size == 0:
+            return ApiResponse(
+                success=False,
+                message="Failed to crop face from image",
+                error="FACE_CROP_FAILED"
+            )
         
         # Add to system
         success = attendance_system.add_new_face(face_img, name)
@@ -1167,10 +1207,51 @@ async def add_person_multi_templates(
                 error="DUPLICATE_PERSON"
             )
         
-        # Process all images
+        # Process all images and detect faces
         face_images = []
-        for file in files:
-            face_img = await process_uploaded_file(file)
+        for i, file in enumerate(files):
+            full_image = await process_uploaded_file(file)
+            
+            # Detect face in the uploaded image
+            h, w = full_image.shape[:2]
+            input_blob, scale, dx, dy = preprocess_yolo(full_image)
+            preds = yolo_sess.run(None, {'images': input_blob})[0]
+            faces = non_max_suppression(preds, conf_thresh, iou_thresh, 
+                                       img_shape=(h, w), input_shape=(input_size, input_size), 
+                                       pad=(dx, dy), scale=scale)
+            
+            if not faces:
+                return ApiResponse(
+                    success=False,
+                    message=f"No face detected in image {i+1}",
+                    error="NO_FACE_DETECTED"
+                )
+            
+            # Take the largest face (most prominent)
+            largest_face = max(faces, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]))
+            x1, y1, x2, y2, conf = largest_face
+            
+            # Add padding around the face to include more context
+            face_width = x2 - x1
+            face_height = y2 - y1
+            padding_x = int(face_width * 0.2)  # 20% padding horizontally
+            padding_y = int(face_height * 0.3)  # 30% padding vertically (more for top/bottom)
+            
+            # Apply padding with bounds checking
+            x1_padded = max(0, x1 - padding_x)
+            y1_padded = max(0, y1 - padding_y)
+            x2_padded = min(w, x2 + padding_x)
+            y2_padded = min(h, y2 + padding_y)
+            
+            # Crop the face region with padding
+            face_img = full_image[y1_padded:y2_padded, x1_padded:x2_padded]
+            if face_img.size == 0:
+                return ApiResponse(
+                    success=False,
+                    message=f"Failed to crop face from image {i+1}",
+                    error="FACE_CROP_FAILED"
+                )
+            
             face_images.append(face_img)
         
         # Add to system with enhanced templates
@@ -2182,6 +2263,45 @@ async def video_frame(device: Optional[int] = None):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Frame error: {str(e)}")
+
+@app.get("/video/frame/clean")
+async def video_frame_clean(device: Optional[int] = None):
+    """Return a single clean JPEG frame without annotations for face addition"""
+    try:
+        # Try to start the camera if not already running
+        if not camera_manager.ensure_started(device):
+            # If camera start failed, try to provide more helpful error
+            raise HTTPException(
+                status_code=503, 
+                detail="Camera not available. Please ensure camera is connected and not in use by another application."
+            )
+
+        # Wait a bit for the camera to initialize
+        await asyncio.sleep(0.1)
+        
+        frame = camera_manager.get_frame(timeout=1.0)  # Increased timeout
+        if frame is None:
+            raise HTTPException(
+                status_code=500, 
+                detail="Failed to capture frame. Camera may still be initializing."
+            )
+
+        # Return the clean frame without any annotations
+        _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+
+        return StreamingResponse(
+            iter([buffer.tobytes()]),
+            media_type="image/jpeg",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Clean frame error: {str(e)}")
 
 @app.post("/video/stop")
 async def stop_video_stream():

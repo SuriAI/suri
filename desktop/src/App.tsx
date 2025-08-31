@@ -4,6 +4,7 @@ import LiveCameraRecognition from './components/LiveCameraRecognition.tsx'
 import SingleImageRecognition from './components/SingleImageRecognition.tsx'
 import BatchImageProcessing from './components/BatchImageProcessing.tsx'
 import SystemManagement from './components/SystemManagement.tsx'
+import AddPerson from './components/AddPerson.tsx'
 import AppDropdown from './components/AppDropdown.tsx'
 import TitleBar from './components/TitleBar.tsx'
 import './App.css'
@@ -14,6 +15,7 @@ export type MenuOption =
   | 'single-image'
   | 'batch-processing'
   | 'system-management'
+  | 'add-person'
 
 function App() {
   const [currentMenu, setCurrentMenu] = useState<MenuOption>('main') // Back to main menu
@@ -109,6 +111,7 @@ function App() {
       case 'single-image': return 'Single Image'
       case 'batch-processing': return 'Batch Processing'
       case 'system-management': return 'System Management'
+      case 'add-person': return 'Add Person'
       default: return 'Main'
     }
   }
@@ -123,6 +126,8 @@ function App() {
         return <BatchImageProcessing onBack={() => setCurrentMenu('main')} />
       case 'system-management':
         return <SystemManagement onBack={() => setCurrentMenu('main')} />
+      case 'add-person':
+        return <AddPerson />
       default:
         return (
           <MainMenu 

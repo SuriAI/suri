@@ -33,9 +33,7 @@ export default function LiveCameraRecognition() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [recognitionResults] = useState<RecognitionResult[]>([])
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>([])
-  const [showAddPerson, setShowAddPerson] = useState(false)
-  const [newPersonName, setNewPersonName] = useState('')
-  const [isAddingPerson, setIsAddingPerson] = useState(false)
+
   const [systemStats, setSystemStats] = useState({ today_records: 0, total_people: 0 })
   const [cameraStatus, setCameraStatus] = useState<'stopped' | 'starting' | 'preview' | 'recognition'>('stopped')
   const [availableCameras, setAvailableCameras] = useState<CameraDevice[]>([])
@@ -266,98 +264,9 @@ export default function LiveCameraRecognition() {
     }
   }, [fetchTodayAttendance])
 
-  const addPersonFromCamera = async () => {
-    if (!newPersonName.trim()) return
-    
-    setIsAddingPerson(true)
-    try {
-      // Capture current frame from the video stream
-      if (!imgRef.current) {
-        throw new Error('No video frame available')
-      }
-      
-      // Create a canvas to capture the current frame
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Canvas context not available')
-      }
-      
-      // Set canvas size to match image
-      canvas.width = imgRef.current.naturalWidth
-      canvas.height = imgRef.current.naturalHeight
-      
-      // Draw the current video frame to canvas
-      ctx.drawImage(imgRef.current, 0, 0)
-      
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob)
-          } else {
-            reject(new Error('Failed to capture frame'))
-          }
-        }, 'image/jpeg', 0.9)
-      })
-      
-      // Send the captured frame to the regular add person endpoint
-      const form = new FormData()
-      form.append('name', newPersonName.trim())
-      form.append('file', blob, 'camera_capture.jpg')
-      
-      const response = await fetch('http://127.0.0.1:8770/person/add', {
-        method: 'POST',
-        body: form
-      })
-      
-      if (!response.ok) {
-        // Handle HTTP errors
-        let errorMessage = `HTTP ${response.status}`
-        try {
-          const errorData = await response.json()
-          errorMessage = errorData.detail || errorData.message || errorMessage
-        } catch {
-          // Failed to parse JSON, use status text
-          errorMessage = response.statusText || errorMessage
-        }
-        throw new Error(errorMessage)
-      }
-      
-      const data = await response.json()
-      if (data.success) {
-        alert(`✅ ${newPersonName} added successfully!`)
-        setNewPersonName('')
-        setShowAddPerson(false)
-        fetchSystemStats()
-      } else {
-        alert(`❌ Failed to add ${newPersonName}: ${data.message || 'Unknown error'}`)
-      }
-    } catch (error) {
-      console.error('Add person error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Connection error'
-      alert(`❌ Failed to add ${newPersonName}: ${errorMessage}`)
-    } finally {
-      setIsAddingPerson(false)
-    }
-  }
 
-  const fetchSystemStats = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:8770/system/status')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setSystemStats({
-            today_records: data.attendance_stats?.today_records ?? 0,
-            total_people: data.database_stats?.total_people ?? 0
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch system stats:', error)
-    }
-  }
+
+
 
   const clearAttendance = async () => {
     if (!confirm('⚠️ Clear ALL attendance records? This cannot be undone.')) return
@@ -551,13 +460,7 @@ export default function LiveCameraRecognition() {
             )}
           </div>
 
-          <button
-            onClick={() => setShowAddPerson(true)}
-            disabled={!isStreaming}
-            className="px-4 py-2 rounded-xl text-xs font-light text-white/60 hover:text-white bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            + Add Person
-          </button>
+          
           
           <button
             onClick={fetchTodayAttendance}
@@ -684,53 +587,7 @@ export default function LiveCameraRecognition() {
         </div>
       </div>
 
-      {/* Glass Add Person Modal */}
-      {showAddPerson && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.15] rounded-2xl p-8 w-96 max-w-full mx-4">
-            <h3 className="text-xl font-light text-white mb-6">Add New Person</h3>
-            
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm text-white/60 mb-3 font-light">Person's Name</label>
-                <input
-                  type="text"
-                  value={newPersonName}
-                  onChange={(e) => setNewPersonName(e.target.value)}
-                  placeholder="Enter full name"
-                  className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-white/[0.20] focus:bg-white/[0.05] transition-all duration-300 font-light"
-                  disabled={isAddingPerson}
-                />
-              </div>
-              
-              <div className="text-xs text-white/50 bg-white/[0.02] p-4 rounded-xl font-light">
-                Position the person's face in the camera and click Add Person.
-              </div>
-              
-              <div className="flex items-center space-x-4 pt-2">
-                <button
-                  onClick={addPersonFromCamera}
-                  disabled={!newPersonName.trim() || isAddingPerson}
-                  className="flex-1 px-6 py-3 bg-white/[0.08] border border-white/[0.15] text-white rounded-xl hover:bg-white/[0.12] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed font-light"
-                >
-                  {isAddingPerson ? 'Adding...' : 'Add Person'}
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowAddPerson(false)
-                    setNewPersonName('')
-                  }}
-                  disabled={isAddingPerson}
-                  className="px-6 py-3 text-white/60 hover:text-white bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.08] rounded-xl transition-all duration-300 disabled:opacity-30 font-light"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   )
 }
