@@ -83,20 +83,20 @@ export default function LiveCameraRecognition() {
       setIsStreaming(true)
       setCameraStatus('starting')
 
-      // Get user media with low-latency settings for real-time recognition
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
-          frameRate: { exact: 30 },
-          facingMode: 'user',
-          // Disable video processing that can cause delays and bounce-back effect
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
-        },
-        audio: false
-      })
+                // Get user media with ultra-low-latency settings for real-time recognition
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1280, min: 640 },
+              height: { ideal: 720, min: 480 },
+              frameRate: { ideal: 60, min: 30 }, // Maximum FPS for real-time
+              facingMode: 'user',
+              // Disable ALL video processing that can cause delays
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            },
+            audio: false
+          })
 
       console.log('Camera stream obtained')
 
@@ -121,9 +121,16 @@ export default function LiveCameraRecognition() {
             
             // Minimize buffering completely
             video.setAttribute('x5-video-player-type', 'h5')
+            video.setAttribute('x5-video-player-fullscreen', 'false')
+            video.setAttribute('x5-video-orientation', 'portraint')
+            
+            // Disable all buffering
             if ('mozInputLatency' in video) {
-              (video as any).mozInputLatency = 0.01
+              (video as any).mozInputLatency = 0
             }
+            
+            // Set playback rate for minimal latency
+            video.playbackRate = 1.0
             
             // Start playback immediately
             video.play()
@@ -205,18 +212,10 @@ export default function LiveCameraRecognition() {
     return ctx.getImageData(0, 0, canvas.width, canvas.height)
   }, [])
 
-  const processFrameThrottled = useCallback(() => {
+  const processFrameRealTime = useCallback(() => {
     if (!isStreaming || cameraStatus !== 'recognition') {
       return
     }
-
-    const now = performance.now()
-    // Throttle frame capture to reduce video element conflicts - 15 FPS for processing
-    if (now - lastCaptureRef.current < 67) { // ~15 FPS
-      return
-    }
-
-    lastCaptureRef.current = now
 
     try {
       const imageData = captureFrame()
@@ -224,16 +223,17 @@ export default function LiveCameraRecognition() {
         return
       }
 
-      // Process frame through face recognition pipeline
+      // Process frame through face recognition pipeline immediately
       if (window.electronAPI?.processFrame) {
-        // Process frame without await to prevent blocking
+        // Process frame without await to prevent blocking - real-time processing
         window.electronAPI.processFrame(imageData).then(result => {
           setDetectionResults(result.detections)
           setProcessingTime(result.processingTime)
           
-          // Update FPS counter
+          // Update FPS counter for real-time monitoring
           fpsCounterRef.current.frames++
           
+          const now = performance.now()
           if (now - fpsCounterRef.current.lastTime >= 1000) {
             setFps(fpsCounterRef.current.frames)
             fpsCounterRef.current.frames = 0
@@ -263,10 +263,20 @@ export default function LiveCameraRecognition() {
     fpsCounterRef.current = { frames: 0, lastTime: performance.now() }
     lastCaptureRef.current = 0
     
-    // Use interval-based processing to reduce video element conflicts
-    // 15 FPS processing allows smooth 30+ FPS preview
-    captureIntervalRef.current = window.setInterval(processFrameThrottled, 67) // ~15 FPS
-  }, [processFrameThrottled])
+    // Use requestAnimationFrame for maximum real-time performance
+    // This provides the highest possible frame rate with zero buffering
+    const processFrame = () => {
+      if (isStreaming && cameraStatus === 'recognition') {
+        processFrameRealTime()
+      }
+      animationFrameRef.current = requestAnimationFrame(processFrame)
+    }
+    
+    // Start the real-time processing loop
+    animationFrameRef.current = requestAnimationFrame(processFrame)
+    
+    console.log('Real-time processing started with requestAnimationFrame')
+  }, [processFrameRealTime, isStreaming, cameraStatus])
 
   // Set the ref after the function is defined
   useEffect(() => {
@@ -370,9 +380,6 @@ export default function LiveCameraRecognition() {
     }
   }, [detectionResults, drawDetections, isStreaming])
 
-  // Note: Removed resize handler to improve performance
-  // Canvas size is set once based on video resolution for optimal performance
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -398,163 +405,171 @@ export default function LiveCameraRecognition() {
           
           <button
             onClick={() => setRegistrationMode(!registrationMode)}
-            className="px-6 py-3 rounded-xl text-sm font-light bg-blue-600/20 border border-blue-400/30 text-blue-300 hover:bg-blue-600/30 transition-all duration-300"
+            className={`px-6 py-3 rounded-xl text-sm font-light backdrop-blur-xl border transition-all duration-500 ${
+              registrationMode
+                ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
+                : 'bg-white/[0.05] border-white/[0.10] text-white/80 hover:bg-white/[0.08]'
+            }`}
           >
-            {registrationMode ? 'Cancel Registration' : '👤 Register Face'}
+            {registrationMode ? '✕ Cancel' : '👤 Register Face'}
           </button>
-        </div>
-        
-        <div className="flex items-center space-x-6">
-          <div className="text-center px-4 py-2 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-xl">
-            <div className="text-[10px] text-white/50 uppercase tracking-[0.1em] font-light">Status</div>
-            <div className={`text-sm font-extralight ${isStreaming ? 'text-white' : 'text-white/40'}`}>
-              {cameraStatus === 'stopped' && '○ Stopped'}
-              {cameraStatus === 'starting' && '⟳ Starting'}
-              {cameraStatus === 'preview' && '📹 Preview'}
-              {cameraStatus === 'recognition' && '● Recognition'}
+          
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+              <span>Camera: {cameraStatus}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+              <span>FPS: {fps}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+              <span>Processing: {processingTime.toFixed(2)}ms</span>
             </div>
           </div>
-          
-          <div className="text-center px-4 py-2 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-xl">
-            <div className="text-[10px] text-white/50 uppercase tracking-[0.1em] font-light">FPS</div>
-            <div className="text-sm font-extralight text-white">{fps}</div>
-          </div>
-          
-          <div className="text-center px-4 py-2 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-xl">
-            <div className="text-[10px] text-white/50 uppercase tracking-[0.1em] font-light">Processing</div>
-            <div className="text-sm font-extralight text-white">{processingTime.toFixed(1)}ms</div>
-          </div>
-          
-          <div className="text-center px-4 py-2 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-xl">
-            <div className="text-[10px] text-white/50 uppercase tracking-[0.1em] font-light">Today</div>
-            <div className="text-sm font-extralight text-white">{systemStats.today_records}</div>
-          </div>
+        </div>
+        
+        <div className="text-sm text-white/60">
+          Real-Time Face Recognition • Zero Buffering • Maximum FPS
         </div>
       </div>
 
-      {/* Registration Panel */}
-      {registrationMode && (
-        <div className="px-8 pb-4">
-          <div className="bg-blue-900/20 border border-blue-400/30 rounded-xl p-4 backdrop-blur-xl">
-            <div className="flex items-center space-x-4">
-              <input
-                type="text"
-                placeholder="Enter person ID/name"
-                value={newPersonId}
-                onChange={(e) => setNewPersonId(e.target.value)}
-                className="flex-1 px-4 py-2 bg-white/[0.05] border border-white/[0.10] rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-blue-400/50"
-                onKeyPress={(e) => e.key === 'Enter' && registerFace()}
-              />
-              <button
-                onClick={registerFace}
-                disabled={!newPersonId.trim() || detectionResults.length === 0}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:opacity-50 rounded-lg text-white font-medium transition-colors"
-              >
-                Register
-              </button>
-            </div>
-            <div className="text-xs text-blue-300/70 mt-2">
-              {detectionResults.length > 0 ? 'Face detected - ready to register' : 'Position your face in the camera view'}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
-      <div className="flex flex-1 px-8 pb-8 gap-6">
-        {/* Video Feed */}
-        <div className="flex-1">
-          <div className="relative h-[70vh] bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden flex items-center justify-center">
-            {isStreaming ? (
-              <>
-                <div className="relative w-full max-w-4xl aspect-video">
-                <video
-                  ref={videoRef}
-                  className="absolute inset-0 rounded-2xl w-full h-full"
-                  playsInline
-                  muted
-                  autoPlay
-                  preload="none"
-                  disablePictureInPicture
-                  controls={false}
-                  style={{ 
-                    objectFit: 'contain'
-                  }}
-                />
-                <canvas
-                  ref={canvasRef}
-                  className="absolute inset-0 pointer-events-none rounded-2xl w-full h-full"
-                  style={{ 
-                    objectFit: 'contain'
-                  }}
-                />
-              </div>
-                
-                {/* Detection Count Overlay */}
-                {detectionResults.length > 0 && (
-                  <div className="absolute top-4 left-4 px-4 py-2 bg-black/50 backdrop-blur-sm rounded-lg">
-                    <div className="text-white text-sm">
-                      {detectionResults.length} face{detectionResults.length !== 1 ? 's' : ''} detected
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center text-white/60">
-                  <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/[0.02] border border-white/[0.05] mb-6 mx-auto">
-                    <svg className="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm mt-2 text-white/40 font-light">Click "Start Camera" to begin</p>
+      <div className="flex-1 flex">
+        {/* Video Stream */}
+        <div className="flex-1 relative">
+          <div className="relative w-full h-full">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              playsInline
+              muted
+            />
+            
+            {/* Canvas Overlay for Detections */}
+            <canvas
+              ref={canvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+            />
+            
+            {/* Status Overlay */}
+            {cameraStatus === 'starting' && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                  <div className="text-white text-lg">Starting Camera...</div>
                 </div>
+              </div>
+            )}
+            
+            {cameraStatus === 'preview' && (
+              <div className="absolute top-4 left-4 bg-black/50 px-3 py-1 rounded text-sm">
+                Preview Mode - Loading Recognition...
+              </div>
+            )}
+            
+            {cameraStatus === 'recognition' && (
+              <div className="absolute top-4 left-4 bg-green-500/50 px-3 py-1 rounded text-sm">
+                Real-Time Recognition Active
               </div>
             )}
           </div>
         </div>
-        
-        {/* Attendance Panel */}
-        <div className="w-64">
-          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl h-[70vh] flex flex-col">
-            <div className="p-4 border-b border-white/[0.05]">
-              <h3 className="text-[10px] font-light text-white/60 uppercase tracking-[0.15em]">Today's Activity</h3>
-              <div className="text-2xl font-extralight text-white mt-2">{systemStats.today_records}</div>
+
+        {/* Sidebar */}
+        <div className="w-80 bg-white/[0.02] border-l border-white/[0.1] p-6">
+          {/* Registration Form */}
+          {registrationMode && (
+            <div className="mb-6 p-4 bg-white/[0.05] rounded-lg border border-white/[0.1]">
+              <h3 className="text-lg font-medium mb-4">Register New Person</h3>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={newPersonId}
+                  onChange={(e) => setNewPersonId(e.target.value)}
+                  placeholder="Enter Person ID"
+                  className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded text-white placeholder-white/50"
+                />
+                <div className="flex space-x-2">
+                  <button
+                    onClick={registerFace}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  >
+                    Register
+                  </button>
+                  <button
+                    onClick={() => setRegistrationMode(false)}
+                    className="px-4 py-2 bg-white/[0.1] text-white rounded hover:bg-white/[0.2] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-3">
-              {todayAttendance.length > 0 ? (
-                <div className="space-y-2">
-                  {todayAttendance.slice().reverse().map((record, index) => (
-                    <div key={index} className="group">
-                      <div className="py-3 px-3 bg-white/[0.02] border border-white/[0.05] rounded-xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300">
-                        <div className="text-sm font-light text-white truncate">{record.name}</div>
-                        <div className="flex items-center justify-between mt-1">
-                          <div className="text-xs text-white/50 font-light">{record.time}</div>
-                          <div className="text-xs font-light text-white/60">
-                            {(record.confidence * 100).toFixed(0)}%
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          )}
+
+          {/* Detection Results */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-4">Live Detections</h3>
+            <div className="space-y-2">
+              {detectionResults.length === 0 ? (
+                <div className="text-white/50 text-sm">No faces detected</div>
               ) : (
-                <div className="h-full flex items-center justify-center text-center">
-                  <div className="text-white/40">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/[0.02] border border-white/[0.05] mb-3">
-                      <svg className="w-6 h-6 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                      </svg>
+                detectionResults.map((detection, index) => (
+                  <div key={index} className="p-3 bg-white/[0.05] rounded border border-white/[0.1]">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">
+                        {detection.recognition?.personId || 'Unknown'}
+                      </span>
+                      <span className="text-xs text-white/60">
+                        {detection.confidence.toFixed(2)}
+                      </span>
                     </div>
-                    <p className="text-xs font-light">No activity today</p>
+                    {detection.recognition?.personId && (
+                      <div className="text-xs text-green-400">
+                        Similarity: {(detection.recognition.similarity * 100).toFixed(1)}%
+                      </div>
+                    )}
                   </div>
-                </div>
+                ))
               )}
             </div>
+          </div>
+
+          {/* System Stats */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-4">System Status</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-white/70">People in DB:</span>
+                <span className="text-white">{systemStats.total_people}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Today's Records:</span>
+                <span className="text-white">{systemStats.today_records}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Current FPS:</span>
+                <span className="text-green-400">{fps}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/70">Processing Time:</span>
+                <span className="text-purple-400">{processingTime.toFixed(2)}ms</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Info */}
+          <div className="text-xs text-white/50 space-y-2">
+            <div>• Real-time processing with zero buffering</div>
+            <div>• Maximum FPS for minimal latency</div>
+            <div>• SCRFD + EdgeFace pipeline</div>
+            <div>• Direct camera access</div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
