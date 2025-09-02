@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { ClientSideScrfdService } from '../services/ClientSideScrfdService'
+import { ClientSideEdgeFaceService } from '../services/ClientSideEdgeFaceService'
 
 interface DetectionResult {
   bbox: [number, number, number, number];
@@ -38,36 +39,60 @@ export default function LiveCameraRecognition() {
   
   // Client-side SCRFD service for real-time processing
   const scrfdServiceRef = useRef<ClientSideScrfdService | null>(null)
+  
+  // Client-side EdgeFace service for face recognition
+  const edgeFaceServiceRef = useRef<ClientSideEdgeFaceService | null>(null)
 
   // Define startProcessing first (will be defined later with useCallback)
   const startProcessingRef = useRef<(() => void) | null>(null)
 
-  // Initialize client-side face detection
+  // Initialize client-side face detection and recognition
   const initializePipeline = useCallback(async () => {
     try {
-      console.log('Initializing client-side face detection...')
+      console.log('Initializing client-side face detection and recognition...')
       
       // Create and initialize client-side SCRFD service
       if (!scrfdServiceRef.current) {
         scrfdServiceRef.current = new ClientSideScrfdService()
       }
       
+      // Create and initialize client-side EdgeFace service
+      if (!edgeFaceServiceRef.current) {
+        edgeFaceServiceRef.current = new ClientSideEdgeFaceService(0.6) // 60% similarity threshold
+      }
+      
+      // Initialize SCRFD first
+      console.log('🔄 Initializing SCRFD detection...')
       await scrfdServiceRef.current.initialize()
+      console.log('✅ SCRFD detection ready')
+      
+      // Initialize EdgeFace second
+      console.log('🔄 Initializing EdgeFace recognition...')
+      await edgeFaceServiceRef.current.initialize()
+      console.log('✅ EdgeFace recognition ready')
+      
+      // Load existing face database
+      console.log('📂 Loading face database...')
+      edgeFaceServiceRef.current.loadDatabase()
       
       setCameraStatus('recognition')
-      console.log('Client-side face detection ready - ZERO LATENCY MODE')
+      console.log('🚀 Client-side face detection + EdgeFace recognition ready - RESEARCH-GRADE ACCURACY!')
       
       // Start processing immediately
       setTimeout(() => {
-        console.log('Starting real-time processing')
+        console.log('Starting real-time processing with EdgeFace recognition')
         if (startProcessingRef.current) {
           startProcessingRef.current()
         }
       }, 100)
       
     } catch (error) {
-      console.error('Failed to initialize client-side pipeline:', error)
+      console.error('❌ Failed to initialize client-side pipeline:', error)
+      console.error('📋 Detailed error:', error)
       setCameraStatus('stopped')
+      
+      // Show user-friendly error
+      alert(`Initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }, [])
 
@@ -210,7 +235,7 @@ export default function LiveCameraRecognition() {
   }, [])
 
   const processFrameRealTime = useCallback(async () => {
-    if (!isStreaming || cameraStatus !== 'recognition' || !scrfdServiceRef.current) {
+    if (!isStreaming || cameraStatus !== 'recognition' || !scrfdServiceRef.current || !edgeFaceServiceRef.current) {
       return
     }
 
@@ -225,20 +250,59 @@ export default function LiveCameraRecognition() {
       // Process frame through client-side SCRFD service - ZERO IPC LATENCY!
       const scrfdDetections = await scrfdServiceRef.current.detect(imageData)
       
+      // Early exit if no faces detected - save computation!
+      if (scrfdDetections.length === 0) {
+        setDetectionResults([])
+        return
+      }
+      
+      // Only run EdgeFace recognition if we have face detections
+      const detections: DetectionResult[] = await Promise.all(
+        scrfdDetections.map(async (det) => {
+          try {
+            // Only run recognition if we have sufficient landmarks (5 points minimum)
+            if (det.landmarks && det.landmarks.length >= 5) {
+              const recognitionResult = await edgeFaceServiceRef.current!.recognizeFace(imageData, det.landmarks)
+              
+              return {
+                bbox: det.bbox,
+                confidence: det.confidence,
+                landmarks: det.landmarks,
+                recognition: {
+                  personId: recognitionResult.personId,
+                  similarity: recognitionResult.similarity
+                }
+              }
+            } else {
+              // Fallback for detections without sufficient landmarks
+              return {
+                bbox: det.bbox,
+                confidence: det.confidence,
+                landmarks: det.landmarks,
+                recognition: {
+                  personId: null,
+                  similarity: 0
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Recognition error for detection:', error)
+            return {
+              bbox: det.bbox,
+              confidence: det.confidence,
+              landmarks: det.landmarks,
+              recognition: {
+                personId: null,
+                similarity: 0
+              }
+            }
+          }
+        })
+      )
+      
       const processingTime = performance.now() - startTime
       
-      // Convert SCRFD detections to our interface
-      const detections: DetectionResult[] = scrfdDetections.map(det => ({
-        bbox: det.bbox,
-        confidence: det.confidence,
-        landmarks: det.landmarks,
-        recognition: {
-          personId: null, // TODO: Add recognition service later
-          similarity: 0
-        }
-      }))
-      
-      // Attendance tracking logic
+      // Attendance tracking logic - enhanced with real recognition
       if (attendanceMode && detections.length > 0) {
         const largestDetection = detections.reduce((largest, current) => {
           const currentArea = (current.bbox[2] - current.bbox[0]) * (current.bbox[3] - current.bbox[1])
@@ -259,8 +323,10 @@ export default function LiveCameraRecognition() {
                            Math.abs(centerY - imgCenterY) < imageData.height * 0.2
           
           if (isCentered && largestDetection.confidence > 0.7) {
-            if (currentDetectedPerson === 'unknown' || currentDetectedPerson === null) {
-              setCurrentDetectedPerson('unknown')
+            const recognizedId = largestDetection.recognition?.personId || 'unknown'
+            
+            if (currentDetectedPerson === recognizedId || currentDetectedPerson === null) {
+              setCurrentDetectedPerson(recognizedId)
               setStableDetectionCount(prev => prev + 1)
               
               if (stableDetectionCount < 10) {
@@ -271,13 +337,18 @@ export default function LiveCameraRecognition() {
                 setAttendanceStatus('recorded')
                 // Auto-record attendance after 2 seconds of stable detection
                 setTimeout(() => {
-                  console.log('📝 Attendance recorded for unknown person')
+                  console.log(`📝 Attendance recorded for ${recognizedId}`)
                   setSystemStats(prev => ({ ...prev, today_records: prev.today_records + 1 }))
                   setAttendanceStatus('waiting')
                   setStableDetectionCount(0)
                   setCurrentDetectedPerson(null)
                 }, 1000)
               }
+            } else {
+              // Different person detected, reset counter
+              setStableDetectionCount(0)
+              setAttendanceStatus('waiting')
+              setCurrentDetectedPerson(recognizedId)
             }
           } else {
             // Reset if face moves or confidence drops
@@ -349,6 +420,11 @@ export default function LiveCameraRecognition() {
       return
     }
     
+    if (!edgeFaceServiceRef.current) {
+      alert('EdgeFace service not initialized')
+      return
+    }
+    
     try {
       const imageData = captureFrame()
       if (!imageData) {
@@ -363,23 +439,35 @@ export default function LiveCameraRecognition() {
         return currentArea > largestArea ? current : largest
       }, null as DetectionResult | null)
       
-      if (!largestDetection || !largestDetection.landmarks) {
-        alert('No face detected for registration')
+      if (!largestDetection || !largestDetection.landmarks || largestDetection.landmarks.length < 5) {
+        alert('No face with sufficient landmarks detected for registration')
         return
       }
       
-      // TODO: Implement client-side face registration 
-      // For now, simulate successful registration
-      console.log(`Registration request for ${newPersonId.trim()} with landmarks:`, largestDetection.landmarks)
+      // Register face using EdgeFace
+      const success = await edgeFaceServiceRef.current.registerPerson(
+        newPersonId.trim(), 
+        imageData, 
+        largestDetection.landmarks
+      )
       
-      alert(`Successfully registered ${newPersonId} (client-side detection only)`)
-      setNewPersonId('')
-      setRegistrationMode(false)
-      setSystemStats(prev => ({ ...prev, total_people: prev.total_people + 1 }))
+      if (success) {
+        // Save database to localStorage
+        edgeFaceServiceRef.current.saveDatabase()
+        
+        alert(`✅ Successfully registered ${newPersonId} with EdgeFace (Research-Grade Accuracy)`)
+        setNewPersonId('')
+        setRegistrationMode(false)
+        setSystemStats(prev => ({ ...prev, total_people: prev.total_people + 1 }))
+        
+        console.log(`🎉 ${newPersonId} registered in EdgeFace database`)
+      } else {
+        alert('❌ Registration failed - Please try again with better face positioning')
+      }
       
     } catch (error) {
       console.error('Registration error:', error)
-      alert('Registration failed')
+      alert('Registration failed due to technical error')
     }
   }, [newPersonId, detectionResults, captureFrame])
 
@@ -547,7 +635,7 @@ export default function LiveCameraRecognition() {
         </div>
         
         <div className="text-sm text-white/60">
-          Client-Side Real-Time Face Detection • Zero IPC Latency • Maximum FPS
+          Client-Side EdgeFace Recognition • Research-Grade Accuracy • Zero Latency
         </div>
       </div>
 
@@ -592,7 +680,7 @@ export default function LiveCameraRecognition() {
             
             {cameraStatus === 'recognition' && (
               <div className="absolute top-4 left-4 bg-green-500/50 px-3 py-1 rounded text-sm">
-                ⚡ Client-Side Real-Time Detection Active
+                ⚡ EdgeFace Recognition Active (Research-Grade)
               </div>
             )}
             
@@ -761,10 +849,10 @@ export default function LiveCameraRecognition() {
 
           {/* Performance Info */}
           <div className="text-xs text-white/50 space-y-2">
-            <div>• Client-side real-time processing</div>
-            <div>• Zero IPC latency - Direct canvas overlay</div>
-            <div>• SCRFD detection in browser</div>
-            <div>• Maximum frame rate matching video</div>
+            <div>• Client-side EdgeFace recognition</div>
+            <div>• Research-grade accuracy (512D embeddings)</div>
+            <div>• SCRFD detection + EdgeFace recognition</div>
+            <div>• Zero server latency - All in browser</div>
           </div>
         </div>
       </div>
