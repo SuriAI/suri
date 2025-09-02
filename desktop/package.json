@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "npm-run-all --parallel dev:react dev:electron",
     "dev:react": "vite",
@@ -17,10 +17,12 @@
     "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64"
   },
   "dependencies": {
+    "onnxruntime-node": "^1.21.0",
+    "onnxruntime-web": "^1.22.0",
+    "opencv4nodejs": "^5.6.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.12",
-    "onnxruntime-node": "^1.21.0"
+    "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

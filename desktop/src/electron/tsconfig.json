@@ -11,5 +11,5 @@
     }
   },
   "include": ["**/*.ts", "../services/**/*.ts"],
-  "exclude": ["../../dist-electron"]
+  "exclude": ["../../dist-electron", "preload.ts"]
 }
