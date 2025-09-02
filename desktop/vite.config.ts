@@ -6,19 +6,33 @@ import { join } from 'path'
 
 // Copy weights to public directory so they're available via HTTP
 const copyWeights = () => {
-  const srcWeights = join(__dirname, 'weights', 'det_500m.onnx')
+  const srcDir = join(__dirname, 'weights')
   const destDir = join(__dirname, 'public', 'weights')
-  const destWeights = join(destDir, 'det_500m.onnx')
   
   if (!existsSync(destDir)) {
     mkdirSync(destDir, { recursive: true })
   }
   
-  if (existsSync(srcWeights)) {
-    copyFileSync(srcWeights, destWeights)
-    console.log('✅ Copied ONNX model to public/weights/')
+  // Copy SCRFD detection model
+  const srcScrfd = join(srcDir, 'det_500m.onnx')
+  const destScrfd = join(destDir, 'det_500m.onnx')
+  
+  if (existsSync(srcScrfd)) {
+    copyFileSync(srcScrfd, destScrfd)
+    console.log('✅ Copied SCRFD model to public/weights/')
   } else {
-    console.warn('⚠️ ONNX model not found at:', srcWeights)
+    console.warn('⚠️ SCRFD model not found at:', srcScrfd)
+  }
+  
+  // Copy EdgeFace recognition model
+  const srcEdgeface = join(srcDir, 'edgeface-recognition.onnx')
+  const destEdgeface = join(destDir, 'edgeface-recognition.onnx')
+  
+  if (existsSync(srcEdgeface)) {
+    copyFileSync(srcEdgeface, destEdgeface)
+    console.log('✅ Copied EdgeFace model to public/weights/')
+  } else {
+    console.warn('⚠️ EdgeFace model not found at:', srcEdgeface)
   }
 }
 
