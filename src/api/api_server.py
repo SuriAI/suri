@@ -68,15 +68,20 @@ class AttendanceSystem:
     def _initialize_models(self):
         """Initialize SCRFD detection and EdgeFace recognition models"""
         try:
+            # Get absolute paths to model files
+            workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            scrfd_path = os.path.join(workspace_root, "weights", "det_500m.onnx")
+            edgeface_path = os.path.join(workspace_root, "weights", "edgeface-recognition.onnx")
+            
             print("Loading SCRFD detection model...")
             self.detector = SCRFD(
-                model_path="weights/det_500m.onnx",
+                model_path=scrfd_path,
                 conf_thres=0.5,
                 iou_thres=0.4
             )
             
             print("Loading EdgeFace recognition model...")
-            self.recognizer = EdgeFace(model_path="weights/edgeface-recognition.onnx")
+            self.recognizer = EdgeFace(model_path=edgeface_path)
             
             print("Initializing face database...")
             self.face_db = FaceDatabase(similarity_threshold=0.6)
@@ -89,8 +94,12 @@ class AttendanceSystem:
     def _load_attendance_log(self):
         """Load attendance log from disk"""
         try:
-            if os.path.exists("attendance_log.json"):
-                with open("attendance_log.json", 'r') as f:
+            # Get absolute path to attendance log
+            workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            log_path = os.path.join(workspace_root, "attendance_log.json")
+            
+            if os.path.exists(log_path):
+                with open(log_path, 'r') as f:
                     self.attendance_log = json.load(f)
         except Exception as e:
             print(f"Failed to load attendance log: {e}")
@@ -118,7 +127,9 @@ class AttendanceSystem:
             self.attendance_log.append(record)
             
             # Save to disk
-            with open("attendance_log.json", 'w') as f:
+            workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            log_path = os.path.join(workspace_root, "attendance_log.json")
+            with open(log_path, 'w') as f:
                 json.dump(self.attendance_log, f, indent=2)
             
             return True
@@ -503,6 +514,73 @@ async def get_system_stats():
         )
     except Exception as e:
         logger.error(f"Get stats error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/system/stats", response_model=ApiResponse)
+async def get_system_stats_endpoint():
+    """
+    Get system statistics for the frontend dashboard
+    """
+    try:
+        people_count = len(attendance_system.get_all_persons())
+        total_records = len(attendance_system.attendance_log)
+        today_records = len(attendance_system.get_today_attendance())
+        
+        # Get unique people seen today
+        today_people = set()
+        for record in attendance_system.get_today_attendance():
+            today_people.add(record['person_id'])
+        
+        # Calculate success rate (placeholder - you can implement actual calculation)
+        success_rate = 95.0  # Default success rate
+        
+        return ApiResponse(
+            success=True,
+            message="System statistics retrieved successfully",
+            data={
+                "legacy_faces": 0,  # For backward compatibility
+                "template_count": people_count,  # Number of people in database
+                "people_count": people_count,
+                "today_attendance": today_records,
+                "total_attendance": total_records,
+                "success_rate": success_rate
+            },
+            timestamp=datetime.now().isoformat()
+        )
+    except Exception as e:
+        logger.error(f"Get system stats error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/system/preload", response_model=ApiResponse)
+async def preload_camera_models():
+    """
+    Preload camera models for instant startup
+    """
+    try:
+        # Warm up the models by doing a quick dummy inference
+        if attendance_system.detector and attendance_system.recognizer:
+            dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+            detections, keypoints = attendance_system.detector.detect(dummy_frame)
+            
+            # Try recognition if we have dummy keypoints
+            if keypoints is not None and len(keypoints) > 0:
+                dummy_kps = np.array([[30, 30], [80, 30], [55, 55], [35, 75], [75, 75]], dtype=np.float32)
+                try:
+                    _ = attendance_system.recognizer(dummy_frame, dummy_kps)
+                except:
+                    pass  # Expected to fail on dummy data
+            
+            return ApiResponse(
+                success=True,
+                message="Camera models preloaded successfully",
+                data={"pipeline": "SCRFD + EdgeFace"},
+                timestamp=datetime.now().isoformat()
+            )
+        else:
+            raise HTTPException(status_code=500, detail="Models not properly initialized")
+            
+    except Exception as e:
+        logger.error(f"Camera preload error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # WebSocket endpoint
