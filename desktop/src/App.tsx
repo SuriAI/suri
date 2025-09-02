@@ -18,7 +18,7 @@ export type MenuOption =
 
 function App() {
   const [currentMenu, setCurrentMenu] = useState<MenuOption>('main') // Back to main menu
-  const [isConnected, setIsConnected] = useState(false)
+  const [isConnected, setIsConnected] = useState(true) // Temporarily bypass backend connection for face detection testing
   const [systemStats, setSystemStats] = useState({
     legacy_faces: 0,
     enhanced_templates: 0,
@@ -69,39 +69,9 @@ function App() {
   }, [])
 
   useEffect(() => {
-    // Initialize connection on app start with retry
-    const initializeConnection = async () => {
-      const maxRetries = 5
-      const retryDelay = 1000 // 1 second
-      
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          // Test connection to backend
-          const response = await fetch('http://127.0.0.1:8770/')
-          if (response.ok) {
-            setIsConnected(true)
-            fetchSystemStats()
-            console.log(`Backend connected on attempt ${attempt}`)
-            
-            // Preload camera for instant startup later
-            preloadCamera()
-            return
-          }
-        } catch (error) {
-          console.log(`Backend connection attempt ${attempt}/${maxRetries} failed:`, error)
-        }
-        
-        // Wait before retry (except on last attempt)
-        if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
-        }
-      }
-      
-      console.error('Backend connection failed after all attempts')
-      setIsConnected(false)
-    }
-    
-    initializeConnection()
+    // Temporarily bypass backend connection for face detection testing
+    console.log('Backend connection bypassed - testing face detection only')
+    // preloadCamera() // Can be uncommented if needed
   }, [fetchSystemStats, preloadCamera])
 
   const getCurrentSectionName = () => {

@@ -1,5 +1,5 @@
 import { ScrfdDetectionService } from './ScrfdDetectionService.js';
-import type { DetectionResult } from './ScrfdDetectionService.js';
+import type { DetectionResult, SerializableImageData } from './ScrfdDetectionService.js';
 import { EdgeFaceRecognitionService } from './EdgeFaceRecognitionService.js';
 import type { RecognitionResult } from './EdgeFaceRecognitionService.js';
 
@@ -48,7 +48,7 @@ export class FaceRecognitionPipeline {
     }
   }
 
-  async processFrame(imageData: ImageData): Promise<PipelineResult> {
+  async processFrame(imageData: SerializableImageData): Promise<PipelineResult> {
     if (!this.isInitialized) {
       throw new Error('Pipeline not initialized');
     }
@@ -102,7 +102,7 @@ export class FaceRecognitionPipeline {
     }
   }
 
-  async registerPerson(personId: string, imageData: ImageData, landmarks: number[][]): Promise<boolean> {
+  async registerPerson(personId: string, imageData: SerializableImageData, landmarks: number[][]): Promise<boolean> {
     try {
       const embedding = await this.recognitionService.extractEmbedding(imageData, landmarks);
       this.recognitionService.addPerson(personId, embedding);

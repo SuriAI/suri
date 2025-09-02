@@ -1,5 +1,6 @@
 import * as ort from 'onnxruntime-node';
 import { join } from 'path';
+import type { SerializableImageData } from './ScrfdDetectionService.js';
 
 export interface FaceEmbedding {
   personId: string;
@@ -36,19 +37,27 @@ export class EdgeFaceRecognitionService {
       const weightsPath = modelPath || join(__dirname, '../../weights/edgeface-recognition.onnx');
       console.log('Loading EdgeFace model from:', weightsPath);
       
+      // Check if file exists
+      const fs = await import('fs');
+      if (!fs.existsSync(weightsPath)) {
+        throw new Error(`EdgeFace model file not found at: ${weightsPath}`);
+      }
+      
       this.session = await ort.InferenceSession.create(weightsPath, {
         executionProviders: ['cpu']
       });
       
       this.similarityThreshold = threshold;
       console.log('EdgeFace model loaded successfully');
+      console.log('Input names:', this.session.inputNames);
+      console.log('Output names:', this.session.outputNames);
     } catch (error) {
       console.error('Failed to load EdgeFace model:', error);
       throw error;
     }
   }
 
-  async extractEmbedding(imageData: ImageData, landmarks: number[][]): Promise<Float32Array> {
+  async extractEmbedding(imageData: SerializableImageData, landmarks: number[][]): Promise<Float32Array> {
     if (!this.session) {
       throw new Error('EdgeFace model not initialized');
     }
@@ -68,7 +77,7 @@ export class EdgeFaceRecognitionService {
     return this.normalizeEmbedding(embedding);
   }
 
-  async recognizeFace(imageData: ImageData, landmarks: number[][]): Promise<RecognitionResult> {
+  async recognizeFace(imageData: SerializableImageData, landmarks: number[][]): Promise<RecognitionResult> {
     const embedding = await this.extractEmbedding(imageData, landmarks);
     
     if (this.faceDatabase.size === 0) {
@@ -120,7 +129,7 @@ export class EdgeFaceRecognitionService {
     return this.faceDatabase.size;
   }
 
-  private alignFace(imageData: ImageData, landmarks: number[][]): ImageData {
+  private alignFace(imageData: SerializableImageData, landmarks: number[][]): SerializableImageData {
     if (landmarks.length !== 5) {
       throw new Error('Expected 5 facial landmarks for alignment');
     }
@@ -169,7 +178,7 @@ export class EdgeFaceRecognitionService {
     };
   }
 
-  private warpAffine(imageData: ImageData, matrix: number[][], width: number, height: number): ImageData {
+  private warpAffine(imageData: SerializableImageData, matrix: number[][], width: number, height: number): SerializableImageData {
     const { data: srcData, width: srcWidth, height: srcHeight } = imageData;
     const dstData = new Uint8ClampedArray(width * height * 4);
     
@@ -220,28 +229,34 @@ export class EdgeFaceRecognitionService {
       }
     }
     
-    return new ImageData(dstData, width, height);
+    return {
+      data: dstData,
+      width: width,
+      height: height,
+      colorSpace: imageData.colorSpace
+    };
   }
 
-  private preprocessFace(alignedFace: ImageData): ort.Tensor {
+  private preprocessFace(alignedFace: SerializableImageData): ort.Tensor {
     const { data, width, height } = alignedFace;
     const tensorData = new Float32Array(3 * this.inputSize * this.inputSize);
     
-    // Convert RGBA to RGB and normalize
+    // Convert RGBA to RGB and normalize (EdgeFace expects RGB format like Python)
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const srcIdx = (y * width + x) * 4;
         const dstIdx = y * width + x;
         
-        // Normalize to [-1, 1] range
-        const r = (data[srcIdx] - this.inputMean) / this.inputStd;
-        const g = (data[srcIdx + 1] - this.inputMean) / this.inputStd;
-        const b = (data[srcIdx + 2] - this.inputMean) / this.inputStd;
+        // Get RGB values from RGBA
+        const r = data[srcIdx];     // R
+        const g = data[srcIdx + 1]; // G  
+        const b = data[srcIdx + 2]; // B
         
-        // Store in CHW format
-        tensorData[dstIdx] = r;
-        tensorData[this.inputSize * this.inputSize + dstIdx] = g;
-        tensorData[2 * this.inputSize * this.inputSize + dstIdx] = b;
+        // Normalize using EdgeFace parameters (same as Python implementation)
+        // EdgeFace uses mean=127.5, std=127.5 for [-1, 1] normalization
+        tensorData[dstIdx] = (r - this.inputMean) / this.inputStd; // R channel
+        tensorData[this.inputSize * this.inputSize + dstIdx] = (g - this.inputMean) / this.inputStd; // G channel
+        tensorData[2 * this.inputSize * this.inputSize + dstIdx] = (b - this.inputMean) / this.inputStd; // B channel
       }
     }
     

@@ -1,3 +1,6 @@
 ignoredBuiltDependencies:
   - electron
   - esbuild
+  - onnxruntime-node
+  - opencv-build
+  - opencv4nodejs

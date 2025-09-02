@@ -1,6 +1,13 @@
 import * as ort from 'onnxruntime-node';
 import { join } from 'path';
 
+export interface SerializableImageData {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+  colorSpace?: PredefinedColorSpace;
+}
+
 export interface DetectionResult {
   bbox: [number, number, number, number]; // [x1, y1, x2, y2]
   confidence: number;
@@ -10,7 +17,7 @@ export interface DetectionResult {
 export class ScrfdDetectionService {
   private session: ort.InferenceSession | null = null;
   private inputSize = 640;
-  private confThreshold = 0.2; // Lower threshold for better detection
+  private confThreshold = 0.5; // Proper threshold for real detection
   private iouThreshold = 0.4;
   
   // SCRFD model parameters
@@ -29,26 +36,43 @@ export class ScrfdDetectionService {
       const weightsPath = modelPath || join(__dirname, '../../weights/det_500m.onnx');
       console.log('Loading SCRFD model from:', weightsPath);
       
+      // Check if file exists
+      const fs = await import('fs');
+      if (!fs.existsSync(weightsPath)) {
+        throw new Error(`SCRFD model file not found at: ${weightsPath}`);
+      }
+      
       this.session = await ort.InferenceSession.create(weightsPath, {
         executionProviders: ['cpu']
       });
       
       console.log('SCRFD model loaded successfully');
+      console.log('Input names:', this.session.inputNames);
+      console.log('Output names:', this.session.outputNames);
     } catch (error) {
       console.error('Failed to load SCRFD model:', error);
       throw error;
     }
   }
 
-  async detect(imageData: ImageData): Promise<DetectionResult[]> {
+  async detect(imageData: SerializableImageData): Promise<DetectionResult[]> {
     if (!this.session) {
       throw new Error('SCRFD model not initialized');
     }
 
     try {
-      // Convert ImageData to tensor format
+      // Convert ImageData to tensor format with safety checks
       const { width, height } = imageData;
+      
+      if (!width || !height || width <= 0 || height <= 0) {
+        console.error(`[SCRFD] Invalid image dimensions: ${width}x${height}`);
+        return [];
+      }
+      
+      console.log(`[SCRFD] Processing image: ${width}x${height}`);
+      
       const tensor = this.preprocessImage(imageData, width, height);
+      console.log(`[SCRFD] Tensor shape: [${tensor.dims.join(',')}]`);
       
       // Run inference with minimal overhead
       const feeds = { [this.session.inputNames[0]]: tensor };
@@ -64,7 +88,7 @@ export class ScrfdDetectionService {
     }
   }
 
-  private preprocessImage(imageData: ImageData, width: number, height: number): ort.Tensor {
+  private preprocessImage(imageData: SerializableImageData, width: number, height: number): ort.Tensor {
     // Calculate resize parameters
     const imRatio = height / width;
     const modelRatio = this.inputSize / this.inputSize;
@@ -94,15 +118,15 @@ export class ScrfdDetectionService {
         
         const dstIdx = y * this.inputSize + x;
         
-        // Convert RGBA to RGB and normalize (BGR format for SCRFD)
-        const r = (data[srcIdx + 2] - this.mean) / this.std;     // B channel (SCRFD expects BGR)
-        const g = (data[srcIdx + 1] - this.mean) / this.std;     // G channel  
-        const b = (data[srcIdx] - this.mean) / this.std;         // R channel
+        // Convert RGBA to BGR and normalize (SCRFD expects BGR format like Python cv2)
+        const r = data[srcIdx];     // R from RGBA
+        const g = data[srcIdx + 1]; // G from RGBA  
+        const b = data[srcIdx + 2]; // B from RGBA
         
-        // Store in CHW format
-        paddedImage[dstIdx] = r; // R channel
-        paddedImage[this.inputSize * this.inputSize + dstIdx] = g; // G channel
-        paddedImage[2 * this.inputSize * this.inputSize + dstIdx] = b; // B channel
+        // Normalize and store in CHW format as BGR (like Python implementation)
+        paddedImage[dstIdx] = (b - this.mean) / this.std; // B channel first (BGR)
+        paddedImage[this.inputSize * this.inputSize + dstIdx] = (g - this.mean) / this.std; // G channel
+        paddedImage[2 * this.inputSize * this.inputSize + dstIdx] = (r - this.mean) / this.std; // R channel last
       }
     }
     
@@ -114,7 +138,7 @@ export class ScrfdDetectionService {
     const bboxesList: Float32Array[] = [];
     const kpssList: Float32Array[] = [];
     
-    // Calculate scale factor
+    // Calculate scale factor (same logic as preprocessing)
     const imRatio = originalHeight / originalWidth;
     const modelRatio = 1.0; // Square input
     
@@ -129,7 +153,7 @@ export class ScrfdDetectionService {
     
     const detScale = newHeight / originalHeight;
     
-    // Process each feature map
+    // Process each feature map (following Python SCRFD implementation exactly)
     for (let idx = 0; idx < this.featStrideFpn.length; idx++) {
       const stride = this.featStrideFpn[idx];
       
@@ -143,26 +167,39 @@ export class ScrfdDetectionService {
       // Get anchor centers
       const anchorCenters = this.getAnchorCenters(height, width, stride);
       
-      // Filter by confidence threshold
+      // Process predictions (match Python implementation)
       const scoresData = scores.data as Float32Array;
       const bboxData = bboxPreds.data as Float32Array;
       const kpsData = kpsPreds ? (kpsPreds.data as Float32Array) : null;
       
-      for (let i = 0; i < scoresData.length; i++) {
-        if (scoresData[i] >= this.confThreshold) {
-          scoresList.push(new Float32Array([scoresData[i]]));
+      // Create properly sized arrays for batch processing
+      const numAnchors = height * width * this.numAnchors;
+      
+      // Debug only on first run
+      if (idx === 0) {
+        console.log(`[SCRFD] Processing ${this.featStrideFpn.length} feature maps`);
+      }
+      
+      let candidatesCount = 0;
+      for (let i = 0; i < numAnchors && i < scoresData.length; i++) {
+        // Apply sigmoid activation to raw scores
+        const score = this.sigmoid(scoresData[i]);
+        if (score >= this.confThreshold) {
+          candidatesCount++;
+          scoresList.push(new Float32Array([score])); // Use sigmoid score
           
-          // Decode bbox
+          // Decode bbox with stride scaling (like Python)
           const bbox = this.distance2bbox(anchorCenters, bboxData, i, stride);
           bboxesList.push(bbox);
           
-          // Decode keypoints if available
+          // Decode keypoints if available with stride scaling
           if (kpsData && this.useKps) {
             const kps = this.distance2kps(anchorCenters, kpsData, i, stride);
             kpssList.push(kps);
           }
         }
       }
+
     }
     
     if (scoresList.length === 0) {
@@ -170,7 +207,11 @@ export class ScrfdDetectionService {
     }
     
     // Apply NMS and return results
-    return this.applyNMS(scoresList, bboxesList, kpssList, detScale);
+    const finalDetections = this.applyNMS(scoresList, bboxesList, kpssList, detScale);
+    if (finalDetections.length > 0) {
+      console.log(`[SCRFD] Detected ${finalDetections.length} faces`);
+    }
+    return finalDetections;
   }
 
   private getAnchorCenters(height: number, width: number, stride: number): Float32Array {
@@ -197,34 +238,42 @@ export class ScrfdDetectionService {
   }
 
   private distance2bbox(centers: Float32Array, distances: Float32Array, idx: number, stride: number): Float32Array {
-    const centerX = centers[idx * 2];
-    const centerY = centers[idx * 2 + 1];
+    const centerX = centers[idx * 2] || 0;
+    const centerY = centers[idx * 2 + 1] || 0;
     
-    const left = distances[idx * 4] * stride;
-    const top = distances[idx * 4 + 1] * stride;
-    const right = distances[idx * 4 + 2] * stride;
-    const bottom = distances[idx * 4 + 3] * stride;
+    const left = (distances[idx * 4] || 0) * stride;
+    const top = (distances[idx * 4 + 1] || 0) * stride;
+    const right = (distances[idx * 4 + 2] || 0) * stride;
+    const bottom = (distances[idx * 4 + 3] || 0) * stride;
+    
+    const x1 = centerX - left;
+    const y1 = centerY - top;
+    const x2 = centerX + right;
+    const y2 = centerY + bottom;
     
     return new Float32Array([
-      centerX - left,   // x1
-      centerY - top,    // y1
-      centerX + right,  // x2
-      centerY + bottom  // y2
+      isFinite(x1) ? x1 : 0,   // x1
+      isFinite(y1) ? y1 : 0,   // y1
+      isFinite(x2) ? x2 : 0,   // x2
+      isFinite(y2) ? y2 : 0    // y2
     ]);
   }
 
   private distance2kps(centers: Float32Array, distances: Float32Array, idx: number, stride: number): Float32Array {
-    const centerX = centers[idx * 2];
-    const centerY = centers[idx * 2 + 1];
+    const centerX = centers[idx * 2] || 0;
+    const centerY = centers[idx * 2 + 1] || 0;
     
     const kps = new Float32Array(10); // 5 points * 2 coordinates
     
     for (let i = 0; i < 5; i++) {
-      const dx = distances[idx * 10 + i * 2] * stride;
-      const dy = distances[idx * 10 + i * 2 + 1] * stride;
+      const dx = (distances[idx * 10 + i * 2] || 0) * stride;
+      const dy = (distances[idx * 10 + i * 2 + 1] || 0) * stride;
       
-      kps[i * 2] = centerX + dx;
-      kps[i * 2 + 1] = centerY + dy;
+      const x = centerX + dx;
+      const y = centerY + dy;
+      
+      kps[i * 2] = isFinite(x) ? x : 0;
+      kps[i * 2 + 1] = isFinite(y) ? y : 0;
     }
     
     return kps;
@@ -311,6 +360,10 @@ export class ScrfdDetectionService {
     const union = area1 + area2 - intersection;
     
     return intersection / union;
+  }
+
+  private sigmoid(x: number): number {
+    return 1 / (1 + Math.exp(-x));
   }
 
   dispose(): void {
