@@ -610,7 +610,7 @@ export default function LiveCameraRecognition() {
   }, [stopCamera])
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-full bg-black text-white">
       {/* Control Bar */}
       <div className="px-8 py-6 flex items-center justify-between">
         <div className="flex items-center space-x-6">
@@ -662,17 +662,13 @@ export default function LiveCameraRecognition() {
             </div>
           </div>
         </div>
-        
-        <div className="text-sm text-white/60">
-          Client-Side EdgeFace Recognition • Research-Grade Accuracy • Zero Latency
-        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Video Stream */}
-        <div className="flex-1 relative">
-          <div className="relative w-full h-full overflow-hidden">
+        <div className="flex-1 relative flex items-center justify-center">
+          <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-lg">
             <video
               ref={videoRef}
               className="w-full h-full object-cover block"
