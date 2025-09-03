@@ -138,7 +138,7 @@ function App() {
         )}
 
         {/* Main content area */}
-        <div className={`${currentMenu !== 'main' ? 'pt-4 pb-10' : 'pt-4'} text-white px-4`}>
+        <div className="text-white px-4">
           {renderCurrentComponent()}
         </div>
       </div>
