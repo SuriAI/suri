@@ -610,7 +610,7 @@ export default function LiveCameraRecognition() {
   }, [stopCamera])
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="bg-black text-white pb-2">
       {/* Control Bar */}
       <div className="px-8 py-6 flex items-center justify-between">
         <div className="flex items-center space-x-6">
