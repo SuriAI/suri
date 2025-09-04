@@ -36,17 +36,58 @@ export class ClientSideScrfdService {
   async initialize(): Promise<void> {
     const modelUrl = '/weights/scrfd_2.5g_kps_640x640.onnx';
     
-    // Ultra-optimized ONNX session configuration for maximum performance
-    this.session = await ort.InferenceSession.create(modelUrl, {
-      executionProviders: ['wasm'],  // Use only WASM for consistent performance
-      logSeverityLevel: 4,  // Minimal logging for speed
-      logVerbosityLevel: 0,
-      enableCpuMemArena: true,
-      enableMemPattern: true,
-      executionMode: 'sequential',
-      graphOptimizationLevel: 'all',
-      enableProfiling: false
-    });
+    // Ultra-optimized ONNX session configuration with comprehensive GPU fallback
+    // Complete execution provider cascade: WebGPU → WebGL → CPU
+    try {
+      this.session = await ort.InferenceSession.create(modelUrl, {
+        executionProviders: [
+          'webgpu',    // Try WebGPU first (fastest if available)
+          'webgl',     // Fallback to WebGL GPU acceleration
+          'wasm'       // Final fallback to optimized CPU
+        ],
+        logSeverityLevel: 4,  // Minimal logging for speed
+        logVerbosityLevel: 0,
+        enableCpuMemArena: true,
+        enableMemPattern: true,
+        executionMode: 'sequential',
+        graphOptimizationLevel: 'all',
+        enableProfiling: false
+      });
+    } catch (error) {
+      console.warn('⚠️ GPU providers failed, falling back to CPU-only:', error);
+      // If GPU providers fail completely, use CPU-only configuration
+      this.session = await ort.InferenceSession.create(modelUrl, {
+        executionProviders: ['wasm'],
+        logSeverityLevel: 4,
+        logVerbosityLevel: 0,
+        enableCpuMemArena: true,
+        enableMemPattern: true,
+        executionMode: 'sequential',
+        graphOptimizationLevel: 'all',
+        enableProfiling: false
+      });
+    }
+    
+    // Log successful initialization with provider detection
+    console.log('🔥 SCRFD Model initialized successfully');
+    
+    // Try to detect which provider is actually being used by testing performance
+    const testStart = performance.now();
+    const dummyTensor = new ort.Tensor('float32', new Float32Array(3 * 640 * 640), [1, 3, 640, 640]);
+    try {
+      await this.session.run({ [this.session.inputNames[0]]: dummyTensor });
+      const testTime = performance.now() - testStart;
+      if (testTime < 50) {
+        console.log('🚀 SCRFD likely running on GPU - Very fast inference detected!');
+      } else if (testTime < 200) {
+        console.log('⚡ SCRFD likely running on GPU/WebGL - Good inference speed');
+      } else {
+        console.log('🔧 SCRFD running on CPU - Acceptable inference speed');
+      }
+      console.log(`📊 SCRFD Test inference time: ${testTime.toFixed(1)}ms`);
+    } catch {
+      console.log('💡 SCRFD ready - Check Task Manager → GPU during actual detection');
+    }
     
     if (this.session.inputNames.length !== 1) {
       throw new Error(`Unexpected number of inputs: ${this.session.inputNames.length}`);
