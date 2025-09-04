@@ -1212,7 +1212,7 @@ export default function LiveCameraRecognition() {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-                <span>Processing: {processingTime.toFixed(2)}ms</span>
+                <span>Processing: <span className="font-mono w-16 inline-block text-right">{processingTime.toFixed(2)}ms</span></span>
               </div>
             </div>
           </div>
