@@ -829,7 +829,7 @@ export default function LiveCameraRecognition() {
       }
       
       // Add status indicator
-      const statusText = isRecognized ? 'Face Recognized' : 'SCANNING...'
+      const statusText = isRecognized?'Face Recognized' : ''
       ctx.font = 'bold 10px "Courier New", monospace'
       ctx.fillStyle = isRecognized ? '#00ff00' : '#ffaa00'
       ctx.fillText(statusText, scaledX1 + 10, scaledY2 + 15)
