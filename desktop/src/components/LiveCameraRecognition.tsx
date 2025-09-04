@@ -1127,7 +1127,7 @@ export default function LiveCameraRecognition() {
           {/* Detection Results */}
           <div className="mb-6">
             <h3 className="text-lg font-medium mb-4">Live Detections</h3>
-            <div className="space-y-2">
+            <div className="max-h-56 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-white/5 space-y-2">
               {detectionResults.length === 0 ? (
                 <div className="text-white/50 text-sm">No faces detected</div>
               ) : (
