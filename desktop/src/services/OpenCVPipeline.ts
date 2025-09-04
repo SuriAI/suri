@@ -1,4 +1,4 @@
-import cv from 'opencv4nodejs';
+import * as cv from 'opencv4nodejs';
 import { OpenCVDetectionService } from './OpenCVDetectionService.js';
 import type { DetectionResult } from './OpenCVDetectionService.js';
 
@@ -107,10 +107,13 @@ export class OpenCVPipeline {
     return new cv.Mat(Buffer.from(matData), height, width, cv.CV_8UC3);
   }
 
-  async registerPerson(personId: string, imageData: SerializableImageData, landmarks: number[][]): Promise<boolean> {
+  async registerPerson(personId: string, _imageData: SerializableImageData, _landmarks: number[][]): Promise<boolean> {
     try {
       // TODO: Implement face recognition registration
       console.log(`Registration placeholder for ${personId}`);
+      // Temporarily reference unused parameters to avoid lint warnings
+      void _imageData;
+      void _landmarks;
       return true;
     } catch (error) {
       console.error('Failed to register person:', error);
@@ -118,8 +121,10 @@ export class OpenCVPipeline {
     }
   }
 
-  removePerson(personId: string): boolean {
+  removePerson(_personId: string): boolean {
     // TODO: Implement person removal
+    // Temporarily reference unused parameter to avoid lint warning
+    void _personId;
     return true;
   }
 
