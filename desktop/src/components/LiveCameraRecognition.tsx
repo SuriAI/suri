@@ -264,7 +264,11 @@ export default function LiveCameraRecognition() {
       const startTime = performance.now()
       
       // Process frame through client-side SCRFD service - ZERO IPC LATENCY!
-      const scrfdDetections = await scrfdServiceRef.current.detect(imageData)
+      const allScrfdDetections = await scrfdServiceRef.current.detect(imageData)
+      
+      // Filter out low confidence detections to reduce false positives
+      const minDisplayConfidence = 0.7; // Only show detections with 70% confidence or higher
+      const scrfdDetections = allScrfdDetections.filter(det => det.confidence >= minDisplayConfidence)
       
       // Early exit if no faces detected - save computation!
       if (scrfdDetections.length === 0) {
@@ -388,16 +392,6 @@ export default function LiveCameraRecognition() {
         setCurrentDetectedPerson(null)
       }
       
-      // Update FPS counter for real-time monitoring
-      fpsCounterRef.current.frames++
-      
-      const now = performance.now()
-      if (now - fpsCounterRef.current.lastTime >= 1000) {
-        setFps(fpsCounterRef.current.frames)
-        fpsCounterRef.current.frames = 0
-        fpsCounterRef.current.lastTime = now
-      }
-      
     } catch (error) {
       console.error('Client-side frame processing error:', error)
     }
@@ -417,30 +411,33 @@ export default function LiveCameraRecognition() {
     fpsCounterRef.current = { frames: 0, lastTime: performance.now() }
     lastCaptureRef.current = 0
     
-    // Use adaptive frame processing with requestAnimationFrame instead of fixed interval
+    // Use high-performance frame processing - no artificial throttling
     const processNextFrame = async () => {
       if (isStreaming && cameraStatus === 'recognition') {
-        const startTime = performance.now()
+        // Count FPS attempts (regardless of success)
+        fpsCounterRef.current.frames++
+        const now = performance.now()
+        if (now - fpsCounterRef.current.lastTime >= 1000) {
+          setFps(fpsCounterRef.current.frames)
+          fpsCounterRef.current.frames = 0
+          fpsCounterRef.current.lastTime = now
+        }
+        
         await processFrameRealTime()
         
-        // Adaptive timing - ensure minimum 33ms between frames (max ~30fps)
-        // This creates a self-regulating system that won't overwhelm the CPU
-        const processingDuration = performance.now() - startTime
-        const delayTime = Math.max(0, 33 - processingDuration)
-        
-        setTimeout(() => {
-          animationFrameRef.current = requestAnimationFrame(processNextFrame)
-        }, delayTime)
+        // No artificial delays - run as fast as possible
+        // Only use requestAnimationFrame to sync with display refresh
+        animationFrameRef.current = requestAnimationFrame(processNextFrame)
       } else {
         // If not streaming or not in recognition mode, check again soon
         animationFrameRef.current = requestAnimationFrame(processNextFrame)
       }
     }
     
-    // Start the adaptive processing loop
+    // Start the high-performance processing loop
     animationFrameRef.current = requestAnimationFrame(processNextFrame)
     
-    console.log('Real-time CLIENT-SIDE processing started with adaptive frame rate')
+    console.log('Real-time CLIENT-SIDE processing started with MAXIMUM frame rate')
   }, [processFrameRealTime, isStreaming, cameraStatus])
 
   // Set the ref after the function is defined

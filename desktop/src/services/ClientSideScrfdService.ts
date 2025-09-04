@@ -16,7 +16,7 @@ interface ScaleParams {
 
 export class ClientSideScrfdService {
   private session: ort.InferenceSession | null = null;
-  private confThreshold = 0.3;
+  private confThreshold = 0.5;  // Same as Python implementation
   private iouThreshold = 0.4;
   
   private readonly fmc = 3;
@@ -33,13 +33,14 @@ export class ClientSideScrfdService {
     const modelUrl = '/weights/det_500m.onnx';
     
     this.session = await ort.InferenceSession.create(modelUrl, {
-      executionProviders: ['cpu'],
+      executionProviders: ['wasm', 'cpu'],
       logSeverityLevel: 2,
       logVerbosityLevel: 0,
       enableCpuMemArena: true,
       enableMemPattern: true,
       executionMode: 'sequential',
-      graphOptimizationLevel: 'basic',
+      graphOptimizationLevel: 'all', // Changed to 'all' for better optimization
+      enableProfiling: false,
     });
     
     if (this.session.inputNames.length !== 1) {
@@ -95,44 +96,46 @@ export class ClientSideScrfdService {
     const { width, height } = imageData;
     const FIXED_INPUT_SIZE = 640;
     
-    // Create or reuse the destination canvas
+    // Create or reuse single canvas for processing
     if (!this.blobCanvas) {
       this.blobCanvas = new OffscreenCanvas(FIXED_INPUT_SIZE, FIXED_INPUT_SIZE);
     }
     const canvas = this.blobCanvas;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
+    const ctx = canvas.getContext('2d', { 
+      willReadFrequently: true,
+      alpha: false,  // Disable alpha for better performance
+      desynchronized: true  // Allow async rendering
+    }) as OffscreenCanvasRenderingContext2D;
     
     if (!ctx) {
       throw new Error('Failed to create canvas context for image preprocessing');
     }
     
-    // Create or reuse the source canvas
-    if (!this.blobSourceCanvas || this.blobSourceCanvas.width !== width || this.blobSourceCanvas.height !== height) {
-      this.blobSourceCanvas = new OffscreenCanvas(width, height);
-    }
-    const sourceCanvas = this.blobSourceCanvas;
-    const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
-    
-    // Clear canvases for reuse
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, FIXED_INPUT_SIZE, FIXED_INPUT_SIZE);
-    
-    // Calculate scaling factors (cache if dimensions haven't changed)
+    // Calculate scaling factors once
     const scale = Math.min(FIXED_INPUT_SIZE / width, FIXED_INPUT_SIZE / height);
     const scaledWidth = Math.round(width * scale);
     const scaledHeight = Math.round(height * scale);
     const offsetX = Math.round((FIXED_INPUT_SIZE - scaledWidth) / 2);
     const offsetY = Math.round((FIXED_INPUT_SIZE - scaledHeight) / 2);
     
-    // Put image data on source canvas
-    sourceCtx.putImageData(imageData, 0, 0);
+    // Clear canvas once with black background
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, FIXED_INPUT_SIZE, FIXED_INPUT_SIZE);
     
-    // Optimize drawing quality for face detection
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'medium'; // medium is faster than high and still good for detection
+    // Optimize rendering settings for speed over quality
+    ctx.imageSmoothingEnabled = false;  // Disable smoothing for speed
+    
+    // Create temp canvas once and reuse
+    if (!this.blobSourceCanvas || this.blobSourceCanvas.width !== width || this.blobSourceCanvas.height !== height) {
+      this.blobSourceCanvas = new OffscreenCanvas(width, height);
+    }
+    const sourceCanvas = this.blobSourceCanvas;
+    const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true }) as OffscreenCanvasRenderingContext2D;
+    
+    sourceCtx.putImageData(imageData, 0, 0);
     ctx.drawImage(sourceCanvas, offsetX, offsetY, scaledWidth, scaledHeight);
     
-    // Get processed image data
+    // Get processed image data efficiently
     const processedImageData = ctx.getImageData(0, 0, FIXED_INPUT_SIZE, FIXED_INPUT_SIZE);
     const processedData = processedImageData.data;
     
@@ -143,23 +146,27 @@ export class ClientSideScrfdService {
     const tensorData = this.tensorData;
     const channelSize = FIXED_INPUT_SIZE * FIXED_INPUT_SIZE;
     
-    // Batch process pixels for better performance
-    const BATCH_SIZE = 1024;
+    // Fixed normalization to match Python cv2.dnn.blobFromImage exactly
+    // Python: blob = cv2.dnn.blobFromImage(image, 1.0/std, size, (mean, mean, mean), swapRB=True)
+    // Formula: (pixel - mean) / std
+    const BATCH_SIZE = 4096;  // Increased batch size
+    
     for (let batch = 0; batch < channelSize; batch += BATCH_SIZE) {
       const batchEnd = Math.min(batch + BATCH_SIZE, channelSize);
       
       for (let i = batch; i < batchEnd; i++) {
-        const rgba_idx = i * 4;
+        const rgba_idx = i << 2;  // Bit shift instead of multiplication
         
-        // Process RGB values
-        const r = processedData[rgba_idx];
-        const g = processedData[rgba_idx + 1];
-        const b = processedData[rgba_idx + 2];
+        // Get RGB values (note: swapRB=True means B,G,R -> R,G,B)
+        const r = processedData[rgba_idx];     // R channel
+        const g = processedData[rgba_idx + 1]; // G channel  
+        const b = processedData[rgba_idx + 2]; // B channel
         
-        // Store in BGR order for ONNX model (more efficient tensor conversion)
-        tensorData[i] = (b - this.mean) / this.std;
-        tensorData[i + channelSize] = (g - this.mean) / this.std;
-        tensorData[i + 2 * channelSize] = (r - this.mean) / this.std;
+        // Correct normalization: (pixel - mean) / std
+        // Channels in BGR order to match Python swapRB=True
+        tensorData[i] = (b - this.mean) / this.std;                    // B channel
+        tensorData[i + channelSize] = (g - this.mean) / this.std;      // G channel
+        tensorData[i + (channelSize << 1)] = (r - this.mean) / this.std; // R channel
       }
     }
     

@@ -17,7 +17,7 @@ export interface SerializableImageData {
 export class SimpleScrfdService {
   private session: ort.InferenceSession | null = null;
   private inputSize = 640;
-  private confThreshold = 0.5;
+  private confThreshold = 0.65; // Increased from 0.5 to reduce false positives
   private iouThreshold = 0.4;
   
   // SCRFD model parameters (exactly like Python)
