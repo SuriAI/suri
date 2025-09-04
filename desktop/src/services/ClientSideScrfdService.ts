@@ -16,8 +16,8 @@ interface ScaleParams {
 
 export class ClientSideScrfdService {
   private session: ort.InferenceSession | null = null;
-  private confThreshold = 0.5;  // Same as Python implementation
-  private iouThreshold = 0.4;
+  private confThreshold = 0.5;  // Optimal threshold for pre-sigmoid activated model outputs
+  private iouThreshold = 0.4;   // Standard IoU for NMS
   
   private readonly fmc = 3;
   private readonly featStrideFpn = [8, 16, 32];
@@ -36,9 +36,9 @@ export class ClientSideScrfdService {
   async initialize(): Promise<void> {
     const modelUrl = '/weights/scrfd_2.5g_kps_640x640.onnx';
     
-    // Ultra-optimized ONNX session configuration with comprehensive GPU fallback
-    // Complete execution provider cascade: WebGPU → WebGL → CPU
     try {
+      console.log('🔄 Attempting to load SCRFD model from:', modelUrl);
+      
       this.session = await ort.InferenceSession.create(modelUrl, {
         executionProviders: [
           'webgpu',    // Try WebGPU first (fastest if available)
@@ -68,8 +68,10 @@ export class ClientSideScrfdService {
       });
     }
     
-    // Log successful initialization with provider detection
     console.log('🔥 SCRFD Model initialized successfully');
+    console.log('📊 Input Names:', this.session.inputNames);
+    console.log('📊 Output Names:', this.session.outputNames);
+    console.log('📊 Expected inputs:', this.session.inputNames.length, 'Expected outputs:', this.session.outputNames.length);
     
     // Try to detect which provider is actually being used by testing performance
     const testStart = performance.now();
@@ -85,8 +87,9 @@ export class ClientSideScrfdService {
         console.log('🔧 SCRFD running on CPU - Acceptable inference speed');
       }
       console.log(`📊 SCRFD Test inference time: ${testTime.toFixed(1)}ms`);
-    } catch {
+    } catch (testError) {
       console.log('💡 SCRFD ready - Check Task Manager → GPU during actual detection');
+      console.warn('Test inference failed:', testError);
     }
     
     if (this.session.inputNames.length !== 1) {
@@ -104,10 +107,9 @@ export class ClientSideScrfdService {
     }
 
     try {
-      // Performance monitoring
       this.frameCount++;
       const now = performance.now();
-      if (now - this.lastPerformanceCheck > 5000) { // Every 5 seconds
+      if (now - this.lastPerformanceCheck > 5000) {
         const fps = this.frameCount / ((now - this.lastPerformanceCheck) / 1000);
         console.log(`SCRFD Detection FPS: ${fps.toFixed(1)}`);
         this.frameCount = 0;
@@ -117,6 +119,7 @@ export class ClientSideScrfdService {
       const { width, height } = imageData;
       
       if (!width || !height || width <= 0 || height <= 0) {
+        console.warn(`Invalid image dimensions: ${width}x${height}`);
         return [];
       }
 
@@ -137,16 +140,38 @@ export class ClientSideScrfdService {
       
       const detections = this.postprocessOutputs(outputs, scaleParams);
       
+      // Debug logging for detection issues
+      if (detections.length === 0 && this.frameCount % 30 === 0) {
+        console.log(`🔍 SCRFD Debug: No detections found. Image: ${width}x${height}, Scale: ${scale.toFixed(3)}`);
+      }
+      
       return detections;
-    } catch {
+    } catch (error) {
+      console.error('SCRFD detection failed:', error);
       return [];
     }
   }
 
-  // Global reusable resources for maximum performance - shared across all instances
+  // Global reusable resources with proper cleanup for production use
   private static globalBlobCanvas: OffscreenCanvas | null = null;
   private static globalSourceCanvas: OffscreenCanvas | null = null;
   private static globalTensorData: Float32Array | null = null;
+  private static instanceCount = 0;
+  
+  constructor() {
+    ClientSideScrfdService.instanceCount++;
+  }
+  
+  dispose(): void {
+    ClientSideScrfdService.instanceCount--;
+    if (ClientSideScrfdService.instanceCount <= 0) {
+      ClientSideScrfdService.globalBlobCanvas = null;
+      ClientSideScrfdService.globalSourceCanvas = null;
+      ClientSideScrfdService.globalTensorData = null;
+      ClientSideScrfdService.instanceCount = 0;
+    }
+    this.centerCache.clear();
+  }
   
   private createBlobFromImage(imageData: ImageData): ort.Tensor {
     const { width, height } = imageData;
@@ -210,17 +235,16 @@ export class ClientSideScrfdService {
       const batchEnd = Math.min(batch + MEGA_BATCH_SIZE, channelSize);
       
       for (let i = batch; i < batchEnd; i++) {
-        const rgba_idx = i << 2;  // Ultra-fast bit shift multiplication
+        const rgba_idx = i << 2;
         
-        // Vectorized channel processing - minimal arithmetic operations
         const r = processedData[rgba_idx];
         const g = processedData[rgba_idx + 1]; 
         const b = processedData[rgba_idx + 2];
         
-        // Optimized normalization with pre-computed inverse
-        tensorData[i] = (b - this.mean) * invStd;                    // B channel
+        // CRITICAL FIX: Store in RGB format (not BGR) for SCRFD model
+        tensorData[i] = (r - this.mean) * invStd;                    // R channel
         tensorData[i + channelSize] = (g - this.mean) * invStd;      // G channel
-        tensorData[i + (channelSize << 1)] = (r - this.mean) * invStd; // R channel (bit shift)
+        tensorData[i + (channelSize << 1)] = (b - this.mean) * invStd; // B channel
       }
     }
     
@@ -265,54 +289,45 @@ export class ClientSideScrfdService {
       const bboxData = bboxPreds.data as Float32Array;
       const kpsData = kpsPreds ? (kpsPreds.data as Float32Array) : null;
       
-      const scaledBboxData = new Float32Array(bboxData.length);
-      for (let i = 0; i < bboxData.length; i++) {
-        scaledBboxData[i] = bboxData[i] * stride;
-      }
+      const numAnchors = height * width * this.numAnchors;
       
-      const scaledKpsData = kpsData ? new Float32Array(kpsData.length) : null;
-      if (scaledKpsData && kpsData) {
-        for (let i = 0; i < kpsData.length; i++) {
-          scaledKpsData[i] = kpsData[i] * stride;
-        }
-      }
+      let candidatesCount = 0;
+      let maxRawScore = -Infinity;
+      let minRawScore = Infinity;
+      let maxSigmoidScore = 0;
       
-      const posIndices: number[] = [];
-      for (let i = 0; i < scoresData.length; i++) {
-        if (scoresData[i] >= this.confThreshold) {
-          posIndices.push(i);
-        }
-      }
-      
-      if (posIndices.length === 0) continue;
-      
-      const posScores = new Float32Array(posIndices.length);
-      const posBboxes = new Float32Array(posIndices.length * 4);
-      const posKpss = scaledKpsData ? new Float32Array(posIndices.length * 10) : null;
-      
-      for (let i = 0; i < posIndices.length; i++) {
-        const idx = posIndices[i];
+      for (let i = 0; i < numAnchors && i < scoresData.length; i++) {
+        const rawScore = scoresData[i];
+        // Model already outputs sigmoid-activated probabilities (0-1 range)
+        const confidenceScore = rawScore;
         
-        posScores[i] = scoresData[idx];
+        // Track score ranges for debugging
+        maxRawScore = Math.max(maxRawScore, rawScore);
+        minRawScore = Math.min(minRawScore, rawScore);
+        maxSigmoidScore = Math.max(maxSigmoidScore, confidenceScore);
         
-        const bbox = this.distance2bbox(anchorCenters, scaledBboxData, idx);
-        posBboxes[i * 4] = bbox[0];
-        posBboxes[i * 4 + 1] = bbox[1];
-        posBboxes[i * 4 + 2] = bbox[2];
-        posBboxes[i * 4 + 3] = bbox[3];
-        
-        if (posKpss && scaledKpsData && this.useKps) {
-          const kps = this.distance2kps(anchorCenters, scaledKpsData, idx);
-          for (let k = 0; k < 10; k++) {
-            posKpss[i * 10 + k] = kps[k];
+        if (confidenceScore >= this.confThreshold) {
+          candidatesCount++;
+          
+          // CRITICAL FIX: Create individual arrays for each detection (like server-side)
+          scoresList.push(new Float32Array([confidenceScore]));
+          
+          // Decode bbox with stride scaling
+          const bbox = this.distance2bbox(anchorCenters, bboxData, i, stride);
+          bboxesList.push(bbox);
+          
+          // Decode keypoints if available with stride scaling  
+          if (kpsData && this.useKps) {
+            const kps = this.distance2kps(anchorCenters, kpsData, i, stride);
+            kpssList.push(kps);
           }
         }
       }
       
-      scoresList.push(posScores);
-      bboxesList.push(posBboxes);
-      if (posKpss) {
-        kpssList.push(posKpss);
+      // Debug logging every 60 frames (2 seconds at 30fps)
+      if (this.frameCount % 60 === 0) {
+        console.log(`🔍 SCRFD Feature Map ${idx}: ${candidatesCount} valid detections from ${numAnchors} anchors, threshold: ${this.confThreshold}`);
+        console.log(`📊 Confidence range: ${minRawScore.toFixed(3)} to ${maxSigmoidScore.toFixed(3)}`);
       }
     }
     
@@ -343,119 +358,60 @@ export class ClientSideScrfdService {
     return centers;
   }
 
-  private distance2bbox(points: Float32Array, distances: Float32Array, idx: number): Float32Array {
+  private distance2bbox(points: Float32Array, distances: Float32Array, idx: number, stride: number): Float32Array {
     const centerX = points[idx * 2] || 0;
     const centerY = points[idx * 2 + 1] || 0;
     
-    const left = distances[idx * 4] || 0;
-    const top = distances[idx * 4 + 1] || 0;
-    const right = distances[idx * 4 + 2] || 0;
-    const bottom = distances[idx * 4 + 3] || 0;
+    const left = (distances[idx * 4] || 0) * stride;
+    const top = (distances[idx * 4 + 1] || 0) * stride;
+    const right = (distances[idx * 4 + 2] || 0) * stride;
+    const bottom = (distances[idx * 4 + 3] || 0) * stride;
+    
+    const x1 = centerX - left;
+    const y1 = centerY - top;
+    const x2 = centerX + right;
+    const y2 = centerY + bottom;
     
     return new Float32Array([
-      centerX - left,
-      centerY - top,
-      centerX + right,
-      centerY + bottom
+      isFinite(x1) ? x1 : 0,
+      isFinite(y1) ? y1 : 0,
+      isFinite(x2) ? x2 : 0,
+      isFinite(y2) ? y2 : 0
     ]);
   }
 
-  private distance2kps(points: Float32Array, distances: Float32Array, idx: number): Float32Array {
+  private distance2kps(points: Float32Array, distances: Float32Array, idx: number, stride: number): Float32Array {
     const centerX = points[idx * 2] || 0;
     const centerY = points[idx * 2 + 1] || 0;
     
     const kps = new Float32Array(10);
     
     for (let i = 0; i < 5; i++) {
-      const dx = distances[idx * 10 + i * 2] || 0;
-      const dy = distances[idx * 10 + i * 2 + 1] || 0;
+      const dx = (distances[idx * 10 + i * 2] || 0) * stride;
+      const dy = (distances[idx * 10 + i * 2 + 1] || 0) * stride;
       
-      kps[i * 2] = centerX + dx;
-      kps[i * 2 + 1] = centerY + dy;
+      const x = centerX + dx;
+      const y = centerY + dy;
+      
+      kps[i * 2] = isFinite(x) ? x : 0;
+      kps[i * 2 + 1] = isFinite(y) ? y : 0;
     }
     
     return kps;
   }
 
   private applyNMS(scoresList: Float32Array[], bboxesList: Float32Array[], kpssList: Float32Array[], scaleParams: ScaleParams): DetectionResult[] {
-    if (scoresList.length === 0) return [];
+    // Simple NMS implementation matching server-side
+    const results: DetectionResult[] = [];
     
-    let totalDetections = 0;
-    for (const scores of scoresList) {
-      totalDetections += scores.length;
-    }
+    // Convert to unified format for NMS
+    const detections = scoresList.map((scores, i) => ({
+      score: scores[0], // Individual score arrays now
+      bbox: bboxesList[i],
+      kps: kpssList[i] || new Float32Array(10)
+    }));
     
-    if (totalDetections === 0) return [];
-    
-    const allScores = new Float32Array(totalDetections);
-    const allBboxes = new Float32Array(totalDetections * 4);
-    const allKpss = kpssList.length > 0 ? new Float32Array(totalDetections * 10) : null;
-    
-    let offset = 0;
-    for (let i = 0; i < scoresList.length; i++) {
-      const scores = scoresList[i];
-      const bboxes = bboxesList[i];
-      const kpss = i < kpssList.length ? kpssList[i] : null;
-      
-      for (let j = 0; j < scores.length; j++) {
-        allScores[offset] = scores[j];
-        
-        for (let k = 0; k < 4; k++) {
-          allBboxes[offset * 4 + k] = bboxes[j * 4 + k];
-        }
-        
-        if (allKpss && kpss) {
-          for (let k = 0; k < 10; k++) {
-            allKpss[offset * 10 + k] = kpss[j * 10 + k];
-          }
-        }
-        
-        offset++;
-      }
-    }
-    
-    const detections: Array<{
-      score: number;
-      bbox: [number, number, number, number];
-      kps?: number[][];
-      index: number;
-    }> = [];
-    
-    for (let i = 0; i < totalDetections; i++) {
-      const x1_adjusted = allBboxes[i * 4] - scaleParams.offsetX;
-      const y1_adjusted = allBboxes[i * 4 + 1] - scaleParams.offsetY;
-      const x2_adjusted = allBboxes[i * 4 + 2] - scaleParams.offsetX;
-      const y2_adjusted = allBboxes[i * 4 + 3] - scaleParams.offsetY;
-      
-      const bbox: [number, number, number, number] = [
-        x1_adjusted / scaleParams.scale,
-        y1_adjusted / scaleParams.scale,
-        x2_adjusted / scaleParams.scale,
-        y2_adjusted / scaleParams.scale
-      ];
-      
-      let kps: number[][] | undefined;
-      if (allKpss) {
-        kps = [];
-        for (let k = 0; k < 5; k++) {
-          const kp_x_adjusted = allKpss[i * 10 + k * 2] - scaleParams.offsetX;
-          const kp_y_adjusted = allKpss[i * 10 + k * 2 + 1] - scaleParams.offsetY;
-          
-          kps.push([
-            kp_x_adjusted / scaleParams.scale,
-            kp_y_adjusted / scaleParams.scale
-          ]);
-        }
-      }
-      
-      detections.push({
-        score: allScores[i],
-        bbox,
-        kps,
-        index: i
-      });
-    }
-    
+    // Sort by confidence
     detections.sort((a, b) => b.score - a.score);
     
     const keep: boolean[] = new Array(detections.length).fill(true);
@@ -463,31 +419,54 @@ export class ClientSideScrfdService {
     for (let i = 0; i < detections.length; i++) {
       if (!keep[i]) continue;
       
+      const bbox1 = detections[i].bbox;
+      
       for (let j = i + 1; j < detections.length; j++) {
         if (!keep[j]) continue;
         
-        const iou = this.calculateIoU(
-          new Float32Array(detections[i].bbox),
-          new Float32Array(detections[j].bbox)
-        );
+        const bbox2 = detections[j].bbox;
+        const iou = this.calculateIoU(bbox1, bbox2);
+        
         if (iou > this.iouThreshold) {
           keep[j] = false;
         }
       }
     }
     
-    const results: DetectionResult[] = [];
-    
+    // Convert kept detections to results
     for (let i = 0; i < detections.length; i++) {
-      if (!keep[i]) continue;
-      
-      const det = detections[i];
-      
-      results.push({
-        bbox: det.bbox,
-        confidence: det.score,
-        landmarks: det.kps || []
-      });
+      if (keep[i]) {
+        const det = detections[i];
+        const bbox = det.bbox;
+        
+        // Scale back to original image coordinates
+        const scaledBbox: [number, number, number, number] = [
+          (bbox[0] - scaleParams.offsetX) / scaleParams.scale,
+          (bbox[1] - scaleParams.offsetY) / scaleParams.scale,
+          (bbox[2] - scaleParams.offsetX) / scaleParams.scale,
+          (bbox[3] - scaleParams.offsetY) / scaleParams.scale
+        ];
+        
+        // Convert keypoints to array of [x, y] pairs
+        const landmarks: number[][] = [];
+        for (let k = 0; k < 5; k++) {
+          landmarks.push([
+            (det.kps[k * 2] - scaleParams.offsetX) / scaleParams.scale,
+            (det.kps[k * 2 + 1] - scaleParams.offsetY) / scaleParams.scale
+          ]);
+        }
+        
+        results.push({
+          bbox: scaledBbox,
+          confidence: det.score,
+          landmarks
+        });
+      }
+    }
+    
+    // Debug final results  
+    if (results.length > 0 && this.frameCount % 30 === 0) {
+      console.log(`✅ SCRFD Final: ${results.length} faces detected with confidences:`, results.map(r => r.confidence.toFixed(3)));
     }
     
     return results;

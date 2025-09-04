@@ -18,7 +18,7 @@ export type MenuOption =
 
 function App() {
   const [currentMenu, setCurrentMenu] = useState<MenuOption>('main') // Back to main menu
-  const [isConnected, setIsConnected] = useState(true) // Temporarily bypass backend connection for face detection testing
+  const [isConnected] = useState(true) // Temporarily bypass backend connection for face detection testing
   const [systemStats, setSystemStats] = useState({
     legacy_faces: 0,
     enhanced_templates: 0,

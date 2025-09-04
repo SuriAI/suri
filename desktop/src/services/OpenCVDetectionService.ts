@@ -1,4 +1,4 @@
-import cv from 'opencv4nodejs';
+import * as cv from 'opencv4nodejs';
 import * as ort from 'onnxruntime-node';
 import { join } from 'path';
 
