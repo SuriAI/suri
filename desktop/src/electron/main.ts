@@ -5,6 +5,32 @@ import isDev from "./util.js";
 import { SimpleScrfdService } from "../services/SimpleScrfdService.js";
 import type { SerializableImageData } from "../services/SimpleScrfdService.js";
 
+// Dynamic GPU configuration - works on both old and new hardware
+// Enable modern GPU features for capable hardware, graceful fallback for old GPUs
+
+// Always try modern GPU features first (for new laptops)
+app.commandLine.appendSwitch('enable-features', 'Vulkan,UseSkiaRenderer,WebGPU')
+app.commandLine.appendSwitch('enable-unsafe-webgpu')
+app.commandLine.appendSwitch('enable-webgl')
+app.commandLine.appendSwitch('enable-webgl2-compute-context')
+app.commandLine.appendSwitch('ignore-gpu-blocklist')
+app.commandLine.appendSwitch('ignore-gpu-blacklist') // Legacy support
+app.commandLine.appendSwitch('enable-gpu-rasterization')
+app.commandLine.appendSwitch('enable-zero-copy')
+
+// Add graceful fallback options for old hardware
+app.commandLine.appendSwitch('enable-unsafe-swiftshader') // Software WebGL fallback
+app.commandLine.appendSwitch('use-gl', 'any') // Try any available GL implementation
+
+// Platform-specific optimizations
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('use-angle', 'default') // Let ANGLE choose best backend
+}
+
+// Suppress GPU process errors for old hardware (cosmetic fix)
+app.commandLine.appendSwitch('disable-logging')
+app.commandLine.appendSwitch('log-level', '3') // Only show fatal errors
+
 let mainWindowRef: BrowserWindow | null = null
 let scrfdService: SimpleScrfdService | null = null
 const __filename = fileURLToPath(import.meta.url)
@@ -124,9 +150,12 @@ function createWindow(): void {
             nodeIntegration: false,
             contextIsolation: true,
             preload: path.join(__dirname, '../../src/electron/preload.js'),
-            // Disable autofill features to prevent DevTools autofill errors
-            enableBlinkFeatures: '',
-            disableBlinkFeatures: 'Autofill'
+            // Progressive GPU feature enablement
+            webgl: true,
+            experimentalFeatures: true,
+            // Enable modern features for capable hardware, ignore failures on old hardware
+            enableBlinkFeatures: 'WebGPU',
+            disableBlinkFeatures: 'Autofill' // Disable autofill to prevent console errors
         },
         titleBarStyle: 'hidden',
         frame: false,

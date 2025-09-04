@@ -40,17 +40,36 @@ export class ClientSideEdgeFaceService {
       
       console.log('📁 Loading EdgeFace model from /weights/edgeface-recognition.onnx...');
       
-      // Load EdgeFace ONNX model with ultra-optimized configuration
-      this.session = await ort.InferenceSession.create('/weights/edgeface-recognition.onnx', {
-        executionProviders: ['wasm'],  // Use only WASM for consistent performance
-        logSeverityLevel: 4,  // Minimal logging
-        logVerbosityLevel: 0,
-        enableCpuMemArena: true,
-        enableMemPattern: true,
-        executionMode: 'sequential',
-        graphOptimizationLevel: 'all',
-        enableProfiling: false
-      });
+      // Load EdgeFace ONNX model with comprehensive GPU acceleration and fallback
+      try {
+        this.session = await ort.InferenceSession.create('/weights/edgeface-recognition.onnx', {
+          executionProviders: [
+            'webgpu',    // Try WebGPU first (fastest if available)
+            'webgl',     // Fallback to WebGL GPU acceleration
+            'wasm'       // Final fallback to optimized CPU
+          ],
+          logSeverityLevel: 4,  // Minimal logging
+          logVerbosityLevel: 0,
+          enableCpuMemArena: true,
+          enableMemPattern: true,
+          executionMode: 'sequential',
+          graphOptimizationLevel: 'all',
+          enableProfiling: false
+        });
+      } catch (error) {
+        console.warn('⚠️ GPU providers failed for EdgeFace, falling back to CPU-only:', error);
+        // If GPU providers fail completely, use CPU-only configuration
+        this.session = await ort.InferenceSession.create('/weights/edgeface-recognition.onnx', {
+          executionProviders: ['wasm'],
+          logSeverityLevel: 4,
+          logVerbosityLevel: 0,
+          enableCpuMemArena: true,
+          enableMemPattern: true,
+          executionMode: 'sequential',
+          graphOptimizationLevel: 'all',
+          enableProfiling: false
+        });
+      }
       
       console.log('✅ EdgeFace model loaded successfully');
       console.log('📊 EdgeFace Input Names:', this.session.inputNames);
