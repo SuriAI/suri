@@ -1058,16 +1058,11 @@ export default function LiveCameraRecognition() {
         <div className="flex flex-col justify-between">
           {/* Video Stream */}
           <div className="flex-1 relative flex items-center justify-center">
-            <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-lg">
+            <div className="relative w-full max-w-3xl aspect-video overflow-hidden rounded-lg">
               {/* Video element - primary display */}
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover block"
-                style={{
-                  display: "block",
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                }}
                 autoPlay
                 playsInline
                 muted
@@ -1160,7 +1155,7 @@ export default function LiveCameraRecognition() {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-center space-x-6 mt-2 flex-row-reverse">
+          <div className="flex items-center justify-center space-x-4 mt-2 flex-row-reverse">
             <button
               onClick={isStreaming ? stopCamera : startCamera}
               className={`px-8 py-3 rounded-xl text-sm font-light backdrop-blur-xl border transition-all duration-500 ${
@@ -1169,7 +1164,7 @@ export default function LiveCameraRecognition() {
                   : "bg-white/[0.05] border-white/[0.10] text-white/80 hover:bg-white/[0.08]"
               }`}
             >
-              {isStreaming ? "⏹ Stop Camera" : "▶ Start Camera"}
+              {isStreaming ? "Stop Camera" : "Open Camera"}
             </button>
 
             <button
@@ -1180,7 +1175,7 @@ export default function LiveCameraRecognition() {
                   : "bg-white/[0.05] border-white/[0.10] text-white/80 hover:bg-white/[0.08]"
               }`}
             >
-              {registrationMode ? "✕ Cancel" : "👤 Register Face"}
+              {registrationMode ? "✕ Cancel" : "Register Face"}
             </button>
 
             <button
