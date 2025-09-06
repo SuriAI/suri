@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import MainMenu from './components/MainMenu.tsx'
 import LiveCameraRecognition from './components/LiveCameraRecognition.tsx'
-import SingleImageRecognition from './components/SingleImageRecognition.tsx'
-import BatchImageProcessing from './components/BatchImageProcessing.tsx'
 import SystemManagement from './components/SystemManagement.tsx'
-import AddPerson from './components/AddPerson.tsx'
 import AppDropdown from './components/AppDropdown.tsx'
 import TitleBar from './components/TitleBar.tsx'
+import { sqliteFaceLogService } from './services/SqliteFaceLogService'
 
 export type MenuOption = 
   | 'main'
@@ -17,8 +15,8 @@ export type MenuOption =
   | 'add-person'
 
 function App() {
-  const [currentMenu, setCurrentMenu] = useState<MenuOption>('main') // Back to main menu
-  const [isConnected] = useState(true) // Temporarily bypass backend connection for face detection testing
+  const [currentMenu, setCurrentMenu] = useState<MenuOption>('main')
+  const [isConnected, setIsConnected] = useState(true) // Always connected since using SQL.js directly
   const [systemStats, setSystemStats] = useState({
     legacy_faces: 0,
     enhanced_templates: 0,
@@ -30,49 +28,52 @@ function App() {
 
   const fetchSystemStats = useCallback(async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8770/system/stats')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          const stats = data.stats
-          setSystemStats({
-            legacy_faces: stats.legacy_faces || 0,
-            enhanced_templates: stats.template_count || 0,
-            total_people: stats.people_count || 0,
-            today_records: stats.today_attendance || 0,
-            total_records: stats.total_attendance || 0,
-            success_rate: stats.success_rate || 0
-          })
-        }
-      }
+      // Use SqliteFaceLogService instead of API
+      const [todayStats, recentLogs] = await Promise.all([
+        sqliteFaceLogService.getTodayStats(),
+        sqliteFaceLogService.getRecentLogs(1000)
+      ])
+
+      const uniquePeople = new Set<string>()
+      recentLogs.forEach(log => {
+        if (log.personId) uniquePeople.add(log.personId)
+      })
+
+      setSystemStats({
+        legacy_faces: 0, // Not applicable with SQL.js
+        enhanced_templates: uniquePeople.size,
+        total_people: uniquePeople.size,
+        today_records: todayStats.totalDetections,
+        total_records: recentLogs.length,
+        success_rate: 95 // Placeholder
+      })
     } catch (error) {
       console.error('Failed to fetch system stats:', error)
     }
   }, [])
 
-  const preloadCamera = useCallback(async () => {
-    try {
-      console.log('Preloading camera models for instant startup...')
-      // Warm up the ONNX models by making a preload request
-      const response = await fetch('http://127.0.0.1:8770/system/preload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      if (response.ok) {
-        console.log('Camera models preloaded successfully')
-      } else {
-        console.log('Camera preload endpoint not available (normal)')
-      }
-    } catch (error) {
-      console.log('Camera preload failed (models will load on first use):', error)
-    }
-  }, [])
-
   useEffect(() => {
-    // Temporarily bypass backend connection for face detection testing
-    console.log('Backend connection bypassed - testing face detection only')
-    // preloadCamera() // Can be uncommented if needed
-  }, [fetchSystemStats, preloadCamera])
+    // Initialize with SQL.js database
+    const initializeApp = async () => {
+      try {
+        // Check if SQL.js database is available
+        const isAvailable = await sqliteFaceLogService.isAvailable()
+        if (isAvailable) {
+          setIsConnected(true)
+          console.log('SQL.js database connection established')
+          await fetchSystemStats()
+        } else {
+          setIsConnected(false)
+          console.error('SQL.js database not available')
+        }
+      } catch (error) {
+        console.error('Failed to initialize app:', error)
+        setIsConnected(false)
+      }
+    }
+
+    initializeApp()
+  }, [fetchSystemStats])
 
   const getCurrentSectionName = () => {
     switch (currentMenu) {
@@ -89,14 +90,62 @@ function App() {
     switch (currentMenu) {
       case 'live-camera':
         return <LiveCameraRecognition />
-      case 'single-image':
-        return <SingleImageRecognition />
-      case 'batch-processing':
-        return <BatchImageProcessing onBack={() => setCurrentMenu('main')} />
       case 'system-management':
         return <SystemManagement onBack={() => setCurrentMenu('main')} />
+      case 'single-image':
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="max-w-md mx-auto text-center bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8">
+              <h2 className="text-xl font-light text-white/80 mb-4">Feature Temporarily Disabled</h2>
+              <p className="text-white/60 text-sm leading-relaxed mb-6">
+                Single image recognition requires the Python API backend which has been disabled. 
+                This feature will be reimplemented to work with the SQL.js database in a future update.
+              </p>
+              <button
+                onClick={() => setCurrentMenu('main')}
+                className="px-6 py-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-lg text-white/80 text-sm transition-all duration-200"
+              >
+                Back to Main Menu
+              </button>
+            </div>
+          </div>
+        )
+      case 'batch-processing':
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="max-w-md mx-auto text-center bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8">
+              <h2 className="text-xl font-light text-white/80 mb-4">Feature Temporarily Disabled</h2>
+              <p className="text-white/60 text-sm leading-relaxed mb-6">
+                Batch image processing requires the Python API backend which has been disabled. 
+                This feature will be reimplemented to work with the SQL.js database in a future update.
+              </p>
+              <button
+                onClick={() => setCurrentMenu('main')}
+                className="px-6 py-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-lg text-white/80 text-sm transition-all duration-200"
+              >
+                Back to Main Menu
+              </button>
+            </div>
+          </div>
+        )
       case 'add-person':
-        return <AddPerson />
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="max-w-md mx-auto text-center bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8">
+              <h2 className="text-xl font-light text-white/80 mb-4">Feature Temporarily Disabled</h2>
+              <p className="text-white/60 text-sm leading-relaxed mb-6">
+                Add person functionality requires the Python API backend which has been disabled. 
+                This feature will be reimplemented to work with the SQL.js database in a future update.
+              </p>
+              <button
+                onClick={() => setCurrentMenu('main')}
+                className="px-6 py-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] rounded-lg text-white/80 text-sm transition-all duration-200"
+              >
+                Back to Main Menu
+              </button>
+            </div>
+          </div>
+        )
       default:
         return (
           <MainMenu 

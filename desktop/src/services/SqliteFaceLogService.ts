@@ -14,6 +14,11 @@ declare global {
       getTodayStats: () => Promise<TodayStats>;
       exportData: (filePath: string) => Promise<boolean>;
       clearOldData: (daysToKeep: number) => Promise<number>;
+      getAllPeople: () => Promise<string[]>;
+      getPersonLogs: (personId: string, limit?: number) => Promise<FaceLogEntry[]>;
+      updatePersonId: (oldPersonId: string, newPersonId: string) => Promise<number>;
+      deletePersonRecords: (personId: string) => Promise<number>;
+      getPersonStats: (personId: string) => Promise<PersonStats>;
     };
   }
 }
@@ -33,6 +38,15 @@ export interface TodayStats {
   uniquePersons: number;
   firstDetection: string | null;
   lastDetection: string | null;
+}
+
+export interface PersonStats {
+  totalDetections: number;
+  avgConfidence: number;
+  firstDetection: string | null;
+  lastDetection: string | null;
+  autoDetections: number;
+  manualDetections: number;
 }
 
 export class SqliteFaceLogService {
@@ -190,16 +204,6 @@ export class SqliteFaceLogService {
   }
 
   /**
-   * Get logs for a specific person
-   */
-  public async getPersonLogs(personId: string, limit: number = 20): Promise<FaceLogEntry[]> {
-    const allLogs = await this.getRecentLogs(1000); // Get more logs to filter
-    return allLogs
-      .filter(log => log.personId === personId)
-      .slice(0, limit);
-  }
-
-  /**
    * Get detection count for today
    */
   public async getTodayDetectionCount(): Promise<number> {
@@ -216,6 +220,93 @@ export class SqliteFaceLogService {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Get all unique people from the database
+   */
+  public async getAllPeople(): Promise<string[]> {
+    if (!this.checkElectronAPI()) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const people = await window.electronAPI!.getAllPeople();
+      return people;
+    } catch (error) {
+      console.error('Failed to get all people from SQLite:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get logs for a specific person (override the existing method with the new IPC call)
+   */
+  public async getPersonLogs(personId: string, limit: number = 50): Promise<FaceLogEntry[]> {
+    if (!this.checkElectronAPI()) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const logs = await window.electronAPI!.getPersonLogs(personId, limit);
+      return logs;
+    } catch (error) {
+      console.error('Failed to get person logs from SQLite:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update/rename a person ID in all their records
+   */
+  public async updatePersonId(oldPersonId: string, newPersonId: string): Promise<number> {
+    if (!this.checkElectronAPI()) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const updateCount = await window.electronAPI!.updatePersonId(oldPersonId, newPersonId);
+      console.log(`Updated ${updateCount} records: "${oldPersonId}" -> "${newPersonId}"`);
+      return updateCount;
+    } catch (error) {
+      console.error('Failed to update person ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all records for a specific person
+   */
+  public async deletePersonRecords(personId: string): Promise<number> {
+    if (!this.checkElectronAPI()) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const deleteCount = await window.electronAPI!.deletePersonRecords(personId);
+      console.log(`Deleted ${deleteCount} records for person: ${personId}`);
+      return deleteCount;
+    } catch (error) {
+      console.error('Failed to delete person records:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get detailed statistics for a specific person
+   */
+  public async getPersonStats(personId: string): Promise<PersonStats> {
+    if (!this.checkElectronAPI()) {
+      throw new Error('Electron API not available');
+    }
+
+    try {
+      const stats = await window.electronAPI!.getPersonStats(personId);
+      return stats;
+    } catch (error) {
+      console.error('Failed to get person stats:', error);
+      throw error;
     }
   }
 }

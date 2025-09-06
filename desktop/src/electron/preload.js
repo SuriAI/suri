@@ -35,6 +35,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     clearOldData: (daysToKeep) => {
         return ipcRenderer.invoke('face-db:clear-old-data', daysToKeep)
+    },
+    // Person Management API
+    getAllPeople: () => {
+        return ipcRenderer.invoke('face-db:get-all-people')
+    },
+    getPersonLogs: (personId, limit) => {
+        return ipcRenderer.invoke('face-db:get-person-logs', personId, limit)
+    },
+    updatePersonId: (oldPersonId, newPersonId) => {
+        return ipcRenderer.invoke('face-db:update-person-id', oldPersonId, newPersonId)
+    },
+    deletePersonRecords: (personId) => {
+        return ipcRenderer.invoke('face-db:delete-person', personId)
+    },
+    getPersonStats: (personId) => {
+        return ipcRenderer.invoke('face-db:get-person-stats', personId)
     }
 })
 
