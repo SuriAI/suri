@@ -139,7 +139,7 @@ export default function MainMenu({
                 </div>
                 <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-xl p-6 text-center group hover:bg-white/[0.04] transition-all duration-500">
                   <div className="text-2xl font-extralight text-white mb-2 tracking-tight">
-                    {Math.round(systemStats.success_rate * 100)}%
+                    {Math.round(systemStats.success_rate)}%
                   </div>
                   <div className="text-[10px] text-white/50 font-light uppercase tracking-[0.2em]">Success</div>
                 </div>

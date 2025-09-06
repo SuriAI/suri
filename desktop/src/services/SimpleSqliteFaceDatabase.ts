@@ -249,6 +249,179 @@ class SimpleSqliteFaceDatabase {
     }
   }
 
+  async getAllPeople(): Promise<string[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const result = this.db.exec(`
+        SELECT DISTINCT person_id 
+        FROM face_logs 
+        WHERE person_id != 'unknown'
+        ORDER BY person_id
+      `);
+
+      if (result.length === 0) return [];
+
+      return result[0].values.map(row => row[0] as string);
+    } catch (error) {
+      console.error('❌ SQL.js: Failed to get all people:', error);
+      throw error;
+    }
+  }
+
+  async getPersonLogs(personId: string, limit: number = 50): Promise<FaceLog[]> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const result = this.db.exec(`
+        SELECT id, timestamp, person_id, confidence, mode, processed_time
+        FROM face_logs 
+        WHERE person_id = ?
+        ORDER BY timestamp DESC 
+        LIMIT ?
+      `, [personId, limit]);
+
+      if (result.length === 0) return [];
+
+      const logs: FaceLog[] = [];
+      const values = result[0].values;
+      
+      for (const row of values) {
+        logs.push({
+          id: row[0] as string,
+          timestamp: row[1] as string,
+          personId: row[2] as string,
+          confidence: row[3] as number,
+          mode: row[4] as "auto" | "manual",
+          processed_time: row[5] as string
+        });
+      }
+
+      return logs;
+    } catch (error) {
+      console.error('❌ SQL.js: Failed to get person logs:', error);
+      throw error;
+    }
+  }
+
+  async updatePersonId(oldPersonId: string, newPersonId: string): Promise<number> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      // Check if new person ID already exists
+      const existsResult = this.db.exec(`
+        SELECT COUNT(*) FROM face_logs WHERE person_id = ?
+      `, [newPersonId]);
+
+      if (existsResult[0]?.values[0]?.[0] as number > 0) {
+        throw new Error(`Person ID "${newPersonId}" already exists`);
+      }
+
+      // Get count of records to be updated
+      const countResult = this.db.exec(`
+        SELECT COUNT(*) FROM face_logs WHERE person_id = ?
+      `, [oldPersonId]);
+
+      const updateCount = countResult[0]?.values[0]?.[0] as number || 0;
+
+      if (updateCount > 0) {
+        // Update all records with the old person ID
+        this.db.run(`
+          UPDATE face_logs 
+          SET person_id = ?, processed_time = CURRENT_TIMESTAMP 
+          WHERE person_id = ?
+        `, [newPersonId, oldPersonId]);
+        
+        // Save database to file
+        this.saveToFile();
+        
+        console.log(`✏️ Updated ${updateCount} records: "${oldPersonId}" -> "${newPersonId}"`);
+      }
+
+      return updateCount;
+    } catch (error) {
+      console.error('❌ Failed to update person ID:', error);
+      throw error;
+    }
+  }
+
+  async deletePersonRecords(personId: string): Promise<number> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      // Get count of records to be deleted
+      const countResult = this.db.exec(`
+        SELECT COUNT(*) FROM face_logs WHERE person_id = ?
+      `, [personId]);
+
+      const deleteCount = countResult[0]?.values[0]?.[0] as number || 0;
+
+      if (deleteCount > 0) {
+        // Delete all records for this person
+        this.db.run(`DELETE FROM face_logs WHERE person_id = ?`, [personId]);
+        
+        // Save database to file
+        this.saveToFile();
+        
+        console.log(`🗑️ Deleted ${deleteCount} records for person: ${personId}`);
+      }
+
+      return deleteCount;
+    } catch (error) {
+      console.error('❌ Failed to delete person records:', error);
+      throw error;
+    }
+  }
+
+  async getPersonStats(personId: string): Promise<{
+    totalDetections: number;
+    avgConfidence: number;
+    firstDetection: string | null;
+    lastDetection: string | null;
+    autoDetections: number;
+    manualDetections: number;
+  }> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const result = this.db.exec(`
+        SELECT 
+          COUNT(*) as total_detections,
+          AVG(confidence) as avg_confidence,
+          MIN(timestamp) as first_detection,
+          MAX(timestamp) as last_detection,
+          SUM(CASE WHEN mode = 'auto' THEN 1 ELSE 0 END) as auto_detections,
+          SUM(CASE WHEN mode = 'manual' THEN 1 ELSE 0 END) as manual_detections
+        FROM face_logs 
+        WHERE person_id = ?
+      `, [personId]);
+
+      if (result.length === 0 || result[0].values.length === 0) {
+        return {
+          totalDetections: 0,
+          avgConfidence: 0,
+          firstDetection: null,
+          lastDetection: null,
+          autoDetections: 0,
+          manualDetections: 0
+        };
+      }
+
+      const row = result[0].values[0];
+      return {
+        totalDetections: row[0] as number,
+        avgConfidence: (row[1] as number) || 0,
+        firstDetection: row[2] as string | null,
+        lastDetection: row[3] as string | null,
+        autoDetections: row[4] as number,
+        manualDetections: row[5] as number
+      };
+    } catch (error) {
+      console.error('❌ SQL.js: Failed to get person stats:', error);
+      throw error;
+    }
+  }
+
   async close(): Promise<void> {
     if (this.db) {
       try {

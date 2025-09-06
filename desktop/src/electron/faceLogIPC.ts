@@ -98,7 +98,7 @@ export function setupFaceLogIPC() {
   });
 
   // Export database
-  ipcMain.handle('face-db:export', async (_, filePath: string) => {
+  ipcMain.handle('face-db:export-data', async (_, filePath: string) => {
     try {
       await sqliteFaceDB.exportData(filePath);
       return { success: true };
@@ -127,6 +127,72 @@ export function setupFaceLogIPC() {
     } catch (error) {
       console.error('Failed to check database health:', error);
       return { success: false, error: String(error) };
+    }
+  });
+
+  // Get all people
+  ipcMain.handle('face-db:get-all-people', async () => {
+    try {
+      const people = await sqliteFaceDB.getAllPeople();
+      return people;
+    } catch (error) {
+      console.error('Failed to get all people:', error);
+      throw error;
+    }
+  });
+
+  // Get person logs
+  ipcMain.handle('face-db:get-person-logs', async (_, personId: string, limit: number = 50) => {
+    try {
+      const logs = await sqliteFaceDB.getPersonLogs(personId, limit);
+      return logs;
+    } catch (error) {
+      console.error('Failed to get person logs:', error);
+      throw error;
+    }
+  });
+
+  // Update person ID (rename)
+  ipcMain.handle('face-db:update-person-id', async (_, oldPersonId: string, newPersonId: string) => {
+    try {
+      const updateCount = await sqliteFaceDB.updatePersonId(oldPersonId, newPersonId);
+      return updateCount;
+    } catch (error) {
+      console.error('Failed to update person ID:', error);
+      throw error;
+    }
+  });
+
+  // Delete person records
+  ipcMain.handle('face-db:delete-person', async (_, personId: string) => {
+    try {
+      const deleteCount = await sqliteFaceDB.deletePersonRecords(personId);
+      return deleteCount;
+    } catch (error) {
+      console.error('Failed to delete person records:', error);
+      throw error;
+    }
+  });
+
+  // Get person stats
+  ipcMain.handle('face-db:get-person-stats', async (_, personId: string) => {
+    try {
+      const stats = await sqliteFaceDB.getPersonStats(personId);
+      return stats;
+    } catch (error) {
+      console.error('Failed to get person stats:', error);
+      throw error;
+    }
+  });
+
+  // Clear old data
+  ipcMain.handle('face-db:clear-old-data', async (_, daysToKeep: number) => {
+    try {
+      const deletedCount = await sqliteFaceDB.clearOldData(daysToKeep);
+      return deletedCount;
+    } catch (error) {
+      console.error('Failed to clear old data:', error);
+      throw error;
     }
   });
 
