@@ -1054,8 +1054,8 @@ export default function LiveCameraRecognition() {
   return (
     <div className="bg-black text-white mt-10 pb-2">
       {/* Main Content */}
-      <div className="flex justify-evenly">
-        <div className="flex flex-col justify-between">
+      <div className="flex justify-between px-10">
+        <div className="flex flex-col justify-between w-full">
           {/* Video Stream */}
           <div className="flex-1 relative flex items-center justify-center">
             <div className="relative w-full max-w-3xl aspect-video overflow-hidden rounded-lg">
