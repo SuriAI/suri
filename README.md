@@ -1,9 +1,10 @@
 # 🔥 Suri - Face Recognition System
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green)](https://fastapi.tiangolo.com)
+[![Electron](https://img.shields.io/badge/Electron-28%2B-blue)](https://electronjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://typescriptlang.org)
+[![React](https://img.shields.io/badge/React-18%2B-blue)](https://reactjs.org)
 
-**Enterprise-grade face recognition system built for real-world deployment**
+**Desktop face recognition system with real-time detection and SQL.js database**
 
 You can find the details of the model here:
 
@@ -12,37 +13,69 @@ You can find the details of the model here:
 
 ## 🎯 Features
 
-- **🔍 Face Detection**: YOLOv8n-based detection optimized for production
+- **🔍 Face Detection**: SCRFD-based detection optimized for real-time performance
 - **👤 Face Recognition**: EdgeFace embeddings for robust identity matching  
-- **🛡️ Security**: Anti-spoofing, liveness detection, encrypted storage
-- **⚡ Performance**: ONNX optimized models, async processing, GPU support
-- **🌐 API-First**: RESTful FastAPI with OpenAPI documentation
-- **📊 Monitoring**: Prometheus metrics, structured logging, health checks
-- **🔧 Configurable**: Environment-based configuration management
+- **� Local Database**: SQL.js database with automatic persistence
+- **⚡ Performance**: ONNX optimized models, WebGL acceleration
+- **🖥️ Desktop App**: Cross-platform Electron application
+- **📊 Analytics**: Real-time statistics and attendance tracking
+- **🎨 Modern UI**: Glass morphism design with dark theme
+- **🔧 Configurable**: Real-time settings and camera management
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- [Python 3.13+](https://www.python.org/downloads)
+- [Node.js 18+](https://nodejs.org/downloads)
 - [Git](https://git-scm.com/downloads)
 
 ### 1. Clone & Setup
 ```bash
 git clone https://github.com/johnraivenolazo/suri.git
+cd suri/desktop
 ```
 
+### 2. Install Dependencies
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
-### 3. Run Development Server
+### 3. Run Development
 ```bash
-uvicorn src.api.api_server:app --reload
+npm run dev
 ```
 
-### 4. Access API
-- **API**: http://localhost:8000
-- **Docs**: http://localhost:8000/docs  
+### 4. Build for Production
+```bash
+npm run build
+```
+
+## 📁 Project Structure
+
+```
+desktop/
+├── src/
+│   ├── components/          # React components
+│   ├── services/           # Face recognition & database services
+│   ├── electron/           # Electron main process
+│   └── weights/           # ONNX model files
+├── public/                # Static assets
+└── dist-electron/         # Built electron files
+```
+
+## 🎮 Usage
+
+1. **Live Camera Recognition**: Real-time face detection and recognition
+2. **System Management**: View attendance logs, manage people, database operations
+3. **Add Person**: Register new faces to the recognition system
+4. **Statistics**: View today's stats, recognition performance, and trends
+
+## 🔧 Technical Details
+
+- **Frontend**: React + TypeScript + Tailwind CSS
+- **Backend**: Electron main process with IPC communication
+- **Database**: SQL.js with automatic file persistence
+- **AI Models**: SCRFD detection + EdgeFace recognition (ONNX)
+- **Performance**: WebGL acceleration, optimized for real-time processing  
 
 <div align="center">
   <strong>Built with ❤️</strong><br>

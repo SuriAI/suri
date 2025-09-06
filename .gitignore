@@ -1,6 +1,28 @@
+# Environment files
 .env
-venv
+
+# Database files
+*.db
 face_database
+
+# Playground/testing
 playground
-__pycache__/
-scripts/__pycache__/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Electron
+desktop/dist/
+desktop/dist-electron/
+desktop/dist-react/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
