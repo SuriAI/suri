@@ -85,7 +85,6 @@ export class SqliteFaceLogService {
 
     try {
       const id = await window.electronAPI!.logDetection(detection);
-      console.log('Detection logged to SQLite:', { id, detection });
       return id;
     } catch (error) {
       console.error('Failed to log detection to SQLite:', error);
@@ -137,9 +136,6 @@ export class SqliteFaceLogService {
 
     try {
       const success = await window.electronAPI!.exportData(filePath);
-      if (success) {
-        console.log('Data exported successfully to:', filePath);
-      }
       return success;
     } catch (error) {
       console.error('Failed to export data from SQLite:', error);
@@ -157,7 +153,6 @@ export class SqliteFaceLogService {
 
     try {
       const deletedCount = await window.electronAPI!.clearOldData(daysToKeep);
-      console.log(`Cleared ${deletedCount} old records from SQLite`);
       return deletedCount;
     } catch (error) {
       console.error('Failed to clear old data from SQLite:', error);
@@ -267,7 +262,6 @@ export class SqliteFaceLogService {
 
     try {
       const updateCount = await window.electronAPI!.updatePersonId(oldPersonId, newPersonId);
-      console.log(`Updated ${updateCount} records: "${oldPersonId}" -> "${newPersonId}"`);
       return updateCount;
     } catch (error) {
       console.error('Failed to update person ID:', error);
@@ -285,7 +279,6 @@ export class SqliteFaceLogService {
 
     try {
       const deleteCount = await window.electronAPI!.deletePersonRecords(personId);
-      console.log(`Deleted ${deleteCount} records for person: ${personId}`);
       return deleteCount;
     } catch (error) {
       console.error('Failed to delete person records:', error);
