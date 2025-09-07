@@ -126,7 +126,11 @@ export default function LiveCameraRecognition() {
       // Get user media with high frame rate for smooth display
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "user"
+          facingMode: "user",
+          // Disable ALL video processing that can cause delays
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
         },
         audio: false,
       });
@@ -1262,7 +1266,7 @@ export default function LiveCameraRecognition() {
           {/* Recent Logs */}
           <div className="flex-1 p-4">
             <h3 className="text-lg font-light mb-4">Recent Logs</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-96 overflow-y-auto recent-logs-scroll">
               {recentLogs.length === 0 ? (
                 <div className="text-white/50 text-sm text-center py-4">
                   No logs yet
