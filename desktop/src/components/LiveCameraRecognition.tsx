@@ -126,14 +126,7 @@ export default function LiveCameraRecognition() {
       // Get user media with high frame rate for smooth display
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
-          frameRate: { ideal: 60, min: 30 }, // High FPS for smooth display
-          facingMode: "user",
-          // Disable ALL video processing that can cause delays
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
+          facingMode: "user"
         },
         audio: false,
       });
