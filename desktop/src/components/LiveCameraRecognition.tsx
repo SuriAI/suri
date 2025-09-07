@@ -1072,7 +1072,7 @@ export default function LiveCameraRecognition() {
   return (
     <div className="h-screen bg-black text-white flex flex-col">
       {/* Header Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
+      <div className="flex items-center justify-between px-6 py-2 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-light tracking-wide">Face Detection</h1>
           <div className="flex items-center space-x-2">
@@ -1083,13 +1083,13 @@ export default function LiveCameraRecognition() {
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           {/* Mode Toggle */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-white/60">Mode:</span>
             <button
               onClick={() => setLoggingMode(loggingMode === 'auto' ? 'manual' : 'auto')}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`px-3 py-0 rounded text-sm font-medium transition-colors ${
                 loggingMode === 'auto' 
                   ? 'bg-blue-600 text-white' 
                   : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
@@ -1102,7 +1102,7 @@ export default function LiveCameraRecognition() {
           {/* Registration Mode */}
           <button
             onClick={() => setRegistrationMode(!registrationMode)}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-0 rounded text-sm font-medium transition-colors ${
               registrationMode 
                 ? 'bg-orange-600 text-white' 
                 : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
@@ -1119,7 +1119,7 @@ export default function LiveCameraRecognition() {
         <div className="flex-1 flex flex-col">
           {/* Video Container */}
           <div className="relative flex items-center justify-center px-4 pt-4">
-            <div className="relative w-full max-w-4xl aspect-video overflow-hidden rounded-lg bg-white/[0.02] backdrop-blur-xl border border-white/[0.08]">
+            <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-white/[0.02] backdrop-blur-xl border border-white/[0.08]">
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover block"
@@ -1138,7 +1138,7 @@ export default function LiveCameraRecognition() {
               
               {/* Detection Overlay */}
               {detectionResults.length > 0 && (
-                <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded px-3 py-2">
+                <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded px-3 py-2">
                   <div className="text-sm text-green-400">
                     {detectionResults.length} face{detectionResults.length > 1 ? 's' : ''} detected
                   </div>
