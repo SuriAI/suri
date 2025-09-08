@@ -370,33 +370,11 @@ export class WebFaceService {
   }
 
   /**
-   * Load face database from localStorage (for persistence)
-   * Note: In Web Worker context, we'll use a different storage mechanism
+   * Load face database (deprecated - kept for compatibility)
+   * Note: This method is no longer used as we use file-based storage via electron API
    */
   loadDatabase(): boolean {
-    
-      // Check if we're in a Web Worker context
-      if (typeof self !== 'undefined' && typeof window === 'undefined') {
-        // We're in a Web Worker - localStorage is not available
-        // For now, just return false and let the main thread handle database loading
-        
-        return false;
-      }
-      
-      // We're in main thread context
-      const stored = localStorage.getItem('edgeface_database');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.database.clear();
-        
-        for (const [personId, embeddingArray] of Object.entries(data)) {
-          this.database.set(personId, new Float32Array(embeddingArray as number[]));
-        }
-        
-        
-        return true;
-      }
-    
+    console.warn('loadDatabase() is deprecated - using file-based storage via electron API');
     return false;
   }
 
@@ -431,31 +409,11 @@ export class WebFaceService {
   }
 
   /**
-   * Save face database to localStorage
-   * Note: In Web Worker context, we'll send data to main thread
+   * Save face database (deprecated - kept for compatibility) 
+   * Note: This method is no longer used as we use file-based storage via electron API
    */
   saveDatabase(): boolean {
-    try {
-      // Check if we're in a Web Worker context
-      if (typeof self !== 'undefined' && typeof window === 'undefined') {
-        // We're in a Web Worker - localStorage is not available
-        // For now, just return false and let the main thread handle database saving
-        
-        return false;
-      }
-      
-      // We're in main thread context
-      const data: Record<string, number[]> = {};
-      for (const [personId, embedding] of this.database.entries()) {
-        data[personId] = Array.from(embedding);
-      }
-      
-      localStorage.setItem('edgeface_database', JSON.stringify(data));
-      
-      return true;
-    } catch {
-      
-      return false;
-    }
+    console.warn('saveDatabase() is deprecated - using file-based storage via electron API');
+    return false;
   }
 }

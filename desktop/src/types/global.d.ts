@@ -30,6 +30,7 @@ declare global {
   }
 
   interface FaceRecognitionAPI {
+    // Face Detection & Recognition
     initializeFaceRecognition: (options?: { similarityThreshold?: number }) => Promise<{ success: boolean; error?: string }>
     processFrame: (imageData: ImageData) => Promise<{
       detections: Array<{
@@ -46,12 +47,33 @@ declare global {
     registerPerson: (personId: string, imageData: ImageData, landmarks: number[][]) => Promise<boolean>
     getAllPersons: () => Promise<string[]>
     removePerson: (personId: string) => Promise<boolean>
-    // Face Log Database API
+    
+    // Face Log Database API (SQLite)
     logDetection: (detection: FaceLogEntry) => Promise<string>
     getRecentLogs: (limit?: number) => Promise<FaceLogEntry[]>
     getTodayStats: () => Promise<{ totalDetections: number; uniquePersons: number; firstDetection: string | null; lastDetection: string | null }>
     exportData: (filePath: string) => Promise<boolean>
     clearOldData: (daysToKeep: number) => Promise<number>
+    
+    // Person Management API (SQLite)
+    getAllPeople: () => Promise<string[]>
+    getPersonLogs: (personId: string, limit?: number) => Promise<FaceLogEntry[]>
+    updatePersonId: (oldPersonId: string, newPersonId: string) => Promise<number>
+    deletePersonRecords: (personId: string) => Promise<number>
+    getPersonStats: (personId: string) => Promise<{ 
+      totalDetections: number; 
+      avgConfidence: number;
+      firstDetection: string | null; 
+      lastDetection: string | null;
+      autoDetections: number;
+      manualDetections: number;
+    }>
+    
+    // Face Recognition Database API (File-based JSON)
+    saveFaceDatabase: (databaseData: Record<string, number[]>) => Promise<{ success: boolean; error?: string }>
+    loadFaceDatabase: () => Promise<{ success: boolean; data: Record<string, number[]>; error?: string }>
+    removeFacePerson: (personId: string) => Promise<{ success: boolean; existed?: boolean; error?: string }>
+    getAllFacePersons: () => Promise<{ success: boolean; persons: string[]; error?: string }>
   }
 
   interface FaceLogEntry {

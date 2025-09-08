@@ -1,3 +1,5 @@
+import '../types/global.d.ts';
+
 interface DetectionResult {
   bbox: [number, number, number, number];
   confidence: number;
@@ -59,9 +61,19 @@ export class WorkerManager {
 
   private async syncDatabaseToWorker(): Promise<void> {
     try {
-      // Load database from localStorage
-      const stored = localStorage.getItem('edgeface_database');
-      const databaseData = stored ? JSON.parse(stored) : {};
+      // Load database from file via electron API
+      let databaseData = {};
+      if (window.electronAPI?.loadFaceDatabase) {
+        const result = await window.electronAPI.loadFaceDatabase();
+        if (result.success) {
+          databaseData = result.data;
+          console.log(`📂 Loaded face database from file (${Object.keys(databaseData).length} persons)`);
+        } else {
+          console.warn('Failed to load face database from file:', result.error);
+        }
+      } else {
+        console.warn('ElectronAPI not available - running in browser mode');
+      }
       
       // Send database to worker
       await this.sendMessage({
@@ -69,7 +81,7 @@ export class WorkerManager {
         data: { databaseData }
       });
       
-      console.log('📂 Database synced to worker');
+      console.log('📂 Face database synced to worker');
     } catch (error) {
       console.error('Failed to sync database to worker:', error);
     }
@@ -84,10 +96,17 @@ export class WorkerManager {
       
       const { databaseData } = response as { databaseData: Record<string, number[]> };
       
-      // Save to localStorage
-      localStorage.setItem('edgeface_database', JSON.stringify(databaseData));
-      
-      console.log('💾 Database synced from worker to localStorage');
+      // Save to file via electron API
+      if (window.electronAPI?.saveFaceDatabase) {
+        const result = await window.electronAPI.saveFaceDatabase(databaseData);
+        if (result.success) {
+          console.log(`💾 Face database saved to file (${Object.keys(databaseData).length} persons)`);
+        } else {
+          console.error('Failed to save face database to file:', result.error);
+        }
+      } else {
+        console.warn('ElectronAPI not available - cannot save to file');
+      }
     } catch (error) {
       console.error('Failed to sync database from worker:', error);
     }

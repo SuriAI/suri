@@ -5,6 +5,11 @@
 *.db
 face_database
 
+# Face recognition data (personal/sensitive)
+desktop/public/face-logs/
+**/face-logs/
+face-embeddings.json
+
 # Playground/testing
 playground
 

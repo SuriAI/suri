@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { sqliteFaceLogService } from '../services/SqliteFaceLogService';
 import type { FaceLogEntry } from '../services/SqliteFaceLogService';
+import '../types/global.d.ts';
 
 interface SystemOverview {
   total_people: number;
@@ -444,17 +445,18 @@ export default function SystemManagement({ onBack }: SystemManagementProps) {
 
   const deletePerson = async (person: string) => {
     try {
-      // First, remove from face recognition database (embeddings) in localStorage
+      // First, remove from face recognition database (embeddings) - use file-based approach
       let embeddingRemoved = false;
       try {
-        const stored = localStorage.getItem('edgeface_database');
-        if (stored) {
-          const databaseData = JSON.parse(stored);
-          if (databaseData[person]) {
-            delete databaseData[person];
-            localStorage.setItem('edgeface_database', JSON.stringify(databaseData));
+        if (window.electronAPI?.removeFacePerson) {
+          // Use file-based approach
+          const result = await window.electronAPI.removeFacePerson(person);
+          if (result.success && result.existed) {
             embeddingRemoved = true;
+            console.log(`🗑️ Removed "${person}" from face recognition database file`);
           }
+        } else {
+          console.warn('ElectronAPI not available - cannot remove from face database');
         }
       } catch (e) {
         console.error('Failed to remove person from face database:', e);
@@ -464,8 +466,11 @@ export default function SystemManagement({ onBack }: SystemManagementProps) {
       const deleteCount = await sqliteFaceLogService.deletePersonRecords(person);
       
       if (deleteCount > 0 || embeddingRemoved) {
-        const embeddingMsg = embeddingRemoved ? "face recognition data and " : "";
-        const message = `✅ Successfully deleted "${person}" ${embeddingMsg}${deleteCount} attendance records from the system`;
+        const parts = [];
+        if (embeddingRemoved) parts.push("face recognition data");
+        if (deleteCount > 0) parts.push(`${deleteCount} attendance records`);
+        
+        const message = `✅ Successfully deleted "${person}" - ${parts.join(" and ")} removed from the system`;
         alert(message);
         
         // Notify live recognition to remove this person from in-memory embeddings

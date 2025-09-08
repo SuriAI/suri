@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron';
 import { sqliteFaceDB } from '../services/SimpleSqliteFaceDatabase.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function setupFaceLogIPC() {
   // Remove any existing handlers to prevent duplicate registration
@@ -19,7 +21,12 @@ export function setupFaceLogIPC() {
     'face-db:update-person-id',
     'face-db:delete-person',
     'face-db:get-person-stats',
-    'face-db:clear-old-data'
+    'face-db:clear-old-data',
+    // Face Recognition Database handlers
+    'face-recognition:save-database',
+    'face-recognition:load-database',
+    'face-recognition:remove-person',
+    'face-recognition:get-all-persons'
   ];
   
   handlers.forEach(handler => {
@@ -217,6 +224,99 @@ export function setupFaceLogIPC() {
     } catch (error) {
       console.error('Failed to clear old data:', error);
       throw error;
+    }
+  });
+
+  // ==================== FACE RECOGNITION DATABASE HANDLERS ====================
+  
+  const getFaceDbPath = () => {
+    return path.join(process.cwd(), 'public', 'face-logs', 'face-embeddings.json');
+  };
+
+  // Save face recognition database to file
+  ipcMain.handle('face-recognition:save-database', async (_, databaseData: Record<string, number[]>) => {
+    try {
+      const dbPath = getFaceDbPath();
+      const dbDir = path.dirname(dbPath);
+      
+      // Ensure directory exists
+      if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+      }
+      
+      // Save to file with pretty formatting
+      fs.writeFileSync(dbPath, JSON.stringify(databaseData, null, 2), 'utf8');
+      console.log(`💾 Face database saved to: ${dbPath}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to save face database:', error);
+      return { success: false, error: String(error) };
+    }
+  });
+
+  // Load face recognition database from file
+  ipcMain.handle('face-recognition:load-database', async () => {
+    try {
+      const dbPath = getFaceDbPath();
+      
+      if (!fs.existsSync(dbPath)) {
+        console.log('Face database file does not exist, returning empty database');
+        return { success: true, data: {} };
+      }
+      
+      const fileContent = fs.readFileSync(dbPath, 'utf8');
+      const databaseData = JSON.parse(fileContent);
+      console.log(`📂 Face database loaded from: ${dbPath}`);
+      return { success: true, data: databaseData };
+    } catch (error) {
+      console.error('Failed to load face database:', error);
+      return { success: false, error: String(error), data: {} };
+    }
+  });
+
+  // Remove person from face recognition database
+  ipcMain.handle('face-recognition:remove-person', async (_, personId: string) => {
+    try {
+      const dbPath = getFaceDbPath();
+      
+      if (!fs.existsSync(dbPath)) {
+        return { success: false, message: 'Face database file does not exist' };
+      }
+      
+      const fileContent = fs.readFileSync(dbPath, 'utf8');
+      const databaseData = JSON.parse(fileContent);
+      
+      const existed = personId in databaseData;
+      if (existed) {
+        delete databaseData[personId];
+        fs.writeFileSync(dbPath, JSON.stringify(databaseData, null, 2), 'utf8');
+        console.log(`🗑️ Removed "${personId}" from face database`);
+      }
+      
+      return { success: true, existed };
+    } catch (error) {
+      console.error('Failed to remove person from face database:', error);
+      return { success: false, error: String(error) };
+    }
+  });
+
+  // Get all persons from face recognition database
+  ipcMain.handle('face-recognition:get-all-persons', async () => {
+    try {
+      const dbPath = getFaceDbPath();
+      
+      if (!fs.existsSync(dbPath)) {
+        return { success: true, persons: [] };
+      }
+      
+      const fileContent = fs.readFileSync(dbPath, 'utf8');
+      const databaseData = JSON.parse(fileContent);
+      const persons = Object.keys(databaseData);
+      
+      return { success: true, persons };
+    } catch (error) {
+      console.error('Failed to get all persons from face database:', error);
+      return { success: false, error: String(error), persons: [] };
     }
   });
 
