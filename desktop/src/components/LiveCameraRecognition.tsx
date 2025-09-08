@@ -1082,59 +1082,18 @@ export default function LiveCameraRecognition() {
   }, [stopCamera]);
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
-      {/* Header Bar */}
-      <div className="flex items-center justify-between px-6 py-2 bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.08]">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-light tracking-wide">Face Detection</h1>
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${cameraStatus === 'recognition' ? 'bg-green-500' : 'bg-white/40'}`}></div>
-            <span className="text-sm text-white/60">
-              {cameraStatus === 'recognition' ? 'Active' : 'Inactive'}
-            </span>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          {/* Mode Toggle */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-white/60">Mode:</span>
-            <button
-              onClick={() => setLoggingMode(loggingMode === 'auto' ? 'manual' : 'auto')}
-              className={`px-3 py-0 rounded text-sm font-medium transition-colors ${
-                loggingMode === 'auto' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
-              }`}
-            >
-              {loggingMode === 'auto' ? 'Auto' : 'Manual'}
-            </button>
-          </div>
-          
-          {/* Registration Mode */}
-          <button
-            onClick={() => setRegistrationMode(!registrationMode)}
-            className={`px-3 py-0 rounded text-sm font-medium transition-colors ${
-              registrationMode 
-                ? 'bg-orange-600 text-white' 
-                : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
-            }`}
-          >
-            Register Face
-          </button>
-        </div>
-      </div>
+    <div className="bg-black text-white flex flex-col">
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex min-h-0">
         {/* Video Section */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Video Container */}
-          <div className="relative flex items-center justify-center px-4 pt-4">
-            <div className="relative w-full aspect-video overflow-hidden rounded-lg bg-white/[0.02] backdrop-blur-xl border border-white/[0.08]">
+          <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-4">
+            <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] backdrop-blur-xl border border-white/[0.08]">
               <video
                 ref={videoRef}
-                className="w-full h-full object-cover block"
+                className="absolute inset-0 w-full h-full object-cover"
                 autoPlay
                 muted
                 playsInline
@@ -1194,9 +1153,15 @@ export default function LiveCameraRecognition() {
           </div>
 
           {/* Controls Bar */}
-          <div className="px-4 pt-2 pb-4">
+          <div className="px-4 pt-2 pb-2">
             <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${cameraStatus === 'recognition' ? 'bg-green-500' : 'bg-white/40'}`}></div>
+                  <span className="text-sm text-white/60">
+                    {cameraStatus === 'recognition' ? 'Detection: Active' : 'Detection: Inactive'}
+                  </span>
+                </div>
                 <div className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   <span className="text-sm text-white/60">
@@ -1225,7 +1190,7 @@ export default function LiveCameraRecognition() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 bg-white/[0.02] backdrop-blur-xl border-l border-white/[0.08] flex flex-col">
+        <div className="w-80 pb-2 bg-white/[0.02] backdrop-blur-xl border-l border-white/[0.08] flex flex-col min-h-0 max-h-[84vh]">
           {/* Stats Panel */}
           <div className="px-4 pt-2 pb-4 border-b border-white/[0.08]">
             <h3 className="text-lg font-light mb-3">System Status</h3>
@@ -1244,6 +1209,33 @@ export default function LiveCameraRecognition() {
               <div className="flex justify-between items-center">
                 <span className="text-white/60">Today's Records</span>
                 <span className="font-mono">{systemStats.today_records}</span>
+              </div>
+
+              {/* Mode and Register controls moved from header */}
+              <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-white/60">Mode:</span>
+                  <button
+                    onClick={() => setLoggingMode(loggingMode === 'auto' ? 'manual' : 'auto')}
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      loggingMode === 'auto' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
+                    }`}
+                  >
+                    {loggingMode === 'auto' ? 'Auto' : 'Manual'}
+                  </button>
+                </div>
+                <button
+                  onClick={() => setRegistrationMode(!registrationMode)}
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    registrationMode 
+                      ? 'bg-orange-600 text-white' 
+                      : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
+                  }`}
+                >
+                  Register Face
+                </button>
               </div>
             </div>
           </div>
@@ -1279,9 +1271,9 @@ export default function LiveCameraRecognition() {
           </div>
 
           {/* Recent Logs */}
-          <div className="flex-1 p-4">
+          <div className="flex-1 p-4 overflow-hidden min-h-0">
             <h3 className="text-lg font-light mb-4">Recent Logs</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto recent-logs-scroll">
+            <div className="space-y-2 h-full overflow-y-auto recent-logs-scroll">
               {recentLogs.length === 0 ? (
                 <div className="text-white/50 text-sm text-center py-4">
                   No logs yet
