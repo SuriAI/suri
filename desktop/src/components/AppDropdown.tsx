@@ -3,11 +3,10 @@ import type { MenuOption } from '../App'
 
 interface AppDropdownProps {
   isConnected: boolean
-  onRefreshStats: () => void
   onMenuSelect: (menu: MenuOption) => void
 }
 
-export default function AppDropdown({ isConnected, onRefreshStats, onMenuSelect }: AppDropdownProps) {
+export default function AppDropdown({ isConnected, onMenuSelect }: AppDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -24,19 +23,6 @@ export default function AppDropdown({ isConnected, onRefreshStats, onMenuSelect 
   }, [])
 
   const menuItems = [
-    {
-      id: 'refresh',
-      label: 'Refresh Data',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-        </svg>
-      ),
-      action: () => {
-        onRefreshStats()
-        setIsOpen(false)
-      }
-    },
     {
       id: 'system-management',
       label: 'System Management',
@@ -120,26 +106,26 @@ export default function AppDropdown({ isConnected, onRefreshStats, onMenuSelect 
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-72 bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-2xl z-50 overflow-hidden">
           {/* Menu Header */}
-          <div className="px-4 py-3 border-b border-white/[0.05]">
+          <div className="px-4 py-3 border-b border-white/[0.05] bg-black">
             <div className="flex items-center space-x-3">
                 <div className="text-sm font-light text-white">Settings</div>
             </div>
           </div>
 
           {/* Menu Items */}
-          <div>
+          <div className='bg-black'>
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={item.action}
                 className="w-full flex items-center space-x-3 px-4 py-3 text-left text-white/80 hover:text-white hover:bg-white/[0.05] transition-all duration-200 group"
               >
-                <div className="flex items-center justify-center w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors duration-200">
+                <div className="flex items-center justify-center w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors duration-200 flex-shrink-0">
                   {item.icon}
                 </div>
-                <span className="text-sm font-light">{item.label}</span>
+                <span className="text-sm font-light whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
               </button>
             ))}
           </div>
