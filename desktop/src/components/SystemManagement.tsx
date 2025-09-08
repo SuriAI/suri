@@ -902,52 +902,140 @@ export default function SystemManagement({ onBack }: SystemManagementProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Glass Header */}
-        <div className="mb-12">
-          <div className="flex items-center space-x-6 mb-4">
-            <button
-              onClick={onBack}
-              className="px-6 py-3 bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.10] text-white rounded-xl font-light transition-all duration-300"
-            >
-              ← Back
-            </button>
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Dynamic Gradient Mesh Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/[0.008] via-transparent to-white/[0.005] animate-gradient"></div>
+        <div className="absolute top-1/4 -left-1/4 w-3/4 h-3/4 bg-gradient-radial from-white/[0.015] via-white/[0.003] to-transparent blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 -right-1/4 w-3/4 h-3/4 bg-gradient-radial from-white/[0.012] via-white/[0.002] to-transparent blur-3xl animate-pulse delay-3000"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10"></div>
+      </div>
+
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Revolutionary Header Design */}
+        <div className="px-6 md:px-8 pt-8 md:pt-12 pb-12 md:pb-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 md:mb-20 space-y-6 md:space-y-0">
+              {/* Brand Identity */}
+              <div className="flex items-end">
+                <div>
+                  <h1 className="text-5xl md:text-7xl font-extralight text-white tracking-[-0.03em] leading-none">
+                    SYSTEM
+                  </h1>
+                  <div className="flex items-center space-x-2 md:space-x-3 mt-2">
+                    <div className="w-1 h-1 bg-white/40 rounded-full"></div>
+                    <p className="text-[10px] md:text-xs text-white/50 font-light tracking-[0.2em] md:tracking-[0.25em] uppercase">Management</p>
+                    <div className="w-1 h-1 bg-white/40 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Back Button */}
+              <div className="flex items-center">
+                <button
+                  onClick={onBack}
+                  className="group flex items-center space-x-3 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] text-white/80 hover:text-white rounded-xl font-light transition-all duration-300"
+                >
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                  </svg>
+                  <span className="text-sm">Back to Camera</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Floating Statistics Dashboard */}
+            {systemData && (
+              <div className="relative mb-12 md:mb-16">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] via-white/[0.01] to-white/[0.02] blur-xl"></div>
+                <div className="relative grid grid-cols-2 md:flex md:justify-center gap-8 md:gap-16 py-6 md:py-8">
+                  <div className="text-center group cursor-default">
+                    <div className="text-2xl md:text-4xl font-extralight text-white mb-2 tracking-tight group-hover:text-white/90 transition-colors duration-500">
+                      {systemData.overview.total_people}
+                    </div>
+                    <div className="text-[8px] md:text-[9px] text-white/40 font-light uppercase tracking-[0.25em] md:tracking-[0.3em]">People</div>
+                    <div className="w-8 md:w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2 md:mt-3 group-hover:via-white/40 transition-colors duration-500 mx-auto"></div>
+                  </div>
+                  
+                  <div className="text-center group cursor-default">
+                    <div className="text-2xl md:text-4xl font-extralight text-white mb-2 tracking-tight group-hover:text-white/90 transition-colors duration-500">
+                      {systemData.overview.enhanced_templates}
+                    </div>
+                    <div className="text-[8px] md:text-[9px] text-white/40 font-light uppercase tracking-[0.25em] md:tracking-[0.3em]">Templates</div>
+                    <div className="w-8 md:w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2 md:mt-3 group-hover:via-white/40 transition-colors duration-500 mx-auto"></div>
+                  </div>
+                  
+                  <div className="text-center group cursor-default">
+                    <div className="text-2xl md:text-4xl font-extralight text-white mb-2 tracking-tight group-hover:text-white/90 transition-colors duration-500">
+                      {systemData.overview.today_attendance}
+                    </div>
+                    <div className="text-[8px] md:text-[9px] text-white/40 font-light uppercase tracking-[0.25em] md:tracking-[0.3em]">Today</div>
+                    <div className="w-8 md:w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2 md:mt-3 group-hover:via-white/40 transition-colors duration-500 mx-auto"></div>
+                  </div>
+                  
+                  <div className="text-center group cursor-default">
+                    <div className="text-2xl md:text-4xl font-extralight text-white mb-2 tracking-tight group-hover:text-white/90 transition-colors duration-500">
+                      {Math.round(systemData.overview.overall_success_rate)}%
+                    </div>
+                    <div className="text-[8px] md:text-[9px] text-white/40 font-light uppercase tracking-[0.25em] md:tracking-[0.3em]">Success</div>
+                    <div className="w-8 md:w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mt-2 md:mt-3 group-hover:via-white/40 transition-colors duration-500 mx-auto"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <h1 className="text-4xl font-extralight text-white tracking-tight">System Management</h1>
-          <p className="text-sm text-white/50 mt-3 font-light">Manage people, settings, and system analytics</p>
         </div>
 
-        {/* Glass Navigation */}
-        <div className="flex flex-wrap gap-3 mb-12">
-          {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'people', label: 'People' },
-            { id: 'search', label: 'Search' },
-            { id: 'stats', label: 'Advanced Stats' },
-            { id: 'maintenance', label: 'Maintenance' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveView(tab.id)}
-              className={`px-6 py-3 rounded-xl font-light transition-all duration-300 ${
-                activeView === tab.id
-                  ? 'bg-white/[0.08] backdrop-blur-xl border border-white/[0.15] text-white'
-                  : 'bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] text-white/70 hover:bg-white/[0.05] hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Main Content */}
+        <div className="flex-1 px-6 md:px-8 pb-12 md:pb-16">
+          <div className="max-w-7xl mx-auto">
+            {/* Glass Navigation */}
+            <div className="flex flex-wrap gap-3 mb-12">
+              {[
+                { id: 'overview', label: 'Overview' },
+                { id: 'people', label: 'People' },
+                { id: 'search', label: 'Search' },
+                { id: 'stats', label: 'Advanced Stats' },
+                { id: 'maintenance', label: 'Maintenance' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveView(tab.id)}
+                  className={`px-6 py-3 rounded-xl font-light transition-all duration-300 ${
+                    activeView === tab.id
+                      ? 'bg-white/[0.08] backdrop-blur-xl border border-white/[0.15] text-white'
+                      : 'bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] text-white/70 hover:bg-white/[0.05] hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div>
+              {activeView === 'overview' && renderOverview()}
+              {activeView === 'people' && renderPeopleList()}
+              {activeView === 'search' && renderSearch()}
+              {activeView === 'stats' && renderAdvancedStats()}
+              {activeView === 'maintenance' && renderMaintenance()}
+            </div>
+          </div>
         </div>
 
-        {/* Content */}
-        <div>
-          {activeView === 'overview' && renderOverview()}
-          {activeView === 'people' && renderPeopleList()}
-          {activeView === 'search' && renderSearch()}
-          {activeView === 'stats' && renderAdvancedStats()}
-          {activeView === 'maintenance' && renderMaintenance()}
+        {/* Elegant Footer */}
+        <div className="px-6 md:px-8 pb-6 md:pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-center">
+              <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 text-[8px] md:text-[9px] text-white/25 font-light tracking-[0.15em] md:tracking-[0.2em] uppercase text-center">
+                <span>Advanced Recognition</span>
+                <div className="hidden md:block w-1 h-1 bg-white/20 rounded-full"></div>
+                <span>Real-time Processing</span>
+                <div className="hidden md:block w-1 h-1 bg-white/20 rounded-full"></div>
+                <span>Intelligent Analytics</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Glass Delete Confirmation Dialog */}
