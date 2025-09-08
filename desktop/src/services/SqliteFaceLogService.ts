@@ -5,23 +5,7 @@
  * the SQLite database running in the Electron main process via IPC communication.
  */
 
-// Type declaration for window.electronAPI
-declare global {
-  interface Window {
-    electronAPI?: {
-      logDetection: (detection: FaceLogEntry) => Promise<string>;
-      getRecentLogs: (limit?: number) => Promise<FaceLogEntry[]>;
-      getTodayStats: () => Promise<TodayStats>;
-      exportData: (filePath: string) => Promise<boolean>;
-      clearOldData: (daysToKeep: number) => Promise<number>;
-      getAllPeople: () => Promise<string[]>;
-      getPersonLogs: (personId: string, limit?: number) => Promise<FaceLogEntry[]>;
-      updatePersonId: (oldPersonId: string, newPersonId: string) => Promise<number>;
-      deletePersonRecords: (personId: string) => Promise<number>;
-      getPersonStats: (personId: string) => Promise<PersonStats>;
-    };
-  }
-}
+import '../types/global.d.ts';
 
 export interface FaceLogEntry {
   id?: string;
