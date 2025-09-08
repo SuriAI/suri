@@ -1,23 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
-// Face Recognition API
+// Face Log Database API
 contextBridge.exposeInMainWorld('electronAPI', {
-    initializeFaceRecognition: (options) => {
-        return ipcRenderer.invoke('face-recognition:initialize', options)
-    },
-    processFrame: (imageData) => {
-        return ipcRenderer.invoke('face-recognition:process-frame', imageData)
-    },
-    registerPerson: (personId, imageData, landmarks) => {
-        return ipcRenderer.invoke('face-recognition:register-person', personId, imageData, landmarks)
-    },
-    getAllPersons: () => {
-        return ipcRenderer.invoke('face-recognition:get-persons')
-    },
-    removePerson: (personId) => {
-        return ipcRenderer.invoke('face-recognition:remove-person', personId)
-    },
-    // Face Log Database API
     logDetection: (detection) => {
         return ipcRenderer.invoke('face-db:log-detection', detection)
     },

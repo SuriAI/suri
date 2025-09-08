@@ -451,6 +451,13 @@ export default function SystemManagement({ onBack }: SystemManagementProps) {
         const message = `✅ Successfully deleted "${person}" and ${deleteCount} attendance records from the system`;
         alert(message);
         
+        // Notify live recognition to remove this person from in-memory embeddings
+        try {
+          window.dispatchEvent(new CustomEvent('edgeface-person-removed', { detail: { personId: person } }));
+        } catch (e) {
+          console.error('Failed to dispatch person removal event:', e);
+        }
+
         // Refresh data after deletion
         fetchSystemData();
         fetchAdvancedStats();

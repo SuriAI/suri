@@ -2,8 +2,7 @@ import { app, BrowserWindow, ipcMain } from "electron"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import isDev from "./util.js";
-import { ScrfdService } from "../services/ScrfdService.js";
-import type { SerializableImageData } from "../services/ScrfdService.js";
+// Legacy SCRFD service (node-onnx) is unused now; using WebWorker-based pipeline in renderer
 import { setupFaceLogIPC } from "./faceLogIPC.js";
 import { sqliteFaceDB } from "../services/SimpleSqliteFaceDatabase.js";
 
@@ -33,92 +32,12 @@ app.commandLine.appendSwitch('disable-logging')
 app.commandLine.appendSwitch('log-level', '3') // Only show fatal errors
 
 let mainWindowRef: BrowserWindow | null = null
-let scrfdService: ScrfdService | null = null
+// Removed legacy scrfdService usage
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Face Recognition Pipeline IPC handlers
-ipcMain.handle('face-recognition:initialize', async () => {
-    try {
-        if (!scrfdService) {
-            scrfdService = new ScrfdService()
-        }
-
-        // Initialize the SCRFD service
-        const weightsDir = path.join(__dirname, '../../../weights')
-        await scrfdService.initialize(path.join(weightsDir, 'scrfd_2.5g_kps_640x640.onnx'))
-        
-        return { success: true, message: 'SCRFD service initialized successfully' }
-    } catch (error) {
-        return { success: false, error: error instanceof Error ? error.message : String(error) }
-    }
-})
-
-ipcMain.handle('face-recognition:process-frame', async (_evt, imageData: SerializableImageData) => {
-    try {
-        if (!scrfdService) {
-            throw new Error('SCRFD service not initialized')
-        }
-        
-        const startTime = performance.now()
-        
-        // Process frame through SCRFD service
-        const detections = await scrfdService.detect(imageData)
-        const processingTime = Math.round(performance.now() - startTime)
-        
-        // Convert to expected format
-        const result = {
-            detections: detections.map(det => ({
-                bbox: det.bbox,
-                confidence: det.confidence,
-                landmarks: det.landmarks,
-                recognition: {
-                    personId: null,
-                    similarity: 0
-                }
-            })),
-            processingTime
-        }
-        
-        return result
-    } catch (error) {
-        return {
-            detections: [],
-            processingTime: 0,
-            error: error instanceof Error ? error.message : String(error)
-        }
-    }
-})
-
-ipcMain.handle('face-recognition:register-person', async () => {
-    try {
-        // For now, just return success since we're focusing on detection
-        // TODO: Implement face registration when recognition service is added
-        return true
-    } catch {
-        return false
-    }
-})
-
-ipcMain.handle('face-recognition:get-persons', async () => {
-    try {
-        // For now, return empty array since we're focusing on detection
-        // TODO: Implement person list when recognition service is added
-        return []
-    } catch {
-        return []
-    }
-})
-
-ipcMain.handle('face-recognition:remove-person', async () => {
-    try {
-        // For now, just return success since we're focusing on detection
-        // TODO: Implement person removal when recognition service is added
-        return true
-    } catch {
-        return false
-    }
-})
+// Removed legacy face-recognition IPC; detection/recognition handled in renderer via Web Workers
 
 // Window control IPC handlers
 ipcMain.handle('window:minimize', () => {
@@ -229,7 +148,5 @@ app.on('window-all-closed', () => {
 // Handle app quit
 app.on('before-quit', () => {
     // Clean up resources
-    if (scrfdService) {
-        // ScrfdService doesn't need explicit disposal
-    }
+    // nothing to dispose
 })
