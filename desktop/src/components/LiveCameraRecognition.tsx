@@ -28,6 +28,11 @@ export default function LiveCameraRecognition() {
   const [registrationMode, setRegistrationMode] = useState(false);
   const [newPersonId, setNewPersonId] = useState("");
 
+  // Camera selection states
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>("");
+  const [camerasLoaded, setCamerasLoaded] = useState(false);
+
   // New intelligent logging system states
   const [loggingMode, setLoggingMode] = useState<"auto" | "manual">("auto");
   const [recentLogs, setRecentLogs] = useState<FaceLogEntry[]>([]);
@@ -66,6 +71,30 @@ export default function LiveCameraRecognition() {
       // Silently fail - database might not be available
     }
   }, []);
+
+  // Function to enumerate available cameras
+  const enumerateCameras = useCallback(async () => {
+    try {
+      // First request permission to access camera devices
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      
+      // Now enumerate devices
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      setAvailableCameras(videoDevices);
+      
+      // Auto-select first camera if none selected
+      if (videoDevices.length > 0 && !selectedCameraId) {
+        setSelectedCameraId(videoDevices[0].deviceId);
+      }
+      
+      setCamerasLoaded(true);
+    } catch (error) {
+      console.error('Failed to enumerate cameras:', error);
+      setCamerasLoaded(true); // Still mark as loaded even if failed
+    }
+  }, [selectedCameraId]);
 
   // Processing state management
   const processingActiveRef = useRef(false);
@@ -124,16 +153,19 @@ export default function LiveCameraRecognition() {
       setCameraStatus("starting");
 
       // Get user media with high frame rate for smooth display
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: "user",
+          // Use selected camera if available, otherwise use default
+          ...(selectedCameraId ? { deviceId: { exact: selectedCameraId } } : { facingMode: "user" }),
           // Disable ALL video processing that can cause delays
           echoCancellation: false,
           noiseSuppression: false,
           autoGainControl: false,
         },
         audio: false,
-      });
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -203,7 +235,7 @@ export default function LiveCameraRecognition() {
       setIsStreaming(false);
       setCameraStatus("stopped");
     }
-  }, [initializePipeline]);
+  }, [initializePipeline, selectedCameraId]);
 
   const stopCamera = useCallback(() => {
     // Immediately disable detection updates
@@ -1057,8 +1089,10 @@ export default function LiveCameraRecognition() {
       }
     };
 
+    // Initialize cameras and database
     initializeData();
-  }, []);
+    enumerateCameras();
+  }, [enumerateCameras]);
 
   // When SystemManagement deletes a person, refresh the in-memory embeddings
   useEffect(() => {
@@ -1183,12 +1217,32 @@ export default function LiveCameraRecognition() {
                 <div className="text-sm text-white/60">
                   Processing: {processingTime.toFixed(1)}ms
                 </div>
+                
+                {/* Camera Selection */}
+                {camerasLoaded && availableCameras.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-white/60">Camera:</span>
+                    <select
+                      value={selectedCameraId}
+                      onChange={(e) => setSelectedCameraId(e.target.value)}
+                      disabled={isStreaming || availableCameras.length <= 1}
+                      className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {availableCameras.map((camera, index) => (
+                        <option key={camera.deviceId} value={camera.deviceId} className="bg-black text-white">
+                          {camera.label || `Camera ${index + 1}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center space-x-3">
                 <button
                   onClick={isStreaming ? stopCamera : startCamera}
-                  className={`px-4 py-2 rounded font-medium transition-colors ${
+                  disabled={!camerasLoaded}
+                  className={`px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     isStreaming
                       ? 'bg-red-600 hover:bg-red-700 text-white'
                       : 'bg-green-600 hover:bg-green-700 text-white'
