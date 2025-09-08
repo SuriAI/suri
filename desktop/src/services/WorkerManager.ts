@@ -148,6 +148,16 @@ export class WorkerManager {
     }
   }
 
+  /**
+   * Public helper to reload the recognition database in the worker
+   * from localStorage. Useful when another part of the app mutates
+   * the stored database (e.g., deleting a person from SystemManagement).
+   */
+  async reloadDatabaseFromLocalStorage(): Promise<void> {
+    if (!this.isInitialized) return;
+    await this.syncDatabaseToWorker();
+  }
+
   async removePerson(personId: string): Promise<boolean> {
     if (!this.isInitialized) {
       throw new Error('Worker manager not initialized');

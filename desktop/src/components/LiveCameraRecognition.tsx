@@ -1060,6 +1060,21 @@ export default function LiveCameraRecognition() {
     initializeData();
   }, []);
 
+  // When SystemManagement deletes a person, refresh the in-memory embeddings
+  useEffect(() => {
+    const handler = async () => {
+      try {
+        if (workerManagerRef.current) {
+          await workerManagerRef.current.reloadDatabaseFromLocalStorage?.();
+        }
+      } catch (err) {
+        console.error('Failed to reload recognition database after deletion:', err);
+      }
+    };
+    window.addEventListener('edgeface-person-removed', handler as EventListener);
+    return () => window.removeEventListener('edgeface-person-removed', handler as EventListener);
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
