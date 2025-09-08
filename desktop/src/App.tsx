@@ -92,7 +92,6 @@ function App() {
             <div className="flex items-center space-x-3">
               <AppDropdown 
                 isConnected={isConnected} 
-                onRefreshStats={fetchSystemStats}
                 onMenuSelect={setCurrentMenu}
               />
             </div>
