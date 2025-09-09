@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-18%2B-blue)](https://reactjs.org)
 
-**Desktop face recognition system with real-time detection and SQL.js database**
+**Desktop face recognition system with real-time detection and SQLite3 database**
 
 You can find the details of the model here:
 
@@ -15,7 +15,7 @@ You can find the details of the model here:
 
 - **🔍 Face Detection**: SCRFD-based detection optimized for real-time performance
 - **👤 Face Recognition**: EdgeFace embeddings for robust identity matching  
-- **� Local Database**: SQL.js database with automatic persistence
+- **🗄️ Local Database**: SQLite3 database with automatic persistence
 - **⚡ Performance**: ONNX optimized models, WebGL acceleration
 - **🖥️ Desktop App**: Cross-platform Electron application
 - **📊 Analytics**: Real-time statistics and attendance tracking
@@ -73,7 +73,7 @@ desktop/
 
 - **Frontend**: React + TypeScript + Tailwind CSS
 - **Backend**: Electron main process with IPC communication
-- **Database**: SQL.js with automatic file persistence
+- **Database**: SQLite3 with automatic file persistence
 - **AI Models**: SCRFD detection + EdgeFace recognition (ONNX)
 - **Performance**: WebGL acceleration, optimized for real-time processing  
 
