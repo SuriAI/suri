@@ -104,22 +104,23 @@ export class FaceDeduplicationService {
       };
     }
     
-    const shouldLog = this.shouldLogSession(session, timestamp);
+    const shouldLog = this.shouldLogSession(session);
     
     if (shouldLog && !session.logged) {
       session.logged = true;
+      
       return {
         shouldLog: true,
         bestDetection: session.bestDetection,
         sessionId,
-        reason: 'Quality threshold met with temporal stability'
+        reason: 'Face recognized - logged instantly (deduplication prevents re-logging)'
       };
     }
     
     return {
       shouldLog: false,
       sessionId,
-      reason: this.getNoLogReason(session, timestamp)
+      reason: this.getNoLogReason(session)
     };
   }
 
@@ -130,25 +131,6 @@ export class FaceDeduplicationService {
       confidence * this.config.qualityWeightConfidence +
       similarity * this.config.qualityWeightSimilarity +
       normalizedSize * this.config.qualityWeightSize
-    );
-  }
-
-  private isSessionStable(session: DetectionSession): boolean {
-    if (session.detections.length < this.config.minDetectionsForLog) {
-      return false;
-    }
-    
-    const confidences = session.detections.map(d => d.confidence);
-    const confMean = confidences.reduce((a, b) => a + b) / confidences.length;
-    const confVariation = Math.max(...confidences) - Math.min(...confidences);
-    
-    const similarities = session.detections.map(d => d.similarity);
-    const simMean = similarities.reduce((a, b) => a + b) / similarities.length;
-    const simVariation = Math.max(...similarities) - Math.min(...similarities);
-    
-    return (
-      confVariation / confMean < this.config.stabilityThreshold &&
-      simVariation / simMean < this.config.stabilityThreshold
     );
   }
 
@@ -173,34 +155,22 @@ export class FaceDeduplicationService {
     return sessionId;
   }
 
-  private shouldLogSession(session: DetectionSession, currentTime: number): boolean {
-    const sessionDuration = currentTime - session.firstDetected;
-    const timeSinceLastDetection = currentTime - session.lastDetected;
-    
+  private shouldLogSession(session: DetectionSession): boolean {
+    // Already logged this session? Don't log again (DEDUPLICATION)
     if (session.logged) return false;
-    if (!session.bestDetection || session.bestDetection.qualityScore < 0.7) return false;
-    if (sessionDuration > this.config.maxSessionDurationMs) return true;
-    if (sessionDuration < this.config.minSessionDurationMs) return false;
     
-    if (this.isSessionStable(session) && session.bestDetection.qualityScore > 0.8) {
-      return true;
-    }
+    // No valid detection? Don't log
+    if (!session.bestDetection) return false;
     
-    if (timeSinceLastDetection > 5000 && session.bestDetection.qualityScore > 0.75) {
-      return true;
-    }
-    
-    return false;
+    // INSTANT LOGGING: Log immediately on first recognition of this person
+    // The deduplication happens by checking if session.logged is already true
+    return true;
   }
 
-  private getNoLogReason(session: DetectionSession, currentTime: number): string {
-    if (session.logged) return 'Already logged';
+  private getNoLogReason(session: DetectionSession): string {
+    if (session.logged) return 'Already logged - deduplication prevented re-logging';
     if (!session.bestDetection) return 'No valid detection';
-    if (session.bestDetection.qualityScore < 0.7) return 'Quality too low';
-    if (currentTime - session.firstDetected < this.config.minSessionDurationMs) return 'Session too short';
-    if (session.detections.length < this.config.minDetectionsForLog) return 'Insufficient detections';
-    if (!this.isSessionStable(session)) return 'Detections not stable';
-    return 'Collecting more data';
+    return 'Unknown reason';
   }
 
   private startSessionCleanup(): void {
