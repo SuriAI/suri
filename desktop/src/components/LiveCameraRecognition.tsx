@@ -138,7 +138,7 @@ export default function LiveCameraRecognition() {
       
       // Initialize anti-spoofing service
       if (!antiSpoofingServiceRef.current) {
-        antiSpoofingServiceRef.current = new WebAntiSpoofingService(0.5); // 0.5 threshold
+        antiSpoofingServiceRef.current = new WebAntiSpoofingService(); // Threshold between real and spoof scores
         await antiSpoofingServiceRef.current.initialize();
         console.log('✅ Anti-spoofing service initialized');
       }

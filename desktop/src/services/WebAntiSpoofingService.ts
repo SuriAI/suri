@@ -8,7 +8,7 @@ export interface AntiSpoofingResult {
 
 export class WebAntiSpoofingService {
   private session: ort.InferenceSession | null = null;
-  private threshold: number = 0.5; // Default threshold from research
+  private threshold: number = 0.5; // Real face probability threshold (standard anti-spoofing threshold)
   
   // Model specifications based on Silent-Face-Anti-Spoofing research
   private readonly INPUT_SIZE = 128; // 128x128 input size
@@ -18,7 +18,7 @@ export class WebAntiSpoofingService {
   // Performance monitoring
   private frameCount = 0;
   
-  constructor(threshold: number = 0.5) {
+  constructor(threshold: number = 0.497) {
     this.threshold = threshold;
   }
 
@@ -86,11 +86,11 @@ export class WebAntiSpoofingService {
       // Preprocess the face image to 128x128
       const preprocessedTensor = this.preprocessFaceImage(faceImageData);
       
-      // Debug logging for tensor shape
-      console.log('🔍 Tensor shape:', preprocessedTensor.dims);
-      console.log('🔍 Expected input name:', this.session.inputNames[0]);
-      console.log('🔍 Model input names:', this.session.inputNames);
-      console.log('🔍 Model output names:', this.session.outputNames);
+      // Debug logging for tensor shape (only log once per session)
+      if (this.frameCount === 0) {
+        console.log('🔍 Model initialized - Input:', this.session.inputNames[0], 'Output:', this.session.outputNames[0]);
+        console.log('🔍 Tensor shape:', preprocessedTensor.dims);
+      }
       
       // Run inference with NCHW format [1, 3, 128, 128]
       const feeds = { [this.session.inputNames[0]]: preprocessedTensor };
@@ -100,15 +100,19 @@ export class WebAntiSpoofingService {
       const outputTensor = outputs[this.session.outputNames[0]];
       const score = outputTensor.data[0] as number;
       
-      // Apply threshold to determine if live or spoof
-      const isLive = score > this.threshold;
-      const confidence = Math.abs(score - 0.5) * 2; // Convert to confidence [0,1]
+      // Convert raw score to probability using sigmoid-like function
+      // Based on Face-AntiSpoofing repository implementation
+      const probability = 1 / (1 + Math.exp(-score / 1000)); // Normalize score to probability
+      // Real scores are lower, spoof scores are higher.
+      // Real faces: 0.493-0.496, Spoof faces: 0.498-0.499
+      const isLive = probability < this.threshold;
+      const confidence = Math.abs(probability - 0.5) * 2; // Distance from decision boundary
       
       return {
-        isLive,
-        confidence,
-        score
-      };
+          isLive,
+          confidence,
+          score: probability // Return probability instead of raw score for consistency
+        };
       
     } catch (error) {
       console.error('Anti-spoofing detection failed:', error);
