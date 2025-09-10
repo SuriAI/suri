@@ -1191,7 +1191,7 @@ export default function LiveCameraRecognition() {
         <div className="flex-1 flex flex-col min-h-0">
           {/* Video Container */}
           <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-4">
-            <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] backdrop-blur-xl border border-white/[0.08]">
+            <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] border border-white/[0.08]">
               <video
                 ref={videoRef}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -1210,7 +1210,7 @@ export default function LiveCameraRecognition() {
               
               {/* Detection Overlay */}
               {detectionResults.length > 0 && (
-                <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded px-3 py-2">
+                <div className="absolute top-2 left-2 bg-black/80 rounded px-3 py-2">
                   <div className="text-sm text-green-400">
                     {detectionResults.length} face{detectionResults.length > 1 ? 's' : ''} detected
                   </div>
@@ -1222,7 +1222,7 @@ export default function LiveCameraRecognition() {
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                   <button
                     onClick={() => handleManualLog(bestDetection)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-150"
                   >
                     Log Detection
                   </button>
@@ -1231,19 +1231,19 @@ export default function LiveCameraRecognition() {
 
               {/* Registration Input */}
               {registrationMode && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-lg p-4">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/90 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
                     <input
                       type="text"
                       value={newPersonId}
                       onChange={(e) => setNewPersonId(e.target.value)}
                       placeholder="Enter person name"
-                      className="bg-white/[0.05] text-white px-3 py-2 rounded border border-white/[0.1] focus:border-blue-500 focus:outline-none placeholder-white/50"
+                      className="bg-white/[0.05] text-white px-3 py-2 rounded border border-white/[0.1] focus:border-blue-500 focus:outline-none placeholder-white/50 transition-colors duration-150"
                     />
                     <button
                       onClick={registerFace}
                       disabled={!newPersonId.trim() || detectionResults.length === 0}
-                      className="bg-green-600 hover:bg-green-700 disabled:bg-white/[0.05] disabled:text-white/40 text-white px-4 py-2 rounded font-medium transition-colors"
+                      className="bg-green-600 hover:bg-green-700 disabled:bg-white/[0.05] disabled:text-white/40 text-white px-4 py-2 rounded font-medium transition-colors duration-150"
                     >
                       Register
                     </button>
@@ -1255,7 +1255,7 @@ export default function LiveCameraRecognition() {
 
           {/* Controls Bar */}
           <div className="px-4 pt-2 pb-2">
-            <div className="bg-white/[0.02] backdrop-blur-xl border border-white/[0.08] rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <div className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${cameraStatus === 'recognition' ? 'bg-green-500' : 'bg-white/40'}`}></div>
@@ -1277,7 +1277,7 @@ export default function LiveCameraRecognition() {
                       value={selectedCameraId}
                       onChange={(e) => setSelectedCameraId(e.target.value)}
                       disabled={isStreaming || availableCameras.length <= 1}
-                      className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
                     >
                       {availableCameras.map((camera, index) => (
                         <option key={camera.deviceId} value={camera.deviceId} className="bg-black text-white">
@@ -1293,7 +1293,7 @@ export default function LiveCameraRecognition() {
                 <button
                   onClick={isStreaming ? stopCamera : startCamera}
                   disabled={!camerasLoaded}
-                  className={`px-4 py-2 rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`px-4 py-2 rounded font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
                     isStreaming
                       ? 'bg-red-600 hover:bg-red-700 text-white'
                       : 'bg-green-600 hover:bg-green-700 text-white'
@@ -1307,7 +1307,7 @@ export default function LiveCameraRecognition() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 pb-2 bg-white/[0.02] backdrop-blur-xl border-l border-white/[0.08] flex flex-col h-[84vh]">
+        <div className="w-80 pb-2 bg-white/[0.02] border-l border-white/[0.08] flex flex-col h-[84vh]">
           {/* Stats Panel */}
           <div className="px-4 pt-2 pb-4 border-b border-white/[0.08]">
             <h3 className="text-lg font-light mb-3">System Status</h3>
@@ -1334,9 +1334,9 @@ export default function LiveCameraRecognition() {
                   <span className="text-sm text-white/60">Mode:</span>
                   <button
                     onClick={() => setLoggingMode(loggingMode === 'auto' ? 'manual' : 'auto')}
-                    className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                      loggingMode === 'auto' 
-                        ? 'bg-blue-600 text-white' 
+                    className={`px-3 py-1 rounded text-sm font-medium transition-colors duration-150 ${
+                      loggingMode === 'auto'
+                        ? 'bg-green-600 text-white'
                         : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
                     }`}
                   >
@@ -1345,7 +1345,7 @@ export default function LiveCameraRecognition() {
                 </div>
                 <button
                   onClick={() => setRegistrationMode(!registrationMode)}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  className={`px-3 py-1 rounded text-sm font-medium transition-colors duration-150 ${
                     registrationMode 
                       ? 'bg-orange-600 text-white' 
                       : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
@@ -1367,7 +1367,7 @@ export default function LiveCameraRecognition() {
                 </div>
               ) : (
                 detectionResults.map((detection, index) => (
-                  <div key={index} className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded p-3">
+                  <div key={index} className="bg-white/[0.05] border border-white/[0.08] rounded p-3">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">
                         {detection.recognition?.personId || 'Unknown'}
@@ -1397,7 +1397,7 @@ export default function LiveCameraRecognition() {
                 </div>
               ) : (
                 recentLogs.map((log, index) => (
-                  <div key={index} className="bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded p-3">
+                  <div key={index} className="bg-white/[0.05] border border-white/[0.08] rounded p-3">
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="font-medium">{log.personId}</div>
