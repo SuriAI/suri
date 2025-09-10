@@ -317,7 +317,7 @@ export class WorkerManager {
           this.pendingMessages.delete(id);
           reject(new Error('Worker message timeout'));
         }
-      }, 10000); // 10 second timeout
+      }, 60000); // 60 second timeout for model loading
 
       this.worker.postMessage({ ...message, id });
     });
