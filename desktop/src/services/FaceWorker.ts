@@ -99,20 +99,7 @@ self.onmessage = async (event) => {
           break;
         }
         
-        // For real-time performance, only process the largest face for recognition
-        let largestDetection = validDetections[0];
-        let largestArea = 0;
-        
-        for (const det of validDetections) {
-          const [x1, y1, x2, y2] = det.bbox;
-          const area = (x2 - x1) * (y2 - y1);
-          if (area > largestArea) {
-            largestArea = area;
-            largestDetection = det;
-          }
-        }
-        
-        // Process all detections but only run recognition on the largest
+        // Process all detections and run recognition on each face
         const detectionsWithRecognition = [];
         
         for (const detection of validDetections) {
@@ -124,8 +111,8 @@ self.onmessage = async (event) => {
             similarity: 0
           };
           
-          // Only run recognition on the largest face for performance
-          if (detection === largestDetection && detection.landmarks && detection.landmarks.length >= 5) {
+          // Run recognition on all faces that have valid landmarks
+          if (detection.landmarks && detection.landmarks.length >= 5) {
             try {
               const result = await edgeFaceService.recognizeFace(imageData, detection.landmarks);
               recognitionResult = {

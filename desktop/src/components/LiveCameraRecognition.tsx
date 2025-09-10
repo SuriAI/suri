@@ -566,7 +566,7 @@ export default function LiveCameraRecognition() {
 
         // Intelligent face logging system
         if (validDetections.length > 0) {
-          // Find the best detection (highest confidence, largest face)
+          // Find the best detection (highest confidence, largest face) for UI display
           const bestDetection = validDetections.reduce((best, current) => {
             const currentScore = current.confidence * 
               ((current.bbox[2] - current.bbox[0]) * (current.bbox[3] - current.bbox[1]));
@@ -579,16 +579,25 @@ export default function LiveCameraRecognition() {
           setBestDetection(bestDetection);
           
           // Advanced auto-logging with deduplication for reliable detections
-          if (bestDetection.confidence > 0.6) { // Lowered threshold since deduplication handles quality
+          if (bestDetection.confidence > 0.6) {
             setIsReadyToLog(true);
-
-            // Advanced auto-logging - let deduplication service handle timing and quality
-            if (loggingMode === "auto" && bestDetection.recognition?.personId) {
-              // Always process through deduplication service - it handles all logic
-              handleAutoLog(bestDetection);
-            }
           } else {
             setIsReadyToLog(false);
+          }
+
+          // Process ALL valid detections for logging (not just the best one)
+          if (loggingMode === "auto") {
+            const recognizedFaces = validDetections.filter(d => d.confidence > 0.6 && d.recognition?.personId);
+            
+            if (recognizedFaces.length > 1) {
+              console.log(`🔥 MULTI-FACE FRAME: Processing ${recognizedFaces.length} faces simultaneously:`, 
+                recognizedFaces.map(f => `${f.recognition?.personId} (${f.confidence.toFixed(2)})`).join(', '));
+            }
+            
+            recognizedFaces.forEach(detection => {
+              // Process each recognized face through deduplication service
+              handleAutoLog(detection);
+            });
           }
         } else {
           setBestDetection(null);
