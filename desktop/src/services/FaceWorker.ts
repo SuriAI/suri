@@ -13,15 +13,14 @@ self.onmessage = async (event) => {
   try {
     switch (type) {
       case 'init': {
-        // Initialize all services
+        // Initialize only SCRFD and EdgeFace services (old fast approach)
         const { isDev } = data || {};
         scrfdService = new WebScrfdService();
         edgeFaceService = new WebFaceService(0.6);
-        antiSpoofingService = new WebAntiSpoofingService();
+        // antiSpoofingService will be initialized lazily when needed
         
         await scrfdService.initialize(isDev);
         await edgeFaceService.initialize(isDev);
-        await antiSpoofingService.initialize(isDev);
         
         // Don't load database here - we'll get it from main thread
         
@@ -285,9 +284,14 @@ self.onmessage = async (event) => {
       }
 
       case 'anti-spoofing-detect': {
-        // Create and initialize anti-spoofing service on-demand
+        // Lazy initialization of anti-spoofing service (only when needed for recognized faces)
         if (!antiSpoofingService) {
-          throw new Error('Anti-spoofing service not initialized');
+          console.log('🔄 Lazy initializing anti-spoofing service...');
+          antiSpoofingService = new WebAntiSpoofingService();
+          // Get isDev from current environment
+          const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+          await antiSpoofingService.initialize(isDev);
+          console.log('✅ Anti-spoofing service lazy initialized');
         }
         
         const { imageData } = data;
