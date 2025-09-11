@@ -41,10 +41,10 @@ export class WebAntiSpoofingService {
         executionProviders: ['wasm'],
         logSeverityLevel: 0,
         logVerbosityLevel: 1,
-        enableCpuMemArena: false,
-        enableMemPattern: false,
+        enableCpuMemArena: true,
+        enableMemPattern: true,
         executionMode: 'sequential',
-        graphOptimizationLevel: 'disabled',
+        graphOptimizationLevel: 'all',
       });
 
       console.log('✅ Anti-spoofing model loaded successfully');
