@@ -551,38 +551,37 @@ export default function LiveCameraRecognition() {
       
       // Add anti-spoofing detection for each valid face
       if (antiSpoofingServiceRef.current && validDetections.length > 0) {
-        const detectionsWithAntiSpoofing = await Promise.all(
-          validDetections.map(async (detection) => {
-            try {
-              // Preprocess face for anti-spoofing
-              const faceImageData = preprocessFaceForAntiSpoofing(
-                imageData,
-                detection.bbox,
-                detection.landmarks?.[0] // Use first landmark set if available
-              );
-              
-              // Run anti-spoofing detection
-              const antiSpoofingResult = await antiSpoofingServiceRef.current!.detectLiveness(faceImageData);
-              
-              return {
-                ...detection,
-                antiSpoofing: antiSpoofingResult
-              };
-            } catch (error) {
-              console.warn('Anti-spoofing failed for detection:', error);
-              // Return detection without anti-spoofing data on error
-              return {
-                ...detection,
-                antiSpoofing: {
-                  isLive: false,
-                  confidence: 0,
-                  score: 0
-                }
-              };
-            }
-          })
-        );
-        
+        const detectionsWithAntiSpoofing = [];
+        for (const detection of validDetections) {
+          try {
+            // Preprocess face for anti-spoofing
+            const faceImageData = preprocessFaceForAntiSpoofing(
+              imageData,
+              detection.bbox,
+              detection.landmarks?.[0] // Use first landmark set if available
+            );
+
+            // Run anti-spoofing detection
+            const antiSpoofingResult =
+              await antiSpoofingServiceRef.current!.detectLiveness(faceImageData);
+
+            detectionsWithAntiSpoofing.push({
+              ...detection,
+              antiSpoofing: antiSpoofingResult,
+            });
+          } catch (error) {
+            console.warn('Anti-spoofing failed for detection:', error);
+            // Return detection without anti-spoofing data on error
+            detectionsWithAntiSpoofing.push({
+              ...detection,
+              antiSpoofing: {
+                isLive: false,
+                confidence: 0,
+                score: 0,
+              },
+            });
+          }
+        }
         validDetections = detectionsWithAntiSpoofing;
       }
 
