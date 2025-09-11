@@ -19,8 +19,6 @@ export class WebAntiSpoofingService {
 
   // Model specs
   private readonly INPUT_SIZE = 128;
-  private readonly INPUT_MEAN = 0.5;
-  private readonly INPUT_STD = 0.5;
 
   private frameCount = 0;
 
@@ -92,17 +90,31 @@ export class WebAntiSpoofingService {
       const outputs = await this.session.run(feeds);
 
       const outputTensor = outputs[this.session.outputNames[0]];
-      const rawScore = outputTensor.data[0] as number;
+      const outputData = outputTensor.data as Float32Array;
 
-      // Use raw score directly - more negative = more live
-      // Real faces: ~-28, Fake faces: ~-12
-      const liveThreshold = -20; // Threshold between real (-28) and fake (-12)
-      const isLive = rawScore < liveThreshold;
+      // Model outputs [1,2] logits: [live_logit, spoof_logit]
+      const liveLogit = outputData[0];
+      const spoofLogit = outputData[1];
       
-      // Convert to 0-1 confidence based on distance from threshold
-      const confidence = Math.min(1, Math.abs(rawScore - liveThreshold) / 10);
+      // Apply softmax to get probabilities
+      const maxLogit = Math.max(spoofLogit, liveLogit);
+      const spoofExp = Math.exp(spoofLogit - maxLogit);
+      const liveExp = Math.exp(liveLogit - maxLogit);
+      const sumExp = spoofExp + liveExp;
+      
+      const liveProb = liveExp / sumExp;
+      
+      // Determine if live based on probability threshold
+      const liveThreshold = 0.5; // 50% confidence threshold
+      const isLive = liveProb > liveThreshold;
+      
+      // Use live probability as confidence
+      const confidence = liveProb;
+      
+      // Raw score is the difference between live and spoof logits
+      const rawScore = liveLogit - spoofLogit;
 
-      console.log(`Raw score: ${rawScore}, IsLive: ${isLive}, Confidence: ${confidence}`);
+      console.log(`Spoof: ${spoofLogit.toFixed(3)}, Live: ${liveLogit.toFixed(3)}, LiveProb: ${liveProb.toFixed(3)}, IsLive: ${isLive}`);
 
       return {
         isLive,
@@ -157,25 +169,50 @@ export class WebAntiSpoofingService {
   }
 
   /**
-   * Preprocess face image for ONNX model
+   * Preprocess face image for anti-spoofing model
+   * @param faceImageData - Face image data from canvas
+   * @returns Preprocessed tensor data
    */
-private preprocessFaceImage(imageData: ImageData): ort.Tensor {
-  const tensorData = new Float32Array(3 * this.INPUT_SIZE * this.INPUT_SIZE);
-  const data = imageData.data;
-
-  for (let i = 0; i < this.INPUT_SIZE * this.INPUT_SIZE; i++) {
-    const idx = i * 4;
-    const r = (data[idx] / 255 - this.INPUT_MEAN) / this.INPUT_STD;
-    const g = (data[idx + 1] / 255 - this.INPUT_MEAN) / this.INPUT_STD;
-    const b = (data[idx + 2] / 255 - this.INPUT_MEAN) / this.INPUT_STD;
-
-    tensorData[i] = r;
-    tensorData[this.INPUT_SIZE * this.INPUT_SIZE + i] = g;
-    tensorData[2 * this.INPUT_SIZE * this.INPUT_SIZE + i] = b;
+  private preprocessFaceImage(faceImageData: ImageData): ort.Tensor {
+    const { width, height } = faceImageData;
+    
+    // Create canvas for resizing
+    const canvas = new OffscreenCanvas(128, 128);
+    const ctx = canvas.getContext('2d')!;
+    
+    // Create ImageData and draw to canvas
+    const sourceCanvas = new OffscreenCanvas(width, height);
+    const sourceCtx = sourceCanvas.getContext('2d')!;
+    sourceCtx.putImageData(faceImageData, 0, 0);
+    
+    // Resize to exactly 128x128 with proper interpolation
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(sourceCanvas, 0, 0, 128, 128);
+    
+    // Get resized image data
+    const resizedImageData = ctx.getImageData(0, 0, 128, 128);
+    const resizedData = resizedImageData.data;
+    
+    // Convert to RGB and normalize to [0, 1] range (standard for most models)
+    const tensorData = new Float32Array(3 * 128 * 128);
+    
+    for (let i = 0; i < 128 * 128; i++) {
+      const pixelIndex = i * 4;
+      
+      // Extract RGB values
+      const r = resizedData[pixelIndex];
+      const g = resizedData[pixelIndex + 1];
+      const b = resizedData[pixelIndex + 2];
+      
+      // Normalize to [0, 1] and arrange in CHW format
+      tensorData[i] = r / 255.0;                    // R channel
+      tensorData[128 * 128 + i] = g / 255.0;        // G channel
+      tensorData[2 * 128 * 128 + i] = b / 255.0;    // B channel
+    }
+    
+    return new ort.Tensor('float32', tensorData, [1, 3, this.INPUT_SIZE, this.INPUT_SIZE]);
   }
-
-  return new ort.Tensor('float32', tensorData, [1, 3, this.INPUT_SIZE, this.INPUT_SIZE]);
-}
 
 
   setThreshold(threshold: number): void {
