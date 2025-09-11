@@ -25,8 +25,13 @@ export class WebAntiSpoofingService {
   /**
    * Initialize the ONNX model
    */
-  async initialize(modelUrl: string): Promise<void> {
-
+  async initialize(isDev?: boolean): Promise<void> {
+    // Use different paths for development vs production (old fast approach)
+    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
+    const modelUrl = isDevMode
+      ? '/weights/AntiSpoofing_bin_1.5_128.onnx'
+      : 'app://weights/AntiSpoofing_bin_1.5_128.onnx';
+    
     try {
       // Optimized session options for faster loading
       this.session = await ort.InferenceSession.create(modelUrl, {

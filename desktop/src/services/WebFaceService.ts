@@ -29,11 +29,16 @@ export class WebFaceService {
     this.similarityThreshold = similarityThreshold;
   }
 
-  async initialize(modelUrl: string): Promise<void> {
-        
-      try {
-        // Optimized session options for faster loading of large EdgeFace model (15MB)
-        this.session = await ort.InferenceSession.create(modelUrl, {
+  async initialize(isDev?: boolean): Promise<void> {
+    // Use different paths for development vs production (old fast approach)
+    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
+    const modelUrl = isDevMode
+      ? '/weights/edgeface-recognition.onnx'
+      : 'app://weights/edgeface-recognition.onnx';
+    
+    try {
+      // Optimized session options for faster loading of large EdgeFace model (15MB)
+      this.session = await ort.InferenceSession.create(modelUrl, {
           executionProviders: [
             'webgl',     // Use WebGL instead of WebGPU for better compatibility
             'wasm'       // Fallback to optimized CPU
