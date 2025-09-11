@@ -28,14 +28,22 @@ export class WebAntiSpoofingService {
   async initialize(modelUrl: string): Promise<void> {
 
     try {
+      // Optimized session options for faster loading
       this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: ['wasm'],
+        executionProviders: ['wasm'],  // Try WebGL first for better performance
         logSeverityLevel: 4,  // Minimal logging (4 = ERROR only)
         logVerbosityLevel: 0, // No verbose logs
         enableCpuMemArena: true,
         enableMemPattern: true,
-        executionMode: 'sequential',
-        graphOptimizationLevel: 'all',
+        executionMode: 'parallel',  // Use parallel execution
+        graphOptimizationLevel: 'extended',  // More aggressive optimization
+        enableProfiling: false,
+        extra: {
+          session: {
+            use_device_allocator_for_initializers: 1,
+            use_ort_model_bytes_directly: 1
+          }
+        }
       });
 
       console.log('✅ Anti-spoofing model loaded successfully');
@@ -222,6 +230,13 @@ export class WebAntiSpoofingService {
       threshold: this.threshold,
       inputSize: this.INPUT_SIZE,
     };
+  }
+
+  /**
+   * Check if the model is initialized (for lazy loading)
+   */
+  isInitialized(): boolean {
+    return this.session !== null;
   }
 
   dispose(): void {

@@ -32,6 +32,7 @@ export class WebFaceService {
   async initialize(modelUrl: string): Promise<void> {
         
       try {
+        // Optimized session options for faster loading of large EdgeFace model (15MB)
         this.session = await ort.InferenceSession.create(modelUrl, {
           executionProviders: [
             'webgl',     // Use WebGL instead of WebGPU for better compatibility
@@ -41,21 +42,35 @@ export class WebFaceService {
           logVerbosityLevel: 0,
           enableCpuMemArena: true,
           enableMemPattern: true,
-          executionMode: 'sequential',
-          graphOptimizationLevel: 'all',
-          enableProfiling: false
+          executionMode: 'parallel',  // Use parallel execution
+          graphOptimizationLevel: 'extended',  // More aggressive optimization
+          enableProfiling: false,
+          freeDimensionOverrides: {},  // Cache dimension overrides
+          extra: {
+            session: {
+              use_device_allocator_for_initializers: 1,
+              use_ort_model_bytes_directly: 1,
+              use_ort_model_bytes_for_initializers: 1
+            }
+          }
         });
       } catch {
-        // If WebGL fails, use CPU-only
+        // If WebGL fails, use CPU-only with optimizations
         this.session = await ort.InferenceSession.create(modelUrl, {
           executionProviders: ['wasm'],
           logSeverityLevel: 4,
           logVerbosityLevel: 0,
           enableCpuMemArena: true,
           enableMemPattern: true,
-          executionMode: 'sequential',
-          graphOptimizationLevel: 'basic',
-          enableProfiling: false
+          executionMode: 'parallel',
+          graphOptimizationLevel: 'extended',
+          enableProfiling: false,
+          extra: {
+            session: {
+              use_device_allocator_for_initializers: 1,
+              use_ort_model_bytes_directly: 1
+            }
+          }
         });
       }
   }

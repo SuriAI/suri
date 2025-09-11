@@ -19,9 +19,18 @@ self.onmessage = async (event) => {
         edgeFaceService = new WebFaceService(0.6);
         antiSpoofingService = new WebAntiSpoofingService();
         
-        await scrfdService.initialize(scrfdModelUrl);
-        await edgeFaceService.initialize(faceModelUrl);
-        await antiSpoofingService.initialize(antiSpoofingModelUrl);
+        // Load only critical models first (SCRFD + EdgeFace), lazy load anti-spoofing
+        const criticalInitPromises = [
+          scrfdService.initialize(scrfdModelUrl),
+          edgeFaceService.initialize(faceModelUrl)
+        ];
+        
+        await Promise.all(criticalInitPromises);
+        
+        // Initialize anti-spoofing in background (lazy loading)
+        antiSpoofingService.initialize(antiSpoofingModelUrl).catch(err => {
+          console.error('Anti-spoofing model failed to load:', err);
+        });
         
         // Don't load database here - we'll get it from main thread
         
@@ -287,6 +296,17 @@ self.onmessage = async (event) => {
       case 'anti-spoofing-detect': {
         if (!antiSpoofingService) {
           throw new Error('Anti-spoofing service not initialized');
+        }
+        
+        // Ensure anti-spoofing model is loaded (lazy loading check)
+        if (!antiSpoofingService.isInitialized()) {
+          // If not loaded yet, return a default safe result
+          self.postMessage({ 
+            type: 'anti-spoofing-result', 
+            data: { isReal: false, confidence: 0 },
+            id
+          });
+          break;
         }
         
         const { imageData } = data;

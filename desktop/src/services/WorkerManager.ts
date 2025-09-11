@@ -37,6 +37,9 @@ export class WorkerManager {
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
 
+    const startTime = performance.now();
+    console.log('🚀 Starting WorkerManager initialization...');
+
     // Create the worker
     this.worker = new Worker(new URL('./FaceWorker.ts', import.meta.url), {
       type: 'module'
@@ -52,8 +55,7 @@ export class WorkerManager {
     };
 
     // Initialize the worker with model paths
-    // In production, load models via IPC and create blob URLs for WebWorker access
-    // In dev, use direct HTTP URLs
+    // Use direct fetch URLs for both dev and production (dev-like speed)
     const isProduction = !window.location.protocol.startsWith('http');
     
     let scrfdModelUrl: string;
@@ -61,32 +63,33 @@ export class WorkerManager {
     let antiSpoofingModelUrl: string;
     
     if (isProduction) {
-      // Production: Load models via IPC and create blob URLs
-      if (!window.electronAPI) {
-        throw new Error('Electron API not available');
-      }
-      
-      const [scrfdBuffer, faceBuffer, antiSpoofingBuffer] = await Promise.all([
-        window.electronAPI.invoke('model:load', 'scrfd_2.5g_kps_640x640.onnx') as Promise<ArrayBuffer>,
-        window.electronAPI.invoke('model:load', 'edgeface-recognition.onnx') as Promise<ArrayBuffer>,
-        window.electronAPI.invoke('model:load', 'AntiSpoofing_bin_1.5_128.onnx') as Promise<ArrayBuffer>
-      ]);
-      
-      scrfdModelUrl = URL.createObjectURL(new Blob([scrfdBuffer]));
-      faceModelUrl = URL.createObjectURL(new Blob([faceBuffer]));
-      antiSpoofingModelUrl = URL.createObjectURL(new Blob([antiSpoofingBuffer]));
+      // Production: Use app:// protocol for direct static file access (no IPC overhead)
+      scrfdModelUrl = 'app://weights/scrfd_2.5g_kps_640x640.onnx';
+      faceModelUrl = 'app://weights/edgeface-recognition.onnx';
+      antiSpoofingModelUrl = 'app://weights/AntiSpoofing_bin_1.5_128.onnx';
+      console.log('📦 Using app:// protocol for model loading (production)');
     } else {
       // Development: Use HTTP URLs
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
       scrfdModelUrl = `${baseUrl}/weights/scrfd_2.5g_kps_640x640.onnx`;
       faceModelUrl = `${baseUrl}/weights/edgeface-recognition.onnx`;
       antiSpoofingModelUrl = `${baseUrl}/weights/AntiSpoofing_bin_1.5_128.onnx`;
+      console.log('🌐 Using HTTP protocol for model loading (development)');
     }
     
+    const modelInitStart = performance.now();
     await this.sendMessage({ type: 'init', data: { scrfdModelUrl, faceModelUrl, antiSpoofingModelUrl } });
+    const modelInitTime = performance.now() - modelInitStart;
+    console.log(`⚡ Model initialization completed in ${modelInitTime.toFixed(0)}ms`);
     
     // Load database from localStorage and send to worker
+    const dbSyncStart = performance.now();
     await this.syncDatabaseToWorker();
+    const dbSyncTime = performance.now() - dbSyncStart;
+    console.log(`💾 Database sync completed in ${dbSyncTime.toFixed(0)}ms`);
+    
+    const totalTime = performance.now() - startTime;
+    console.log(`✅ WorkerManager initialization completed in ${totalTime.toFixed(0)}ms (target: <1000ms)`);
     
     this.isInitialized = true;
   }
