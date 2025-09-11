@@ -32,7 +32,14 @@ export class WebScrfdService {
   // Performance monitoring
   private frameCount = 0;
 
-  async initialize(modelUrl: string): Promise<void> {
+  async initialize(isDev?: boolean): Promise<void> {
+    // Use different paths for development vs production (old fast approach)
+    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
+    const modelUrl = isDevMode
+      ? '/weights/scrfd_2.5g_kps_640x640.onnx'
+      : 'app://weights/scrfd_2.5g_kps_640x640.onnx';
+    
+    console.log(`📥 Loading SCRFD model from: ${modelUrl}`);
     
     try {
       // Optimized session options for faster loading

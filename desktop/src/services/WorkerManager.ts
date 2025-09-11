@@ -54,31 +54,17 @@ export class WorkerManager {
       console.error('Worker error:', error);
     };
 
-    // Initialize the worker with model paths
-    // Use direct fetch URLs for both dev and production (dev-like speed)
-    const isProduction = !window.location.protocol.startsWith('http');
-    
-    let scrfdModelUrl: string;
-    let faceModelUrl: string;
-    let antiSpoofingModelUrl: string;
-    
-    if (isProduction) {
-      // Production: Use app:// protocol for direct static file access (no IPC overhead)
-      scrfdModelUrl = 'app://weights/scrfd_2.5g_kps_640x640.onnx';
-      faceModelUrl = 'app://weights/edgeface-recognition.onnx';
-      antiSpoofingModelUrl = 'app://weights/AntiSpoofing_bin_1.5_128.onnx';
-      console.log('📦 Using app:// protocol for model loading (production)');
-    } else {
-      // Development: Use HTTP URLs
-      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
-      scrfdModelUrl = `${baseUrl}/weights/scrfd_2.5g_kps_640x640.onnx`;
-      faceModelUrl = `${baseUrl}/weights/edgeface-recognition.onnx`;
-      antiSpoofingModelUrl = `${baseUrl}/weights/AntiSpoofing_bin_1.5_128.onnx`;
-      console.log('🌐 Using HTTP protocol for model loading (development)');
-    }
+    // Initialize the worker (old fast approach)
+    // In Electron, we need to check if we're in development mode differently
+    // since the protocol is always app:// even in dev mode
+    const isDev = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+    console.log(`🚀 Initializing worker in ${isDev ? 'development' : 'production'} mode`);
     
     const modelInitStart = performance.now();
-    await this.sendMessage({ type: 'init', data: { scrfdModelUrl, faceModelUrl, antiSpoofingModelUrl } });
+    await this.sendMessage({ 
+      type: 'init', 
+      data: { isDev } 
+    });
     const modelInitTime = performance.now() - modelInitStart;
     console.log(`⚡ Model initialization completed in ${modelInitTime.toFixed(0)}ms`);
     
