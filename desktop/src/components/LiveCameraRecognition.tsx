@@ -549,36 +549,46 @@ export default function LiveCameraRecognition() {
         (det) => det.confidence >= minDisplayConfidence
       );
       
-      // Add anti-spoofing detection for each valid face
+      // Smart anti-spoofing: Only run on recognized faces with high similarity
       if (antiSpoofingServiceRef.current && validDetections.length > 0) {
         const detectionsWithAntiSpoofing = [];
         for (const detection of validDetections) {
-          try {
-            // Preprocess face for anti-spoofing
-            const faceImageData = preprocessFaceForAntiSpoofing(
-              imageData,
-              detection.bbox,
-              detection.landmarks?.[0] // Use first landmark set if available
-            );
+          const isRecognized = detection.recognition?.personId; // Any recognized face
+          
+          if (isRecognized) {
+            try {
+              // Preprocess face for anti-spoofing
+              const faceImageData = preprocessFaceForAntiSpoofing(
+                imageData,
+                detection.bbox,
+                detection.landmarks?.[0] // Use first landmark set if available
+              );
 
-            // Run anti-spoofing detection
-            const antiSpoofingResult =
-              await antiSpoofingServiceRef.current!.detectLiveness(faceImageData);
+              // Run anti-spoofing detection only on recognized faces
+              const antiSpoofingResult =
+                await antiSpoofingServiceRef.current!.detectLiveness(faceImageData);
 
+              detectionsWithAntiSpoofing.push({
+                ...detection,
+                antiSpoofing: antiSpoofingResult,
+              });
+            } catch (error) {
+              console.warn('Anti-spoofing failed for recognized face:', error);
+              // Return detection without anti-spoofing data on error
+              detectionsWithAntiSpoofing.push({
+                ...detection,
+                antiSpoofing: {
+                  isLive: false,
+                  confidence: 0,
+                  score: 0,
+                },
+              });
+            }
+          } else {
+            // Skip anti-spoofing for unrecognized faces
             detectionsWithAntiSpoofing.push({
               ...detection,
-              antiSpoofing: antiSpoofingResult,
-            });
-          } catch (error) {
-            console.warn('Anti-spoofing failed for detection:', error);
-            // Return detection without anti-spoofing data on error
-            detectionsWithAntiSpoofing.push({
-              ...detection,
-              antiSpoofing: {
-                isLive: false,
-                confidence: 0,
-                score: 0,
-              },
+              antiSpoofing: undefined, // No anti-spoofing data
             });
           }
         }
@@ -1409,17 +1419,24 @@ export default function LiveCameraRecognition() {
                         Similarity: {(detection.recognition.similarity * 100).toFixed(1)}%
                       </div>
                     )}
-                    {detection.antiSpoofing && (
+                    {detection.recognition?.personId && detection.antiSpoofing && (
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.08]">
                         <span className={`text-xs px-2 py-1 rounded ${
                           detection.antiSpoofing.isLive 
                             ? 'bg-green-900 text-green-300' 
                             : 'bg-red-900 text-red-300'
                         }`}>
-                          {detection.antiSpoofing.isLive ? '✓ Live' : '⚠ Spoof'}
+                          {detection.antiSpoofing.isLive ? '✓ Live' : '⚠ Spoof/Low Light'}
                         </span>
                         <span className="text-xs text-white/50">
                           Score: {detection.antiSpoofing.score.toFixed(3)}
+                        </span>
+                      </div>
+                    )}
+                    {detection.recognition?.personId && !detection.antiSpoofing && (
+                      <div className="flex items-center justify-center mt-2 pt-2 border-t border-white/[0.08]">
+                        <span className="text-xs px-2 py-1 rounded bg-blue-900 text-blue-300">
+                          ⚡ Verified Identity
                         </span>
                       </div>
                     )}
