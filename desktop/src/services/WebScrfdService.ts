@@ -35,6 +35,7 @@ export class WebScrfdService {
   async initialize(modelUrl: string): Promise<void> {
     
     try {
+      // Optimized session options for faster loading
       this.session = await ort.InferenceSession.create(modelUrl, {
         executionProviders: [
           'webgl',     // Use WebGL for better compatibility
@@ -44,21 +45,35 @@ export class WebScrfdService {
         logVerbosityLevel: 0,
         enableCpuMemArena: true,
         enableMemPattern: true,
-        executionMode: 'sequential',
-        graphOptimizationLevel: 'all',
-        enableProfiling: false
+        executionMode: 'parallel',  // Use parallel execution for faster inference
+        graphOptimizationLevel: 'extended',  // More aggressive optimization
+        enableProfiling: false,
+        freeDimensionOverrides: {},  // Cache dimension overrides
+        extra: {
+          session: {
+            use_device_allocator_for_initializers: 1,
+            use_ort_model_bytes_directly: 1,
+            use_ort_model_bytes_for_initializers: 1
+          }
+        }
       });
     } catch {
-      // If WebGL fails completely, use CPU-only configuration
+      // If WebGL fails completely, use CPU-only configuration with optimizations
       this.session = await ort.InferenceSession.create(modelUrl, {
         executionProviders: ['wasm'],
         logSeverityLevel: 4,
         logVerbosityLevel: 0,
         enableCpuMemArena: true,
         enableMemPattern: true,
-        executionMode: 'sequential',
-        graphOptimizationLevel: 'all',
-        enableProfiling: false
+        executionMode: 'parallel',
+        graphOptimizationLevel: 'extended',
+        enableProfiling: false,
+        extra: {
+          session: {
+            use_device_allocator_for_initializers: 1,
+            use_ort_model_bytes_directly: 1
+          }
+        }
       });
     }
     
