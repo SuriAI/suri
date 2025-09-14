@@ -60,21 +60,16 @@ class GlobalWorkerPoolManager {
     });
 
     try {
-      console.log('🚀 Starting background worker pool initialization...');
-      
       // Create and initialize worker manager
       const workerManager = new WorkerManager();
       await workerManager.initialize();
-      console.log('✅ Worker manager initialized');
 
       // Initialize anti-spoofing service
       const antiSpoofingService = new WebAntiSpoofingService();
       await antiSpoofingService.initialize();
-      console.log('✅ Anti-spoofing service initialized');
 
       // Get initial stats
       const stats = await workerManager.getStats();
-      console.log('✅ Stats loaded:', stats);
 
       this.updateState({
         isInitialized: true,
@@ -85,10 +80,10 @@ class GlobalWorkerPoolManager {
         error: null
       });
 
-      console.log('🎉 Background worker pool initialization complete!');
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('❌ Background worker pool initialization failed:', errorMessage);
+
       
       this.updateState({
         isInitialized: false,
