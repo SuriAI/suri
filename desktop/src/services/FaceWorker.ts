@@ -6,6 +6,7 @@ import { WebAntiSpoofingService } from "./WebAntiSpoofingService.js";
 let scrfdService: WebScrfdService | null = null;
 let edgeFaceService: WebFaceService | null = null;
 let antiSpoofingService: WebAntiSpoofingService | null = null;
+let storedModelBuffers: Record<string, ArrayBuffer> | null = null;
 
 self.onmessage = async (event) => {
   const { type, data, id } = event.data;
@@ -13,16 +14,18 @@ self.onmessage = async (event) => {
   try {
     switch (type) {
       case 'init': {
-        // Initialize only SCRFD and EdgeFace services (old fast approach)
-        const { isDev } = data || {};
+        // Initialize services with pre-loaded model buffers for optimal performance
+        const { modelBuffers } = data;
+        storedModelBuffers = modelBuffers; // Store for lazy initialization
+
         scrfdService = new WebScrfdService();
         edgeFaceService = new WebFaceService(0.6);
         // antiSpoofingService will be initialized lazily when needed
         
-        // Parallel initialization for faster startup
+        // Parallel initialization with pre-loaded buffers
         await Promise.all([
-          scrfdService.initialize(isDev),
-          edgeFaceService.initialize(isDev)
+          scrfdService.initialize(modelBuffers?.['scrfd_2.5g_kps_640x640.onnx']),
+          edgeFaceService.initialize(modelBuffers?.['edgeface-recognition.onnx'])
         ]);
         
         // Don't load database here - we'll get it from main thread
@@ -291,9 +294,7 @@ self.onmessage = async (event) => {
         if (!antiSpoofingService) {
           console.log('🔄 Lazy initializing anti-spoofing service...');
           antiSpoofingService = new WebAntiSpoofingService();
-          // Get isDev from current environment
-          const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-          await antiSpoofingService.initialize(isDev);
+          await antiSpoofingService.initialize(storedModelBuffers?.['anti_spoofing.onnx']);
           console.log('✅ Anti-spoofing service lazy initialized');
         }
         

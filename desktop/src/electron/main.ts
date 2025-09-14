@@ -2,6 +2,11 @@ import { app, BrowserWindow, ipcMain, protocol } from "electron"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import isDev from "./util.js";
+import { readFile } from 'fs/promises';
+
+
+// Pre-loaded model buffers for better performance
+const modelBuffers: Map<string, ArrayBuffer> = new Map();
 // Legacy SCRFD service (node-onnx) is unused now; using WebWorker-based pipeline in renderer
 import { setupFaceLogIPC } from "./faceLogIPC.js";
 import { sqlite3FaceDB } from "../services/Sqlite3FaceDatabase.js";
@@ -63,7 +68,55 @@ ipcMain.handle('window:close', () => {
     return true
 })
 
-// Model loading now handled via app:// protocol - no IPC needed
+// Pre-load all models during app startup
+async function preloadModels(): Promise<void> {
+  const modelNames = [
+    'scrfd_2.5g_kps_640x640.onnx',
+    'edgeface-recognition.onnx', 
+    'AntiSpoofing_bin_1.5_128.onnx'
+  ];
+  
+  console.log('🚀 Pre-loading models for optimal performance...');
+  const startTime = performance.now();
+  
+  try {
+    for (const modelName of modelNames) {
+      const modelPath = isDev()
+        ? path.join(__dirname, '../../public/weights', modelName)
+        : path.join(process.resourcesPath, 'weights', modelName);
+      
+      const buffer = await readFile(modelPath);
+      const arrayBuffer = new ArrayBuffer(buffer.byteLength);
+      new Uint8Array(arrayBuffer).set(new Uint8Array(buffer));
+      modelBuffers.set(modelName, arrayBuffer);
+      console.log(`✅ Pre-loaded ${modelName} (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`);
+    }
+    
+    const loadTime = performance.now() - startTime;
+    console.log(`🎯 All models pre-loaded in ${loadTime.toFixed(0)}ms`);
+  } catch (error) {
+    console.error('❌ Failed to pre-load models:', error);
+    throw error;
+  }
+}
+
+// Model loading IPC handlers - now returns pre-loaded buffers
+ipcMain.handle('model:load', async (_event, modelName: string) => {
+  const buffer = modelBuffers.get(modelName);
+  if (!buffer) {
+    throw new Error(`Model ${modelName} not found in pre-loaded cache`);
+  }
+  return buffer;
+});
+
+// Get all pre-loaded model buffers (for worker initialization)
+ipcMain.handle('models:get-all', async () => {
+  const result: Record<string, ArrayBuffer> = {};
+  for (const [name, buffer] of modelBuffers.entries()) {
+    result[name] = buffer;
+  }
+  return result;
+});
 
 function createWindow(): void {
     // Create the browser window.
@@ -71,7 +124,7 @@ function createWindow(): void {
         width: 1024,
         height: 600,
         webPreferences: {
-            nodeIntegration: false,
+            nodeIntegration: true,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
             webgl: true,
@@ -135,6 +188,13 @@ app.whenReady().then(async () => {
     });
     
     createWindow()
+    
+    // Pre-load models for optimal performance
+    try {
+        await preloadModels();
+    } catch (error) {
+        console.error('[ERROR] Failed to pre-load models:', error);
+    }
     
     // Initialize SQLite database first
     try {

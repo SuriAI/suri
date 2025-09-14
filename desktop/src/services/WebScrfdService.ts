@@ -1,4 +1,5 @@
 import * as ort from 'onnxruntime-web/all';
+import { SessionPoolManager, type PooledSession } from './SessionPoolManager.js';
 
 export interface DetectionResult {
   bbox: [number, number, number, number]; // [x1, y1, x2, y2]
@@ -15,7 +16,8 @@ interface ScaleParams {
 }
 
 export class WebScrfdService {
-  private session: ort.InferenceSession | null = null;
+  private pooledSession: PooledSession | null = null;
+  private sessionPool: SessionPoolManager;
   private confThreshold = 0.5;  // Optimal threshold for pre-sigmoid activated model outputs
   private iouThreshold = 0.4;   // Standard IoU for NMS
   
@@ -32,77 +34,75 @@ export class WebScrfdService {
   // Performance monitoring
   private frameCount = 0;
 
-  async initialize(isDev?: boolean): Promise<void> {
-    // Use different paths for development vs production (old fast approach)
-    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
-    const modelUrl = isDevMode
-      ? '/weights/scrfd_2.5g_kps_640x640.onnx'
-      : 'app://weights/scrfd_2.5g_kps_640x640.onnx';
+  async initialize(preloadedBuffer?: ArrayBuffer): Promise<void> {
+    // Detect environment safely (works in both browser and worker contexts)
+    const isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') || 
+                  (typeof window !== 'undefined' && window.location.hostname === 'localhost');
     
-    console.log(`📥 Loading SCRFD model from: ${modelUrl}`);
+    const modelName = 'scrfd_2.5g_kps_640x640.onnx';
+    console.log(`📥 Loading SCRFD model: ${modelName} (${isDev ? 'development' : 'production'} mode)`);
     
-    try {
-      // Optimized session options for faster loading
-      this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: [
-          'webgl',     // Use WebGL for better compatibility
-          'wasm'       // Fallback to optimized CPU
-        ],
-        logSeverityLevel: 4,  // Minimal logging for speed
-        logVerbosityLevel: 0,
-        enableCpuMemArena: true,
-        enableMemPattern: true,
-        executionMode: 'parallel',  // Use parallel execution for faster inference
-        graphOptimizationLevel: 'extended',  // More aggressive optimization
-        enableProfiling: false,
-        freeDimensionOverrides: {},  // Cache dimension overrides
-        extra: {
-          session: {
-            use_device_allocator_for_initializers: 1,
-            use_ort_model_bytes_directly: 1,
-            use_ort_model_bytes_for_initializers: 1
-          }
+    let modelBuffer: ArrayBuffer;
+    
+    // Use pre-loaded buffer if available (worker context with optimization)
+    if (preloadedBuffer) {
+      console.log(`🚀 Using pre-loaded ${modelName} buffer (${(preloadedBuffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+      modelBuffer = preloadedBuffer;
+    } else {
+      // Fallback to loading methods for main context or dev mode
+      if (typeof window !== 'undefined' && (window as { electronAPI?: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI) {
+        // Main context - use IPC for better performance
+        const electronAPI = (window as { electronAPI: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI;
+        modelBuffer = await electronAPI.invoke('model:load', modelName);
+      } else if (isDev) {
+        // Dev mode - use fetch from public folder
+        const response = await fetch(`/weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
+      } else {
+        // Worker context in production - fallback to app:// protocol (should not happen with optimization)
+        console.warn(`⚠️ Falling back to app:// protocol for ${modelName} - optimization not working`);
+        const response = await fetch(`app://weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
+      }
+    }
+    
+    // Use session pool for optimized initialization and reuse
+    this.pooledSession = await this.sessionPool.getSession(
+      modelName,
+      async () => {
+        const options = this.sessionPool.getOptimizedSessionOptions();
+        try {
+          return await ort.InferenceSession.create(modelBuffer, options);
+        } catch {
+          // Fallback to CPU-only if WebGL fails
+          const fallbackOptions = {
+            ...options,
+            executionProviders: ['wasm']
+          };
+          return await ort.InferenceSession.create(modelBuffer, fallbackOptions);
         }
-      });
-    } catch {
-      // If WebGL fails completely, use CPU-only configuration with optimizations
-      this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: ['wasm'],
-        logSeverityLevel: 4,
-        logVerbosityLevel: 0,
-        enableCpuMemArena: true,
-        enableMemPattern: true,
-        executionMode: 'parallel',
-        graphOptimizationLevel: 'extended',
-        enableProfiling: false,
-        extra: {
-          session: {
-            use_device_allocator_for_initializers: 1,
-            use_ort_model_bytes_directly: 1
-          }
-        }
-      });
+      }
+    );
+    
+    // Warm up the session with dummy input for faster first inference
+    const dummyInput = {
+      [this.pooledSession.session.inputNames[0]]: new ort.Tensor('float32', new Float32Array(3 * 640 * 640), [1, 3, 640, 640])
+    };
+    await this.sessionPool.warmupSession(this.pooledSession, dummyInput);
+    
+    if (this.pooledSession.session.inputNames.length !== 1) {
+      throw new Error(`Unexpected number of inputs: ${this.pooledSession.session.inputNames.length}`);
     }
     
-    // Try to detect which provider is actually being used by testing performance
-    const dummyTensor = new ort.Tensor('float32', new Float32Array(3 * 640 * 640), [1, 3, 640, 640]);
-    try {
-      await this.session.run({ [this.session.inputNames[0]]: dummyTensor });
-    } catch {
-      // Test inference failed, continue silently
-    }
-    
-    if (this.session.inputNames.length !== 1) {
-      throw new Error(`Unexpected number of inputs: ${this.session.inputNames.length}`);
-    }
-    
-    if (this.session.outputNames.length !== 9) {
-      throw new Error(`Unexpected number of outputs: ${this.session.outputNames.length}`);
+    if (this.pooledSession.session.outputNames.length !== 9) {
+      throw new Error(`Unexpected number of outputs: ${this.pooledSession.session.outputNames.length}`);
     }
   }
 
   async detect(imageData: ImageData): Promise<DetectionResult[]> {
-    if (!this.session) {
+    if (!this.pooledSession?.session) {
       throw new Error('Client-side SCRFD model not initialized');
     }
 
@@ -127,8 +127,8 @@ export class WebScrfdService {
       
       const tensor = this.createBlobFromImage(imageData);
       
-      const feeds = { [this.session.inputNames[0]]: tensor };
-      const outputs = await this.session.run(feeds);
+      const feeds = { [this.pooledSession.session.inputNames[0]]: tensor };
+      const outputs = await this.pooledSession.session.run(feeds);
       
       const detections = this.postprocessOutputs(outputs, scaleParams);
       
@@ -146,10 +146,15 @@ export class WebScrfdService {
   
   constructor() {
     WebScrfdService.instanceCount++;
+    this.sessionPool = SessionPoolManager.getInstance();
   }
   
   dispose(): void {
     WebScrfdService.instanceCount--;
+    if (this.pooledSession) {
+      this.sessionPool.releaseSession(this.pooledSession);
+      this.pooledSession = null;
+    }
     if (WebScrfdService.instanceCount <= 0) {
       WebScrfdService.globalBlobCanvas = null;
       WebScrfdService.globalSourceCanvas = null;
@@ -247,9 +252,9 @@ export class WebScrfdService {
     for (let idx = 0; idx < this.featStrideFpn.length; idx++) {
       const stride = this.featStrideFpn[idx];
       
-      const scores = outputs[this.session!.outputNames[idx]];
-      const bboxPreds = outputs[this.session!.outputNames[idx + this.fmc]];
-      const kpsPreds = this.useKps ? outputs[this.session!.outputNames[idx + this.fmc * 2]] : null;
+      const scores = outputs[this.pooledSession!.session.outputNames[idx]];
+      const bboxPreds = outputs[this.pooledSession!.session.outputNames[idx + this.fmc]];
+      const kpsPreds = this.useKps ? outputs[this.pooledSession!.session.outputNames[idx + this.fmc * 2]] : null;
       
       const height = Math.floor(FIXED_INPUT_SIZE / stride);
       const width = Math.floor(FIXED_INPUT_SIZE / stride);
