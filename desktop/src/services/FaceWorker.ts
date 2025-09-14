@@ -8,6 +8,19 @@ let edgeFaceService: WebFaceService | null = null;
 let antiSpoofingService: WebAntiSpoofingService | null = null;
 let storedModelBuffers: Record<string, ArrayBuffer> | null = null;
 
+// Helper function to reconstruct ImageData from transferable data
+function reconstructImageData(transferableData: {
+  data: ArrayBuffer;
+  width: number;
+  height: number;
+  colorSpace?: PredefinedColorSpace;
+}): ImageData {
+  const uint8Array = new Uint8ClampedArray(transferableData.data);
+  return new ImageData(uint8Array, transferableData.width, transferableData.height, {
+    colorSpace: transferableData.colorSpace
+  });
+}
+
 // ULTRA-AGGRESSIVE OPTIMIZATION: Pre-instantiate services for zero-delay initialization
 let prewarmStarted = false;
 const prewarmServices = () => {
@@ -92,7 +105,8 @@ self.onmessage = async (event) => {
           throw new Error('SCRFD service not initialized');
         }
         
-        const { imageData } = data;
+        const { imageData: transferableImageData } = data;
+        const imageData = reconstructImageData(transferableImageData);
         const detections = await scrfdService.detect(imageData);
         
         self.postMessage({ 
@@ -108,7 +122,8 @@ self.onmessage = async (event) => {
           throw new Error('Services not initialized');
         }
         
-        const { imageData } = data;
+        const { imageData: transferableImageData } = data;
+        const imageData = reconstructImageData(transferableImageData);
         
         // First detect faces
         const detections = await scrfdService.detect(imageData);
@@ -173,7 +188,8 @@ self.onmessage = async (event) => {
           throw new Error('EdgeFace service not initialized');
         }
         
-        const { personId, imageData, landmarks } = data;
+        const { personId, imageData: transferableImageData, landmarks } = data;
+        const imageData = reconstructImageData(transferableImageData);
         const success = await edgeFaceService.registerPerson(personId, imageData, landmarks);
         
         if (success) {
@@ -197,7 +213,8 @@ self.onmessage = async (event) => {
           throw new Error('EdgeFace service not initialized');
         }
         
-        const { imageData, landmarks } = data;
+        const { imageData: transferableImageData, landmarks } = data;
+        const imageData = reconstructImageData(transferableImageData);
         const result = await edgeFaceService.recognizeFace(imageData, landmarks);
         
         self.postMessage({ 
@@ -317,7 +334,8 @@ self.onmessage = async (event) => {
           console.log('✅ Anti-spoofing service lazy initialized');
         }
         
-        const { imageData } = data;
+        const { imageData: transferableImageData } = data;
+        const imageData = reconstructImageData(transferableImageData);
         const result = await antiSpoofingService.detectLiveness(imageData);
         
         self.postMessage({ 
