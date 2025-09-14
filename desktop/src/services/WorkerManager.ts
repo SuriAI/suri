@@ -15,6 +15,7 @@ interface DetectionResult {
 interface WorkerMessage {
   type: string;
   data?: Record<string, unknown>;
+  transferables?: Transferable[];
 }
 
 interface WorkerResponse {
@@ -60,17 +61,28 @@ export class WorkerManager {
     
     const modelInitStart = performance.now();
     
-    let modelBuffers: Record<string, ArrayBuffer> = {};
+    const modelBuffers: Record<string, ArrayBuffer> = {};
+    const transferableBuffers: ArrayBuffer[] = [];
+    
     if (typeof window !== 'undefined' && (window as { electronAPI?: { invoke: (channel: string, ...args: unknown[]) => Promise<Record<string, ArrayBuffer>> } }).electronAPI) {
       // Get pre-loaded models from main process
       const electronAPI = (window as { electronAPI: { invoke: (channel: string, ...args: unknown[]) => Promise<Record<string, ArrayBuffer>> } }).electronAPI;
-      modelBuffers = await electronAPI.invoke('models:get-all');
+      const originalBuffers = await electronAPI.invoke('models:get-all');
+      
+      // Create transferable copies of model buffers
+      for (const [name, buffer] of Object.entries(originalBuffers)) {
+        const transferableBuffer = buffer.slice(); // Create transferable copy
+        modelBuffers[name] = transferableBuffer;
+        transferableBuffers.push(transferableBuffer);
+      }
+      
       console.log(`📦 Retrieved ${Object.keys(modelBuffers).length} pre-loaded models from main process`);
     }
     
     await this.sendMessage({ 
       type: 'init', 
-      data: { isDev, modelBuffers } 
+      data: { isDev, modelBuffers },
+      transferables: transferableBuffers
     });
     const modelInitTime = performance.now() - modelInitStart;
     console.log(`⚡ Model initialization completed in ${modelInitTime.toFixed(0)}ms`);
@@ -140,9 +152,19 @@ export class WorkerManager {
       throw new Error('Worker manager not initialized');
     }
 
+    // Create transferable ArrayBuffer from ImageData
+    const buffer = imageData.data.buffer.slice();
+    const transferableImageData = {
+      data: buffer,
+      width: imageData.width,
+      height: imageData.height,
+      colorSpace: imageData.colorSpace
+    };
+
     const response = await this.sendMessage({
       type: 'detect',
-      data: { imageData }
+      data: { imageData: transferableImageData },
+      transferables: [buffer]
     });
 
     return (response.detections as DetectionResult[]) || [];
@@ -158,9 +180,19 @@ export class WorkerManager {
     }
 
     try {
+      // Create transferable ArrayBuffer from ImageData
+      const buffer = imageData.data.buffer.slice();
+      const transferableImageData = {
+        data: buffer,
+        width: imageData.width,
+        height: imageData.height,
+        colorSpace: imageData.colorSpace
+      };
+
       const response = await this.sendMessage({
         type: 'recognize-face',
-        data: { imageData, landmarks }
+        data: { imageData: transferableImageData, landmarks },
+        transferables: [buffer]
       });
 
       return {
@@ -278,9 +310,19 @@ export class WorkerManager {
       throw new Error('Worker manager not initialized');
     }
 
+    // Create transferable ArrayBuffer from ImageData
+    const buffer = imageData.data.buffer.slice();
+    const transferableImageData = {
+      data: buffer,
+      width: imageData.width,
+      height: imageData.height,
+      colorSpace: imageData.colorSpace
+    };
+
     const response = await this.sendMessage({
       type: 'detect-and-recognize',
-      data: { imageData }
+      data: { imageData: transferableImageData },
+      transferables: [buffer]
     });
 
     return (response.detections as DetectionResult[]) || [];
@@ -308,9 +350,19 @@ export class WorkerManager {
       throw new Error('Worker manager not initialized');
     }
 
+    // Create transferable ArrayBuffer from ImageData
+    const buffer = imageData.data.buffer.slice();
+    const transferableImageData = {
+      data: buffer,
+      width: imageData.width,
+      height: imageData.height,
+      colorSpace: imageData.colorSpace
+    };
+
     const response = await this.sendMessage({
       type: 'register-person',
-      data: { personId, imageData, landmarks }
+      data: { personId, imageData: transferableImageData, landmarks },
+      transferables: [buffer]
     });
 
     return (response.success as boolean) || false;
@@ -321,9 +373,19 @@ export class WorkerManager {
       throw new Error('Worker manager not initialized');
     }
 
+    // Create transferable ArrayBuffer from ImageData
+    const buffer = imageData.data.buffer.slice();
+    const transferableImageData = {
+      data: buffer,
+      width: imageData.width,
+      height: imageData.height,
+      colorSpace: imageData.colorSpace
+    };
+
     const response = await this.sendMessage({
       type: 'anti-spoofing-detect',
-      data: { imageData }
+      data: { imageData: transferableImageData },
+      transferables: [buffer]
     });
 
     return response as { isReal: boolean; confidence: number };
@@ -352,10 +414,17 @@ export class WorkerManager {
       const id = ++this.messageId;
       this.pendingMessages.set(id, { resolve, reject });
 
-      this.worker.postMessage({
+      const messageWithId = {
         ...message,
         id
-      });
+      };
+
+      // Use transferables if provided for zero-copy transfers
+      if (message.transferables && message.transferables.length > 0) {
+        this.worker.postMessage(messageWithId, message.transferables);
+      } else {
+        this.worker.postMessage(messageWithId);
+      }
 
       // OPTIMIZED: Extended timeout for complex operations like database initialization
       setTimeout(() => {
