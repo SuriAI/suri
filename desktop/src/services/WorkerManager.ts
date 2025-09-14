@@ -357,13 +357,13 @@ export class WorkerManager {
         id
       });
 
-      // OPTIMIZED: Reduced timeout for faster error detection
+      // OPTIMIZED: Extended timeout for complex operations like database initialization
       setTimeout(() => {
         if (this.pendingMessages.has(id)) {
           this.pendingMessages.delete(id);
           reject(new Error('Message timeout'));
         }
-      }, 10000); // Reduced from 60s to 10s for faster failure detection
+      }, 30000); // Extended to 30s for database initialization and complex operations
     });
   }
 
