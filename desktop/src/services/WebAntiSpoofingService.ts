@@ -1,5 +1,5 @@
 import * as ort from 'onnxruntime-web/all';
-
+import { SessionPoolManager, type PooledSession } from './SessionPoolManager.js';
 export interface AntiSpoofingResult {
   isLive: boolean;
   confidence: number;
@@ -14,7 +14,8 @@ export interface BoundingBox {
 }
 
 export class WebAntiSpoofingService {
-  private session: ort.InferenceSession | null = null;
+  private pooledSession: PooledSession | null = null;
+  private sessionPool: SessionPoolManager;
   private threshold: number = 0.5; // Real face probability threshold
 
   // Model specs
@@ -22,38 +23,75 @@ export class WebAntiSpoofingService {
 
   private frameCount = 0;
 
+  constructor() {
+    this.sessionPool = SessionPoolManager.getInstance();
+  }
+
   /**
    * Initialize the ONNX model
    */
-  async initialize(isDev?: boolean): Promise<void> {
-    // Use different paths for development vs production (old fast approach)
-    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
-    const modelUrl = isDevMode
-      ? '/weights/AntiSpoofing_bin_1.5_128.onnx'
-      : 'app://weights/AntiSpoofing_bin_1.5_128.onnx';
+  async initialize(preloadedBuffer?: ArrayBuffer): Promise<void> {
+    // Detect environment safely (works in both browser and worker contexts)
+    const isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') || 
+                  (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+    
+    const modelName = 'AntiSpoofing_bin_1.5_128.onnx';
+    console.log(`📥 Loading AntiSpoofing model: ${modelName} (${isDev ? 'development' : 'production'} mode)`);
+    
+    let modelBuffer: ArrayBuffer;
+    
+    // Use pre-loaded buffer if available (worker context with optimization)
+    if (preloadedBuffer) {
+      console.log(`🚀 Using pre-loaded ${modelName} buffer (${(preloadedBuffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+      modelBuffer = preloadedBuffer;
+    } else {
+      // Fallback to loading methods for main context or dev mode
+      if (typeof window !== 'undefined' && (window as { electronAPI?: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI) {
+        // Main context - use IPC for better performance
+        const electronAPI = (window as { electronAPI: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI;
+        modelBuffer = await electronAPI.invoke('model:load', modelName);
+      } else if (isDev) {
+        // Dev mode - use fetch from public folder
+        const response = await fetch(`/weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
+      } else {
+        // Worker context in production - fallback to app:// protocol (should not happen with optimization)
+        console.warn(`⚠️ Falling back to app:// protocol for ${modelName} - optimization not working`);
+        const response = await fetch(`app://weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
+      }
+    }
     
     try {
-      // Optimized session options for faster loading
-      this.session = await ort.InferenceSession.create(modelUrl, {
-        executionProviders: ['wasm'],  // Try WebGL first for better performance
-        logSeverityLevel: 4,  // Minimal logging (4 = ERROR only)
-        logVerbosityLevel: 0, // No verbose logs
-        enableCpuMemArena: true,
-        enableMemPattern: true,
-        executionMode: 'parallel',  // Use parallel execution
-        graphOptimizationLevel: 'extended',  // More aggressive optimization
-        enableProfiling: false,
-        extra: {
-          session: {
-            use_device_allocator_for_initializers: 1,
-            use_ort_model_bytes_directly: 1
+      // Use session pool for optimized initialization and reuse
+      this.pooledSession = await this.sessionPool.getSession(
+        modelName,
+        async () => {
+          const options = this.sessionPool.getOptimizedSessionOptions();
+          try {
+            return await ort.InferenceSession.create(modelBuffer, options);
+          } catch {
+            // Fallback to CPU-only if WebGL fails
+            const fallbackOptions = {
+              ...options,
+              executionProviders: ['wasm']
+            };
+            return await ort.InferenceSession.create(modelBuffer, fallbackOptions);
           }
         }
-      });
+      );
+      
+      // Warm up the session with dummy input for faster first inference
+      const dummyInput = {
+        [this.pooledSession.session.inputNames[0]]: new ort.Tensor('float32', new Float32Array(3 * 128 * 128), [1, 3, 128, 128])
+      };
+      await this.sessionPool.warmupSession(this.pooledSession, dummyInput);
 
-      console.log('✅ Anti-spoofing model loaded successfully');
-      console.log('📊 Input names:', this.session.inputNames);
-      console.log('📊 Output names:', this.session.outputNames);
+      console.log('✅ Anti-spoofing model loaded successfully with session pooling');
+      console.log('📊 Input names:', this.pooledSession.session.inputNames);
+      console.log('📊 Output names:', this.pooledSession.session.outputNames);
     } catch (err) {
       console.error('❌ Failed to load anti-spoofing model:', err);
       throw new Error(`Anti-spoofing model initialization failed: ${err}`);
@@ -70,7 +108,7 @@ export class WebAntiSpoofingService {
     bbox?: BoundingBox,
     bboxInc: number = 1.5
   ): Promise<AntiSpoofingResult> {
-    if (!this.session) {
+    if (!this.pooledSession?.session) {
       throw new Error('Anti-spoofing model not initialized');
     }
 
@@ -88,14 +126,14 @@ export class WebAntiSpoofingService {
       const tensor = this.preprocessFaceImage(processedImageData);
 
       if (this.frameCount === 1) {
-        console.log('🔍 Model initialized - Input:', this.session.inputNames[0]);
+        console.log('🔍 Model initialized - Input:', this.pooledSession.session.inputNames[0]);
         console.log('🔍 Tensor shape:', tensor.dims);
       }
 
-      const feeds = { [this.session.inputNames[0]]: tensor };
-      const outputs = await this.session.run(feeds);
+      const feeds = { [this.pooledSession.session.inputNames[0]]: tensor };
+      const outputs = await this.pooledSession.session.run(feeds);
 
-      const outputTensor = outputs[this.session.outputNames[0]];
+      const outputTensor = outputs[this.pooledSession.session.outputNames[0]];
       const outputData = outputTensor.data as Float32Array;
 
       // Model outputs [1,2] logits: [live_logit, spoof_logit] - CORRECTED ORDER!
@@ -241,16 +279,13 @@ export class WebAntiSpoofingService {
    * Check if the model is initialized (for lazy loading)
    */
   isInitialized(): boolean {
-    return this.session !== null;
+    return this.pooledSession !== null;
   }
 
   dispose(): void {
-    if (this.session) {
-      // Explicitly dispose to free WASM memory
-      if (typeof (this.session as unknown as { dispose?: () => void }).dispose === 'function') {
-        (this.session as unknown as { dispose: () => void }).dispose();
-      }
-      this.session = null;
+    if (this.pooledSession) {
+      this.sessionPool.releaseSession(this.pooledSession);
+      this.pooledSession = null;
     }
   }
 }

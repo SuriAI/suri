@@ -1,4 +1,5 @@
 import * as ort from 'onnxruntime-web';
+import { SessionPoolManager, type PooledSession } from './SessionPoolManager.js';
 
 interface RecognitionResult {
   personId: string | null;
@@ -15,7 +16,8 @@ const REFERENCE_ALIGNMENT = new Float32Array([
 ]);
 
 export class WebFaceService {
-  private session: ort.InferenceSession | null = null;
+  private pooledSession: PooledSession | null = null;
+  private sessionPool: SessionPoolManager;
   private database: Map<string, Float32Array> = new Map();
   private similarityThreshold: number = 0.6; // 60% similarity threshold
   
@@ -27,64 +29,73 @@ export class WebFaceService {
 
   constructor(similarityThreshold: number = 0.6) {
     this.similarityThreshold = similarityThreshold;
+    this.sessionPool = SessionPoolManager.getInstance();
   }
 
-  async initialize(isDev?: boolean): Promise<void> {
-    // Use different paths for development vs production (old fast approach)
-    const isDevMode = isDev !== undefined ? isDev : (typeof window !== 'undefined' && window.location.protocol === 'http:');
-    const modelUrl = isDevMode
-      ? '/weights/edgeface-recognition.onnx'
-      : 'app://weights/edgeface-recognition.onnx';
+  async initialize(preloadedBuffer?: ArrayBuffer): Promise<void> {
+    // Detect environment safely (works in both browser and worker contexts)
+    const isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') || 
+                  (typeof window !== 'undefined' && window.location.hostname === 'localhost');
     
-    try {
-      // Optimized session options for faster loading of large EdgeFace model (15MB)
-      this.session = await ort.InferenceSession.create(modelUrl, {
-          executionProviders: [
-            'webgl',     // Use WebGL instead of WebGPU for better compatibility
-            'wasm'       // Fallback to optimized CPU
-          ],
-          logSeverityLevel: 4,  // Minimal logging
-          logVerbosityLevel: 0,
-          enableCpuMemArena: true,
-          enableMemPattern: true,
-          executionMode: 'parallel',  // Use parallel execution
-          graphOptimizationLevel: 'extended',  // More aggressive optimization
-          enableProfiling: false,
-          freeDimensionOverrides: {},  // Cache dimension overrides
-          extra: {
-            session: {
-              use_device_allocator_for_initializers: 1,
-              use_ort_model_bytes_directly: 1,
-              use_ort_model_bytes_for_initializers: 1
-            }
-          }
-        });
-      } catch {
-        // If WebGL fails, use CPU-only with optimizations
-        this.session = await ort.InferenceSession.create(modelUrl, {
-          executionProviders: ['wasm'],
-          logSeverityLevel: 4,
-          logVerbosityLevel: 0,
-          enableCpuMemArena: true,
-          enableMemPattern: true,
-          executionMode: 'parallel',
-          graphOptimizationLevel: 'extended',
-          enableProfiling: false,
-          extra: {
-            session: {
-              use_device_allocator_for_initializers: 1,
-              use_ort_model_bytes_directly: 1
-            }
-          }
-        });
+    const modelName = 'edgeface-recognition.onnx';
+    console.log(`📥 Loading EdgeFace model: ${modelName} (${isDev ? 'development' : 'production'} mode)`);
+    
+    let modelBuffer: ArrayBuffer;
+    
+    // Use pre-loaded buffer if available (worker context with optimization)
+    if (preloadedBuffer) {
+      console.log(`🚀 Using pre-loaded ${modelName} buffer (${(preloadedBuffer.byteLength / 1024 / 1024).toFixed(1)}MB)`);
+      modelBuffer = preloadedBuffer;
+    } else {
+      // Fallback to loading methods for main context or dev mode
+      if (typeof window !== 'undefined' && (window as { electronAPI?: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI) {
+        // Main context - use IPC for better performance
+        const electronAPI = (window as { electronAPI: { invoke: (channel: string, ...args: unknown[]) => Promise<ArrayBuffer> } }).electronAPI;
+        modelBuffer = await electronAPI.invoke('model:load', modelName);
+      } else if (isDev) {
+        // Dev mode - use fetch from public folder
+        const response = await fetch(`/weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
+      } else {
+        // Worker context in production - fallback to app:// protocol (should not happen with optimization)
+        console.warn(`⚠️ Falling back to app:// protocol for ${modelName} - optimization not working`);
+        const response = await fetch(`app://weights/${modelName}`);
+        if (!response.ok) throw new Error(`Failed to fetch model: ${response.statusText}`);
+        modelBuffer = await response.arrayBuffer();
       }
+    }
+    
+    // Use session pool for optimized initialization and reuse
+    this.pooledSession = await this.sessionPool.getSession(
+      'edgeface-recognition.onnx',
+      async () => {
+        const options = this.sessionPool.getOptimizedSessionOptions();
+        try {
+          return await ort.InferenceSession.create(modelBuffer, options);
+        } catch {
+          // If WebGL fails, use CPU-only with optimizations
+          const fallbackOptions = {
+            ...options,
+            executionProviders: ['wasm']
+          };
+          return await ort.InferenceSession.create(modelBuffer, fallbackOptions);
+        }
+      }
+    );
+    
+    // Warm up the session with dummy input for faster first inference
+    const dummyInput = {
+      [this.pooledSession.session.inputNames[0]]: new ort.Tensor('float32', new Float32Array(3 * 112 * 112), [1, 3, 112, 112])
+    };
+    await this.sessionPool.warmupSession(this.pooledSession, dummyInput);
   }
 
   /**
    * Extract face embedding from aligned face crop using facial landmarks
    */
   async extractEmbedding(imageData: ImageData, landmarks: number[][]): Promise<Float32Array> {
-    if (!this.session) {
+    if (!this.pooledSession?.session) {
       throw new Error('EdgeFace service not initialized');
     }
 
@@ -107,11 +118,11 @@ export class WebFaceService {
     const inputTensor = this.preprocessImage(alignedFace);
     
     // 3. Run inference
-    const feeds = { [this.session.inputNames[0]]: inputTensor };
-    const results = await this.session.run(feeds);
+    const feeds = { [this.pooledSession.session.inputNames[0]]: inputTensor };
+    const results = await this.pooledSession.session.run(feeds);
     
     // 4. Extract and normalize embedding
-    const outputTensor = results[this.session.outputNames[0]];
+    const outputTensor = results[this.pooledSession.session.outputNames[0]];
     const embedding = new Float32Array(outputTensor.data as Float32Array);
     
     // L2 normalization (critical for cosine similarity)
@@ -196,6 +207,16 @@ export class WebFaceService {
     WebFaceService.globalAlignCanvas = null;
     WebFaceService.globalSourceCanvas = null;
     WebFaceService.globalChwData = null;
+  }
+
+  /**
+   * Dispose of resources
+   */
+  dispose(): void {
+    if (this.pooledSession) {
+      this.sessionPool.releaseSession(this.pooledSession);
+      this.pooledSession = null;
+    }
   }
 
   /**

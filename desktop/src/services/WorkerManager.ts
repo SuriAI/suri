@@ -54,16 +54,23 @@ export class WorkerManager {
       console.error('Worker error:', error);
     };
 
-    // Initialize the worker (old fast approach)
-    // In Electron, we need to check if we're in development mode differently
-    // since the protocol is always app:// even in dev mode
+    // Get pre-loaded model buffers from main process
     const isDev = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
     console.log(`🚀 Initializing worker in ${isDev ? 'development' : 'production'} mode`);
     
     const modelInitStart = performance.now();
+    
+    let modelBuffers: Record<string, ArrayBuffer> = {};
+    if (typeof window !== 'undefined' && (window as { electronAPI?: { invoke: (channel: string, ...args: unknown[]) => Promise<Record<string, ArrayBuffer>> } }).electronAPI) {
+      // Get pre-loaded models from main process
+      const electronAPI = (window as { electronAPI: { invoke: (channel: string, ...args: unknown[]) => Promise<Record<string, ArrayBuffer>> } }).electronAPI;
+      modelBuffers = await electronAPI.invoke('models:get-all');
+      console.log(`📦 Retrieved ${Object.keys(modelBuffers).length} pre-loaded models from main process`);
+    }
+    
     await this.sendMessage({ 
       type: 'init', 
-      data: { isDev } 
+      data: { isDev, modelBuffers } 
     });
     const modelInitTime = performance.now() - modelInitStart;
     console.log(`⚡ Model initialization completed in ${modelInitTime.toFixed(0)}ms`);
