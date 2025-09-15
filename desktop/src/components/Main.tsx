@@ -1301,7 +1301,7 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
   }, [stopCamera]);
 
   return (
-    <div className= "text-white flex flex-col h-[93.65216vh]">
+    <div className= "text-white flex flex-col h-screen pt-6">
 
       {/* Main Content */}
       <div className="flex-1 flex min-h-0">

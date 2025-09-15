@@ -42,7 +42,7 @@ export default function TitleBar() {
 
   return (
     <div 
-      className="h-auto bg-black/98 backdrop-blur-xl flex items-center justify-between select-none flex-shrink-0 border-b border-white/[0.02]"
+      className="absolute top-0 w-full h-auto bg-black/98 backdrop-blur-xl flex items-center justify-between select-none flex-shrink-0 border-b border-white/[0.02]"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       {/* Minimal Left Side - Just a subtle indicator */}
