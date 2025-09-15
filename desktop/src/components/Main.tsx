@@ -1432,7 +1432,7 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
         </div>
 
         {/* Sidebar */}
-        <div className="sidebar w-80 my-10 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full overflow-auto">
+        <div className="sidebar w-80 my-3 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full overflow-auto">
           {/* Stats Panel */}
           <div className="px-4 pt-2 pb-4 border-b border-white/[0.08]">
             <h3 className="text-lg font-light mb-3">System Status</h3>

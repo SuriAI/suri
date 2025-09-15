@@ -70,9 +70,9 @@ export default function TitleBar() {
           className="titlebar-btn w-10 h-9 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-white/80 hover:!rounded-none transition-all duration-200"
         >
           {isMaximized ? (
-            <i className="fas fa-window-restore text-[10px]"></i>
+            <i className="far fa-window-restore text-[10px]"></i>
           ) : (
-            <i className="fas fa-window-maximize text-[10px]"></i>
+            <i className="far fa-window-maximize text-[10px]"></i>
           )}
         </button>
 
