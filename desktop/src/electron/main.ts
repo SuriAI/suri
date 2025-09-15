@@ -126,10 +126,64 @@ function createWindow(): void {
             preload: path.join(__dirname, 'preload.js'),
             webgl: true,
         },
-        titleBarStyle: 'hidden'
+        titleBarStyle: 'hidden',
+        transparent: true
     })
 
     mainWindowRef = mainWindow
+
+    // Create rounded window shape
+    const createShape = (width: number, height: number) => {
+        const radius = 4 // corner radius
+        const shapes = []
+        
+        for (let y = 0; y < height; y++) {
+            let startX = 0
+            let endX = width
+
+            // Top-left corner
+            if (y < radius) {
+                const offset = Math.ceil(radius - Math.sqrt(radius * radius - (radius - y) * (radius - y)))
+                startX = offset
+            }
+
+            // Top-right corner
+            if (y < radius) {
+                const offset = Math.ceil(radius - Math.sqrt(radius * radius - (radius - y) * (radius - y)))
+                endX = width - offset
+            }
+
+            // Bottom-left corner
+            if (y >= height - radius) {
+                const offset = Math.ceil(radius - Math.sqrt(radius * radius - (y - (height - radius)) * (y - (height - radius))))
+                startX = offset
+            }
+
+            // Bottom-right corner
+            if (y >= height - radius) {
+                const offset = Math.ceil(radius - Math.sqrt(radius * radius - (y - (height - radius)) * (y - (height - radius))))
+                endX = width - offset
+            }
+
+            if (endX > startX) {
+                shapes.push({ x: startX, y, width: endX - startX, height: 1 })
+            }
+        }
+        
+        return shapes
+    }
+
+    // Function to update window shape
+    const updateWindowShape = () => {
+        if (process.platform === 'win32') {
+            try {
+                const { width, height } = mainWindow.getBounds()
+                mainWindow.setShape(createShape(width, height))
+            } catch (error) {
+                console.warn('Could not set window shape:', error)
+            }
+        }
+    }
 
     // Load the app
     if (isDev()) {
@@ -138,18 +192,43 @@ function createWindow(): void {
         mainWindow.loadFile(path.join(__dirname, '../../dist-react/index.html'))
     }
 
-    // Show window when ready
+    // Set rounded window shape after window is ready
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
+        if (process.platform === 'win32') {
+            try {
+                const { width, height } = mainWindow.getBounds()
+                mainWindow.setShape(createShape(width, height))
+            } catch (error) {
+                console.warn('Could not set window shape:', error)
+            }
+        }
     })
 
     // Handle window maximize/restore events
     mainWindow.on('maximize', () => {
         mainWindow.webContents.send('window:maximized')
+        // Reset shape when maximized (rectangular)
+        if (process.platform === 'win32') {
+            try {
+                mainWindow.setShape([])
+            } catch (error) {
+                console.warn('Could not reset window shape:', error)
+            }
+        }
     })
 
     mainWindow.on('unmaximize', () => {
         mainWindow.webContents.send('window:unmaximized')
+        // Restore rounded shape when unmaximized
+        setTimeout(updateWindowShape, 100)
+    })
+    
+    // Update shape on resize
+    mainWindow.on('resize', () => {
+        if (!mainWindow.isMaximized()) {
+            updateWindowShape()
+        }
     })
 
     // Handle window close
