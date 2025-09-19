@@ -1483,9 +1483,9 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
           </div>
 
           {/* Live Detections */}
-          <div className="live-detections p-4 border-b border-white/[0.08] h-40 overflow-auto">
+          <div className="p-4 border-b border-white/[0.08]">
             <h3 className="text-lg font-light mb-4">Live Detections</h3>
-            <div className="space-y-2">
+            <div className="live-detections space-y-2 live-detections-scroll h-20 overflow-auto">
               {detectionResults.length === 0 ? (
                 <div className="text-white/50 text-sm text-center py-4">
                   No faces detected
