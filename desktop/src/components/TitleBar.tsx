@@ -47,9 +47,6 @@ export default function TitleBar() {
     >
       {/* Minimal Left Side - Just a subtle indicator */}
       <div className="flex items-center ml-3 space-x-2 flex-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-        <div className="w-1 h-1 rounded-full bg-white/20"></div>
-        <div className="w-0.5 h-0.5 rounded-full bg-white/10"></div>
         <div className="text-white/80 text-sm font-medium">SURI <span className="text-white/70 align-center text-xs">- AI Vision</span></div>
       </div>
 
