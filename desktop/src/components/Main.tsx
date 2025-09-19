@@ -251,22 +251,12 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
 
       // Get user media with MAXIMUM performance optimizations
       const constraints: MediaStreamConstraints = {
-        video: {
-          // Use selected camera if available, otherwise use default
-          ...(selectedCameraId ? { deviceId: { exact: selectedCameraId } } : { facingMode: "user" }),
-          // AGGRESSIVE performance optimizations for minimum latency
-          width: { ideal: 640, max: 1280 }, // Limit resolution for faster processing
-          height: { ideal: 480, max: 720 },
-          frameRate: { ideal: 30, min: 15 }, // High frame rate for smooth detection
-          // Disable ALL video processing that can cause delays
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          // Additional WebRTC optimizations
-          aspectRatio: { ideal: 4/3 }
-          // Note: resizeMode is not part of standard MediaTrackConstraints
-        },
-        audio: false,
+      video: {
+        ...(selectedCameraId
+          ? { deviceId: { exact: selectedCameraId } }
+          : { facingMode: "user" })
+      },
+        audio: false
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
