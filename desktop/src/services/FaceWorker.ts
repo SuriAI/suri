@@ -29,10 +29,8 @@ const prewarmServices = () => {
   
   // Pre-instantiate services immediately (before models are even loaded)
   scrfdService = new WebScrfdService();
-  edgeFaceService = new WebFaceService(0.6);
+  edgeFaceService = new WebFaceService();
   // Anti-spoofing stays lazy for memory efficiency
-  
-  
 };
 
 // Start prewarming immediately when worker loads
