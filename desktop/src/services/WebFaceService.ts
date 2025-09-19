@@ -19,7 +19,7 @@ export class WebFaceService {
   private pooledSession: PooledSession | null = null;
   private sessionPool: SessionPoolManager;
   private database: Map<string, Float32Array> = new Map();
-  private similarityThreshold: number = 0.6; // 60% similarity threshold
+  private similarityThreshold: number;
   
   // Model specifications (matching research paper)
   private readonly INPUT_SIZE = 112; // EdgeFace input size: 112x112
@@ -27,8 +27,8 @@ export class WebFaceService {
   private readonly INPUT_STD = 127.5;
   private readonly EMBEDDING_DIM = 512; // EdgeFace embedding dimension
 
-  constructor(similarityThreshold: number = 0.6) {
-    this.similarityThreshold = similarityThreshold;
+  constructor() {
+    this.similarityThreshold = 0.6; // Default threshold, can be made configurable
     this.sessionPool = SessionPoolManager.getInstance();
   }
 
