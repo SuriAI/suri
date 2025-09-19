@@ -9,7 +9,7 @@ import { readFile } from 'fs/promises';
 const modelBuffers: Map<string, ArrayBuffer> = new Map();
 // Legacy SCRFD service (node-onnx) is unused now; using WebWorker-based pipeline in renderer
 import { setupFaceLogIPC } from "./faceLogIPC.js";
-import { sqlite3FaceDB } from "../services/FaceDatabase.js";
+import { faceDatabase } from "../services/FaceDatabase.js";
 // Set consistent app name across all platforms for userData directory
 app.setName('Suri');
 
@@ -274,7 +274,7 @@ app.whenReady().then(async () => {
     
     // Initialize SQLite database first
     try {
-        await sqlite3FaceDB.initialize();
+        await faceDatabase.initialize();
     
     } catch (error) {
         console.error('[ERROR] Failed to initialize SQLite3 database:', error);
