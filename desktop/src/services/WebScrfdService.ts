@@ -227,10 +227,10 @@ export class WebScrfdService {
         const g = processedData[rgba_idx + 1]; 
         const b = processedData[rgba_idx + 2];
         
-        // CRITICAL FIX: Store in RGB format (not BGR) for SCRFD model
-        tensorData[i] = (r - this.mean) * invStd;                    // R channel
-        tensorData[i + channelSize] = (g - this.mean) * invStd;      // G channel
-        tensorData[i + (channelSize << 1)] = (b - this.mean) * invStd; // B channel
+      
+tensorData[i] = (b - this.mean) * invStd;                    // B
+tensorData[i + channelSize] = (g - this.mean) * invStd;      // G
+tensorData[i + (channelSize << 1)] = (r - this.mean) * invStd; // R
       }
     }
     
