@@ -18,7 +18,7 @@ interface ScaleParams {
 export class WebScrfdService {
   private pooledSession: PooledSession | null = null;
   private sessionPool: SessionPoolManager;
-  private confThreshold = 0.5;  // Optimal threshold for pre-sigmoid activated model outputs
+  private confThreshold = 0.3;  // Optimal threshold for pre-sigmoid activated model outputs
   private iouThreshold = 0.4;   // Standard IoU for NMS
   
   private readonly fmc = 3;
@@ -226,11 +226,10 @@ export class WebScrfdService {
         const r = processedData[rgba_idx];
         const g = processedData[rgba_idx + 1]; 
         const b = processedData[rgba_idx + 2];
-        
-      
-tensorData[i] = (b - this.mean) * invStd;                    // B
-tensorData[i + channelSize] = (g - this.mean) * invStd;      // G
-tensorData[i + (channelSize << 1)] = (r - this.mean) * invStd; // R
+
+        tensorData[i] = (b - this.mean) * invStd;                    // B
+        tensorData[i + channelSize] = (g - this.mean) * invStd;      // G
+        tensorData[i + (channelSize << 1)] = (r - this.mean) * invStd; // R
       }
     }
     
