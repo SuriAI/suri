@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { BackendService } from '../services/BackendService';
 
 interface DetectionResult {
@@ -31,18 +31,48 @@ interface LiveVideoProps {
   onBack?: () => void;
 }
 
+interface WebSocketFaceData {
+  bbox?: number[];
+  confidence?: number;
+  landmarks?: number[][];
+  antispoofing?: {
+    is_real?: boolean | null;
+    confidence?: number;
+    status?: 'real' | 'fake' | 'error';
+  };
+}
+
+interface WebSocketDetectionResponse {
+  faces?: WebSocketFaceData[];
+  model_used?: string;
+  processing_time?: number;
+}
+
+interface WebSocketConnectionMessage {
+  message?: string;
+  status?: string;
+}
+
+interface WebSocketErrorMessage {
+  message?: string;
+  error?: string;
+}
+
+interface WebSocketPongMessage {
+  timestamp?: number;
+  message?: string;
+}
+
 export default function LiveVideo({ onBack }: LiveVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const animationFrameRef = useRef<number>();
-  const detectionIntervalRef = useRef<NodeJS.Timeout>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const detectionIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const detectionEnabledRef = useRef<boolean>(false);
   const backendServiceRef = useRef<BackendService | null>(null);
-  const frameQueueRef = useRef<string[]>([]);
   const isProcessingRef = useRef<boolean>(false);
-  const lastFrameTimeRef = useRef<number>(0);
   
   // Performance optimization refs
   const lastCanvasSizeRef = useRef<{width: number, height: number}>({width: 0, height: 0});
@@ -56,7 +86,6 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
   const [fps, setFps] = useState<number>(0);
   const [detectionFps, setDetectionFps] = useState<number>(0);
   const [websocketStatus, setWebsocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-  const [queueLength, setQueueLength] = useState<number>(0);
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
@@ -83,7 +112,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       await backendServiceRef.current.connectWebSocket();
         
         // Register message handler for detection responses
-        backendServiceRef.current.onMessage('detection_response', (data: any) => {
+        backendServiceRef.current.onMessage('detection_response', (data: WebSocketDetectionResponse) => {
         // Reduced logging for performance
         if (process.env.NODE_ENV === 'development') {
           console.log('📨 Detection response received');
@@ -103,7 +132,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         // Process the detection result
         if (data.faces && Array.isArray(data.faces)) {
           const detectionResult: DetectionResult = {
-            faces: data.faces.map((face: any) => {
+            faces: data.faces.map((face: WebSocketFaceData) => {
               // Safe extraction of face data with fallbacks
               const bbox = face.bbox || [0, 0, 0, 0];
               const landmarks = face.landmarks || [];
@@ -138,7 +167,11 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
                     y: (landmarks[4] && landmarks[4][1]) || 0 
                   }
                 },
-                antispoofing: face.antispoofing || {}
+                antispoofing: face.antispoofing ? {
+                  is_real: face.antispoofing.is_real ?? null,
+                  confidence: face.antispoofing.confidence || 0,
+                  status: face.antispoofing.status || 'error'
+                } : undefined
               };
             }),
             model_used: data.model_used || 'unknown',
@@ -149,28 +182,28 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
           lastDetectionRef.current = detectionResult;
         }
 
-        // Process next frame in queue
+        // Mark processing as complete - interval will handle next frame
         isProcessingRef.current = false;
-        processNextFrame();
       });
 
       // Handle connection messages
-      backendServiceRef.current.onMessage('connection', (data: any) => {
+      backendServiceRef.current.onMessage('connection', (data: WebSocketConnectionMessage) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('🔗 WebSocket connection message:', data);
         }
       });
 
       // Handle error messages
-      backendServiceRef.current.onMessage('error', (data: any) => {
+      backendServiceRef.current.onMessage('error', (data: WebSocketErrorMessage) => {
         console.error('❌ WebSocket error message:', data);
         setError(`Detection error: ${data.message || 'Unknown error'}`);
         isProcessingRef.current = false;
-        processNextFrame();
+        // Don't immediately process next frame on error to prevent infinite loops
+        // The interval will handle the next frame
       });
 
       // Handle pong messages
-      backendServiceRef.current.onMessage('pong', (data: any) => {
+      backendServiceRef.current.onMessage('pong', (data: WebSocketPongMessage) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('🏓 WebSocket pong received:', data);
         }
@@ -188,28 +221,67 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, []);
 
-  // Process next frame from queue
-  const processNextFrame = useCallback(() => {
-    if (frameQueueRef.current.length > 0 && !isProcessingRef.current && websocketStatus === 'connected') {
-      const frameData = frameQueueRef.current.shift();
-      setQueueLength(frameQueueRef.current.length);
-      if (frameData && backendServiceRef.current) {
-        isProcessingRef.current = true;
-        
-        backendServiceRef.current.sendDetectionRequest(frameData, {
-          model_type: 'yunet',
-          confidence_threshold: 0.5,
-          nms_threshold: 0.3,
-          enable_antispoofing: antispoofingEnabled,
-          antispoofing_threshold: antispoofingThreshold
-        }).catch(error => {
-          console.error('❌ WebSocket detection request failed:', error);
-          isProcessingRef.current = false;
-          processNextFrame();
-        });
-      }
+  // Optimized capture frame with reduced logging
+  const captureFrame = useCallback((): string | null => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    if (!video || !canvas || video.videoWidth === 0) {
+      return null;
     }
-  }, [websocketStatus, antispoofingEnabled, antispoofingThreshold]);
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return null;
+    }
+
+    // Only resize canvas if video dimensions changed
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+
+    // Draw current video frame
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert to base64 with reduced quality for better performance
+    const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+    return base64;
+  }, []);
+
+  // Process current frame directly without queue
+  const processCurrentFrame = useCallback(() => {
+    // Ensure we're in a valid state and not already processing
+    if (isProcessingRef.current || 
+        websocketStatus !== 'connected' || 
+        !detectionEnabledRef.current ||
+        !isStreaming) {
+      return;
+    }
+
+    try {
+      const frameData = captureFrame();
+      if (!frameData || !backendServiceRef.current) {
+        return;
+      }
+
+      isProcessingRef.current = true;
+      
+      backendServiceRef.current.sendDetectionRequest(frameData, {
+        model_type: 'yunet',
+        confidence_threshold: 0.5,
+        nms_threshold: 0.3,
+        enable_antispoofing: antispoofingEnabled,
+        antispoofing_threshold: antispoofingThreshold
+      }).catch(error => {
+        console.error('❌ WebSocket detection request failed:', error);
+        isProcessingRef.current = false;
+      });
+    } catch (error) {
+      console.error('❌ Frame capture failed:', error);
+      isProcessingRef.current = false;
+    }
+  }, [websocketStatus, antispoofingEnabled, antispoofingThreshold, isStreaming, captureFrame]);
 
   // Get available camera devices
   const getCameraDevices = useCallback(async () => {
@@ -298,60 +370,11 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, []);
 
-  // Optimized capture frame with reduced logging
-  const captureFrame = useCallback((): string | null => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    
-    if (!video || !canvas || video.videoWidth === 0) {
-      return null;
-    }
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return null;
-    }
-
-    // Only resize canvas if video dimensions changed
-    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-    }
-
-    // Draw current video frame
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Convert to base64 with reduced quality for better performance
-    const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-    return base64;
-  }, []);
-
-  // Optimized frame queuing with better throttling
-  const queueFrameForDetection = useCallback(() => {
-    const currentDetectionEnabled = detectionEnabledRef.current;
-    if (!currentDetectionEnabled || !isStreaming || websocketStatus !== 'connected') {
-      return;
-    }
-
-    try {
-      const frameData = captureFrame();
-      if (!frameData) {
-        return;
-      }
-
-      // Frame processing optimized - no artificial throttling needed since processing is fast (~70ms)
-
-      // Add frame to queue (limit queue size to prevent memory issues)
-      if (frameQueueRef.current.length < 3) { // Reduced queue size
-        frameQueueRef.current.push(frameData);
-        setQueueLength(frameQueueRef.current.length);
-        processNextFrame();
-      }
-
-    } catch (error) {
-      console.error('❌ Frame capture failed:', error);
-    }
-  }, [captureFrame, isStreaming, websocketStatus, processNextFrame]);
+  // Direct frame processing without queuing for real-time detection
+  const processFrameForDetection = useCallback(() => {
+    // Simply call processCurrentFrame directly - no queuing needed
+    processCurrentFrame();
+  }, [processCurrentFrame]);
 
   // Memoized scale calculation to avoid recalculation
   const calculateScaleFactors = useCallback(() => {
@@ -512,7 +535,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
 
       // Simplified text rendering
       let label = `FACE ${index + 1}`;
-      let statusText = `${(confidence * 100).toFixed(1)}%`;
+      const statusText = `${(confidence * 100).toFixed(1)}%`;
       
       if (antispoofing && antispoofing.status) {
         if (antispoofing.status === 'real') {
@@ -522,6 +545,47 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         } else {
           label = `? UNKNOWN FACE ${index + 1}`;
         }
+      }
+
+      // Draw facial landmarks as colored dots
+      const { landmarks } = face;
+      if (landmarks) {
+        const landmarkColors = [
+          "#ff0000", // right_eye - red
+          "#0000ff", // left_eye - blue  
+          "#00ff00", // nose_tip - green
+          "#ff00ff", // right_mouth_corner - magenta
+          "#00ffff"  // left_mouth_corner - cyan
+        ];
+        
+        const landmarkPoints = [
+          landmarks.right_eye,
+          landmarks.left_eye,
+          landmarks.nose_tip,
+          landmarks.right_mouth_corner,
+          landmarks.left_mouth_corner
+        ];
+        
+        landmarkPoints.forEach((point, idx) => {
+          if (point && isFinite(point.x) && isFinite(point.y)) {
+            const scaledX = point.x * scaleX + offsetX;
+            const scaledY = point.y * scaleY + offsetY;
+            
+            if (isFinite(scaledX) && isFinite(scaledY)) {
+              ctx.beginPath();
+              ctx.arc(scaledX, scaledY, 3, 0, 2 * Math.PI);
+              ctx.fillStyle = landmarkColors[idx];
+              ctx.fill();
+              
+              // Add a white border for better visibility
+              ctx.beginPath();
+              ctx.arc(scaledX, scaledY, 3, 0, 2 * Math.PI);
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        });
       }
 
       // Simple text without shadows
@@ -567,8 +631,19 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, [isStreaming, drawOverlays, currentDetections]);
 
+  // Start detection interval helper
+  const startDetectionInterval = useCallback(() => {
+    if (detectionEnabledRef.current && websocketStatus === 'connected' && !detectionIntervalRef.current) {
+      // Optimized frequency based on processing time (~70ms)
+      detectionIntervalRef.current = setInterval(processFrameForDetection, 100); // 100ms = 10 FPS
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 Detection interval started');
+      }
+    }
+  }, [processFrameForDetection, websocketStatus]);
+
   // Start/stop detection
-  const toggleDetection = useCallback(() => {
+  const toggleDetection = useCallback(async () => {
     if (detectionEnabled) {
       setDetectionEnabled(false);
       detectionEnabledRef.current = false;
@@ -576,19 +651,29 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         clearInterval(detectionIntervalRef.current);
         detectionIntervalRef.current = undefined;
       }
-      frameQueueRef.current = [];
       isProcessingRef.current = false;
       setCurrentDetections(null);
     } else {
       setDetectionEnabled(true);
       detectionEnabledRef.current = true;
+      
       if (websocketStatus === 'disconnected') {
-        initializeWebSocket();
+        try {
+          await initializeWebSocket();
+          // Detection interval will be started by the useEffect that monitors websocketStatus
+        } catch (error) {
+          console.error('❌ Failed to initialize WebSocket:', error);
+          setDetectionEnabled(false);
+          detectionEnabledRef.current = false;
+          setError('Failed to connect to detection service');
+        }
+      } else if (websocketStatus === 'connected') {
+        // WebSocket is already connected, start detection immediately
+        startDetectionInterval();
       }
-      // Optimized frequency based on processing time (~70ms)
-      detectionIntervalRef.current = setInterval(queueFrameForDetection, 100); // 100ms = 10 FPS
+      // If websocketStatus is 'connecting', the useEffect will handle starting detection when connected
     }
-  }, [detectionEnabled, queueFrameForDetection, websocketStatus, initializeWebSocket]);
+  }, [detectionEnabled, websocketStatus, initializeWebSocket, startDetectionInterval]);
 
   // Initialize
   useEffect(() => {
@@ -609,6 +694,13 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       }
     };
   }, [isStreaming, animate]);
+
+  // Monitor WebSocket status and start detection when connected
+  useEffect(() => {
+    if (websocketStatus === 'connected' && detectionEnabledRef.current && !detectionIntervalRef.current) {
+      startDetectionInterval();
+    }
+  }, [websocketStatus, startDetectionInterval]);
 
   // Monitor detectionEnabled state changes
   useEffect(() => {
@@ -728,7 +820,6 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
             </div>
             <div className="text-gray-300">Video FPS: {fps}</div>
             <div className="text-gray-300">Detection FPS: {detectionFps}</div>
-            <div className="text-gray-300">Queue: {queueLength}</div>
             {currentDetections && (
               <div className="text-gray-300">
                 Faces: {currentDetections.faces.length}
