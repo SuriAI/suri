@@ -112,7 +112,7 @@ class EdgeFaceDetector:
     
     def _align_face(self, image: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
         """
-        Align face using 5-point landmarks
+        Align face using 5-point landmarks with improved handling for angled faces
         
         Args:
             image: Input image
@@ -126,23 +126,54 @@ class EdgeFaceDetector:
             if landmarks.shape != (5, 2):
                 raise ValueError(f"Expected landmarks shape (5, 2), got {landmarks.shape}")
             
-            # Calculate similarity transformation matrix
-            tform = cv2.estimateAffinePartial2D(
-                landmarks.astype(np.float32),
-                self.REFERENCE_ALIGNMENT,
-                method=cv2.RANSAC
-            )[0]
+            # Estimate face pose and adjust reference points accordingly
+            adjusted_reference = self._get_adaptive_reference_points(landmarks)
+            
+            # Try multiple transformation methods for better robustness
+            tform = None
+            
+            # Method 1: RANSAC with adaptive reference points
+            try:
+                tform = cv2.estimateAffinePartial2D(
+                    landmarks.astype(np.float32),
+                    adjusted_reference,
+                    method=cv2.RANSAC,
+                    ransacReprojThreshold=3.0,
+                    maxIters=2000,
+                    confidence=0.99
+                )[0]
+            except:
+                pass
+            
+            # Method 2: Fallback to least squares if RANSAC fails
+            if tform is None:
+                try:
+                    tform = cv2.estimateAffinePartial2D(
+                        landmarks.astype(np.float32),
+                        adjusted_reference,
+                        method=cv2.LMEDS
+                    )[0]
+                except:
+                    pass
+            
+            # Method 3: Final fallback to original reference points
+            if tform is None:
+                tform = cv2.estimateAffinePartial2D(
+                    landmarks.astype(np.float32),
+                    self.REFERENCE_ALIGNMENT,
+                    method=cv2.LMEDS
+                )[0]
             
             if tform is None:
-                raise ValueError("Failed to estimate transformation matrix")
+                raise ValueError("Failed to estimate transformation matrix with all methods")
             
-            # Apply transformation
+            # Apply transformation with improved interpolation
             aligned_face = cv2.warpAffine(
                 image,
                 tform,
                 self.input_size,
-                flags=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_CONSTANT,
+                flags=cv2.INTER_CUBIC,  # Better quality for angled faces
+                borderMode=cv2.BORDER_REFLECT_101,  # Better border handling
                 borderValue=0
             )
             
@@ -163,6 +194,178 @@ class EdgeFaceDetector:
             face_crop = image[y1:y2, x1:x2]
             return cv2.resize(face_crop, self.input_size)
     
+    def _get_adaptive_reference_points(self, landmarks: np.ndarray) -> np.ndarray:
+        """
+        Get adaptive reference points based on detected face pose
+        
+        Args:
+            landmarks: Detected 5-point landmarks [[x1,y1], [x2,y2], ...]
+            
+        Returns:
+            Adjusted reference alignment points
+        """
+        try:
+            # Extract key points
+            left_eye = landmarks[0]    # left eye (from face perspective)
+            right_eye = landmarks[1]   # right eye (from face perspective)
+            nose = landmarks[2]        # nose tip
+            left_mouth = landmarks[3]  # left mouth corner
+            right_mouth = landmarks[4] # right mouth corner
+            
+            # Calculate face orientation metrics
+            eye_center = (left_eye + right_eye) / 2
+            eye_vector = right_eye - left_eye
+            eye_distance = np.linalg.norm(eye_vector)
+            
+            # Calculate face angle (yaw rotation)
+            eye_angle = np.arctan2(eye_vector[1], eye_vector[0])
+            
+            # Calculate vertical face pose (pitch) using nose-to-eye distance
+            nose_to_eye_center = nose - eye_center
+            vertical_ratio = nose_to_eye_center[1] / eye_distance if eye_distance > 0 else 0
+            
+            # Calculate horizontal face pose (yaw) using eye asymmetry
+            nose_to_left_eye = np.linalg.norm(nose - left_eye)
+            nose_to_right_eye = np.linalg.norm(nose - right_eye)
+            horizontal_asymmetry = (nose_to_right_eye - nose_to_left_eye) / eye_distance if eye_distance > 0 else 0
+            
+            # Start with default reference points
+            reference = self.REFERENCE_ALIGNMENT.copy()
+            
+            # Adjust reference points based on pose estimation
+            
+            # 1. Handle yaw rotation (side view)
+            if abs(horizontal_asymmetry) > 0.15:  # Significant side angle
+                # Adjust eye positions for side view
+                yaw_factor = np.clip(horizontal_asymmetry, -0.5, 0.5)
+                
+                # Shift reference points horizontally
+                reference[:, 0] += yaw_factor * 10  # Adjust x coordinates
+                
+                # Adjust eye separation for perspective
+                eye_separation_factor = 1.0 - abs(yaw_factor) * 0.3
+                eye_center_x = (reference[0, 0] + reference[1, 0]) / 2
+                reference[0, 0] = eye_center_x - (reference[1, 0] - eye_center_x) * eye_separation_factor / 2
+                reference[1, 0] = eye_center_x + (reference[1, 0] - eye_center_x) * eye_separation_factor / 2
+            
+            # 2. Handle pitch rotation (up/down view)
+            if abs(vertical_ratio) > 0.2:  # Significant up/down angle
+                # Adjust vertical positions
+                pitch_factor = np.clip(vertical_ratio, -0.5, 0.5)
+                
+                # Shift nose and mouth positions
+                reference[2, 1] += pitch_factor * 8   # nose
+                reference[3, 1] += pitch_factor * 12  # left mouth
+                reference[4, 1] += pitch_factor * 12  # right mouth
+                
+                # Adjust eye positions slightly
+                reference[0, 1] += pitch_factor * 3   # left eye
+                reference[1, 1] += pitch_factor * 3   # right eye
+            
+            # 3. Handle roll rotation (head tilt)
+            if abs(eye_angle) > 0.1:  # Significant head tilt
+                # Rotate reference points around center
+                center = np.mean(reference, axis=0)
+                cos_angle = np.cos(-eye_angle * 0.5)  # Partial compensation
+                sin_angle = np.sin(-eye_angle * 0.5)
+                
+                for i in range(len(reference)):
+                    # Translate to origin
+                    x = reference[i, 0] - center[0]
+                    y = reference[i, 1] - center[1]
+                    
+                    # Rotate
+                    new_x = x * cos_angle - y * sin_angle
+                    new_y = x * sin_angle + y * cos_angle
+                    
+                    # Translate back
+                    reference[i, 0] = new_x + center[0]
+                    reference[i, 1] = new_y + center[1]
+            
+            # Ensure reference points stay within reasonable bounds
+            reference = np.clip(reference, [10, 10], [102, 102])
+            
+            return reference.astype(np.float32)
+            
+        except Exception as e:
+            logger.warning(f"Failed to calculate adaptive reference points: {e}")
+            return self.REFERENCE_ALIGNMENT
+    
+    def _validate_landmarks_quality(self, landmarks: np.ndarray) -> bool:
+        """
+        Validate landmark quality with improved handling for angled faces
+        
+        Args:
+            landmarks: 5-point landmarks array
+            
+        Returns:
+            True if landmarks are of sufficient quality
+        """
+        try:
+            if landmarks is None or len(landmarks) != 5:
+                return False
+            
+            # Extract key points
+            left_eye = landmarks[0]
+            right_eye = landmarks[1]
+            nose = landmarks[2]
+            left_mouth = landmarks[3]
+            right_mouth = landmarks[4]
+            
+            # Basic distance checks
+            eye_distance = np.linalg.norm(right_eye - left_eye)
+            if eye_distance < 10:  # Too close eyes
+                return False
+            
+            # Check if landmarks form reasonable face geometry
+            # Even for angled faces, certain relationships should hold
+            
+            # 1. Eyes should be roughly horizontal (allowing for some tilt)
+            eye_vector = right_eye - left_eye
+            eye_angle = abs(np.arctan2(eye_vector[1], eye_vector[0]))
+            if eye_angle > np.pi/3:  # More than 60 degrees tilt
+                return False
+            
+            # 2. Nose should be between eyes (with tolerance for side views)
+            eye_center = (left_eye + right_eye) / 2
+            nose_to_eye_center = nose - eye_center
+            
+            # For side views, nose might be offset horizontally
+            horizontal_offset = abs(nose_to_eye_center[0]) / eye_distance
+            if horizontal_offset > 1.0:  # Nose too far from eye line
+                return False
+            
+            # 3. Mouth should be below nose (with tolerance for up/down views)
+            mouth_center = (left_mouth + right_mouth) / 2
+            nose_to_mouth_vertical = mouth_center[1] - nose[1]
+            
+            # Allow negative values for upward looking faces
+            if nose_to_mouth_vertical < -eye_distance * 0.8:  # Too far above
+                return False
+            
+            # 4. Mouth corners should have reasonable separation
+            mouth_distance = np.linalg.norm(right_mouth - left_mouth)
+            mouth_to_eye_ratio = mouth_distance / eye_distance
+            if mouth_to_eye_ratio < 0.3 or mouth_to_eye_ratio > 2.0:
+                return False
+            
+            # 5. Check for reasonable face proportions (relaxed for angled faces)
+            face_height = max(landmarks[:, 1]) - min(landmarks[:, 1])
+            face_width = max(landmarks[:, 0]) - min(landmarks[:, 0])
+            
+            if face_height < 20 or face_width < 20:  # Too small
+                return False
+            
+            aspect_ratio = face_width / face_height
+            if aspect_ratio < 0.3 or aspect_ratio > 3.0:  # Too extreme
+                return False
+            
+            return True
+            
+        except Exception as e:
+            logger.warning(f"Landmark validation error: {e}")
+            return False
+
     def _preprocess_image(self, aligned_face: np.ndarray) -> np.ndarray:
         """
         Preprocess aligned face for EdgeFace model
@@ -226,6 +429,69 @@ class EdgeFaceDetector:
             logger.error(f"Embedding extraction failed: {e}")
             raise
     
+    def _calculate_pose_difficulty(self, landmarks: np.ndarray) -> float:
+        """
+        Calculate pose difficulty factor for adaptive thresholding
+        
+        Args:
+            landmarks: 5-point landmarks array
+            
+        Returns:
+            Difficulty factor (0.0 = frontal, 1.0 = extreme angle)
+        """
+        try:
+            # Extract key points
+            left_eye = landmarks[0]
+            right_eye = landmarks[1]
+            nose = landmarks[2]
+            left_mouth = landmarks[3]
+            right_mouth = landmarks[4]
+            
+            # Calculate face orientation metrics
+            eye_center = (left_eye + right_eye) / 2
+            eye_vector = right_eye - left_eye
+            eye_distance = np.linalg.norm(eye_vector)
+            
+            if eye_distance == 0:
+                return 1.0  # Invalid landmarks
+            
+            # 1. Yaw (side view) difficulty
+            nose_to_left_eye = np.linalg.norm(nose - left_eye)
+            nose_to_right_eye = np.linalg.norm(nose - right_eye)
+            horizontal_asymmetry = abs(nose_to_right_eye - nose_to_left_eye) / eye_distance
+            yaw_difficulty = min(horizontal_asymmetry / 0.3, 1.0)  # Normalize to 0-1
+            
+            # 2. Pitch (up/down view) difficulty
+            nose_to_eye_center = nose - eye_center
+            vertical_ratio = abs(nose_to_eye_center[1]) / eye_distance
+            pitch_difficulty = min(vertical_ratio / 0.4, 1.0)  # Normalize to 0-1
+            
+            # 3. Roll (head tilt) difficulty
+            eye_angle = abs(np.arctan2(eye_vector[1], eye_vector[0]))
+            roll_difficulty = min(eye_angle / (np.pi/6), 1.0)  # Normalize to 0-1 (30 degrees max)
+            
+            # 4. Overall face geometry difficulty
+            mouth_center = (left_mouth + right_mouth) / 2
+            mouth_distance = np.linalg.norm(right_mouth - left_mouth)
+            mouth_to_eye_ratio = mouth_distance / eye_distance
+            
+            # Ideal ratio is around 0.7-0.8, deviations indicate perspective distortion
+            geometry_difficulty = min(abs(mouth_to_eye_ratio - 0.75) / 0.25, 1.0)
+            
+            # Combine difficulties (weighted average)
+            total_difficulty = (
+                yaw_difficulty * 0.4 +      # Yaw is most important
+                pitch_difficulty * 0.3 +    # Pitch is second
+                roll_difficulty * 0.2 +     # Roll is less critical
+                geometry_difficulty * 0.1   # Geometry as backup indicator
+            )
+            
+            return min(total_difficulty, 1.0)
+            
+        except Exception as e:
+            logger.warning(f"Pose difficulty calculation failed: {e}")
+            return 0.5  # Medium difficulty as fallback
+
     def _calculate_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """Calculate cosine similarity between two embeddings"""
         try:
@@ -237,12 +503,13 @@ class EdgeFaceDetector:
             logger.error(f"Similarity calculation failed: {e}")
             return 0.0
     
-    def _find_best_match(self, embedding: np.ndarray) -> Tuple[Optional[str], float]:
+    def _find_best_match(self, embedding: np.ndarray, landmarks: Optional[np.ndarray] = None) -> Tuple[Optional[str], float]:
         """
-        Find best matching person in database
+        Find best matching person in database with pose-aware thresholding
         
         Args:
             embedding: Query embedding
+            landmarks: Optional landmarks for pose-aware thresholding
             
         Returns:
             Tuple of (person_id, similarity_score)
@@ -266,8 +533,30 @@ class EdgeFaceDetector:
                 best_similarity = similarity
                 best_person_id = person_id
         
-        # Only return match if above threshold
-        if best_similarity >= self.similarity_threshold:
+        # Calculate adaptive threshold based on pose difficulty
+        effective_threshold = self.similarity_threshold
+        
+        if landmarks is not None:
+            try:
+                pose_difficulty = self._calculate_pose_difficulty(landmarks)
+                
+                # Lower threshold for difficult poses (angled faces)
+                # More difficult poses get more lenient thresholds
+                threshold_reduction = pose_difficulty * 0.15  # Up to 15% reduction
+                effective_threshold = max(
+                    self.similarity_threshold - threshold_reduction,
+                    self.similarity_threshold * 0.7  # Never go below 70% of original
+                )
+                
+                logger.debug(f"Pose difficulty: {pose_difficulty:.3f}, "
+                           f"Threshold: {self.similarity_threshold:.3f} -> {effective_threshold:.3f}")
+                
+            except Exception as e:
+                logger.warning(f"Failed to calculate adaptive threshold: {e}")
+                effective_threshold = self.similarity_threshold
+        
+        # Only return match if above adaptive threshold
+        if best_similarity >= effective_threshold:
             return best_person_id, best_similarity
         else:
             return None, best_similarity
@@ -293,11 +582,15 @@ class EdgeFaceDetector:
             # Take first 5 landmarks if more are provided
             landmarks_array = landmarks_array[:5]
             
+            # Validate landmark quality with improved handling for angled faces
+            if not self._validate_landmarks_quality(landmarks_array):
+                raise ValueError("Landmark quality insufficient for reliable recognition")
+            
             # Extract embedding
             embedding = self._extract_embedding(image, landmarks_array)
             
-            # Find best match
-            person_id, similarity = self._find_best_match(embedding)
+            # Find best match with pose-aware thresholding
+            person_id, similarity = self._find_best_match(embedding, landmarks_array)
             
             return {
                 "person_id": person_id,
@@ -352,6 +645,10 @@ class EdgeFaceDetector:
             
             # Take first 5 landmarks if more are provided
             landmarks_array = landmarks_array[:5]
+            
+            # Validate landmark quality with improved handling for angled faces
+            if not self._validate_landmarks_quality(landmarks_array):
+                raise ValueError("Landmark quality insufficient for reliable registration")
             
             # Extract embedding
             embedding = self._extract_embedding(image, landmarks_array)
