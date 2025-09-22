@@ -339,14 +339,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         return;
       }
 
-      const now = Date.now();
-      
-      // Implement frame skipping logic - only process 1 frame per second for better performance
-      if (now - lastFrameTimeRef.current < 1000) { // 1000ms = 1 FPS
-        return;
-      }
-
-      lastFrameTimeRef.current = now;
+      // Frame processing optimized - no artificial throttling needed since processing is fast (~70ms)
 
       // Add frame to queue (limit queue size to prevent memory issues)
       if (frameQueueRef.current.length < 3) { // Reduced queue size
@@ -592,8 +585,8 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       if (websocketStatus === 'disconnected') {
         initializeWebSocket();
       }
-      // Reduced frequency for better performance
-      detectionIntervalRef.current = setInterval(queueFrameForDetection, 200); // 200ms = 5 FPS
+      // Optimized frequency based on processing time (~70ms)
+      detectionIntervalRef.current = setInterval(queueFrameForDetection, 100); // 100ms = 10 FPS
     }
   }, [detectionEnabled, queueFrameForDetection, websocketStatus, initializeWebSocket]);
 
