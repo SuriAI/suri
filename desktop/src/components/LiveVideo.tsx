@@ -407,6 +407,9 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     try {
       setError(null);
       
+      // Refresh camera devices list to ensure we have current devices
+      await getCameraDevices();
+      
       // Stop existing stream
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
@@ -470,10 +473,24 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       streamRef.current = null;
     }
     
+    // Clear video element srcObject
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    
     // Stop detection
     setDetectionEnabled(false);
     detectionEnabledRef.current = false;
     setIsStreaming(false);
+    
+    // Reset processing state
+    isProcessingRef.current = false;
+    
+    // Disconnect WebSocket
+    if (backendServiceRef.current) {
+      backendServiceRef.current.disconnect();
+    }
+    setWebsocketStatus('disconnected');
     
     // Clear all intervals and animation frames
     if (animationFrameRef.current) {
