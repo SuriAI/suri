@@ -383,6 +383,25 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, [selectedCamera]);
 
+  // Direct frame processing without queuing for real-time detection
+  const processFrameForDetection = useCallback(() => {
+    // Simply call processCurrentFrame directly - no queuing needed
+    processCurrentFrame();
+  }, [processCurrentFrame]);
+
+  // Start detection interval helper
+  const startDetectionInterval = useCallback(() => {
+    if (detectionEnabledRef.current && 
+        backendServiceRef.current?.isWebSocketReady() && 
+        !detectionIntervalRef.current) {
+      // Optimized frequency based on processing time (~70ms)
+      detectionIntervalRef.current = setInterval(processFrameForDetection, 100); // 100ms = 10 FPS
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 Detection interval started');
+      }
+    }
+  }, [processFrameForDetection]);
+
   // Start camera stream
   const startCamera = useCallback(async () => {
     try {
@@ -410,12 +429,32 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
         setIsStreaming(true);
+        
+        // Automatically start detection when camera starts
+        setDetectionEnabled(true);
+        detectionEnabledRef.current = true;
+        
+        if (websocketStatus === 'disconnected') {
+          try {
+            await initializeWebSocket();
+            // Detection interval will be started by the useEffect that monitors websocketStatus
+          } catch (error) {
+            console.error('❌ Failed to initialize WebSocket:', error);
+            setDetectionEnabled(false);
+            detectionEnabledRef.current = false;
+            setError('Failed to connect to detection service');
+          }
+        } else if (websocketStatus === 'connected') {
+          // WebSocket is already connected, start detection immediately
+          startDetectionInterval();
+        }
+        // If websocketStatus is 'connecting', the useEffect will handle starting detection when connected
       }
     } catch (err) {
       console.error('Error starting camera:', err);
       setError('Failed to start camera. Please check permissions.');
     }
-  }, [selectedCamera]);
+  }, [selectedCamera, websocketStatus, initializeWebSocket, startDetectionInterval]);
 
   // Stop camera stream
   const stopCamera = useCallback(() => {
@@ -450,16 +489,21 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     // Clear detection results
     setCurrentDetections(null);
     
+    // Clear overlay canvas immediately
+    const overlayCanvas = overlayCanvasRef.current;
+    if (overlayCanvas) {
+      const ctx = overlayCanvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      }
+    }
+    
     if (process.env.NODE_ENV === 'development') {
       console.log('✅ Camera stopped successfully');
     }
   }, []);
 
-  // Direct frame processing without queuing for real-time detection
-  const processFrameForDetection = useCallback(() => {
-    // Simply call processCurrentFrame directly - no queuing needed
-    processCurrentFrame();
-  }, [processCurrentFrame]);
+
 
   // Memoized scale calculation to avoid recalculation
   const calculateScaleFactors = useCallback(() => {
@@ -757,51 +801,9 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, [isStreaming, drawOverlays, currentDetections]);
 
-  // Start detection interval helper
-  const startDetectionInterval = useCallback(() => {
-    if (detectionEnabledRef.current && 
-        backendServiceRef.current?.isWebSocketReady() && 
-        !detectionIntervalRef.current) {
-      // Optimized frequency based on processing time (~70ms)
-      detectionIntervalRef.current = setInterval(processFrameForDetection, 100); // 100ms = 10 FPS
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎯 Detection interval started');
-      }
-    }
-  }, [processFrameForDetection]);
 
-  // Start/stop detection
-  const toggleDetection = useCallback(async () => {
-    if (detectionEnabled) {
-      setDetectionEnabled(false);
-      detectionEnabledRef.current = false;
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-        detectionIntervalRef.current = undefined;
-      }
-      isProcessingRef.current = false;
-      setCurrentDetections(null);
-    } else {
-      setDetectionEnabled(true);
-      detectionEnabledRef.current = true;
-      
-      if (websocketStatus === 'disconnected') {
-        try {
-          await initializeWebSocket();
-          // Detection interval will be started by the useEffect that monitors websocketStatus
-        } catch (error) {
-          console.error('❌ Failed to initialize WebSocket:', error);
-          setDetectionEnabled(false);
-          detectionEnabledRef.current = false;
-          setError('Failed to connect to detection service');
-        }
-      } else if (websocketStatus === 'connected') {
-        // WebSocket is already connected, start detection immediately
-        startDetectionInterval();
-      }
-      // If websocketStatus is 'connecting', the useEffect will handle starting detection when connected
-    }
-  }, [detectionEnabled, websocketStatus, initializeWebSocket, startDetectionInterval]);
+
+
 
   // Face recognition utility functions
   const loadRegisteredPersons = useCallback(async () => {
@@ -1060,20 +1062,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
                   : 'bg-green-600 hover:bg-green-700'
               }`}
             >
-              {isStreaming ? 'Stop Camera' : 'Start Camera'}
-            </button>
-
-            {/* Detection Toggle */}
-            <button
-              onClick={toggleDetection}
-              disabled={!isStreaming}
-              className={`px-4 py-2 rounded transition-colors ${
-                detectionEnabled
-                  ? 'bg-orange-600 hover:bg-orange-700'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } disabled:bg-gray-600`}
-            >
-              {detectionEnabled ? 'Stop Detection' : 'Start Detection'}
+              {isStreaming ? 'Stop Camera & Detection' : 'Start Camera & Detection'}
             </button>
           </div>
 
