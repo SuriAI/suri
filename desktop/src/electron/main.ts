@@ -41,7 +41,7 @@ app.commandLine.appendSwitch('log-level', '3') // Only show fatal errors
 
 let mainWindowRef: BrowserWindow | null = null
 let pythonBackend: PythonShell | null = null
-let backendPort = 8001
+const backendPort = 8001
 // Removed legacy scrfdService usage
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
