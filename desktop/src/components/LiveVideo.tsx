@@ -99,11 +99,9 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
   
   // Anti-spoofing settings
   const [antispoofingEnabled, setAntispoofingEnabled] = useState(true);
-  const [antispoofingThreshold, setAntispoofingThreshold] = useState(0.5);
 
   // Face recognition settings
   const [recognitionEnabled, setRecognitionEnabled] = useState(true);
-  const [similarityThreshold, setSimilarityThreshold] = useState(0.7);
   const [registeredPersons, setRegisteredPersons] = useState<PersonInfo[]>([]);
   const [databaseStats, setDatabaseStats] = useState<DatabaseStatsResponse | null>(null);
 
@@ -360,7 +358,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         confidence_threshold: 0.5,
         nms_threshold: 0.3,
         enable_antispoofing: antispoofingEnabled,
-        antispoofing_threshold: antispoofingThreshold
+        antispoofing_threshold: 0.5
       }).catch(error => {
         console.error('❌ WebSocket detection request failed:', error);
         isProcessingRef.current = false;
@@ -369,7 +367,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       console.error('❌ Frame capture failed:', error);
       isProcessingRef.current = false;
     }
-  }, [antispoofingEnabled, antispoofingThreshold, isStreaming, captureFrame]);
+  }, [antispoofingEnabled, isStreaming, captureFrame]);
 
   // Get available camera devices
   const getCameraDevices = useCallback(async () => {
@@ -931,22 +929,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     }
   }, [loadRegisteredPersons, loadDatabaseStats]);
 
-  const handleSimilarityThresholdChange = useCallback(async (threshold: number) => {
-    try {
-      if (!backendServiceRef.current) {
-        setError('Backend service not initialized');
-        return;
-      }
-      setSimilarityThreshold(threshold);
-      const response = await backendServiceRef.current.setSimilarityThreshold(threshold);
-      if (!response.success) {
-        setError(response.message || 'Failed to update similarity threshold');
-      }
-    } catch (error) {
-      console.error('❌ Failed to update similarity threshold:', error);
-      setError('Failed to update similarity threshold');
-    }
-  }, []);
+
 
   // Initialize
   useEffect(() => {
@@ -1111,23 +1094,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
               </button>
             </div>
 
-            {antispoofingEnabled && (
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium">Threshold:</label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="0.9"
-                  step="0.1"
-                  value={antispoofingThreshold}
-                  onChange={(e) => setAntispoofingThreshold(parseFloat(e.target.value))}
-                  className="w-20"
-                />
-                <span className="text-sm text-gray-300 min-w-[3rem]">
-                  {antispoofingThreshold.toFixed(1)}
-                </span>
-              </div>
-            )}
+
           </div>
 
           {/* Face Recognition Controls */}
@@ -1148,21 +1115,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
 
             {recognitionEnabled && (
               <>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Similarity Threshold:</label>
-                  <input
-                    type="range"
-                    min="0.3"
-                    max="0.9"
-                    step="0.05"
-                    value={similarityThreshold}
-                    onChange={(e) => handleSimilarityThresholdChange(parseFloat(e.target.value))}
-                    className="w-20"
-                  />
-                  <span className="text-sm text-gray-300 min-w-[3rem]">
-                    {similarityThreshold.toFixed(2)}
-                  </span>
-                </div>
+
 
                 <button
                   onClick={() => setShowRegistrationDialog(true)}
