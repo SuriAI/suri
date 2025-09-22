@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { WorkerManager } from "../services/WorkerManager";
 import { faceLogService, type FaceLogEntry } from "../services/FaceLogService";
 import { FaceDeduplicationService } from "../services/FaceDeduplicationService";
+import { FaceTrackingService, type TrackedFace } from "../services/FaceTrackingService";
 import { WebAntiSpoofingService, type AntiSpoofingResult } from "../services/WebAntiSpoofingService";
 import { preprocessFaceForAntiSpoofing } from "../utils/faceUtils";
 import { globalWorkerPool } from "../services/GlobalWorkerPool";
@@ -65,9 +66,23 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
     })
   );
 
+  // Initialize face tracking service for multi-face scenarios
+  const faceTrackingServiceRef = useRef<FaceTrackingService>(
+    new FaceTrackingService({
+      maxTrackingDistance: 80,      // Maximum pixel distance for face matching
+      trackTimeoutMs: 1500,         // Remove tracks after 1.5 seconds
+      minDetectionsForStability: 3, // Minimum detections for stability
+      stabilityThreshold: 0.7,      // Stability score threshold
+      positionWeight: 0.5,          // Weight for position matching
+      sizeWeight: 0.3,              // Weight for size matching
+      confidenceWeight: 0.2         // Weight for confidence matching
+    })
+  );
+
   // Enhanced detection states
   const [bestDetection, setBestDetection] = useState<DetectionResult | null>(null);
   const [isReadyToLog, setIsReadyToLog] = useState(false);
+  const [trackedFaces, setTrackedFaces] = useState<TrackedFace[]>([]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -357,6 +372,12 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
       clearInterval(captureIntervalRef.current);
       captureIntervalRef.current = undefined;
     }
+
+    // Clear face tracking state
+    faceTrackingServiceRef.current.clearTracks();
+    setTrackedFaces([]);
+    setBestDetection(null);
+    setIsReadyToLog(false);
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -673,35 +694,87 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
         setDetectionResults(validDetections);
         setProcessingTime(processingTime);
 
-        // Intelligent face logging system
+        // Intelligent face tracking and logging system
         if (validDetections.length > 0) {
-          // Find the best detection (highest confidence, largest face) for UI display
-          const bestDetection = validDetections.reduce((best, current) => {
-            const currentScore = current.confidence * 
-              ((current.bbox[2] - current.bbox[0]) * (current.bbox[3] - current.bbox[1]));
-            const bestScore = best.confidence * 
-              ((best.bbox[2] - best.bbox[0]) * (best.bbox[3] - best.bbox[1]));
-            return currentScore > bestScore ? current : best;
-          });
-
-          // Update best detection for UI
-          setBestDetection(bestDetection);
+          // Update face tracking with current detections
+          const updatedTracks = faceTrackingServiceRef.current.updateTracks(
+            validDetections.map(detection => ({
+              bbox: detection.bbox,
+              confidence: detection.confidence,
+              recognition: detection.recognition
+            }))
+          );
           
-          // Advanced auto-logging with deduplication for reliable detections
-          if (bestDetection.confidence > 0.6) {
-            setIsReadyToLog(true);
+          setTrackedFaces(updatedTracks);
+          
+          // Get the primary (most stable) tracked face for UI display
+          const primaryTrack = faceTrackingServiceRef.current.getPrimaryTrack();
+          
+          if (primaryTrack) {
+            // Find the corresponding detection for the primary track
+            const primaryDetection = validDetections.find(detection => {
+              // Match by position and confidence similarity
+              const trackCenterX = primaryTrack.bbox[0] + primaryTrack.bbox[2] / 2;
+              const trackCenterY = primaryTrack.bbox[1] + primaryTrack.bbox[3] / 2;
+              const detectionCenterX = detection.bbox[0] + detection.bbox[2] / 2;
+              const detectionCenterY = detection.bbox[1] + detection.bbox[3] / 2;
+              
+              const distance = Math.sqrt(
+                Math.pow(trackCenterX - detectionCenterX, 2) +
+                Math.pow(trackCenterY - detectionCenterY, 2)
+              );
+              
+              return distance < 50 && Math.abs(primaryTrack.confidence - detection.confidence) < 0.2;
+            });
+            
+            if (primaryDetection) {
+              setBestDetection(primaryDetection);
+              
+              // Set ready to log based on track stability and confidence
+              if (primaryTrack.isStable && primaryTrack.confidence > 0.6) {
+                setIsReadyToLog(true);
+              } else {
+                setIsReadyToLog(false);
+              }
+            }
           } else {
-            setIsReadyToLog(false);
+            // Fallback to highest confidence detection if no stable track exists
+            const fallbackDetection = validDetections.reduce((best, current) => {
+              return current.confidence > best.confidence ? current : best;
+            });
+            setBestDetection(fallbackDetection);
+            setIsReadyToLog(fallbackDetection.confidence > 0.6);
           }
 
-          // Process ALL valid detections for logging (not just the best one)
+          // Enhanced confidence-based filtering for multi-face scenarios
           if (loggingMode === "auto") {
-            const recognizedFaces = validDetections.filter(d => d.confidence > 0.6 && d.recognition?.personId);
+            // Dynamic confidence threshold based on number of faces
+            const baseConfidenceThreshold = 0.6;
+            const multiFactorThreshold = validDetections.length > 1 ? 0.75 : baseConfidenceThreshold;
             
-            if (recognizedFaces.length > 1) {
-              // Multiple faces detected - processing each one
-            }
+            // Filter recognized faces with enhanced criteria
+            const recognizedFaces = validDetections.filter(detection => {
+              if (!detection.recognition?.personId) return false;
+              
+              // Higher confidence threshold for multi-face scenarios
+              if (detection.confidence < multiFactorThreshold) return false;
+              
+              // Additional quality checks for multi-face scenarios
+              if (validDetections.length > 1) {
+                // Face size check - ensure face is reasonably sized
+                const faceArea = (detection.bbox[2] - detection.bbox[0]) * (detection.bbox[3] - detection.bbox[1]);
+                const minFaceArea = 2500; // Minimum face area in pixels
+                if (faceArea < minFaceArea) return false;
+                
+                // Ensure the face is not too close to image edges (partial faces)
+                const margin = 20;
+                if (detection.bbox[0] < margin || detection.bbox[1] < margin) return false;
+              }
+              
+              return true;
+            });
             
+            // Only process high-quality recognized faces
             recognizedFaces.forEach(detection => {
               // Process each recognized face through deduplication service
               handleAutoLog(detection);
@@ -1464,6 +1537,10 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
                 <span className="text-white/60">Today's Records</span>
                 <span className="font-mono">{systemStats.today_records}</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/60">Tracked Faces</span>
+                <span className="font-mono">{trackedFaces.length}</span>
+              </div>
 
               {/* Settings Button */}
               <div className="pt-2 border-t border-white/[0.05] space-y-2">
@@ -1491,7 +1568,7 @@ export default function LiveCameraRecognition({ onMenuSelect }: LiveCameraRecogn
                 
                 {/* Live Video Button */}
                 <button
-                  onClick={() => onMenuSelect('live-video')}
+                  onClick={() => onMenuSelect('live-camera')}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 backdrop-blur-xl border border-purple-500/30 text-purple-200 hover:text-purple-100 rounded-xl font-light transition-all duration-300"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
