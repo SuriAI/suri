@@ -1085,24 +1085,24 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Video Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex min-h-0">
+        {/* Video Section */}
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Video Container */}
-          <div className="flex-1 p-4 flex items-center justify-center bg-white/[0.01]">
-            <div className="relative max-w-full max-h-full">
+          <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-4">
+            <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] border border-white/[0.08]">
               <video
                 ref={videoRef}
-                className="max-w-full max-h-full object-contain rounded border border-white/[0.1]"
+                className="absolute inset-0 w-full h-full object-contain"
                 playsInline
                 muted
               />
               <canvas
                 ref={overlayCanvasRef}
-                className="absolute top-0 left-0 pointer-events-none"
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
                 style={{
-                  width: '100%',
-                  height: '100%'
+                  zIndex: 10,
+                  mixBlendMode: "normal",
                 }}
               />
               
