@@ -573,7 +573,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     return scaleFactorsRef.current;
   }, []);
 
-  // Highly optimized drawing system
+  // Advanced futuristic drawing system (adapted from Main.tsx)
   const drawOverlays = useCallback(() => {
     const video = videoRef.current;
     const overlayCanvas = overlayCanvasRef.current;
@@ -583,23 +583,30 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     const ctx = overlayCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
-    // Optimize canvas sizing - only update when necessary
+    // Clear canvas first
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+    // Only draw when streaming and have detections
+    if (!isStreaming || !currentDetections.faces || currentDetections.faces.length === 0) {
+      return;
+    }
+
+    // CRITICAL: Always get fresh dimensions and recalculate for accuracy
+    // Force layout recalculation to ensure accurate dimensions after resize
+    void video.offsetHeight; // Force reflow
     const rect = video.getBoundingClientRect();
     const displayWidth = Math.round(rect.width);
     const displayHeight = Math.round(rect.height);
 
+    // ENHANCED: Update canvas size to exactly match video display size
     if (overlayCanvas.width !== displayWidth || overlayCanvas.height !== displayHeight) {
       overlayCanvas.width = displayWidth;
       overlayCanvas.height = displayHeight;
       overlayCanvas.style.width = `${displayWidth}px`;
       overlayCanvas.style.height = `${displayHeight}px`;
-    }
-
-    // Clear canvas efficiently
-    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-    if (!currentDetections.faces || currentDetections.faces.length === 0) {
-      return;
+      
+      // Clear canvas after size change
+      ctx.clearRect(0, 0, displayWidth, displayHeight);
     }
 
     // Get cached scale factors
@@ -613,7 +620,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       return;
     }
 
-    // Simplified drawing with reduced visual effects for better performance
+    // Draw detections with futuristic sci-fi styling
     currentDetections.faces.forEach((face, index) => {
       const { bbox, confidence, antispoofing } = face;
       
@@ -622,15 +629,18 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       const x2 = bbox.x + bbox.width;
       const y2 = bbox.y + bbox.height;
 
+      // Validate bbox coordinates first
       if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) {
         return;
       }
 
+      // Scale coordinates from capture canvas size to displayed video area
       const scaledX1 = x1 * scaleX + offsetX;
       const scaledY1 = y1 * scaleY + offsetY;
       const scaledX2 = x2 * scaleX + offsetX;
       const scaledY2 = y2 * scaleY + offsetY;
 
+      // Additional validation for scaled coordinates
       if (!isFinite(scaledX1) || !isFinite(scaledY1) || !isFinite(scaledX2) || !isFinite(scaledY2)) {
         return;
       }
@@ -640,111 +650,91 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
 
       // Get recognition result for this face
       const recognitionResult = currentRecognitionResults.get(index);
-      
-      // Debug logging for UI rendering
-      if (process.env.NODE_ENV === 'development' && index === 0) {
-        console.log(`🎨 UI Render - Face ${index}:`, {
-          recognitionEnabled,
-          hasRecognitionResult: !!recognitionResult,
-          person_id: recognitionResult?.person_id,
-          similarity: recognitionResult?.similarity,
-          antispoofing: antispoofing?.status
-        });
-      }
-      
-      // Simplified color determination with recognition priority
-      const isHighConfidence = confidence > 0.8;
-      let primaryColor: string;
-      
-      if (recognitionEnabled && recognitionResult?.person_id) {
-        // Recognized face - use green color
-        primaryColor = "#00ff00";
-      } else if (antispoofing) {
-        if (antispoofing.status === 'real') {
-          primaryColor = "#00ff41";
-        } else if (antispoofing.status === 'fake') {
-          primaryColor = "#ff0000";
-        } else {
-          primaryColor = "#ff8800";
-        }
-      } else {
-        primaryColor = isHighConfidence ? "#00ffff" : "#ff6b6b";
-      }
 
-      // Simplified corner brackets - no shadows for better performance
+      // Determine colors based on recognition status
+       const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+       let primaryColor: string;
+
+       if (isRecognized) {
+         primaryColor = "#00ffff"; // Cyan for recognized
+       } else if (antispoofing) {
+         if (antispoofing.status === 'real') {
+           primaryColor = "#00ff41"; // Green for real
+         } else if (antispoofing.status === 'fake') {
+           primaryColor = "#ff0000"; // Red for fake
+         } else {
+           primaryColor = "#ff8800"; // Orange for unknown
+         }
+       } else {
+         primaryColor = confidence > 0.8 ? "#00ffff" : "#ff6b6b";
+       }
+
+      // Draw futuristic corner brackets instead of full box
       const cornerSize = Math.min(20, width * 0.2, height * 0.2);
       ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = primaryColor;
+      ctx.shadowBlur = 10;
 
-      // Draw corners in one path for better performance
+      // Top-left corner
       ctx.beginPath();
-      // Top-left
       ctx.moveTo(scaledX1, scaledY1 + cornerSize);
       ctx.lineTo(scaledX1, scaledY1);
       ctx.lineTo(scaledX1 + cornerSize, scaledY1);
-      // Top-right
+      ctx.stroke();
+
+      // Top-right corner
+      ctx.beginPath();
       ctx.moveTo(scaledX2 - cornerSize, scaledY1);
       ctx.lineTo(scaledX2, scaledY1);
       ctx.lineTo(scaledX2, scaledY1 + cornerSize);
-      // Bottom-left
+      ctx.stroke();
+
+      // Bottom-left corner
+      ctx.beginPath();
       ctx.moveTo(scaledX1, scaledY2 - cornerSize);
       ctx.lineTo(scaledX1, scaledY2);
       ctx.lineTo(scaledX1 + cornerSize, scaledY2);
-      // Bottom-right
+      ctx.stroke();
+
+      // Bottom-right corner
+      ctx.beginPath();
       ctx.moveTo(scaledX2 - cornerSize, scaledY2);
       ctx.lineTo(scaledX2, scaledY2);
       ctx.lineTo(scaledX2, scaledY2 - cornerSize);
       ctx.stroke();
 
-      // Simplified text rendering
-      let label = `FACE ${index + 1}`;
-      let statusText = `${(confidence * 100).toFixed(1)}%`;
-      
-      // Determine base label from recognition first
-      if (recognitionEnabled && recognitionResult?.person_id) {
-        label = recognitionResult.person_id.toUpperCase();
-        statusText = `${(confidence * 100).toFixed(1)}% | Similarity: ${(recognitionResult.similarity ? (recognitionResult.similarity * 100).toFixed(1) : 'N/A')}%`;
-      } else if (!recognitionEnabled) {
-        statusText = `${(confidence * 100).toFixed(1)}% | Recognition: OFF`;
-      }
-      
-      // Apply anti-spoofing indicators without overriding recognition
-      if (antispoofing && antispoofing.status) {
-        if (antispoofing.status === 'real') {
-          // Add checkmark to indicate real face
-          if (recognitionEnabled && recognitionResult?.person_id) {
-            label = `✓ ${recognitionResult.person_id.toUpperCase()}`;
-          } else {
-            label = `✓ REAL FACE ${index + 1}`;
-          }
-        } else if (antispoofing.status === 'fake') {
-          // For fake faces, show warning but preserve recognition if available
-          if (recognitionEnabled && recognitionResult?.person_id) {
-            label = `⚠ ${recognitionResult.person_id.toUpperCase()} (FAKE)`;
-          } else {
-            label = `⚠ FAKE FACE ${index + 1}`;
-          }
-        } else {
-          // For unknown anti-spoofing status, show question mark
-          if (recognitionEnabled && recognitionResult?.person_id) {
-            label = `? ${recognitionResult.person_id.toUpperCase()}`;
-          } else {
-            label = `? UNKNOWN FACE ${index + 1}`;
-          }
-        }
+      // Reset shadow for text
+      ctx.shadowBlur = 0;
+
+      // Draw modern HUD-style label (without percentage/similarity - moved to detection results)
+       let label = "UNKNOWN";
+       
+       if (isRecognized && recognitionResult?.person_id) {
+         label = recognitionResult.person_id.toUpperCase();
+       } else if (antispoofing?.status === 'fake') {
+         label = "⚠ SPOOF";
+       } else if (antispoofing?.status === 'real') {
+         label = "UNKNOWN";
+       }
+
+      // Validate coordinates
+      const isValidCoord = (val: number) => typeof val === "number" && isFinite(val);
+      if (!isValidCoord(scaledX1) || !isValidCoord(scaledY1)) {
+        return;
       }
 
-      // Draw facial landmarks as colored dots
+      // Draw name with glow effect
+      ctx.font = 'bold 16px "Courier New", monospace';
+      ctx.fillStyle = primaryColor;
+      ctx.shadowColor = primaryColor;
+      ctx.shadowBlur = 10;
+      ctx.fillText(label, scaledX1, scaledY1 - 10);
+      ctx.shadowBlur = 0;
+
+      // Draw futuristic facial landmarks (neural nodes)
       const { landmarks } = face;
       if (landmarks) {
-        const landmarkColors = [
-          "#ff0000", // right_eye - red
-          "#0000ff", // left_eye - blue  
-          "#00ff00", // nose_tip - green
-          "#ff00ff", // right_mouth_corner - magenta
-          "#00ffff"  // left_mouth_corner - cyan
-        ];
-        
         const landmarkPoints = [
           landmarks.right_eye,
           landmarks.left_eye,
@@ -753,37 +743,70 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
           landmarks.left_mouth_corner
         ];
         
-        landmarkPoints.forEach((point, idx) => {
-          if (point && isFinite(point.x) && isFinite(point.y)) {
-            const scaledX = point.x * scaleX + offsetX;
-            const scaledY = point.y * scaleY + offsetY;
-            
-            if (isFinite(scaledX) && isFinite(scaledY)) {
-              ctx.beginPath();
-              ctx.arc(scaledX, scaledY, 3, 0, 2 * Math.PI);
-              ctx.fillStyle = landmarkColors[idx];
-              ctx.fill();
-              
-              // Add a white border for better visibility
-              ctx.beginPath();
-              ctx.arc(scaledX, scaledY, 3, 0, 2 * Math.PI);
-              ctx.strokeStyle = "#ffffff";
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
+        const maxLandmarks = Math.min(landmarkPoints.length, 5);
+        for (let i = 0; i < maxLandmarks; i++) {
+          const point = landmarkPoints[i];
+          if (!point || !isFinite(point.x) || !isFinite(point.y)) continue;
+
+          // ENHANCED: High-precision landmark coordinate transformation
+          const scaledLandmarkX = point.x * scaleX + offsetX;
+          const scaledLandmarkY = point.y * scaleY + offsetY;
+
+          // Enhanced validation for scaled landmark coordinates
+          if (!isFinite(scaledLandmarkX) || !isFinite(scaledLandmarkY) || 
+              scaledLandmarkX < 0 || scaledLandmarkY < 0 ||
+              scaledLandmarkX > displayWidth || scaledLandmarkY > displayHeight)
+            continue;
+
+          // Draw neural node with glow effect
+          ctx.fillStyle = primaryColor;
+          ctx.shadowColor = primaryColor;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(scaledLandmarkX, scaledLandmarkY, 4, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Inner core
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(scaledLandmarkX, scaledLandmarkY, 2, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Pulse effect for recognized faces
+          if (isRecognized) {
+            const pulseRadius = 6 + Math.sin(Date.now() / 200 + i) * 2;
+            ctx.strokeStyle = `${primaryColor}60`;
+            ctx.lineWidth = 1;
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.arc(scaledLandmarkX, scaledLandmarkY, pulseRadius, 0, 2 * Math.PI);
+            ctx.stroke();
           }
-        });
+        }
+        ctx.shadowBlur = 0;
       }
 
-      // Simple text without shadows
-      ctx.font = 'bold 14px Arial';
-      ctx.fillStyle = primaryColor;
-      ctx.fillText(label, scaledX1, scaledY1 - 10);
+      // Add status indicator
+      const statusText = isRecognized ? "Face Recognized" : "";
+      ctx.font = 'bold 10px "Courier New", monospace';
+      ctx.fillStyle = isRecognized ? "#00ff00" : "#ffaa00";
+      ctx.fillText(statusText, scaledX1 + 10, scaledY2 + 15);
 
-      ctx.font = 'normal 12px Arial';
-      ctx.fillText(statusText, scaledX1, scaledY1 - 25);
+      // Add animated border glow for recognized faces
+      if (isRecognized) {
+        const glowIntensity = 0.5 + Math.sin(Date.now() / 300) * 0.3;
+        ctx.strokeStyle = `${primaryColor}${Math.floor(glowIntensity * 255)
+          .toString(16)
+          .padStart(2, "0")}`;
+        ctx.lineWidth = 1;
+        ctx.shadowColor = primaryColor;
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(scaledX1 - 2, scaledY1 - 2, width + 4, height + 4);
+        ctx.shadowBlur = 0;
+      }
     });
-  }, [currentDetections, calculateScaleFactors, currentRecognitionResults, recognitionEnabled]);
+  }, [currentDetections, calculateScaleFactors, currentRecognitionResults, recognitionEnabled, isStreaming]);
 
   // Optimized animation loop with reduced frequency
   const animate = useCallback(() => {
@@ -1219,17 +1242,45 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
               </div>
             </div>
             
-            {currentDetections.faces.map((face, index) => (
-              <div key={index} className="bg-gray-700 p-3 rounded mt-3">
-                <div className="text-white font-medium">Face {index + 1}</div>
-                <div className="text-gray-300 text-xs mt-1">
-                  <div>Confidence: {(face.confidence * 100).toFixed(1)}%</div>
-                  <div>
-                    BBox: [{face.bbox.x.toFixed(0)}, {face.bbox.y.toFixed(0)}, {face.bbox.width.toFixed(0)}, {face.bbox.height.toFixed(0)}]
+            {currentDetections.faces.map((face, index) => {
+              const recognitionResult = currentRecognitionResults.get(index);
+              const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+              
+              return (
+                <div key={index} className="bg-gray-700 p-3 rounded mt-3">
+                  <div className="text-white font-medium">
+                     Face {index + 1}
+                     {isRecognized && recognitionResult?.person_id && (
+                       <span className="ml-2 text-green-400">
+                         - {recognitionResult.person_id.toUpperCase()}
+                       </span>
+                     )}
+                   </div>
+                  <div className="text-gray-300 text-xs mt-1 space-y-1">
+                    <div>Detection Confidence: {(face.confidence * 100).toFixed(1)}%</div>
+                    {isRecognized && (
+                      <div className="text-green-300">
+                        Similarity: {recognitionResult.similarity ? (recognitionResult.similarity * 100).toFixed(1) : 'N/A'}%
+                      </div>
+                    )}
+                    {face.antispoofing && (
+                      <div className={`${
+                        face.antispoofing.status === 'real' ? 'text-green-300' : 
+                        face.antispoofing.status === 'fake' ? 'text-red-300' : 'text-yellow-300'
+                      }`}>
+                        Anti-spoofing: {face.antispoofing.status.toUpperCase()} ({(face.antispoofing.confidence * 100).toFixed(1)}%)
+                      </div>
+                    )}
+                    {!recognitionEnabled && (
+                      <div className="text-yellow-300">Recognition: DISABLED</div>
+                    )}
+                    <div>
+                      BBox: [{face.bbox.x.toFixed(0)}, {face.bbox.y.toFixed(0)}, {face.bbox.width.toFixed(0)}, {face.bbox.height.toFixed(0)}]
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
