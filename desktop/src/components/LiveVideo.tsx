@@ -506,6 +506,10 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
     // Clear detection results
     setCurrentDetections(null);
     
+    // Reset FPS tracking
+    setDetectionFps(0);
+    detectionCounterRef.current = { detections: 0, lastTime: Date.now() };
+    
     // Clear overlay canvas immediately
     const overlayCanvas = overlayCanvasRef.current;
     if (overlayCanvas) {
@@ -1014,6 +1018,8 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
 
   // Monitor WebSocket status and start detection when connected
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | undefined;
+    
     if (websocketStatus === 'connected' && detectionEnabledRef.current && !detectionIntervalRef.current) {
       // Poll for WebSocket readiness with exponential backoff
       let attempts = 0;
@@ -1026,7 +1032,7 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
         } else if (attempts < maxAttempts) {
           attempts++;
           const delay = Math.min(100 * Math.pow(1.5, attempts), 1000); // Exponential backoff, max 1s
-          setTimeout(checkReadiness, delay);
+          timeoutId = setTimeout(checkReadiness, delay);
         } else {
           console.warn('⚠️ WebSocket readiness check timed out after', maxAttempts, 'attempts');
         }
@@ -1035,6 +1041,12 @@ export default function LiveVideo({ onBack }: LiveVideoProps) {
       // Start checking immediately
       checkReadiness();
     }
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [websocketStatus, startDetectionInterval]);
 
   // Monitor detectionEnabled state changes
