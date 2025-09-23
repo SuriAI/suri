@@ -67,9 +67,12 @@ def main():
     print(f"WebSocket endpoint: ws://{server_config['host']}:{server_config['port']}/ws")
     
     try:
+        # Import the app directly for PyInstaller compatibility
+        from main import app
+        
         # Start the server
         uvicorn.run(
-            "main:app",
+            app,
             host=server_config["host"],
             port=server_config["port"],
             reload=server_config["reload"],

@@ -3,13 +3,27 @@ Configuration settings for the face detection backend
 """
 
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Any
 
+def get_weights_dir() -> Path:
+    """Get the weights directory path, handling both development and production modes"""
+    # Check if running as PyInstaller executable
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Production mode - PyInstaller executable
+        # Models are bundled in the weights directory relative to the executable
+        return Path(sys._MEIPASS) / "weights"
+    else:
+        # Development mode - use the desktop public weights directory
+        base_dir = Path(__file__).parent
+        project_root = base_dir.parent
+        return project_root / "desktop" / "public" / "weights"
+
 # Base paths
 BASE_DIR = Path(__file__).parent
-PROJECT_ROOT = BASE_DIR.parent
-WEIGHTS_DIR = PROJECT_ROOT / "desktop" / "public" / "weights"
+PROJECT_ROOT = BASE_DIR.parent if not getattr(sys, 'frozen', False) else Path(sys._MEIPASS)
+WEIGHTS_DIR = get_weights_dir()
 
 # Server configuration
 SERVER_CONFIG = {
