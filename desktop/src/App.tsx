@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import LiveCameraRecognition from './components/Main.tsx'
 import SystemManagement from './components/SystemManagement.tsx'
 import LiveVideo from './components/LiveVideo.tsx'
-import AdvancedLiveVideo from './components/AdvancedLiveVideo.tsx'
 import TitleBar from './components/TitleBar.tsx'
 import { faceLogService } from './services/FaceLogService.js'
 import { globalWorkerPool, type GlobalWorkerPoolState } from './services/GlobalWorkerPool'
@@ -78,8 +77,6 @@ function App() {
         return <SystemManagement onBack={() => setCurrentMenu('live-camera')} />
       case 'live-video':
         return <LiveVideo onBack={(menu) => setCurrentMenu(menu as MenuOption || 'live-camera')} />
-      case 'advanced-recognition':
-        return <AdvancedLiveVideo onBack={() => setCurrentMenu('live-camera')} />
       default:
         return <LiveCameraRecognition onMenuSelect={setCurrentMenu} />
     }
