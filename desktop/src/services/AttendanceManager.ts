@@ -564,6 +564,71 @@ export class AttendanceManager {
       return {};
     }
   }
+
+  // Group-Specific Person Management
+  async getGroupPersons(groupId: string): Promise<Array<{
+    person_id: string;
+    name: string;
+    role?: string;
+    employee_id?: string;
+    student_id?: string;
+    email?: string;
+    has_face_data: boolean;
+    joined_at: Date;
+  }>> {
+    try {
+      const persons = await this.httpClient.get<any[]>(`${API_ENDPOINTS.groups}/${groupId}/persons`);
+      return persons.map(person => ({
+        ...person,
+        joined_at: new Date(person.joined_at)
+      }));
+    } catch (error) {
+      console.error('Error getting group persons:', error);
+      return [];
+    }
+  }
+
+  async registerFaceForGroupPerson(
+     groupId: string, 
+     personId: string, 
+     imageData: string, 
+     landmarks: number[][]
+   ): Promise<{ success: boolean; message?: string; error?: string }> {
+     try {
+       const result = await this.httpClient.post<{ success: boolean; message: string; person_id: string; group_id: string; total_persons: number }>(
+         `${API_ENDPOINTS.groups}/${groupId}/persons/${personId}/register-face`,
+         {
+           image: imageData,
+           landmarks: landmarks
+         }
+       );
+       return { success: true, message: result.message };
+     } catch (error) {
+       console.error('Error registering face for group person:', error);
+       return { 
+         success: false, 
+         error: error instanceof Error ? error.message : 'Failed to register face' 
+       };
+     }
+   }
+
+   async removeFaceDataForGroupPerson(
+     groupId: string, 
+     personId: string
+   ): Promise<{ success: boolean; message?: string; error?: string }> {
+     try {
+       const result = await this.httpClient.delete<{ success: boolean; message: string; person_id: string; group_id: string }>(
+         `${API_ENDPOINTS.groups}/${groupId}/persons/${personId}/face-data`
+       );
+       return { success: true, message: result.message };
+     } catch (error) {
+       console.error('Error removing face data for group person:', error);
+       return { 
+         success: false, 
+         error: error instanceof Error ? error.message : 'Failed to remove face data' 
+       };
+     }
+   }
 }
 
 // Singleton instance

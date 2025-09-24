@@ -107,6 +107,7 @@ export default function LiveVideo() {
   const [registeredPersons, setRegisteredPersons] = useState<PersonInfo[]>([]);
 
   const [newPersonId, setNewPersonId] = useState<string>('');
+  const [selectedPersonForRegistration, setSelectedPersonForRegistration] = useState<string>('');
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [currentRecognitionResults, setCurrentRecognitionResults] = useState<Map<number, FaceRecognitionResponse>>(new Map());
 
@@ -119,6 +120,27 @@ export default function LiveVideo() {
   // Attendance system state
   const [attendanceEnabled, setAttendanceEnabled] = useState(false);
   const [currentGroup, setCurrentGroup] = useState<AttendanceGroup | null>(null);
+  
+  // Elite Tracking System States
+  const [trackingMode, setTrackingMode] = useState<'auto' | 'manual'>('auto');
+  const [trackedFaces, setTrackedFaces] = useState<Map<string, {
+    id: string;
+    bbox: { x: number; y: number; width: number; height: number };
+    confidence: number;
+    lastSeen: number;
+    trackingHistory: Array<{ timestamp: number; bbox: any; confidence: number }>;
+    isLocked: boolean;
+    personId?: string;
+    occlusionCount: number;
+    angleConsistency: number;
+  }>>(new Map());
+  const [selectedTrackingTarget, setSelectedTrackingTarget] = useState<string | null>(null);
+  const [trackingStats, setTrackingStats] = useState({
+    totalTracked: 0,
+    activeTracking: 0,
+    reacquisitions: 0,
+    attendanceEvents: 0
+  });
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>([]);
   const [groupMembers, setGroupMembers] = useState<AttendanceMember[]>([]);
   const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
@@ -132,6 +154,29 @@ export default function LiveVideo() {
   const [newMemberEmployeeId, setNewMemberEmployeeId] = useState('');
   const [newMemberStudentId, setNewMemberStudentId] = useState('');
   const [selectedPersonForMember, setSelectedPersonForMember] = useState<string>('');
+  const [memberAddMode, setMemberAddMode] = useState<'existing' | 'new'>('new');
+
+  // Reset member form function
+  const resetMemberForm = useCallback(() => {
+    setSelectedPersonForMember('');
+    setNewPersonId('');
+    setNewMemberName('');
+    setNewMemberRole('');
+    setNewMemberEmployeeId('');
+    setNewMemberStudentId('');
+    setMemberAddMode('new');
+  }, []);
+
+  // Handle mode switching with form reset
+  const handleMemberModeSwitch = useCallback((mode: 'existing' | 'new') => {
+    setSelectedPersonForMember('');
+    setNewPersonId('');
+    setNewMemberName('');
+    setNewMemberRole('');
+    setNewMemberEmployeeId('');
+    setNewMemberStudentId('');
+    setMemberAddMode(mode);
+  }, []);
   const [showAttendanceDashboard, setShowAttendanceDashboard] = useState(false);
 
   // Optimized capture frame with reduced logging
@@ -196,29 +241,144 @@ export default function LiveVideo() {
           if (response.success && response.person_id) {
             console.log(`🎯 Face ${index} recognized as: ${response.person_id} (${((response.similarity || 0) * 100).toFixed(1)}%)`);
             
-            // Process attendance if enabled and person is a member of current group
-            if (attendanceEnabled && currentGroup && response.person_id) {
-              try {
-                const member = await attendanceManager.getMember(response.person_id);
-                if (member && member.group_id === currentGroup.id) {
-                  const attendanceEvent = await attendanceManager.processAttendanceEvent(
-                    response.person_id,
-                    response.similarity || 0
-                  );
-                  if (attendanceEvent) {
-                    console.log(`📋 Attendance recorded: ${response.person_id} - ${attendanceEvent.type}`);
-                    // Refresh attendance data
-                    loadAttendanceData();
-                  }
-                }
-              } catch (error) {
-                console.error('❌ Failed to process attendance:', error);
+            // Elite Tracking System - Update tracked face with recognition data
+            const faceId = `face_${index}_${Date.now()}`;
+            const currentTime = Date.now();
+            
+            // Update tracking data
+            setTrackedFaces(prev => {
+              const newTracked = new Map(prev);
+              const existingTrack = Array.from(newTracked.values()).find(
+                track => track.personId === response.person_id && 
+                Math.abs(track.bbox.x - face.bbox.x) < 50 && 
+                Math.abs(track.bbox.y - face.bbox.y) < 50
+              );
+              
+              if (existingTrack) {
+                // Update existing track
+                existingTrack.lastSeen = currentTime;
+                existingTrack.confidence = Math.max(existingTrack.confidence, face.confidence);
+                existingTrack.trackingHistory.push({
+                  timestamp: currentTime,
+                  bbox: face.bbox,
+                  confidence: face.confidence
+                });
+                existingTrack.occlusionCount = 0; // Reset occlusion count
+                existingTrack.angleConsistency = calculateAngleConsistency(existingTrack.trackingHistory);
+                newTracked.set(existingTrack.id, existingTrack);
+              } else {
+                // Create new track
+                newTracked.set(faceId, {
+                  id: faceId,
+                  bbox: face.bbox,
+                  confidence: face.confidence,
+                  lastSeen: currentTime,
+                  trackingHistory: [{ timestamp: currentTime, bbox: face.bbox, confidence: face.confidence }],
+                  isLocked: trackingMode === 'auto',
+                  personId: response.person_id,
+                  occlusionCount: 0,
+                  angleConsistency: 1.0
+                });
               }
+              
+              return newTracked;
+            });
+            
+            // Enhanced Attendance Processing with comprehensive error handling
+            if (attendanceEnabled && currentGroup && response.person_id) {
+              console.log(`🔍 Processing attendance for ${response.person_id} in group ${currentGroup.name}`);
+              
+              try {
+                // Verify member exists and belongs to current group
+                const member = await attendanceManager.getMember(response.person_id);
+                console.log(`👤 Member lookup result:`, member);
+                
+                if (!member) {
+                  console.warn(`⚠️ Person ${response.person_id} is not registered as a member`);
+                  return { index, result: response };
+                }
+                
+                if (member.group_id !== currentGroup.id) {
+                  console.warn(`⚠️ Person ${response.person_id} belongs to group ${member.group_id}, not current group ${currentGroup.id}`);
+                  return { index, result: response };
+                }
+                
+                // Enhanced confidence check with anti-spoofing validation
+                const minConfidence = 0.7; // Minimum confidence for attendance
+                const actualConfidence = response.similarity || 0;
+                
+                if (actualConfidence < minConfidence) {
+                  console.warn(`⚠️ Recognition confidence ${actualConfidence} below threshold ${minConfidence}`);
+                  return { index, result: response };
+                }
+                
+                // Check anti-spoofing if available
+                if (face.antispoofing && !face.antispoofing.is_real) {
+                  console.warn(`⚠️ Anti-spoofing failed for ${response.person_id}: ${face.antispoofing.status}`);
+                  return { index, result: response };
+                }
+                
+                console.log(`✅ All checks passed, processing attendance event...`);
+                
+                // Process attendance event with enhanced error handling
+                const attendanceEvent = await attendanceManager.processAttendanceEvent(
+                  response.person_id,
+                  actualConfidence,
+                  'LiveVideo Camera' // location
+                );
+                
+                if (attendanceEvent) {
+                  console.log(`📋 ✅ Attendance successfully recorded: ${response.person_id} - ${attendanceEvent.type} at ${attendanceEvent.timestamp}`);
+                  
+                  // Update tracking stats
+                  setTrackingStats(prev => ({
+                    ...prev,
+                    attendanceEvents: prev.attendanceEvents + 1
+                  }));
+                  
+                  // Refresh attendance data
+                  await loadAttendanceData();
+                  
+                  // Show success notification
+                  setError(null);
+                } else {
+                  console.error(`❌ Attendance event processing returned null for ${response.person_id}`);
+                  setError(`Failed to record attendance for ${response.person_id}`);
+                }
+                
+              } catch (error) {
+                console.error('❌ Attendance processing failed:', error);
+                setError(`Attendance error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+            } else {
+              if (!attendanceEnabled) console.log(`ℹ️ Attendance is disabled`);
+              if (!currentGroup) console.log(`ℹ️ No current group selected`);
+              if (!response.person_id) console.log(`ℹ️ No person ID in response`);
             }
             
             return { index, result: response };
           } else if (response.success) {
             console.log(`👤 Face ${index} not recognized (similarity: ${((response.similarity || 0) * 100).toFixed(1)}%)`);
+            
+            // Track unrecognized faces for potential manual registration
+            const faceId = `unknown_${index}_${Date.now()}`;
+            const currentTime = Date.now();
+            
+            setTrackedFaces(prev => {
+              const newTracked = new Map(prev);
+              newTracked.set(faceId, {
+                id: faceId,
+                bbox: face.bbox,
+                confidence: face.confidence,
+                lastSeen: currentTime,
+                trackingHistory: [{ timestamp: currentTime, bbox: face.bbox, confidence: face.confidence }],
+                isLocked: false,
+                personId: undefined,
+                occlusionCount: 0,
+                angleConsistency: 1.0
+              });
+              return newTracked;
+            });
           }
         } catch (error) {
           console.warn(`⚠️ Face recognition failed for face ${index}:`, error);
@@ -987,11 +1147,241 @@ export default function LiveVideo() {
         setGroupMembers(members);
         setAttendanceStats(stats);
         setRecentAttendance(records);
+        
+        // Validate and clear selectedPersonForRegistration if they're no longer in the group
+        if (selectedPersonForRegistration && !members.some(member => member.person_id === selectedPersonForRegistration)) {
+          console.warn(`⚠️ Selected person "${selectedPersonForRegistration}" is no longer in group "${currentGroup.name}". Clearing selection.`);
+          setSelectedPersonForRegistration('');
+          setError(`Selected member "${selectedPersonForRegistration}" is no longer in the group. Please select a valid member.`);
+        }
       }
     } catch (error) {
       console.error('❌ Failed to load attendance data:', error);
     }
   }, [currentGroup]);
+
+  // Elite Registration Handler Functions
+  const handleEliteRegisterFace = useCallback(async (faceIndex: number) => {
+    if (!currentDetections?.faces || !selectedPersonForRegistration || !currentGroup) return;
+    
+    const face = currentDetections.faces[faceIndex];
+    if (!face) return;
+
+    // Enhanced validation
+    if (face.confidence <= 0.8) {
+      setError('Face quality too low for registration (minimum 80% confidence required)');
+      return;
+    }
+
+    if (face.antispoofing && !face.antispoofing.is_real) {
+      setError('Anti-spoofing check failed - live face required');
+      return;
+    }
+
+    // Validate that the selected member exists in the current group
+    const memberExists = groupMembers.some(member => member.person_id === selectedPersonForRegistration);
+    if (!memberExists) {
+      setError(`Member "${selectedPersonForRegistration}" not found in group "${currentGroup.name}". Please select a valid member.`);
+      return;
+    }
+
+    try {
+      // Capture frame data
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      if (!canvas || !video) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      const frameData = canvas.toDataURL('image/jpeg', 0.95);
+      const landmarks = [
+        [face.landmarks.right_eye.x, face.landmarks.right_eye.y],
+        [face.landmarks.left_eye.x, face.landmarks.left_eye.y],
+        [face.landmarks.nose_tip.x, face.landmarks.nose_tip.y],
+        [face.landmarks.right_mouth_corner.x, face.landmarks.right_mouth_corner.y],
+        [face.landmarks.left_mouth_corner.x, face.landmarks.left_mouth_corner.y]
+      ];
+
+      console.log(`🎯 Registering elite face for ${selectedPersonForRegistration} in group ${currentGroup.name}`);
+
+      const result = await attendanceManager.registerFaceForGroupPerson(
+        currentGroup.id,
+        selectedPersonForRegistration,
+        frameData,
+        landmarks
+      );
+
+      if (result.success) {
+        console.log('✅ Elite face registration successful:', result.message);
+        setError(null);
+        
+        // Refresh data
+        await Promise.all([
+          loadRegisteredPersons(),
+          loadDatabaseStats(),
+          loadAttendanceData()
+        ]);
+        
+        // Reset selection
+        setSelectedPersonForRegistration('');
+        setShowRegistrationDialog(false);
+      } else {
+        console.error('❌ Elite face registration failed:', result.error);
+        setError(result.error || 'Failed to register face');
+      }
+    } catch (error) {
+      console.error('❌ Elite registration error:', error);
+      setError(error instanceof Error ? error.message : 'Registration failed');
+    }
+  }, [currentDetections, selectedPersonForRegistration, currentGroup, loadRegisteredPersons, loadDatabaseStats, loadAttendanceData]);
+
+  const handleRemoveGroupPersonFace = useCallback(async (personId: string) => {
+    if (!currentGroup) return;
+
+    try {
+      const result = await attendanceManager.removeFaceDataForGroupPerson(currentGroup.id, personId);
+      
+      if (result.success) {
+        console.log('✅ Face data removed successfully:', result.message);
+        setError(null);
+        
+        // Refresh data
+        await Promise.all([
+          loadRegisteredPersons(),
+          loadDatabaseStats(),
+          loadAttendanceData()
+        ]);
+      } else {
+        console.error('❌ Failed to remove face data:', result.error);
+        setError(result.error || 'Failed to remove face data');
+      }
+    } catch (error) {
+      console.error('❌ Remove face data error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to remove face data');
+    }
+  }, [currentGroup, loadRegisteredPersons, loadDatabaseStats, loadAttendanceData]);
+
+
+
+  // Elite Tracking Helper Functions
+  const calculateAngleConsistency = useCallback((history: Array<{ timestamp: number; bbox: any; confidence: number }>) => {
+    if (history.length < 2) return 1.0;
+    
+    let consistencyScore = 0;
+    for (let i = 1; i < history.length; i++) {
+      const prev = history[i - 1];
+      const curr = history[i];
+      
+      // Calculate movement vector
+      const dx = curr.bbox.x - prev.bbox.x;
+      const dy = curr.bbox.y - prev.bbox.y;
+      const movement = Math.sqrt(dx * dx + dy * dy);
+      
+      // Penalize erratic movement
+      const smoothness = Math.max(0, 1 - movement / 100);
+      consistencyScore += smoothness;
+    }
+    
+    return consistencyScore / (history.length - 1);
+  }, []);
+
+  const handleOcclusion = useCallback(() => {
+    setTrackedFaces(prev => {
+      const newTracked = new Map(prev);
+      const currentTime = Date.now();
+      const occlusionThreshold = 2000; // 2 seconds
+      
+      for (const [id, track] of newTracked) {
+        if (currentTime - track.lastSeen > occlusionThreshold) {
+          track.occlusionCount++;
+          
+          // Remove tracks that have been occluded too long
+          if (track.occlusionCount > 5) {
+            newTracked.delete(id);
+          }
+        }
+      }
+      
+      return newTracked;
+    });
+  }, []);
+
+  const reacquireFace = useCallback((newFace: any, personId?: string) => {
+    const currentTime = Date.now();
+    let bestMatch: any = null;
+    let bestScore = 0;
+    
+    // Find best matching track for re-acquisition
+    trackedFaces.forEach(track => {
+      if (track.personId === personId || (!personId && !track.personId)) {
+        const timeDiff = currentTime - track.lastSeen;
+        const spatialDiff = Math.sqrt(
+          Math.pow(newFace.bbox.x - track.bbox.x, 2) + 
+          Math.pow(newFace.bbox.y - track.bbox.y, 2)
+        );
+        
+        // Score based on time and spatial proximity
+        const score = Math.max(0, 1 - (timeDiff / 5000) - (spatialDiff / 200));
+        
+        if (score > bestScore && score > 0.3) {
+          bestScore = score;
+          bestMatch = track;
+        }
+      }
+    });
+    
+    if (bestMatch) {
+      setTrackingStats(prev => ({
+        ...prev,
+        reacquisitions: prev.reacquisitions + 1
+      }));
+      return bestMatch.id;
+    }
+    
+    return null;
+  }, [trackedFaces]);
+
+  const lockTrackingTarget = useCallback((faceId: string) => {
+    setTrackedFaces(prev => {
+      const newTracked = new Map(prev);
+      const track = newTracked.get(faceId);
+      if (track) {
+        track.isLocked = true;
+        newTracked.set(faceId, track);
+      }
+      return newTracked;
+    });
+    setSelectedTrackingTarget(faceId);
+  }, []);
+
+  const unlockTrackingTarget = useCallback((faceId: string) => {
+    setTrackedFaces(prev => {
+      const newTracked = new Map(prev);
+      const track = newTracked.get(faceId);
+      if (track) {
+        track.isLocked = false;
+        newTracked.set(faceId, track);
+      }
+      return newTracked;
+    });
+    if (selectedTrackingTarget === faceId) {
+      setSelectedTrackingTarget(null);
+    }
+  }, [selectedTrackingTarget]);
+
+  // Periodic cleanup of old tracks
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      handleOcclusion();
+    }, 1000);
+
+    return () => clearInterval(cleanupInterval);
+  }, [handleOcclusion]);
 
   const handleCreateGroup = useCallback(async () => {
     if (!newGroupName.trim()) return;
@@ -1021,7 +1411,14 @@ export default function LiveVideo() {
   }, [loadAttendanceData]);
 
   const handleAddMember = useCallback(async () => {
-    if (!selectedPersonForMember || !newMemberName.trim() || !currentGroup) return;
+    if (!currentGroup) return;
+    
+    // Validation based on mode
+    if (memberAddMode === 'existing') {
+      if (!selectedPersonForMember || !newMemberName.trim()) return;
+    } else {
+      if (!newPersonId.trim() || !newMemberName.trim()) return;
+    }
     
     try {
       const options: {
@@ -1034,28 +1431,27 @@ export default function LiveVideo() {
       if (newMemberEmployeeId.trim()) options.employee_id = newMemberEmployeeId.trim();
       if (newMemberStudentId.trim()) options.student_id = newMemberStudentId.trim();
       
+      // Use the appropriate person ID based on mode
+      const personId = memberAddMode === 'existing' ? selectedPersonForMember : newPersonId.trim();
+      
       await attendanceManager.addMember(
-        selectedPersonForMember,
+        personId,
         currentGroup.id,
         newMemberName.trim(),
         options
       );
       
       // Reset form
-      setSelectedPersonForMember('');
-      setNewMemberName('');
-      setNewMemberRole('');
-      setNewMemberEmployeeId('');
-      setNewMemberStudentId('');
+      resetMemberForm();
       setShowMemberManagement(false);
       
       await loadAttendanceData();
-      console.log('✅ Member added successfully');
+      console.log(`✅ ${memberAddMode === 'existing' ? 'Existing person added' : 'New person created and added'} successfully`);
     } catch (error) {
       console.error('❌ Failed to add member:', error);
-      setError('Failed to add member');
+      setError(`Failed to ${memberAddMode === 'existing' ? 'add existing person' : 'create new person'}`);
     }
-  }, [selectedPersonForMember, newMemberName, newMemberRole, newMemberEmployeeId, newMemberStudentId, currentGroup, loadAttendanceData]);
+  }, [memberAddMode, selectedPersonForMember, newPersonId, newMemberName, newMemberRole, newMemberEmployeeId, newMemberStudentId, currentGroup, loadAttendanceData, resetMemberForm]);
 
   const handleRemoveMember = useCallback(async (personId: string) => {
     try {
@@ -1068,15 +1464,38 @@ export default function LiveVideo() {
     }
   }, [loadAttendanceData]);
 
-  const handleToggleAttendance = useCallback(() => {
-    setAttendanceEnabled(!attendanceEnabled);
-    if (!attendanceEnabled && attendanceGroups.length === 0) {
-      // Auto-create a default group if none exists
-      const defaultGroup = attendanceManager.createGroup('Default Group', 'general');
-      setCurrentGroup(defaultGroup);
-      loadAttendanceData();
+  const handleToggleAttendance = useCallback(async () => {
+    const newAttendanceState = !attendanceEnabled;
+    setAttendanceEnabled(newAttendanceState);
+    
+    if (newAttendanceState) {
+      console.log('🔄 Enabling attendance system...');
+      
+      // Load existing groups first
+      await loadAttendanceData();
+      
+      // Create a default group if none exists
+      if (attendanceGroups.length === 0) {
+        console.log('📝 Creating default group...');
+        try {
+          const defaultGroup = await attendanceManager.createGroup('Default Group', 'general', 'Auto-created default group');
+          setCurrentGroup(defaultGroup);
+          console.log('✅ Default group created:', defaultGroup);
+          await loadAttendanceData();
+        } catch (error) {
+          console.error('❌ Failed to create default group:', error);
+          setError('Failed to create default group');
+        }
+      } else if (!currentGroup) {
+        // Select the first available group
+        setCurrentGroup(attendanceGroups[0]);
+        console.log('📌 Selected first available group:', attendanceGroups[0]);
+      }
+    } else {
+      console.log('⏸️ Disabling attendance system...');
+      setCurrentGroup(null);
     }
-  }, [attendanceEnabled, attendanceGroups.length, loadAttendanceData]);
+  }, [attendanceEnabled, attendanceGroups, currentGroup, loadAttendanceData]);
 
   const formatAttendanceType = (type: string): string => {
     switch (type) {
@@ -1360,7 +1779,7 @@ export default function LiveVideo() {
         </div>
 
         {/* Sidebar */}
-        <div className="sidebar w-80 my-3 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full overflow-hidden">
+        <div className="sidebar w-80 my-3 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full overflow-auto">
           {/* System Status */}
           <div className="px-4 pt-2 pb-4 border-b border-white/[0.08]">
             <h3 className="text-lg font-light mb-3">System Status</h3>
@@ -1423,6 +1842,35 @@ export default function LiveVideo() {
                   </div>
                 </>
               )}
+              
+              {/* Elite Tracking Statistics */}
+              <div className="border-t border-white/[0.08] pt-3 mt-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-white/60">Elite Tracking</span>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      trackedFaces.size > 0 ? 'bg-cyan-500' : 'bg-white/40'
+                    }`}></div>
+                    <span className="text-xs font-light tracking-wider uppercase text-cyan-300">
+                      {trackingMode.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Active Tracks</span>
+                    <span className="font-mono text-cyan-400">{trackedFaces.size}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Reacquisitions</span>
+                    <span className="font-mono text-green-400">{trackingStats.reacquisitions}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Attendance Events</span>
+                    <span className="font-mono text-blue-400">{trackingStats.attendanceEvents}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1455,6 +1903,33 @@ export default function LiveVideo() {
                 >
                   {recognitionEnabled ? 'Enabled' : 'Disabled'}
                 </button>
+              </div>
+              
+              {/* Elite Tracking Mode */}
+              <div className="flex items-center justify-between">
+                <span className="text-white/60">Tracking Mode</span>
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => setTrackingMode('auto')}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors duration-150 ${
+                      trackingMode === 'auto'
+                        ? 'bg-cyan-600 text-white'
+                        : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
+                    }`}
+                  >
+                    Auto
+                  </button>
+                  <button
+                    onClick={() => setTrackingMode('manual')}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors duration-150 ${
+                      trackingMode === 'manual'
+                        ? 'bg-orange-600 text-white'
+                        : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.08] border border-white/[0.1]'
+                    }`}
+                  >
+                    Manual
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1501,19 +1976,40 @@ export default function LiveVideo() {
                   const recognitionResult = currentRecognitionResults.get(index);
                   const isRecognized = recognitionEnabled && recognitionResult?.person_id;
                   
+                  // Find corresponding tracked face
+                  const trackedFace = Array.from(trackedFaces.values()).find(track => 
+                    track.personId === recognitionResult?.person_id ||
+                    (Math.abs(track.bbox.x - face.bbox.x) < 30 && Math.abs(track.bbox.y - face.bbox.y) < 30)
+                  );
+                  
                   return (
-                    <div key={index} className="bg-white/[0.05] border border-white/[0.08] rounded p-3">
+                    <div key={index} className={`bg-white/[0.05] border rounded p-3 transition-all duration-200 ${
+                      trackedFace?.isLocked ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-white/[0.08]'
+                    }`}>
                       <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">
-                            {isRecognized && recognitionResult?.person_id ? 
-                              recognitionResult.person_id.toUpperCase() : 
-                              `Face ${index + 1}`
-                            }
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <div className="font-medium">
+                              {isRecognized && recognitionResult?.person_id ? 
+                                recognitionResult.person_id.toUpperCase() : 
+                                `Face ${index + 1}`
+                              }
+                            </div>
+                            {trackedFace && (
+                              <div className={`w-2 h-2 rounded-full ${
+                                trackedFace.isLocked ? 'bg-cyan-400' : 'bg-orange-400'
+                              }`} title={trackedFace.isLocked ? 'Locked Track' : 'Active Track'}></div>
+                            )}
                           </div>
                           <div className="text-xs text-white/60">
                             Confidence: {(face.confidence * 100).toFixed(1)}%
                           </div>
+                          {trackedFace && (
+                            <div className="text-xs text-cyan-300 mt-1">
+                              Track: {trackedFace.trackingHistory.length} frames • 
+                              Consistency: {(trackedFace.angleConsistency * 100).toFixed(0)}%
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
                           {isRecognized && recognitionResult?.similarity && (
@@ -1529,6 +2025,22 @@ export default function LiveVideo() {
                             }`}>
                               {face.antispoofing.status === 'real' ? '✓ Live' : 
                                face.antispoofing.status === 'fake' ? '⚠ Spoof' : '? Unknown'}
+                            </div>
+                          )}
+                          
+                          {/* Manual Tracking Controls */}
+                          {trackingMode === 'manual' && trackedFace && (
+                            <div className="flex space-x-1 mt-2">
+                              <button
+                                onClick={() => trackedFace.isLocked ? unlockTrackingTarget(trackedFace.id) : lockTrackingTarget(trackedFace.id)}
+                                className={`px-2 py-1 rounded text-xs transition-colors ${
+                                  trackedFace.isLocked 
+                                    ? 'bg-cyan-600 text-white hover:bg-cyan-700' 
+                                    : 'bg-orange-600 text-white hover:bg-orange-700'
+                                }`}
+                              >
+                                {trackedFace.isLocked ? '🔒' : '🔓'}
+                              </button>
                             </div>
                           )}
                         </div>
@@ -1712,69 +2224,220 @@ export default function LiveVideo() {
            </div>
          </div>
 
-       {/* Face Registration Dialog */}
+       {/* Elite Face Registration Dialog */}
         {showRegistrationDialog && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold mb-4">Register Face</h3>
+            <div className="bg-gray-800 p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
+                <span>🎯 Elite Face Registration</span>
+                {currentGroup && (
+                  <span className="text-sm bg-blue-600/20 text-blue-300 px-2 py-1 rounded">
+                    {getGroupTypeIcon(currentGroup.type)} {currentGroup.name}
+                  </span>
+                )}
+              </h3>
               
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Person ID:</label>
-                <input
-                  type="text"
-                  value={newPersonId}
-                  onChange={(e) => setNewPersonId(e.target.value)}
-                  placeholder="Enter person ID (e.g., john_doe)"
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              {currentDetections?.faces && currentDetections.faces.length > 0 && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Select Face:</label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {currentDetections.faces.map((face, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600"
-                        onClick={() => handleRegisterFace(index)}
-                      >
-                        <span className="text-sm">
-                          Face {index + 1} (Confidence: {(face.confidence * 100).toFixed(1)}%)
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRegisterFace(index);
-                          }}
-                          disabled={!newPersonId.trim()}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded text-sm transition-colors"
-                        >
-                          Register
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+              {!currentGroup && (
+                <div className="mb-4 p-3 bg-yellow-600/20 border border-yellow-500/30 rounded text-yellow-300">
+                  ⚠️ Please select an attendance group first to register faces.
                 </div>
               )}
 
-              {registeredPersons.length > 0 && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Registered Persons:</label>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {registeredPersons.map((person) => (
-                      <div key={person.person_id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
-                        <span className="text-sm">{person.person_id} ({person.embedding_count} embeddings)</span>
-                        <button
-                          onClick={() => handleRemovePerson(person.person_id)}
-                          className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs transition-colors"
-                        >
-                          Remove
-                        </button>
+              {currentGroup && (
+                <>
+                  {/* Step 1: Select Member or Create New */}
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium mb-3">Step 1: Select Member</h4>
+                    
+                    {/* Existing Members */}
+                    {groupMembers.length > 0 && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium mb-2">Existing Members:</label>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {groupMembers.map((member) => (
+                            <div
+                              key={member.person_id}
+                              className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                                selectedPersonForRegistration === member.person_id
+                                  ? 'bg-blue-600/30 border border-blue-500/50'
+                                  : 'bg-gray-700 hover:bg-gray-600'
+                              }`}
+                              onClick={() => setSelectedPersonForRegistration(member.person_id)}
+                            >
+                              <div>
+                                <span className="text-sm font-medium">{member.name}</span>
+                                <span className="text-xs text-white/60 ml-2">({member.person_id})</span>
+                                {member.role && (
+                                  <span className="text-xs text-blue-300 ml-2">{member.role}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                {/* Face data status indicator */}
+                                <div className={`w-2 h-2 rounded-full ${
+                                  registeredPersons.some(p => p.person_id === member.person_id)
+                                    ? 'bg-green-500'
+                                    : 'bg-red-500'
+                                }`} title={
+                                  registeredPersons.some(p => p.person_id === member.person_id)
+                                    ? 'Has face data'
+                                    : 'No face data'
+                                }></div>
+                                {selectedPersonForRegistration === member.person_id && (
+                                  <span className="text-xs text-blue-300">✓ Selected</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Create New Member */}
+                    <div className="border-t border-gray-600 pt-4">
+                      <label className="block text-sm font-medium mb-2">Or Create New Member:</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          value={newPersonId}
+                          onChange={(e) => setNewPersonId(e.target.value)}
+                          placeholder="Person ID (e.g., john_doe)"
+                          className="px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          value={newMemberName}
+                          onChange={(e) => setNewMemberName(e.target.value)}
+                          placeholder="Full Name"
+                          className="px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      {newPersonId.trim() && newMemberName.trim() && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              await handleAddMember();
+                              setSelectedPersonForRegistration(newPersonId);
+                              setNewPersonId('');
+                              setNewMemberName('');
+                            } catch (error) {
+                              console.error('Failed to add member:', error);
+                            }
+                          }}
+                          className="mt-2 px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm transition-colors"
+                        >
+                          Add Member
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Step 2: Face Selection and Validation */}
+                  {selectedPersonForRegistration && currentDetections?.faces && currentDetections.faces.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-medium mb-3">Step 2: Select & Validate Face</h4>
+                      <div className="space-y-3">
+                        {currentDetections.faces.map((face, index) => {
+                          const isValidForRegistration = face.confidence > 0.8 && 
+                            (!face.antispoofing || face.antispoofing.is_real);
+                          
+                          return (
+                            <div
+                              key={index}
+                              className={`p-3 rounded border transition-all ${
+                                isValidForRegistration
+                                  ? 'bg-green-600/10 border-green-500/30 hover:bg-green-600/20'
+                                  : 'bg-red-600/10 border-red-500/30'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="font-medium">Face {index + 1}</span>
+                                    <span className="text-sm text-white/60">
+                                      Confidence: {(face.confidence * 100).toFixed(1)}%
+                                    </span>
+                                    {face.antispoofing && (
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        face.antispoofing.status === 'real' ? 'bg-green-900 text-green-300' : 
+                                        'bg-red-900 text-red-300'
+                                      }`}>
+                                        {face.antispoofing.status === 'real' ? '✓ Live' : '⚠ Spoof'}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Quality Assessment */}
+                                  <div className="text-xs text-white/60 mt-1">
+                                    Quality: {face.confidence > 0.9 ? '🟢 Excellent' : 
+                                             face.confidence > 0.8 ? '🟡 Good' : 
+                                             face.confidence > 0.6 ? '🟠 Fair' : '🔴 Poor'}
+                                    {!isValidForRegistration && (
+                                      <span className="text-red-300 ml-2">
+                                        {face.confidence <= 0.8 ? 'Low quality' : 'Failed anti-spoofing'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <button
+                                  onClick={() => handleEliteRegisterFace(index)}
+                                  disabled={!isValidForRegistration}
+                                  className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                                    isValidForRegistration
+                                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {isValidForRegistration ? '🎯 Register Elite' : '❌ Invalid'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Current Group Registrations */}
+                  <div className="mb-6">
+                    <h4 className="text-lg font-medium mb-3">Step 3: Group Registrations</h4>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {groupMembers.length === 0 ? (
+                        <div className="text-white/50 text-sm text-center py-4">
+                          No members in this group yet.
+                        </div>
+                      ) : (
+                        groupMembers.map((member) => {
+                          const hasRegistration = registeredPersons.some(p => p.person_id === member.person_id);
+                          return (
+                            <div key={member.person_id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                              <div>
+                                <span className="text-sm font-medium">{member.name}</span>
+                                <span className="text-xs text-white/60 ml-2">({member.person_id})</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  hasRegistration ? 'bg-green-500' : 'bg-red-500'
+                                }`}></div>
+                                <span className="text-xs">
+                                  {hasRegistration ? 'Registered' : 'No Face Data'}
+                                </span>
+                                {hasRegistration && (
+                                  <button
+                                    onClick={() => handleRemoveGroupPersonFace(member.person_id)}
+                                    className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="flex gap-2">
@@ -1782,22 +2445,20 @@ export default function LiveVideo() {
                   onClick={() => {
                     setShowRegistrationDialog(false);
                     setNewPersonId('');
+                    setSelectedPersonForRegistration('');
                   }}
                   className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
                 >
-                  Cancel
+                  Close
                 </button>
-                <button
-                  onClick={() => {
-                    if (currentDetections?.faces && currentDetections.faces.length > 0) {
-                      handleRegisterFace(0);
-                    }
-                  }}
-                  disabled={!newPersonId.trim() || !currentDetections?.faces?.length}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded transition-colors"
-                >
-                  Register
-                </button>
+                {currentGroup && (
+                  <button
+                    onClick={() => setShowMemberManagement(true)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                  >
+                    Manage Members
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1899,34 +2560,98 @@ export default function LiveVideo() {
               {/* Add New Member */}
               <div className="mb-6">
                 <h4 className="text-lg font-medium mb-3">Add New Member</h4>
+                
+                {/* Tab Selection */}
+                <div className="flex mb-4 bg-gray-700 rounded-lg p-1">
+                  <button
+                    onClick={() => handleMemberModeSwitch('existing')}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
+                      memberAddMode === 'existing' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    Add Existing Person
+                  </button>
+                  <button
+                    onClick={() => handleMemberModeSwitch('new')}
+                    className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
+                      memberAddMode === 'new' 
+                        ? 'bg-green-600 text-white' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    Create New Person
+                  </button>
+                </div>
+
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Select Registered Person:</label>
-                    <select
-                      value={selectedPersonForMember}
-                      onChange={(e) => setSelectedPersonForMember(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="">Select a person...</option>
-                      {registeredPersons
-                        .filter(person => !groupMembers.some(member => member.person_id === person.person_id))
-                        .map(person => (
-                          <option key={person.person_id} value={person.person_id}>
-                            {person.person_id}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Display Name:</label>
-                    <input
-                      type="text"
-                      value={newMemberName}
-                      onChange={(e) => setNewMemberName(e.target.value)}
-                      placeholder="Enter display name"
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
+                  {memberAddMode === 'existing' ? (
+                    /* Add Existing Registered Person */
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Select Registered Person:</label>
+                        <select
+                          value={selectedPersonForMember}
+                          onChange={(e) => setSelectedPersonForMember(e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="">Select a person...</option>
+                          {registeredPersons
+                            .filter(person => !groupMembers.some(member => member.person_id === person.person_id))
+                            .map(person => (
+                              <option key={person.person_id} value={person.person_id}>
+                                {person.person_id}
+                              </option>
+                            ))}
+                        </select>
+                        {registeredPersons.filter(person => !groupMembers.some(member => member.person_id === person.person_id)).length === 0 && (
+                          <p className="text-yellow-400 text-xs mt-1">
+                            No registered persons available. Register faces first or create a new person.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Display Name:</label>
+                        <input
+                          type="text"
+                          value={newMemberName}
+                          onChange={(e) => setNewMemberName(e.target.value)}
+                          placeholder="Enter display name"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    /* Create New Person */
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Person ID:</label>
+                        <input
+                          type="text"
+                          value={newPersonId}
+                          onChange={(e) => setNewPersonId(e.target.value)}
+                          placeholder="e.g., john_doe, emp_001, student_123"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        />
+                        <p className="text-gray-400 text-xs mt-1">
+                          Unique identifier for this person (no spaces, use underscore)
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Full Name:</label>
+                        <input
+                          type="text"
+                          value={newMemberName}
+                          onChange={(e) => setNewMemberName(e.target.value)}
+                          placeholder="Enter full name"
+                          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Common fields for both modes */}
                   <div>
                     <label className="block text-sm font-medium mb-2">Role (Optional):</label>
                     <input
@@ -1963,11 +2688,23 @@ export default function LiveVideo() {
                   )}
                   <button
                     onClick={handleAddMember}
-                    disabled={!selectedPersonForMember || !newMemberName.trim()}
+                    disabled={
+                      memberAddMode === 'existing' 
+                        ? (!selectedPersonForMember || !newMemberName.trim())
+                        : (!newPersonId.trim() || !newMemberName.trim())
+                    }
                     className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded transition-colors"
                   >
-                    Add Member
+                    {memberAddMode === 'existing' ? 'Add Existing Person' : 'Create & Add New Person'}
                   </button>
+                  
+                  {memberAddMode === 'new' && (
+                    <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-3">
+                      <p className="text-blue-300 text-xs">
+                        💡 <strong>Note:</strong> After creating this person, you can register their face using the "Register" button for automatic attendance tracking.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -2001,7 +2738,10 @@ export default function LiveVideo() {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowMemberManagement(false)}
+                  onClick={() => {
+                    resetMemberForm();
+                    setShowMemberManagement(false);
+                  }}
                   className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
                 >
                   Close
