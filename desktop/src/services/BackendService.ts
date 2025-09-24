@@ -538,7 +538,7 @@ export class BackendService {
    */
   async getAllPersons(): Promise<PersonInfo[]> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/face/persons`, {
+      const response = await fetch(`${this.config.baseUrl}/face/stats`, {
         method: 'GET',
         signal: AbortSignal.timeout(this.config.timeout)
       });
@@ -547,7 +547,8 @@ export class BackendService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const stats = await response.json();
+      return stats.persons || [];
     } catch (error) {
       console.error('Failed to get persons:', error);
       throw error;
