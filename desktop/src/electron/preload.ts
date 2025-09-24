@@ -1,49 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
-// Type definitions
-interface FaceLogEntry {
-    id?: string;
-    timestamp: string;
-    personId: string | null;
-    confidence: number;
-    bbox: [number, number, number, number];
-    similarity?: number;
-    mode: 'auto' | 'manual';
-}
-
-// Face Log Database API
+// Backend API
 contextBridge.exposeInMainWorld('electronAPI', {
-    logDetection: (detection: FaceLogEntry) => {
-        return ipcRenderer.invoke('face-db:log-detection', detection)
-    },
-    getRecentLogs: (limit?: number) => {
-        return ipcRenderer.invoke('face-db:get-recent-logs', limit)
-    },
-    getTodayStats: () => {
-        return ipcRenderer.invoke('face-db:get-today-stats')
-    },
-    exportData: (filePath: string) => {
-        return ipcRenderer.invoke('face-db:export-data', filePath)
-    },
-    clearOldData: (daysToKeep: number) => {
-        return ipcRenderer.invoke('face-db:clear-old-data', daysToKeep)
-    },
-    // Person Management API
-    getAllPeople: () => {
-        return ipcRenderer.invoke('face-db:get-all-people')
-    },
-    getPersonLogs: (personId: string, limit?: number) => {
-        return ipcRenderer.invoke('face-db:get-person-logs', personId, limit)
-    },
-    updatePersonId: (oldPersonId: string, newPersonId: string) => {
-        return ipcRenderer.invoke('face-db:update-person-id', oldPersonId, newPersonId)
-    },
-    deletePersonRecords: (personId: string) => {
-        return ipcRenderer.invoke('face-db:delete-person', personId)
-    },
-    getPersonStats: (personId: string) => {
-        return ipcRenderer.invoke('face-db:get-person-stats', personId)
-    },
     // Face Recognition Database API (File-based)
     saveFaceDatabase: (databaseData: Record<string, number[]>) => {
         return ipcRenderer.invoke('face-recognition:save-database', databaseData)
