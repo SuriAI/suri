@@ -154,6 +154,8 @@ export default function LiveVideo() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   const [showGroupManagement, setShowGroupManagement] = useState(false);
   const [showMemberManagement, setShowMemberManagement] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<AttendanceGroup | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupType, setNewGroupType] = useState<GroupType>('general');
   const [newMemberName, setNewMemberName] = useState('');
@@ -248,15 +250,23 @@ export default function LiveVideo() {
           if (response.success && response.person_id) {
             console.log(`🎯 Face ${index} recognized as: ${response.person_id} (${((response.similarity || 0) * 100).toFixed(1)}%)`);
             
-            // Group-based filtering: Only process faces that belong to the current group
+            // Group-based filtering: Only process faces that belong to the current group (by name)
             if (currentGroup) {
               try {
                 const member = await attendanceManager.getMember(response.person_id);
-                if (!member || member.group_id !== currentGroup.id) {
-                  console.log(`🚫 Face ${index} filtered out: ${response.person_id} ${!member ? 'not registered' : `belongs to group ${member.group_id}, not current group ${currentGroup.id}`}`);
+                if (!member) {
+                  console.log(`🚫 Face ${index} filtered out: ${response.person_id} not registered as a member`);
                   return null; // Filter out this face completely
                 }
-                console.log(`✅ Face ${index} belongs to current group: ${response.person_id}`);
+                
+                // Get the member's group information to compare group names
+                const memberGroup = await attendanceManager.getGroup(member.group_id);
+                if (!memberGroup || memberGroup.name !== currentGroup.name) {
+                  const memberGroupName = memberGroup ? memberGroup.name : 'unknown group';
+                  console.log(`🚫 Face ${index} filtered out: ${response.person_id} belongs to group "${memberGroupName}", not current group "${currentGroup.name}"`);
+                  return null; // Filter out this face completely
+                }
+                console.log(`✅ Face ${index} belongs to current group "${currentGroup.name}": ${response.person_id}`);
               } catch (error) {
                 console.warn(`⚠️ Error validating group membership for ${response.person_id}:`, error);
                 return null; // Filter out on error
@@ -1515,6 +1525,43 @@ export default function LiveVideo() {
     }
   }, [loadAttendanceData]);
 
+  const handleDeleteGroup = useCallback((group: AttendanceGroup) => {
+    setGroupToDelete(group);
+    setShowDeleteConfirmation(true);
+  }, []);
+
+  const confirmDeleteGroup = useCallback(async () => {
+    if (!groupToDelete) return;
+    
+    try {
+      const success = await attendanceManager.deleteGroup(groupToDelete.id);
+      if (success) {
+        // If deleting the currently active group, clear the selection
+        if (currentGroup?.id === groupToDelete.id) {
+          setCurrentGroup(null);
+          setGroupMembers([]);
+          setRecentAttendance([]);
+        }
+        
+        await loadAttendanceData();
+        console.log('✅ Group deleted successfully:', groupToDelete.name);
+      } else {
+        throw new Error('Failed to delete group');
+      }
+    } catch (error) {
+      console.error('❌ Failed to delete group:', error);
+      setError('Failed to delete group');
+    } finally {
+      setShowDeleteConfirmation(false);
+      setGroupToDelete(null);
+    }
+  }, [groupToDelete, currentGroup, loadAttendanceData]);
+
+  const cancelDeleteGroup = useCallback(() => {
+    setShowDeleteConfirmation(false);
+    setGroupToDelete(null);
+  }, []);
+
 
 
   const formatAttendanceType = (type: string): string => {
@@ -2562,6 +2609,13 @@ export default function LiveVideo() {
                           >
                             {currentGroup?.id === group.id ? 'Active' : 'Select'}
                           </button>
+                          <button
+                            onClick={() => handleDeleteGroup(group)}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+                            title="Delete Group"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -2792,6 +2846,48 @@ export default function LiveVideo() {
         {/* Settings Modal */}
         {showSettings && (
           <Settings onBack={() => setShowSettings(false)} isModal={true} />
+        )}
+
+        {/* Delete Group Confirmation Dialog */}
+        {showDeleteConfirmation && groupToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-xl font-bold mb-4 text-red-400">⚠️ Delete Group</h3>
+              
+              <div className="mb-6">
+                <p className="text-white mb-4">
+                  Are you sure you want to delete the group <strong>"{groupToDelete.name}"</strong>?
+                </p>
+                <div className="bg-red-900/20 border border-red-500/30 rounded p-3 mb-4">
+                  <p className="text-red-300 text-sm">
+                    <strong>Warning:</strong> This action cannot be undone. All group data, members, and attendance records will be permanently removed.
+                  </p>
+                </div>
+                {currentGroup?.id === groupToDelete.id && (
+                  <div className="bg-orange-900/20 border border-orange-500/30 rounded p-3">
+                    <p className="text-orange-300 text-sm">
+                      <strong>Note:</strong> This is your currently active group. Deleting it will clear your current selection.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelDeleteGroup}
+                  className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteGroup}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition-colors"
+                >
+                  Delete Group
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
