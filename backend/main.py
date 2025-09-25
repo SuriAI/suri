@@ -124,16 +124,19 @@ async def startup_event():
             model_path=str(YUNET_MODEL_PATH),
             input_size=list(YUNET_CONFIG["input_size"]),
             conf_threshold=YUNET_CONFIG["score_threshold"],
-            nms_threshold=YUNET_CONFIG["nms_threshold"]
+            nms_threshold=YUNET_CONFIG["nms_threshold"],
+            backend_id=YUNET_CONFIG.get("backend_id", 0),
+            target_id=YUNET_CONFIG.get("target_id", 0)
         )
         optimized_antispoofing_detector = OptimizedAntiSpoofingDetector(
             model_path=str(ANTISPOOFING_MODEL_PATH),
             input_size=ANTISPOOFING_CONFIG["input_size"],
             threshold=ANTISPOOFING_CONFIG["threshold"],
             providers=ANTISPOOFING_CONFIG["providers"],
-            max_batch_size=1,
+            max_batch_size=ANTISPOOFING_CONFIG.get("max_batch_size", 1),
             cache_duration=1.0,
-            frame_skip=2
+            frame_skip=2,
+            session_options=ANTISPOOFING_CONFIG.get("session_options")
         )
         
         edgeface_detector = EdgeFaceDetector(
@@ -141,7 +144,8 @@ async def startup_event():
             input_size=EDGEFACE_CONFIG["input_size"],
             similarity_threshold=EDGEFACE_CONFIG["similarity_threshold"],
             providers=EDGEFACE_CONFIG["providers"],
-            database_path=str(EDGEFACE_CONFIG["database_path"])
+            database_path=str(EDGEFACE_CONFIG["database_path"]),
+            session_options=EDGEFACE_CONFIG.get("session_options")
         )
         
         # Initialize attendance database
