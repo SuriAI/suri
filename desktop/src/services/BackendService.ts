@@ -414,7 +414,8 @@ export class BackendService {
    */
   async recognizeFace(
     imageData: ImageData | string,
-    landmarks?: number[][]
+    landmarks?: number[][],
+    groupId?: string
   ): Promise<FaceRecognitionResponse> {
     try {
       const base64Image = typeof imageData === 'string' 
@@ -423,7 +424,8 @@ export class BackendService {
 
       const requestBody = {
         image: base64Image,
-        landmarks: landmarks
+        landmarks: landmarks,
+        group_id: groupId
       };
 
       const response = await fetch(`${this.config.baseUrl}/face/recognize`, {
@@ -452,7 +454,8 @@ export class BackendService {
   async registerFace(
     imageData: ImageData | string,
     personId: string,
-    landmarks?: number[][]
+    landmarks?: number[][],
+    groupId?: string
   ): Promise<FaceRegistrationResponse> {
     try {
       const base64Image = typeof imageData === 'string' 
@@ -462,7 +465,8 @@ export class BackendService {
       const requestBody = {
         image: base64Image,
         person_id: personId,
-        landmarks: landmarks
+        landmarks: landmarks,
+        group_id: groupId
       };
 
       const response = await fetch(`${this.config.baseUrl}/face/register`, {
@@ -602,6 +606,42 @@ export class BackendService {
     } catch (error) {
       console.error('Failed to clear database:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Clear backend cache (antispoofing cache)
+   */
+  async clearCache(): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await fetch(`${this.config.baseUrl}/recognize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: '', // Empty image
+          clear_cache: true,
+          cache_duration: 0.0
+        }),
+        signal: AbortSignal.timeout(this.config.timeout)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return {
+        success: true,
+        message: result.cache_cleared ? 'Cache cleared successfully' : 'Cache clear requested'
+      };
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+      return {
+        success: false,
+        message: `Failed to clear cache: ${error}`
+      };
     }
   }
 
