@@ -137,7 +137,6 @@ class AttendanceDatabaseManager:
                 cursor.execute("INSERT OR IGNORE INTO attendance_settings (id) VALUES (1)")
                 
                 conn.commit()
-                logger.info("Attendance database schema initialized successfully")
                 
         except Exception as e:
             logger.error(f"Failed to initialize attendance database: {e}")

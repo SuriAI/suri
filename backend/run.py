@@ -82,7 +82,6 @@ def main():
         )
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
-        print("\n👋 Server stopped gracefully")
     except Exception as e:
         logger.error(f"Server error: {e}")
         print(f"\nServer error: {e}")

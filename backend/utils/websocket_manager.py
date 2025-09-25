@@ -41,8 +41,6 @@ class ConnectionManager:
                 'streaming': False
             }
             
-            logger.info(f"Client {client_id} connected")
-            
             # Send welcome message
             await self.send_personal_message({
                 'type': 'connection',
@@ -73,8 +71,6 @@ class ConnectionManager:
             # Remove connection
             del self.active_connections[client_id]
             del self.connection_metadata[client_id]
-            
-            logger.info(f"Client {client_id} disconnected")
     
     async def send_personal_message(self, message: dict, client_id: str) -> bool:
         """
@@ -295,7 +291,6 @@ class ConnectionManager:
                 inactive_clients.append(client_id)
         
         for client_id in inactive_clients:
-            logger.info(f"Cleaning up inactive client: {client_id}")
             self.disconnect(client_id)
 
 # Global connection manager instance

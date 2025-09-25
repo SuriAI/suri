@@ -71,8 +71,6 @@ class YuNetDetector:
                 target_id=self.target_id
             )
             
-            logger.info(f"YuNet model initialized successfully from {self.model_path}")
-            
         except Exception as e:
             logger.error(f"Failed to initialize YuNet model: {e}")
             raise

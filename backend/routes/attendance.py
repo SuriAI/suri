@@ -262,7 +262,6 @@ async def add_member(
                 group_id=member_data.group_id
             )
             db_member_data['person_id'] = generated_person_id
-            logger.info(f"Auto-generated person_id: {generated_person_id} for member: {member_data.name}")
         else:
             # Check if provided person_id already exists
             existing_member = db.get_member(member_data.person_id)
@@ -817,11 +816,6 @@ async def register_face_for_group_person(
         
         # Anti-duplicate check: verify this person isn't already registered
         existing_persons = edgeface_detector.get_all_persons()
-        if person_id in existing_persons:
-            # Update existing registration
-            logger.info(f"Updating existing face registration for {person_id}")
-        else:
-            logger.info(f"Creating new face registration for {person_id}")
         
         # Register the face with enhanced validation
         result = await edgeface_detector.register_person_async(
