@@ -225,6 +225,9 @@ export default function LiveVideo() {
         return;
       }
 
+      // Capture current group at start of processing to validate later
+      const processingGroup = currentGroup;
+
       // Process each detected face for recognition
       const recognitionPromises = detectionResult.faces.map(async (face, index) => {
         try {
@@ -244,7 +247,8 @@ export default function LiveVideo() {
           
           const response = await backendServiceRef.current.recognizeFace(
             frameData,
-            landmarks
+            landmarks,
+            currentGroup?.id
           );
 
           if (response.success && response.person_id) {
@@ -263,14 +267,19 @@ export default function LiveVideo() {
                 // Store the member's name for display
                 memberName = member.name || response.person_id;
                 
-                // Get the member's group information to compare group names
-                const memberGroup = await attendanceManager.getGroup(member.group_id);
-                if (!memberGroup || memberGroup.name !== currentGroup.name) {
-                  const memberGroupName = memberGroup ? memberGroup.name : 'unknown group';
-                  console.log(`🚫 Face ${index} filtered out: ${memberName} belongs to group "${memberGroupName}", not current group "${currentGroup.name}"`);
+                // Compare group IDs directly for reliable filtering
+                if (member.group_id !== currentGroup.id) {
+                  // Get the member's group information for logging purposes
+                  try {
+                    const memberGroup = await attendanceManager.getGroup(member.group_id);
+                    const memberGroupName = memberGroup ? memberGroup.name : 'unknown group';
+                    console.log(`🚫 Face ${index} filtered out: ${memberName} belongs to group "${memberGroupName}" (ID: ${member.group_id}), not current group "${currentGroup.name}" (ID: ${currentGroup.id})`);
+                  } catch (groupError) {
+                    console.log(`🚫 Face ${index} filtered out: ${memberName} belongs to group ID ${member.group_id}, not current group "${currentGroup.name}" (ID: ${currentGroup.id})`);
+                  }
                   return null; // Filter out this face completely
                 }
-                console.log(`✅ Face ${index} belongs to current group "${currentGroup.name}": ${memberName}`);
+                console.log(`✅ Face ${index} belongs to current group "${currentGroup.name}" (ID: ${currentGroup.id}): ${memberName}`);
               } catch (error) {
                 console.warn(`⚠️ Error validating group membership for ${response.person_id}:`, error);
                 return null; // Filter out on error
@@ -447,8 +456,14 @@ export default function LiveVideo() {
 
       const recognitionResults = await Promise.all(recognitionPromises);
       
-      // Update recognition results map
-      const newRecognitionResults = new Map(currentRecognitionResults);
+      // Validate that group hasn't changed during processing
+      if (processingGroup?.id !== currentGroup?.id) {
+        console.log(`🚫 Discarding recognition results - group changed during processing (was: ${processingGroup?.name}, now: ${currentGroup?.name})`);
+        return;
+      }
+      
+      // Update recognition results map - start fresh to avoid persisting old group results
+      const newRecognitionResults = new Map<number, FaceRecognitionResponse>();
       recognitionResults.forEach((result) => {
         if (result) {
           newRecognitionResults.set(result.index, result.result);
@@ -1066,9 +1081,9 @@ export default function LiveVideo() {
       }
     }
 
-    // OPTIMIZATION: Only redraw if detection results changed (simplified hash)
+    // OPTIMIZATION: Only redraw if detection results or recognition results changed
     const currentHash = currentDetections ? 
-      `${currentDetections.faces.length}-${currentDetections.faces.map(f => `${f.bbox.x},${f.bbox.y}`).join(',')}` : '';
+      `${currentDetections.faces.length}-${currentDetections.faces.map(f => `${f.bbox.x},${f.bbox.y}`).join(',')}-${currentRecognitionResults.size}-${Array.from(currentRecognitionResults.values()).map(r => r.person_id || 'none').join(',')}` : '';
     
     if (currentHash !== lastDetectionHashRef.current && currentDetections) {
       drawOverlays();
@@ -1142,7 +1157,8 @@ export default function LiveVideo() {
       const response = await backendServiceRef.current.registerFace(
         frameData,
         newPersonId.trim(),
-        landmarks
+        landmarks,
+        currentGroup?.id
       );
 
       if (response.success) {
@@ -1669,20 +1685,22 @@ export default function LiveVideo() {
     }
   }, [recognitionEnabled, backendServiceReady, loadRegisteredPersons, loadDatabaseStats]);
 
-  // Clear tracked faces when switching groups to ensure fresh recognition
+  // Clear recognition state whenever group changes to prevent data mixing
   useEffect(() => {
     if (currentGroup) {
-      console.log(`🔄 Switching to group: ${currentGroup.name} - Clearing tracked faces`);
+      console.log(`🔄 Group switched to: ${currentGroup.name} - Clearing recognition state`);
+      
+      // Clear all recognition and tracking state to prevent data mixing
+      setCurrentRecognitionResults(new Map());
       setTrackedFaces(new Map());
-      setPendingAttendance([]);
+      setCurrentDetections(null);
       setSelectedTrackingTarget(null);
-      // Reset tracking stats
-      setTrackingStats({
-        totalTracked: 0,
-        activeTracking: 0,
-        reacquisitions: 0,
-        attendanceEvents: 0
-      });
+      
+      // Stop detection if running
+      if (isStreaming) {
+        console.log(`🛑 Stopping detection due to group switch`);
+        stopCamera();
+      }
     }
   }, [currentGroup]);
 

@@ -25,6 +25,7 @@ export interface RegistrationStep {
 export interface RegistrationSession {
   session_id: string;
   person_id: string;
+  group_id?: string;
   started_at: number;
   current_step: number;
   steps: RegistrationStep[];
@@ -155,7 +156,8 @@ export class EnhancedFaceRegistration {
    */
   public startRegistration(
     personId: string,
-    customRequirements?: Partial<QualityRequirements>
+    customRequirements?: Partial<QualityRequirements>,
+    groupId?: string
   ): RegistrationSession {
     const sessionId = `reg_${this.sessionCounter++}_${Date.now()}`;
     
@@ -173,6 +175,7 @@ export class EnhancedFaceRegistration {
     const session: RegistrationSession = {
       session_id: sessionId,
       person_id: personId,
+      group_id: groupId,
       started_at: Date.now(),
       current_step: 0,
       steps,
@@ -320,7 +323,8 @@ export class EnhancedFaceRegistration {
           const response = await this.backendService.registerFace(
             capture.image_data,
             session.person_id,
-            capture.landmarks
+            capture.landmarks,
+            session.group_id
           );
           
           if (!response.success) {

@@ -5,6 +5,7 @@
 export interface FaceRecognitionRequest {
   image: string; // base64 encoded image
   landmarks?: number[][];
+  group_id?: string;
 }
 
 export interface FaceRecognitionResponse {
@@ -19,6 +20,7 @@ export interface FaceRegistrationRequest {
   image: string; // base64 encoded image
   person_id: string;
   landmarks?: number[][];
+  group_id?: string;
 }
 
 export interface FaceRegistrationResponse {
