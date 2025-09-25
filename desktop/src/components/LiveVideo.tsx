@@ -1984,7 +1984,13 @@ export default function LiveVideo() {
           {/* System Status */}
           <div className="px-4 pt-2 pb-4 border-b border-white/[0.08]">
             <div className="space-y-3">
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                                       <button
+                       onClick={() => setShowAttendanceDashboard(true)}
+                       className="px-3 py-1 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded text-xs transition-colors"
+                     >
+                       Dashboard
+                     </button>
                   <button
                     onClick={() => setShowSettings(true)}
                     className="flex items-center space-x-2 px-4 py-2 bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] text-white/80 hover:text-white rounded-xl font-light transition-all duration-300"
@@ -2011,10 +2017,6 @@ export default function LiveVideo() {
                   <div className="border-t border-white/[0.08] pt-3 mt-3">
                     {currentGroup && (
                       <>
-                        <div className="flex justify-between items-center">
-                          <span className="text-white/60">Current Group</span>
-                          <span className="text-sm">{getGroupTypeIcon(currentGroup.type)} {currentGroup.name}</span>
-                        </div>
                         {attendanceStats && (
                           <>
                             <div className="flex justify-between items-center">
@@ -2153,14 +2155,7 @@ export default function LiveVideo() {
              {attendanceEnabled ? (
                <>
                  <div className="flex items-center justify-between mb-4 flex-col">
-                   <h3 className="text-lg font-light">Attendance Management</h3>
-                   <div className="flex space-x-2 flex-col w-full">
-                     <button
-                       onClick={() => setShowAttendanceDashboard(true)}
-                       className="px-3 py-1 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded text-xs transition-colors"
-                     >
-                       Dashboard
-                     </button>
+                   <div className="flex space-x-2  w-full">
                      <button
                        onClick={() => setShowGroupManagement(true)}
                        className="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 rounded text-xs transition-colors"
