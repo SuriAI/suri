@@ -297,7 +297,7 @@ export const Settings: React.FC<SettingsProps> = ({ onBack, isModal = false }) =
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by person ID..."
+          placeholder="Search registered persons..."
           className="flex-1 px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white/[0.2]"
         />
         <button
@@ -311,11 +311,11 @@ export const Settings: React.FC<SettingsProps> = ({ onBack, isModal = false }) =
       {searchResults.length > 0 && (
         <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl overflow-hidden">
           <div className="divide-y divide-white/[0.05]">
-            {searchResults.map((person) => (
+            {searchResults.map((person, index) => (
               <div key={person.person_id} className="p-4">
-                <div className="font-medium text-white/90">{person.person_id}</div>
+                <div className="font-medium text-white/90">Registered Person #{index + 1}</div>
                 <div className="text-sm text-white/60">
-                  {person.embedding_count} embeddings
+                  {person.embedding_count} face embedding{person.embedding_count !== 1 ? 's' : ''}
                   {person.last_seen && ` • Last seen: ${new Date(person.last_seen).toLocaleString()}`}
                 </div>
               </div>
