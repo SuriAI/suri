@@ -1868,38 +1868,7 @@ export default function LiveVideo() {
                 </>
               )}
               
-              {/* Elite Tracking Statistics */}
-              <div className="border-t border-white/[0.08] pt-3 mt-3">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/60">Elite Tracking</span>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      trackedFaces.size > 0 ? 'bg-cyan-500' : 'bg-white/40'
-                    }`}></div>
-                    <span className="text-xs font-light tracking-wider uppercase text-cyan-300">
-                      {trackingMode.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-white/60">Active Tracks</span>
-                    <span className="font-mono text-cyan-400">{trackedFaces.size}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/60">Reacquisitions</span>
-                    <span className="font-mono text-green-400">{trackingStats.reacquisitions}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/60">
-                      {trackingMode === 'manual' ? 'Pending Confirmations' : 'Attendance Events'}
-                    </span>
-                    <span className="font-mono text-blue-400">
-                      {trackingMode === 'manual' ? pendingAttendance.length : trackingStats.attendanceEvents}
-                    </span>
-                  </div>
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -1998,8 +1967,9 @@ export default function LiveVideo() {
                           </div>
                           {trackedFace && (
                             <div className="text-xs text-cyan-300 mt-1">
-                              Track: {trackedFace.trackingHistory.length} frames • 
-                              Consistency: {(trackedFace.angleConsistency * 100).toFixed(0)}%
+                              Quality: {trackedFace.angleConsistency > 0.8 ? 'Excellent' : 
+                                       trackedFace.angleConsistency > 0.6 ? 'Good' : 
+                                       trackedFace.angleConsistency > 0.4 ? 'Fair' : 'Poor'}
                             </div>
                           )}
                         </div>
