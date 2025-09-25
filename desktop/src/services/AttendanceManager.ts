@@ -282,9 +282,22 @@ export class AttendanceManager {
 
       this.eventQueue.push(processedEvent);
       return processedEvent;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing attendance event:', error);
-      return null;
+      
+      // Re-throw the error with more context for the UI to handle
+      const errorMessage = error.message || error.toString();
+      
+      if (errorMessage.includes('below threshold')) {
+        const confidenceThreshold = this.settings.confidence_threshold;
+        throw new Error(`Recognition confidence (${(confidence * 100).toFixed(1)}%) is below the required threshold (${(confidenceThreshold * 100).toFixed(1)}%). Please ensure good lighting and face the camera directly.`);
+      } else if (errorMessage.includes('Member not found') || errorMessage.includes('Person not found')) {
+        throw new Error(`Person not found in the system. Please register this person first.`);
+      } else if (errorMessage.includes('Group not found')) {
+        throw new Error(`Selected group not found. Please select a valid group.`);
+      } else {
+        throw new Error(errorMessage || 'Failed to process attendance event. Please try again.');
+      }
     }
   }
 
