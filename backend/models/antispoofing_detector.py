@@ -40,13 +40,10 @@ class OptimizedAntiSpoofingDetector:
         
         # Initialize model
         self._initialize_model()
-        
-        logger.info(f"Simple AntiSpoofing detector initialized with threshold: {threshold}")
     
     def _initialize_model(self):
         """Initialize the ONNX model with optimized session options"""
         try:
-            logger.info(f"Loading anti-spoofing model from: {self.model_path}")
             
             # Create optimized session options
             session_options = ort.SessionOptions()
@@ -68,10 +65,6 @@ class OptimizedAntiSpoofingDetector:
             # Get model info
             input_info = self.session.get_inputs()[0]
             output_info = self.session.get_outputs()[0]
-            
-            logger.info(f"Model input shape: {input_info.shape}")
-            logger.info(f"Model output shape: {output_info.shape}")
-            logger.info(f"Available providers: {self.session.get_providers()}")
             
         except Exception as e:
             logger.error(f"Failed to initialize anti-spoofing model: {e}")

@@ -90,8 +90,6 @@ class EdgeFaceDetector:
             if not os.path.exists(self.model_path):
                 raise FileNotFoundError(f"Model file not found: {self.model_path}")
             
-            logger.info(f"Loading EdgeFace model from: {self.model_path}")
-            
             # Create optimized session options
             session_options = ort.SessionOptions()
             
@@ -112,11 +110,6 @@ class EdgeFaceDetector:
             # Get model info
             input_info = self.session.get_inputs()[0]
             output_info = self.session.get_outputs()[0]
-            
-            logger.info(f"Model input shape: {input_info.shape}")
-            logger.info(f"Model output shape: {output_info.shape}")
-            logger.info(f"Available providers: {self.session.get_providers()}")
-            logger.info(f"EdgeFace model initialized successfully")
             
         except Exception as e:
             logger.error(f"Failed to initialize EdgeFace model: {e}")
