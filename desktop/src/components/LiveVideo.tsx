@@ -136,12 +136,7 @@ export default function LiveVideo() {
     angleConsistency: number;
   }>>(new Map());
   const [selectedTrackingTarget, setSelectedTrackingTarget] = useState<string | null>(null);
-  const [trackingStats, setTrackingStats] = useState({
-    totalTracked: 0,
-    activeTracking: 0,
-    reacquisitions: 0,
-    attendanceEvents: 0
-  });
+
   const [pendingAttendance, setPendingAttendance] = useState<Array<{
     id: string;
     personId: string;
@@ -372,11 +367,7 @@ export default function LiveVideo() {
                     
                     console.log(`📋 ✅ Attendance automatically recorded: ${response.person_id} - ${attendanceEvent.type} at ${attendanceEvent.timestamp}`);
                     
-                    // Update tracking stats
-                    setTrackingStats(prev => ({
-                      ...prev,
-                      attendanceEvents: prev.attendanceEvents + 1
-                    }));
+
                     
                     // Refresh attendance data
                     await loadAttendanceData();
@@ -1406,10 +1397,7 @@ export default function LiveVideo() {
     });
     
     if (bestMatch) {
-      setTrackingStats(prev => ({
-        ...prev,
-        reacquisitions: prev.reacquisitions + 1
-      }));
+
       return bestMatch.id;
     }
     
@@ -2136,11 +2124,7 @@ export default function LiveVideo() {
                                          
                                          console.log(`📋 ✅ Manual confirmation: ${pending.personId} - ${attendanceEvent.type}`);
                                          
-                                         // Update tracking stats
-                                         setTrackingStats(prev => ({
-                                           ...prev,
-                                           attendanceEvents: prev.attendanceEvents + 1
-                                         }));
+
                                          
                                          // Remove from pending queue
                                          setPendingAttendance(prev => prev.filter(p => p.id !== pending.id));
