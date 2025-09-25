@@ -2442,7 +2442,6 @@ export default function LiveVideo() {
                             >
                               <div>
                                 <span className="text-sm font-medium">{member.name}</span>
-                                <span className="text-xs text-white/60 ml-2">({member.person_id})</span>
                                 {member.role && (
                                   <span className="text-xs text-blue-300 ml-2">{member.role}</span>
                                 )}
@@ -2775,9 +2774,9 @@ export default function LiveVideo() {
                           <option value="">Select a person...</option>
                           {registeredPersons
                             .filter(person => !groupMembers.some(member => member.person_id === person.person_id))
-                            .map(person => (
+                            .map((person, index) => (
                               <option key={person.person_id} value={person.person_id}>
-                                {person.person_id}
+                                Person #{index + 1} ({person.embedding_count} face{person.embedding_count !== 1 ? 's' : ''})
                               </option>
                             ))}
                         </select>
