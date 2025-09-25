@@ -712,10 +712,10 @@ export default function LiveVideo() {
     if (detectionEnabledRef.current && 
         backendServiceRef.current?.isWebSocketReady() && 
         !detectionIntervalRef.current) {
-      // OPTIMIZATION: Balanced frequency for instant recognition (100ms/10fps)
-      detectionIntervalRef.current = setInterval(processFrameForDetection, 100);
+      // OPTIMIZATION: Maximum speed matching YuNet's ~70ms processing capability (70ms/14fps)
+      detectionIntervalRef.current = setInterval(processFrameForDetection, 70);
       if (process.env.NODE_ENV === 'development') {
-        console.log('🎯 Detection interval started at 10 FPS');
+        console.log('🎯 Detection interval started at 14 FPS (optimized for YuNet speed)');
       }
     }
   }, [processFrameForDetection]);
