@@ -362,13 +362,13 @@ export default function LiveVideo() {
                 
                 if (trackingMode === 'auto') {
                   // AUTO MODE: Process attendance event immediately
-                  const attendanceEvent = await attendanceManager.processAttendanceEvent(
-                    response.person_id,
-                    actualConfidence,
-                    'LiveVideo Camera' // location
-                  );
-                  
-                  if (attendanceEvent) {
+                  try {
+                    const attendanceEvent = await attendanceManager.processAttendanceEvent(
+                      response.person_id,
+                      actualConfidence,
+                      'LiveVideo Camera' // location
+                    );
+                    
                     console.log(`📋 ✅ Attendance automatically recorded: ${response.person_id} - ${attendanceEvent.type} at ${attendanceEvent.timestamp}`);
                     
                     // Update tracking stats
@@ -382,9 +382,9 @@ export default function LiveVideo() {
                     
                     // Show success notification
                     setError(null);
-                  } else {
-                    console.error(`❌ Attendance event processing returned null for ${response.person_id}`);
-                    setError(`Failed to record attendance for ${response.person_id}`);
+                  } catch (attendanceError: any) {
+                    console.error(`❌ Attendance event processing failed for ${response.person_id}:`, attendanceError.message);
+                    setError(attendanceError.message || `Failed to record attendance for ${response.person_id}`);
                   }
                 } else {
                   // MANUAL MODE: Add to pending queue for manual confirmation
@@ -2129,25 +2129,23 @@ export default function LiveVideo() {
                                            'LiveVideo Camera'
                                          );
                                          
-                                         if (attendanceEvent) {
-                                           console.log(`📋 ✅ Manual confirmation: ${pending.personId} - ${attendanceEvent.type}`);
-                                           
-                                           // Update tracking stats
-                                           setTrackingStats(prev => ({
-                                             ...prev,
-                                             attendanceEvents: prev.attendanceEvents + 1
-                                           }));
-                                           
-                                           // Remove from pending queue
-                                           setPendingAttendance(prev => prev.filter(p => p.id !== pending.id));
-                                           
-                                           // Refresh attendance data
-                                           await loadAttendanceData();
-                                           setError(null);
-                                         }
-                                       } catch (error) {
+                                         console.log(`📋 ✅ Manual confirmation: ${pending.personId} - ${attendanceEvent.type}`);
+                                         
+                                         // Update tracking stats
+                                         setTrackingStats(prev => ({
+                                           ...prev,
+                                           attendanceEvents: prev.attendanceEvents + 1
+                                         }));
+                                         
+                                         // Remove from pending queue
+                                         setPendingAttendance(prev => prev.filter(p => p.id !== pending.id));
+                                         
+                                         // Refresh attendance data
+                                         await loadAttendanceData();
+                                         setError(null);
+                                       } catch (error: any) {
                                          console.error('Failed to confirm attendance:', error);
-                                         setError('Failed to confirm attendance');
+                                         setError(error.message || 'Failed to confirm attendance');
                                        }
                                      }}
                                      className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 rounded text-xs transition-colors"
