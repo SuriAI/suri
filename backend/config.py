@@ -49,47 +49,96 @@ CORS_CONFIG = {
     "allow_headers": ["*"],
 }
 
-# Model configurations
+# Optimized ONNX Runtime Providers (prioritized by performance)
+OPTIMIZED_PROVIDERS = [
+    # GPU providers (if available) - can provide 5-10x speedup
+    ('CUDAExecutionProvider', {
+        'device_id': 0,
+        'arena_extend_strategy': 'kNextPowerOfTwo',
+        'gpu_mem_limit': 2 * 1024 * 1024 * 1024,  # 2GB limit
+        'cudnn_conv_algo_search': 'EXHAUSTIVE',
+        'do_copy_in_default_stream': True,
+    }),
+    ('TensorrtExecutionProvider', {
+        'device_id': 0,
+        'trt_max_workspace_size': 2147483648,  # 2GB
+        'trt_fp16_enable': True,
+        'trt_engine_cache_enable': True,
+    }),
+    ('DirectMLExecutionProvider', {
+        'device_id': 0,
+    }),
+    # CPU fallback with optimizations
+    ('CPUExecutionProvider', {
+        'arena_extend_strategy': 'kSameAsRequested',
+        'enable_cpu_mem_arena': True,
+        'enable_memory_pattern': True,
+    })
+]
+
+# Import ONNX Runtime for proper enum values
+import onnxruntime as ort
+
+# Optimized ONNX Session Options for maximum performance
+OPTIMIZED_SESSION_OPTIONS = {
+    "enable_cpu_mem_arena": True,
+    "enable_memory_pattern": True,
+    "enable_profiling": False,
+    "execution_mode": ort.ExecutionMode.ORT_SEQUENTIAL,  # Best for single-threaded inference
+    "graph_optimization_level": ort.GraphOptimizationLevel.ORT_ENABLE_ALL,  # Maximum optimization
+    "inter_op_num_threads": 0,  # Use all available cores
+    "intra_op_num_threads": 0,  # Use all available cores
+    "log_severity_level": 3,    # Reduce logging overhead
+}
+
+# Model configurations - OPTIMIZED FOR MAXIMUM PERFORMANCE
 MODEL_CONFIGS = {
     "yunet": {
         "name": "YuNet",
         "model_path": WEIGHTS_DIR / "face_detection_yunet_2023mar.onnx",
-        "input_size": (320, 320),  # Default input size
-        "score_threshold": 0.6,    # OPTIMIZATION: Reduced from 0.8 for better detection
-        "nms_threshold": 0.3,      # OPTIMIZATION: Reduced from 0.4 for faster processing
-        "top_k": 1000,             # OPTIMIZATION: Reduced from 5000 for faster processing
+        "input_size": (320, 320),  # Fixed size for consistent performance
+        "score_threshold": 0.6,    # Balanced for speed vs accuracy
+        "nms_threshold": 0.3,      # Optimized for speed vs accuracy balance
+        "top_k": 1000,             # Reduced for faster processing
         "backend_id": 0,  # OpenCV DNN backend
-        "target_id": 0,   # CPU target
-        "description": "YuNet face detection model from OpenCV Zoo",
+        "target_id": 0,   # CPU target (can be changed to GPU if available)
+        "description": "YuNet face detection model from OpenCV Zoo - OPTIMIZED",
         "version": "2023mar",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "max_image_size": (4096, 4096),
+        "max_image_size": (1920, 1080),  # Limit max resolution for performance
         "min_face_size": (10, 10),
+        "enable_dynamic_sizing": False,  # Disable for performance consistency
     },
     "antispoofing": {
         "name": "AntiSpoofing",
         "model_path": WEIGHTS_DIR / "AntiSpoofing_bin_1.5_128.onnx",
         "input_size": (128, 128),
         "threshold": 0.5,  # Real/fake classification threshold
-        "providers": ["CPUExecutionProvider"],  # ONNX runtime providers
-        "description": "Anti-spoofing model for real vs fake face detection",
+        "providers": OPTIMIZED_PROVIDERS,  # Use optimized providers
+        "session_options": OPTIMIZED_SESSION_OPTIONS,
+        "description": "Anti-spoofing model for real vs fake face detection - OPTIMIZED",
         "version": "1.5_128",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "margin": 0.2,  # Face crop margin (20%)
+        "max_batch_size": 8,  # Increased batch size for better throughput
     },
     "edgeface": {
         "name": "EdgeFace",
         "model_path": WEIGHTS_DIR / "edgeface-recognition.onnx",
         "input_size": (112, 112),  # EdgeFace standard input size
         "similarity_threshold": 0.6,  # Recognition similarity threshold
-        "providers": ["CPUExecutionProvider"],  # ONNX runtime providers
-        "description": "EdgeFace recognition model for face identification",
+        "providers": OPTIMIZED_PROVIDERS,  # Use optimized providers
+        "session_options": OPTIMIZED_SESSION_OPTIONS,
+        "description": "EdgeFace recognition model for face identification - OPTIMIZED",
         "version": "production",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "embedding_dimension": 512,  # Face embedding dimension
         "database_path": BASE_DIR / "data" / "face_database.db",  # SQLite database storage
         "requires_landmarks": True,  # Requires 5-point landmarks for alignment
         "landmark_count": 5,  # Number of required landmarks
+        "batch_size": 4,  # Enable small batch processing
+        "enable_face_alignment": True,
+        "alignment_method": "similarity_transform",  # Fastest alignment method
     }
 }
 
@@ -218,6 +267,38 @@ def get_config() -> Dict[str, Any]:
         config["models"]["yunet"]["model_path"] = Path(os.getenv("MODEL_PATH"))
     
     return config
+
+# Performance Optimization Settings for Maximum YuNet and EdgeFace Performance
+PERFORMANCE_CONFIG = {
+    "enable_model_warmup": True,
+    "warmup_iterations": 5,
+    "enable_memory_pooling": True,
+    "enable_graph_optimization": True,
+    "enable_quantization": False,  # Disable if accuracy is priority
+    "enable_tensorrt_fp16": True,  # Enable if TensorRT is available
+    "max_concurrent_requests": 4,
+    "request_timeout": 30,
+}
+
+# Image Processing Optimizations
+IMAGE_PROCESSING_CONFIG = {
+    "jpeg_quality": 0.8,  # Higher quality than current 0.4
+    "enable_image_caching": True,
+    "max_image_size": (1920, 1080),  # Limit max resolution
+    "resize_interpolation": "INTER_LINEAR",  # Fastest interpolation
+    "color_conversion": "BGR2RGB",
+    "enable_preprocessing_cache": True,
+}
+
+# Frame Processing Optimizations
+FRAME_PROCESSING_CONFIG = {
+    "target_fps": 30,
+    "skip_frame_threshold": 2,  # Process every 2nd frame for 15 FPS effective
+    "enable_frame_buffering": True,
+    "buffer_size": 3,
+    "enable_async_processing": True,
+    "max_processing_queue": 2,
+}
 
 # Validation functions
 def validate_model_paths():

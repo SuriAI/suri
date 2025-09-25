@@ -26,13 +26,15 @@ class OptimizedAntiSpoofingDetector:
         providers: Optional[List[str]] = None,
         max_batch_size: int = 1,
         cache_duration: float = 0.0,  # No caching
-        frame_skip: int = 1  # Process every frame
+        frame_skip: int = 1,  # Process every frame
+        session_options: Optional[Dict] = None
     ):
         self.model_path = model_path
         self.input_size = input_size
         self.threshold = threshold
         self.providers = providers or ['CPUExecutionProvider']
         self.max_batch_size = max_batch_size
+        self.session_options = session_options
         
         # Model components
         self.session = None
@@ -43,13 +45,24 @@ class OptimizedAntiSpoofingDetector:
         logger.info(f"Simple AntiSpoofing detector initialized with threshold: {threshold}")
     
     def _initialize_model(self):
-        """Initialize the ONNX model"""
+        """Initialize the ONNX model with optimized session options"""
         try:
             logger.info(f"Loading anti-spoofing model from: {self.model_path}")
             
-            # Create ONNX session
+            # Create optimized session options
+            session_options = ort.SessionOptions()
+            
+            # Apply optimized session options if available
+            if hasattr(self, 'session_options') and self.session_options:
+                for key, value in self.session_options.items():
+                    if hasattr(session_options, key):
+                        setattr(session_options, key, value)
+                        logger.debug(f"Applied session option: {key} = {value}")
+            
+            # Create ONNX session with optimized options
             self.session = ort.InferenceSession(
                 self.model_path,
+                sess_options=session_options,
                 providers=self.providers
             )
             

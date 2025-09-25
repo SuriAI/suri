@@ -6,7 +6,7 @@ Based on EdgeFace research paper and optimized for production deployment
 import asyncio
 import logging
 import time
-from typing import List, Dict, Tuple, Optional, Union
+from typing import List, Dict, Tuple, Optional, Union, Any
 import os
 
 import cv2
@@ -28,7 +28,8 @@ class EdgeFaceDetector:
         input_size: Tuple[int, int] = (112, 112),
         similarity_threshold: float = 0.6,
         providers: Optional[List[str]] = None,
-        database_path: Optional[str] = None
+        database_path: Optional[str] = None,
+        session_options: Optional[Dict[str, Any]] = None
     ):
         """
         Initialize EdgeFace detector
@@ -39,12 +40,14 @@ class EdgeFaceDetector:
             similarity_threshold: Similarity threshold for recognition
             providers: ONNX runtime providers
             database_path: Path to face database JSON file
+            session_options: ONNX runtime session options for optimization
         """
         self.model_path = model_path
         self.input_size = input_size
         self.similarity_threshold = similarity_threshold
         self.providers = providers or ['CPUExecutionProvider']
         self.database_path = database_path
+        self.session_options = session_options
         
         # Model specifications (matching EdgeFace research paper)
         self.INPUT_MEAN = 127.5
@@ -81,7 +84,7 @@ class EdgeFaceDetector:
         self._initialize_model()
         
     def _initialize_model(self):
-        """Initialize the ONNX model"""
+        """Initialize the ONNX model with optimized session options"""
         try:
             # Check if model file exists
             if not os.path.exists(self.model_path):
@@ -89,9 +92,20 @@ class EdgeFaceDetector:
             
             logger.info(f"Loading EdgeFace model from: {self.model_path}")
             
-            # Create ONNX session
+            # Create optimized session options
+            session_options = ort.SessionOptions()
+            
+            # Apply optimized session options if available
+            if hasattr(self, 'session_options') and self.session_options:
+                for key, value in self.session_options.items():
+                    if hasattr(session_options, key):
+                        setattr(session_options, key, value)
+                        logger.debug(f"Applied session option: {key} = {value}")
+            
+            # Create ONNX session with optimized options
             self.session = ort.InferenceSession(
                 self.model_path,
+                sess_options=session_options,
                 providers=self.providers
             )
             
