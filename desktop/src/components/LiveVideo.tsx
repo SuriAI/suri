@@ -712,8 +712,7 @@ export default function LiveVideo() {
     if (detectionEnabledRef.current && 
         backendServiceRef.current?.isWebSocketReady() && 
         !detectionIntervalRef.current) {
-      // OPTIMIZATION: Maximum speed matching YuNet's ~70ms processing capability (70ms/14fps)
-      detectionIntervalRef.current = setInterval(processFrameForDetection, 70);
+      detectionIntervalRef.current = setInterval(processFrameForDetection, 0);
       if (process.env.NODE_ENV === 'development') {
         console.log('🎯 Detection interval started at 14 FPS (optimized for YuNet speed)');
       }
