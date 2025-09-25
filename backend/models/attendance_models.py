@@ -61,7 +61,7 @@ class AttendanceGroupResponse(BaseModel):
 
 # Member Models
 class AttendanceMemberCreate(BaseModel):
-    person_id: str = Field(..., min_length=1, max_length=100)
+    person_id: Optional[str] = Field(None, min_length=1, max_length=100, description="Optional - will be auto-generated if not provided")
     group_id: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1, max_length=100)
     role: Optional[str] = Field(None, max_length=100)

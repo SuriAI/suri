@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, date
 from typing import List, Optional
 import uuid
+import re
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import JSONResponse
@@ -49,6 +50,58 @@ def get_attendance_db() -> AttendanceDatabaseManager:
 def generate_id() -> str:
     """Generate a unique ID"""
     return str(uuid.uuid4())
+
+
+def generate_person_id(name: str, group_type: str, db: AttendanceDatabaseManager, group_id: str = None) -> str:
+    """
+    Generate a secure, unique Person ID using ULID (Universally Unique Lexicographically Sortable Identifier)
+    
+    ULID provides:
+    - 26 characters (vs UUID's 36)
+    - Lexicographically sortable by timestamp
+    - Cryptographically secure randomness (80 bits)
+    - URL-safe and case-insensitive
+    - No prefixes needed - clean, professional appearance
+    - Database performance optimized - no index fragmentation
+    
+    Args:
+        name: Full name of the person (not used in ID generation for security)
+        group_type: Type of group (employee, student, visitor, general)
+        db: Database manager instance
+        group_id: Optional group ID for additional context
+    
+    Returns:
+        str: Generated ULID that's unique, secure, and sortable
+    """
+    from ulid import ULID
+    
+    # Generate ULID - automatically handles uniqueness and security
+    # ULID format: 01ARZ3NDEKTSV4RRFFQ69G5FAV (26 characters)
+    # First 10 chars: timestamp (sortable)
+    # Last 16 chars: cryptographically secure randomness
+    ulid = ULID()
+    person_id = str(ulid)
+    
+    # ULID collision probability is extremely low (similar to UUID v4)
+    # But we'll add a safety check for absolute certainty
+    max_attempts = 10  # Much lower since ULID collisions are virtually impossible
+    attempt = 0
+    
+    while attempt < max_attempts:
+        existing_member = db.get_member(person_id)
+        if not existing_member:
+            break
+        
+        # Generate new ULID if collision occurs (extremely unlikely)
+        ulid = ULID()
+        person_id = str(ulid)
+        attempt += 1
+    
+    # If collision still exists (practically impossible), fallback to UUID
+    if attempt >= max_attempts:
+        person_id = str(uuid.uuid4()).replace('-', '').upper()[:26]
+    
+    return person_id
 
 
 # Group Management Endpoints
@@ -190,7 +243,7 @@ async def add_member(
     member_data: AttendanceMemberCreate,
     db: AttendanceDatabaseManager = Depends(get_attendance_db)
 ):
-    """Add a new attendance member"""
+    """Add a new attendance member with auto-generated person_id if not provided"""
     try:
         # Check if group exists
         group = db.get_group(member_data.group_id)
@@ -200,12 +253,31 @@ async def add_member(
         # Prepare member data
         db_member_data = member_data.dict()
         
+        # Auto-generate person_id if not provided
+        if not member_data.person_id:
+            generated_person_id = generate_person_id(
+                name=member_data.name,
+                group_type=group['type'],
+                db=db,
+                group_id=member_data.group_id
+            )
+            db_member_data['person_id'] = generated_person_id
+            logger.info(f"Auto-generated person_id: {generated_person_id} for member: {member_data.name}")
+        else:
+            # Check if provided person_id already exists
+            existing_member = db.get_member(member_data.person_id)
+            if existing_member:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Person ID '{member_data.person_id}' already exists. Please use a different ID or leave empty for auto-generation."
+                )
+        
         success = db.add_member(db_member_data)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to add member")
         
         # Retrieve the added member
-        added_member = db.get_member(member_data.person_id)
+        added_member = db.get_member(db_member_data['person_id'])
         if not added_member:
             raise HTTPException(status_code=500, detail="Failed to retrieve added member")
         
