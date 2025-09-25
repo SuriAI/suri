@@ -102,7 +102,6 @@ export default function LiveVideo() {
   // Anti-spoofing settings
 
   // Face recognition settings
-  const [recognitionEnabled, setRecognitionEnabled] = useState(true);
   const [registeredPersons, setRegisteredPersons] = useState<PersonInfo[]>([]);
 
   const [newPersonId, setNewPersonId] = useState<string>('');
@@ -119,6 +118,9 @@ export default function LiveVideo() {
   // Attendance system state
   const attendanceEnabled = true;
   const [currentGroup, setCurrentGroup] = useState<AttendanceGroup | null>(null);
+  
+  // Recognition is enabled when backend is ready and a group is selected
+  const recognitionEnabled = backendServiceReady && currentGroup !== null;
   
   // Elite Tracking System States
   const [trackingMode, setTrackingMode] = useState<'auto' | 'manual'>('auto');
