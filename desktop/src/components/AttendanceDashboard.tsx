@@ -38,7 +38,19 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
       const allGroups = await attendanceManager.getGroups();
       setGroups(allGroups);
 
+      // Validate that selectedGroup still exists in the available groups
       if (selectedGroup) {
+        const groupStillExists = allGroups.some(group => group.id === selectedGroup.id);
+        if (!groupStillExists) {
+          // Clear selectedGroup if it no longer exists (e.g., was deleted)
+          setSelectedGroup(null);
+          setMembers([]);
+          setStats(null);
+          setTodaySessions([]);
+          setRecentRecords([]);
+          return;
+        }
+
         const [groupMembers, groupStats, sessions, records] = await Promise.all([
           attendanceManager.getGroupMembers(selectedGroup.id),
           attendanceManager.getGroupStats(selectedGroup.id, new Date(selectedDate)),
