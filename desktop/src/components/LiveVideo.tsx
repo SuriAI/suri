@@ -2268,13 +2268,13 @@ export default function LiveVideo() {
   
                              return (
                                <div key={member.person_id} className="bg-white/[0.03] border border-white/[0.08] rounded p-2">
-                                 <div className="flex justify-between items-start">
+                                 <div className="flex justify-between items-center">
                                    <div className="flex-1">
                                      <div className="font-medium text-sm">{member.name}</div>
                                      <div className="text-xs text-white/60">
-                                       {member.role && `${member.role} • `}
-                                       {member.employee_id && `ID: ${member.employee_id}`}
-                                       {member.student_id && `Student: ${member.student_id}`}
+                                       {member?.role && `${member.role} • `}
+                                       {member?.employee_id && `ID: ${member.employee_id}`}
+                                       {member?.student_id && `Student: ${member.student_id}`}
                                      </div>
                                      {session && (
                                        <div className="text-xs mt-1">
