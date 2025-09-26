@@ -110,8 +110,12 @@ export default function LiveVideo() {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [currentRecognitionResults, setCurrentRecognitionResults] = useState<Map<number, FaceRecognitionResponse>>(new Map());
 
-  // Performance tracking - throttled updates
-  const detectionCounterRef = useRef({ detections: 0, lastTime: Date.now() });
+  // ACCURATE FPS tracking with rolling average
+  const fpsTrackingRef = useRef({
+    timestamps: [] as number[],
+    maxSamples: 10, // Track last 10 detections for smooth average
+    lastUpdateTime: Date.now()
+  });
 
   // Settings view state
   const [showSettings, setShowSettings] = useState(false);
@@ -542,15 +546,29 @@ export default function LiveVideo() {
           console.log('📨 Detection response received');
         }
         
-        // Update detection FPS - throttled
-        detectionCounterRef.current.detections++;
+        // ACCURATE FPS calculation with rolling average
         const now = Date.now();
-        const elapsed = now - detectionCounterRef.current.lastTime;
+        const fpsTracking = fpsTrackingRef.current;
         
-        if (elapsed >= 1000) {
-          setDetectionFps(Math.round((detectionCounterRef.current.detections * 1000) / elapsed));
-          detectionCounterRef.current.detections = 0;
-          detectionCounterRef.current.lastTime = now;
+        // Add current timestamp
+        fpsTracking.timestamps.push(now);
+        
+        // Keep only the last N samples for rolling average
+        if (fpsTracking.timestamps.length > fpsTracking.maxSamples) {
+          fpsTracking.timestamps.shift();
+        }
+        
+        // Calculate FPS every 500ms for smooth updates
+        if (now - fpsTracking.lastUpdateTime >= 500 && fpsTracking.timestamps.length >= 2) {
+          const timeSpan = fpsTracking.timestamps[fpsTracking.timestamps.length - 1] - fpsTracking.timestamps[0];
+          const frameCount = fpsTracking.timestamps.length - 1;
+          
+          if (timeSpan > 0) {
+            const accurateFps = (frameCount * 1000) / timeSpan;
+            setDetectionFps(Math.round(accurateFps * 10) / 10); // Round to 1 decimal place
+          }
+          
+          fpsTracking.lastUpdateTime = now;
         }
 
         // Process the detection result
@@ -605,6 +623,9 @@ export default function LiveVideo() {
           setCurrentDetections(detectionResult);
           lastDetectionRef.current = detectionResult;
 
+          // Reset processing flag immediately to allow next frame processing
+          isProcessingRef.current = false;
+
           // Perform face recognition if enabled
           if (process.env.NODE_ENV === 'development') {
             console.log('🔍 Recognition check:', {
@@ -616,12 +637,9 @@ export default function LiveVideo() {
           }
           
           if (recognitionEnabled && backendServiceReadyRef.current && detectionResult.faces.length > 0) {
-            // Await face recognition to complete before resetting processing flag
+            // Perform face recognition asynchronously without blocking next frame processing
             performFaceRecognition(detectionResult).catch(error => {
               console.error('❌ Face recognition failed:', error);
-            }).finally(() => {
-              // Always reset processing flag after recognition completes or fails
-              isProcessingRef.current = false;
             });
           } else {
             if (!recognitionEnabled && detectionResult.faces.length > 0) {
@@ -629,12 +647,12 @@ export default function LiveVideo() {
               console.log('💾 Storing detection result for delayed recognition');
               setLastDetectionForRecognition(detectionResult);
             }
-            // Mark processing as complete - interval will handle next frame
-            isProcessingRef.current = false;
+            // Backend controls the adaptive processing flow
           }
         } else {
-          // No faces detected, reset processing flag immediately
+          // No faces detected, reset processing flag - backend will request next frame
           isProcessingRef.current = false;
+          // Backend controls the adaptive processing flow
         }
       });
 
@@ -656,14 +674,37 @@ export default function LiveVideo() {
         console.error('❌ WebSocket error message:', data);
         setError(`Detection error: ${data.message || 'Unknown error'}`);
         isProcessingRef.current = false;
-        // Don't immediately process next frame on error to prevent infinite loops
-        // The interval will handle the next frame
+        // Backend will handle error recovery and request next frame when ready
+        // No manual intervention needed - adaptive processing will resume automatically
       });
 
       // Handle pong messages
       backendServiceRef.current.onMessage('pong', (data: WebSocketPongMessage) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('🏓 WebSocket pong received:', data);
+        }
+      });
+
+      // Handle next frame requests from adaptive backend
+      backendServiceRef.current.onMessage('request_next_frame', (data: any) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎯 Backend requesting next frame for adaptive processing', {
+            detectionEnabled: detectionEnabledRef.current,
+            websocketReady: backendServiceRef.current?.isWebSocketReady(),
+            isProcessing: isProcessingRef.current,
+            isStreaming: isStreamingRef.current
+          });
+        }
+        // Backend is ready for next frame - send it immediately
+        if (detectionEnabledRef.current && backendServiceRef.current?.isWebSocketReady()) {
+          processFrameForDetection();
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ Cannot process next frame:', {
+              detectionEnabled: detectionEnabledRef.current,
+              websocketReady: backendServiceRef.current?.isWebSocketReady()
+            });
+          }
         }
       });
 
@@ -737,12 +778,12 @@ export default function LiveVideo() {
     processCurrentFrame();
   }, [processCurrentFrame]);
 
-  // Start detection interval helper
+  // Start detection interval helper - now triggers initial frame only
   const startDetectionInterval = useCallback(() => {
     if (detectionEnabledRef.current && 
-        backendServiceRef.current?.isWebSocketReady() && 
-        !detectionIntervalRef.current) {
-      detectionIntervalRef.current = setInterval(processFrameForDetection, 0);
+        backendServiceRef.current?.isWebSocketReady()) {
+      // Send initial frame to start the adaptive processing chain
+      processFrameForDetection();
     }
   }, [processFrameForDetection]);
 
@@ -930,18 +971,19 @@ export default function LiveVideo() {
       animationFrameRef.current = undefined;
     }
     
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
-      detectionIntervalRef.current = undefined;
-    }
+    // No longer using detectionIntervalRef for setInterval - adaptive processing instead
     
     // Clear detection results
     setCurrentDetections(null);
     lastDetectionRef.current = null;
     
-    // Reset FPS tracking
+    // Reset ACCURATE FPS tracking
     setDetectionFps(0);
-    detectionCounterRef.current = { detections: 0, lastTime: Date.now() };
+    fpsTrackingRef.current = {
+      timestamps: [],
+      maxSamples: 10,
+      lastUpdateTime: Date.now()
+    };
     
     // Reset performance tracking refs
     lastDetectionHashRef.current = '';
@@ -1813,14 +1855,13 @@ export default function LiveVideo() {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | undefined;
     
-    if (websocketStatus === 'connected' && detectionEnabledRef.current && !detectionIntervalRef.current) {
+    if (websocketStatus === 'connected' && detectionEnabledRef.current) {
       // Poll for WebSocket readiness with exponential backoff
       let attempts = 0;
       const maxAttempts = 10;
       const checkReadiness = () => {
         if (backendServiceRef.current?.isWebSocketReady() && 
-            detectionEnabledRef.current && 
-            !detectionIntervalRef.current) {
+            detectionEnabledRef.current) {
           startDetectionInterval();
         } else if (attempts < maxAttempts) {
           attempts++;
@@ -1968,7 +2009,7 @@ export default function LiveVideo() {
                 </div>
 
                 <div className="text-sm text-white/60">
-                  FPS: {detectionFps}
+                  FPS: {detectionFps.toFixed(1)}
                 </div>
 
                               <div className="flex justify-between items-center">
