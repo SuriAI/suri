@@ -650,7 +650,7 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
     
     # Queue management for overload prevention
     processing_queue = []
-    max_queue_size = 3  # Maximum pending frames
+    max_queue_size = 10  # Increased for better burst processing
     is_processing = False
     dropped_frames = 0
     
@@ -685,8 +685,8 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
             older_avg = sum(processing_times[-6:-3]) / 3 if len(processing_times) >= 6 else recent_avg
             performance_trend = (older_avg - recent_avg) / older_avg if older_avg > 0 else 0
         
-        # Detect system overload
-        is_overloaded = processing_time > avg_processing_time * 1.5 or processing_time > 0.1
+        # Detect system overload (reduced sensitivity for maximum performance)
+        is_overloaded = processing_time > avg_processing_time * 2.5 or processing_time > 0.2
         if is_overloaded:
             overload_counter += 1
         else:
@@ -835,14 +835,14 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     # Calculate processing time
                     processing_time = time.time() - start_time
                     
-                    # Calculate adaptive delay for optimal performance
-                    adaptive_delay = calculate_adaptive_delay(processing_time)
+                    # NO DELAYS - Maximum performance mode
+                    adaptive_delay = 0  # Completely remove delays
                     
                     # Send response with enhanced performance metrics
                     avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else processing_time
-                    avg_frame_interval = sum(frame_intervals) / len(frame_intervals) if frame_intervals else adaptive_delay
-                    actual_fps = 1.0 / avg_frame_interval if avg_frame_interval > 0 else 0
-                    target_fps_current = 1.0 / adaptive_delay if adaptive_delay > 0 else 0
+                    avg_frame_interval = sum(frame_intervals) / len(frame_intervals) if frame_intervals else 0.001  # Minimal interval
+                    actual_fps = 1.0 / avg_frame_interval if avg_frame_interval > 0 else 1000  # High FPS
+                    target_fps_current = 1000  # No delay = maximum FPS
                     
                     response = {
                         "type": "detection_response",
@@ -871,9 +871,8 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     # Mark processing as complete
                     is_processing = False
                     
-                    # Adaptive delay before requesting next frame
-                    if adaptive_delay > 0:
-                        await asyncio.sleep(adaptive_delay)
+                    # NO DELAY - Request next frame immediately for maximum performance
+                    # (Removed: await asyncio.sleep(adaptive_delay))
                     
                     # Request next frame for continuous processing
                     next_frame_request = {

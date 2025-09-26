@@ -97,9 +97,9 @@ MODEL_CONFIGS = {
         "name": "YuNet",
         "model_path": WEIGHTS_DIR / "face_detection_yunet_2023mar.onnx",
         "input_size": (320, 320),  # Fixed size for consistent performance
-        "score_threshold": 0.6,    # Balanced for speed vs accuracy
+        "score_threshold": 0.5,    # Balanced for speed vs accuracy
         "nms_threshold": 0.3,      # Optimized for speed vs accuracy balance
-        "top_k": 1000,             # Reduced for faster processing
+        "top_k": 5000,             # Reduced for faster processing
         "backend_id": 0,  # OpenCV DNN backend
         "target_id": 0,   # CPU target (can be changed to GPU if available)
         "description": "YuNet face detection model from OpenCV Zoo - OPTIMIZED",
@@ -107,7 +107,7 @@ MODEL_CONFIGS = {
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "max_image_size": (1920, 1080),  # Limit max resolution for performance
         "min_face_size": (10, 10),
-        "enable_dynamic_sizing": False,  # Disable for performance consistency
+        "enable_dynamic_sizing": True
     },
     "antispoofing": {
         "name": "AntiSpoofing",
