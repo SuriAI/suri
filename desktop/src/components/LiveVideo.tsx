@@ -1018,7 +1018,7 @@ export default function LiveVideo() {
     }
   }, []);
 
-  // OPTIMIZATION: Cache video rect to avoid repeated getBoundingClientRect calls
+  // Cache video rect to avoid repeated getBoundingClientRect calls
   const getVideoRect = useCallback(() => {
     const video = videoRef.current;
     if (!video) return null;
@@ -1084,175 +1084,113 @@ export default function LiveVideo() {
     return scaleFactorsRef.current;
   }, []);
 
-  // OPTIMIZED: Advanced futuristic drawing system with performance improvements
+  // Helper function to determine face color
+  const getFaceColor = (face: any, recognitionResult: any, recognitionEnabled: boolean) => {
+    const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+    
+    if (isRecognized) return "#00ff41"; // Green for recognized faces
+    
+    // All unknown/unrecognized faces should be red, regardless of antispoofing status
+    return "#ff0000"; // Red for all unknown faces
+  };
+
+  // Helper function to draw complete bounding box
+  const drawBoundingBox = (ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) => {
+    ctx.beginPath();
+    ctx.rect(x1, y1, x2 - x1, y2 - y1);
+    ctx.stroke();
+  };
+
+  // Helper function to setup canvas context
+  const setupCanvasContext = (ctx: CanvasRenderingContext2D, color: string) => {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 1;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+  };
+
   const drawOverlays = useCallback(() => {
     const video = videoRef.current;
     const overlayCanvas = overlayCanvasRef.current;
     
     if (!video || !overlayCanvas || !currentDetections) return;
 
-    // OPTIMIZATION: Get context with optimized settings
     const ctx = overlayCanvas.getContext('2d', { 
-      alpha: true, // Need transparency for overlays
-      willReadFrequently: false // We don't read pixels frequently
+      alpha: true, 
+      willReadFrequently: false 
     });
     if (!ctx) return;
 
-    // Only draw when streaming and have detections
-    if (!isStreaming || !currentDetections.faces || currentDetections.faces.length === 0) {
+    // Early exit if no streaming or detections
+    if (!isStreaming || !currentDetections.faces?.length) {
       ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
       return;
     }
 
-    // OPTIMIZATION: Use cached video rect instead of getBoundingClientRect
     const rect = getVideoRect();
     if (!rect) return;
 
     const displayWidth = Math.round(rect.width);
     const displayHeight = Math.round(rect.height);
 
-    // OPTIMIZATION: Only resize canvas if dimensions actually changed
-    let needsClear = false;
+    // Resize canvas if needed
     if (overlayCanvas.width !== displayWidth || overlayCanvas.height !== displayHeight) {
       overlayCanvas.width = displayWidth;
       overlayCanvas.height = displayHeight;
       overlayCanvas.style.width = `${displayWidth}px`;
       overlayCanvas.style.height = `${displayHeight}px`;
-      needsClear = true;
     }
 
-    // Clear canvas only when needed
-    if (needsClear) {
-      ctx.clearRect(0, 0, displayWidth, displayHeight);
-    } else {
-      ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-    }
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
 
-    // Get cached scale factors
     const scaleFactors = calculateScaleFactors();
     if (!scaleFactors) return;
 
     const { scaleX, scaleY, offsetX, offsetY } = scaleFactors;
 
     // Validate scale factors
-    if (!isFinite(scaleX) || !isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) {
-      return;
-    }
+    if (!isFinite(scaleX) || !isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
 
-    // Draw detections with futuristic sci-fi styling
+    // Draw each face detection
     currentDetections.faces.forEach((face, index) => {
-      const { bbox, confidence, antispoofing } = face;
+      const { bbox, confidence, antispoofing, landmarks } = face;
       
-      const x1 = bbox.x;
-      const y1 = bbox.y;
-      const x2 = bbox.x + bbox.width;
-      const y2 = bbox.y + bbox.height;
+      // Validate bbox
+      if (!bbox || !isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
 
-      // Validate bbox coordinates first
-      if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) {
-        return;
-      }
+      // Calculate scaled coordinates
+      const x1 = bbox.x * scaleX + offsetX;
+      const y1 = bbox.y * scaleY + offsetY;
+      const x2 = (bbox.x + bbox.width) * scaleX + offsetX;
+      const y2 = (bbox.y + bbox.height) * scaleY + offsetY;
 
-      // Scale coordinates from capture canvas size to displayed video area
-      const scaledX1 = x1 * scaleX + offsetX;
-      const scaledY1 = y1 * scaleY + offsetY;
-      const scaledX2 = x2 * scaleX + offsetX;
-      const scaledY2 = y2 * scaleY + offsetY;
+      // Validate scaled coordinates
+      if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) return;
 
-      // Additional validation for scaled coordinates
-      if (!isFinite(scaledX1) || !isFinite(scaledY1) || !isFinite(scaledX2) || !isFinite(scaledY2)) {
-        return;
-      }
-
-      const width = scaledX2 - scaledX1;
-      const height = scaledY2 - scaledY1;
-
-      // Get recognition result for this face
+      const width = x2 - x1;
+      const height = y2 - y1;
       const recognitionResult = currentRecognitionResults.get(index);
+      const color = getFaceColor(face, recognitionResult, recognitionEnabled);
 
-      // Determine colors based on recognition status
-       const isRecognized = recognitionEnabled && recognitionResult?.person_id;
-       let primaryColor: string;
+      // Setup context and draw bounding box
+      setupCanvasContext(ctx, color);
+      drawBoundingBox(ctx, x1, y1, x2, y2);
 
-       if (isRecognized) {
-         primaryColor = "#00ff41";
-       } else if (antispoofing) {
-         if (antispoofing.status === 'real') {
-           primaryColor = "#ff0000"; // Green for real
-         } else if (antispoofing.status === 'fake') {
-           primaryColor = "#ff0000"; // Red for fake
-         } else {
-           primaryColor = "#ff8800"; // Orange for unknown
-         }
-       } else {
-         primaryColor = confidence > 0.8 ? "#00ffff" : "#ff6b6b";
-       }
-
-      // Draw futuristic corner brackets instead of full box
-      const cornerSize = Math.min(20, width * 0.2, height * 0.2);
-      ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 3;
-      ctx.shadowColor = primaryColor;
-      ctx.shadowBlur = 10;
-
-      // Top-left corner
-      ctx.beginPath();
-      ctx.moveTo(scaledX1, scaledY1 + cornerSize);
-      ctx.lineTo(scaledX1, scaledY1);
-      ctx.lineTo(scaledX1 + cornerSize, scaledY1);
-      ctx.stroke();
-
-      // Top-right corner
-      ctx.beginPath();
-      ctx.moveTo(scaledX2 - cornerSize, scaledY1);
-      ctx.lineTo(scaledX2, scaledY1);
-      ctx.lineTo(scaledX2, scaledY1 + cornerSize);
-      ctx.stroke();
-
-      // Bottom-left corner
-      ctx.beginPath();
-      ctx.moveTo(scaledX1, scaledY2 - cornerSize);
-      ctx.lineTo(scaledX1, scaledY2);
-      ctx.lineTo(scaledX1 + cornerSize, scaledY2);
-      ctx.stroke();
-
-      // Bottom-right corner
-      ctx.beginPath();
-      ctx.moveTo(scaledX2 - cornerSize, scaledY2);
-      ctx.lineTo(scaledX2, scaledY2);
-      ctx.lineTo(scaledX2, scaledY2 - cornerSize);
-      ctx.stroke();
-
-      // Reset shadow for text
-      ctx.shadowBlur = 0;
-
-      // Draw modern HUD-style label (without percentage/similarity - moved to detection results)
-       let label = "UNKNOWN";
-       
-       if (isRecognized && recognitionResult?.person_id) {
-         label = (recognitionResult.memberName || recognitionResult.person_id).toUpperCase();
-       } else if (antispoofing?.status === 'fake') {
-         label = "⚠ SPOOF";
-       } else if (antispoofing?.status === 'real') {
-         label = "UNKNOWN";
-       }
-
-      // Validate coordinates
-      const isValidCoord = (val: number) => typeof val === "number" && isFinite(val);
-      if (!isValidCoord(scaledX1) || !isValidCoord(scaledY1)) {
-        return;
+      // Draw label
+      const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+      let label = "Unknown";
+      
+      if (isRecognized) {
+        label = (recognitionResult.memberName || recognitionResult.person_id)
+      } else if (antispoofing?.status === 'fake') {
+        label = "⚠ SPOOF";
       }
 
-      // Draw name with glow effect
       ctx.font = 'bold 16px "Courier New", monospace';
-      ctx.fillStyle = primaryColor;
-      ctx.shadowColor = primaryColor;
-      ctx.shadowBlur = 10;
-      ctx.fillText(label, scaledX1, scaledY1 - 10);
-      ctx.shadowBlur = 0;
+      ctx.fillText(label, x1, y1 - 10);
 
-      // Draw futuristic facial landmarks (neural nodes)
-      const { landmarks } = face;
+      // Draw landmarks if available
       if (landmarks) {
         const landmarkPoints = [
           landmarks.right_eye,
@@ -1260,35 +1198,29 @@ export default function LiveVideo() {
           landmarks.nose_tip,
           landmarks.right_mouth_corner,
           landmarks.left_mouth_corner
-        ];
-        
-        const maxLandmarks = Math.min(landmarkPoints.length, 5);
-        for (let i = 0; i < maxLandmarks; i++) {
-          const point = landmarkPoints[i];
-          if (!point || !isFinite(point.x) || !isFinite(point.y)) continue;
+        ].filter(point => point && isFinite(point.x) && isFinite(point.y));
 
-          const scaledLandmarkX = point.x * scaleX + offsetX;
-          const scaledLandmarkY = point.y * scaleY + offsetY;
-
-          if (!isFinite(scaledLandmarkX) || !isFinite(scaledLandmarkY) || 
-              scaledLandmarkX < 0 || scaledLandmarkY < 0 ||
-              scaledLandmarkX > displayWidth || scaledLandmarkY > displayHeight)
-            continue;
-
-          // OPTIMIZATION: Simplified landmark drawing
-          ctx.beginPath();
-          ctx.arc(scaledLandmarkX, scaledLandmarkY, 3, 0, 2 * Math.PI); // Reduced size
-          ctx.fill();
-        }
-        ctx.shadowBlur = 0;
+        landmarkPoints.forEach(point => {
+          const lx = point.x * scaleX + offsetX;
+          const ly = point.y * scaleY + offsetY;
+          
+          if (isFinite(lx) && isFinite(ly) && lx >= 0 && ly >= 0 && lx <= displayWidth && ly <= displayHeight) {
+            ctx.beginPath();
+            ctx.arc(lx, ly, 3, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
       }
 
-      // OPTIMIZATION: Simplified status indicator
+      // Status indicator
       if (isRecognized) {
         ctx.font = 'bold 10px "Courier New", monospace';
         ctx.fillStyle = "#00ff00";
-        ctx.fillText("RECOGNIZED", scaledX1 + 10, scaledY2 + 15);
+        ctx.fillText("RECOGNIZED", x1 + 10, y2 + 15);
       }
+
+      // Reset context
+      ctx.shadowBlur = 0;
     });
   }, [currentDetections, isStreaming, getVideoRect, calculateScaleFactors, currentRecognitionResults, recognitionEnabled]);
 
@@ -1303,7 +1235,7 @@ export default function LiveVideo() {
       }
     }
 
-    // OPTIMIZATION: Only redraw if detection results or recognition results changed
+    // Only redraw if detection results or recognition results changed
     const currentHash = currentDetections ? 
       `${currentDetections.faces.length}-${currentDetections.faces.map(f => `${f.bbox.x},${f.bbox.y}`).join(',')}-${currentRecognitionResults.size}-${Array.from(currentRecognitionResults.values()).map(r => r.person_id || 'none').join(',')}` : '';
     
@@ -2176,7 +2108,7 @@ export default function LiveVideo() {
                           <div className="flex items-center space-x-2">
                             <div className="font-medium">
                               {isRecognized && recognitionResult?.person_id ? 
-                                (recognitionResult.memberName || recognitionResult.person_id).toUpperCase() : 
+                                (recognitionResult.memberName || recognitionResult.person_id) : 
                                 `Unknown`
                               }
                             </div>
@@ -2189,13 +2121,6 @@ export default function LiveVideo() {
                           <div className="text-xs text-white/60">
                             Confidence: {(face.confidence * 100).toFixed(1)}%
                           </div>
-                          {trackedFace && (
-                            <div className="text-xs text-cyan-300 mt-1">
-                              Quality: {trackedFace.angleConsistency > 0.8 ? 'Excellent' : 
-                                       trackedFace.angleConsistency > 0.6 ? 'Good' : 
-                                       trackedFace.angleConsistency > 0.4 ? 'Fair' : 'Poor'}
-                            </div>
-                          )}
                         </div>
                         <div className="text-right">
                           {isRecognized && recognitionResult?.similarity && (
