@@ -1363,7 +1363,20 @@ export default function LiveVideo() {
       const groups = await attendanceManager.getGroups();
       setAttendanceGroups(groups);
       
+      // Validate that currentGroup still exists in the available groups
       if (currentGroup) {
+        const groupStillExists = groups.some(group => group.id === currentGroup.id);
+        if (!groupStillExists) {
+          // Clear currentGroup if it no longer exists (e.g., was deleted)
+          console.warn(`⚠️ Current group "${currentGroup.name}" no longer exists. Clearing selection.`);
+          setCurrentGroup(null);
+          setGroupMembers([]);
+          setAttendanceStats(null);
+          setRecentAttendance([]);
+          setSelectedPersonForRegistration('');
+          return;
+        }
+
         const [members, stats, records] = await Promise.all([
           attendanceManager.getGroupMembers(currentGroup.id),
           attendanceManager.getGroupStats(currentGroup.id),
@@ -1882,25 +1895,8 @@ export default function LiveVideo() {
         setAttendanceGroups(groups);
         
         if (groups.length === 0) {
-          console.log('📝 Creating default group...');
-          try {
-            const defaultGroup = await attendanceManager.createGroup('Default Group', 'general', 'Auto-created default group');
-            setCurrentGroup(defaultGroup);
-            console.log('✅ Default group created and set as current:', defaultGroup);
-          } catch (createError: any) {
-            // If group already exists (409 error), just reload groups
-            if (createError?.response?.status === 409) {
-              console.log('ℹ️ Default group already exists, reloading groups...');
-              const updatedGroups = await attendanceManager.getGroups();
-              setAttendanceGroups(updatedGroups);
-              if (updatedGroups.length > 0) {
-                setCurrentGroup(updatedGroups[0]);
-                console.log('📌 Selected existing group as current:', updatedGroups[0]);
-              }
-            } else {
-              throw createError;
-            }
-          }
+          console.log('ℹ️ No groups available. Please create a group first.');
+          setCurrentGroup(null);
         } else if (!currentGroup) {
           // Select the first available group
           setCurrentGroup(groups[0]);
