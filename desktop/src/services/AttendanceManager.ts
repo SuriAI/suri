@@ -196,7 +196,15 @@ export class AttendanceManager {
     email?: string;
   }): Promise<AttendanceMember> {
     try {
-      const memberData: any = {
+      const memberData: {
+        group_id: string;
+        name: string;
+        role?: string;
+        employee_id?: string;
+        student_id?: string;
+        email?: string;
+        person_id?: string;
+      } = {
         group_id: groupId,
         name,
         role: options?.role,
@@ -294,7 +302,7 @@ export class AttendanceManager {
 
       this.eventQueue.push(processedEvent);
       return processedEvent;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error processing attendance event:', error);
       throw error;
     }
@@ -568,9 +576,9 @@ export class AttendanceManager {
   }
 
   // Get backend statistics
-  async getBackendStats(): Promise<any> {
+  async getBackendStats(): Promise<Record<string, unknown>> {
     try {
-      return await this.httpClient.get(API_ENDPOINTS.stats);
+      return await this.httpClient.get<Record<string, unknown>>(API_ENDPOINTS.stats);
     } catch (error) {
       console.error('Error getting backend stats:', error);
       return {};
@@ -589,7 +597,16 @@ export class AttendanceManager {
     joined_at: Date;
   }>> {
     try {
-      const persons = await this.httpClient.get<any[]>(`${API_ENDPOINTS.groups}/${groupId}/persons`);
+      const persons = await this.httpClient.get<Array<{
+        person_id: string;
+        name: string;
+        role?: string;
+        employee_id?: string;
+        student_id?: string;
+        email?: string;
+        has_face_data: boolean;
+        joined_at: string;
+      }>>(`${API_ENDPOINTS.groups}/${groupId}/persons`);
       return persons.map(person => ({
         ...person,
         joined_at: new Date(person.joined_at)
