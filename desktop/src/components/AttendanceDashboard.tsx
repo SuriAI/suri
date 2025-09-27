@@ -190,18 +190,11 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
 
     try {
       setLoading(true);
-      const newMember: Omit<AttendanceMember, 'id'> = {
-        name: newMemberName.trim(),
-        role: newMemberRole.trim() || 'Student',
+      await attendanceManager.addMember(selectedGroup.id, newMemberName.trim(), {
+        role: newMemberRole.trim() || undefined,
         employee_id: newMemberEmployeeId.trim() || undefined,
-        student_id: newMemberStudentId.trim() || undefined,
-        group_id: selectedGroup.id,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      await attendanceManager.addMember(selectedGroup.id, newMember);
+        student_id: newMemberStudentId.trim() || undefined
+      });
       resetMemberForm();
       setShowAddMemberModal(false);
       await loadData(); // Refresh data
@@ -218,16 +211,14 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
 
     try {
       setLoading(true);
-      const updatedMember: AttendanceMember = {
-        ...editingMember,
+      const updates: Partial<AttendanceMember> = {
         name: newMemberName.trim(),
-        role: newMemberRole.trim() || 'Student',
+        role: newMemberRole.trim() || undefined,
         employee_id: newMemberEmployeeId.trim() || undefined,
-        student_id: newMemberStudentId.trim() || undefined,
-        updated_at: new Date().toISOString()
+        student_id: newMemberStudentId.trim() || undefined
       };
 
-      await attendanceManager.updateMember(updatedMember);
+      await attendanceManager.updateMember(editingMember.person_id, updates);
       resetMemberForm();
       setEditingMember(null);
       setShowEditMemberModal(false);
@@ -240,12 +231,12 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
     }
   };
 
-  const handleRemoveMember = async (memberId: string) => {
+  const handleRemoveMember = async (personId: string) => {
     if (!selectedGroup) return;
 
     try {
       setLoading(true);
-      await attendanceManager.removeMember(selectedGroup.id, memberId);
+      await attendanceManager.removeMember(personId);
       await loadData(); // Refresh data
     } catch (error) {
       console.error('Error removing member:', error);
@@ -258,7 +249,7 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
   const openEditMember = (member: AttendanceMember) => {
     setEditingMember(member);
     setNewMemberName(member.name);
-    setNewMemberRole(member.role);
+    setNewMemberRole(member.role || '');
     setNewMemberEmployeeId(member.employee_id || '');
     setNewMemberStudentId(member.student_id || '');
     setShowEditMemberModal(true);

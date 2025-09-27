@@ -153,7 +153,12 @@ export default function LiveVideo() {
     personId: string;
     confidence: number;
     timestamp: number;
-    faceData: any;
+    faceData: {
+      bbox: { x: number; y: number; width: number; height: number };
+      confidence: number;
+      landmarks?: { right_eye: { x: number; y: number }; left_eye: { x: number; y: number }; nose_tip: { x: number; y: number }; right_mouth_corner: { x: number; y: number }; left_mouth_corner: { x: number; y: number } };
+      antispoofing?: { is_real: boolean | null; confidence: number; status: 'real' | 'fake' | 'error' };
+    };
   }>>([]);
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>([]);
   const [groupMembers, setGroupMembers] = useState<AttendanceMember[]>([]);
@@ -382,9 +387,10 @@ export default function LiveVideo() {
                     
                     // Show success notification
                     setError(null);
-                  } catch (attendanceError: any) {
-                    console.error(`❌ Attendance event processing failed for ${response.person_id}:`, attendanceError.message);
-                    setError(attendanceError.message || `Failed to record attendance for ${response.person_id}`);
+                  } catch (attendanceError: unknown) {
+                     const errorMessage = attendanceError instanceof Error ? attendanceError.message : 'Unknown error';
+                     console.error(`❌ Attendance event processing failed for ${response.person_id}:`, errorMessage);
+                     setError(errorMessage || `Failed to record attendance for ${response.person_id}`);
                   }
                 } else {
                   // MANUAL MODE: Add to pending queue for manual confirmation
@@ -668,7 +674,7 @@ export default function LiveVideo() {
       });
 
       // Handle next frame requests from adaptive backend
-      backendServiceRef.current.onMessage('request_next_frame', (data: any) => {
+      backendServiceRef.current.onMessage('request_next_frame', (data: { message?: string }) => {
         if (process.env.NODE_ENV === 'development') {
           console.log('🎯 Backend requesting next frame for adaptive processing', {
             detectionEnabled: detectionEnabledRef.current,
@@ -1060,7 +1066,11 @@ export default function LiveVideo() {
   }, []);
 
   // Helper function to determine face color
-  const getFaceColor = (face: any, recognitionResult: any, recognitionEnabled: boolean) => {
+  const getFaceColor = (
+    face: { bbox: { x: number; y: number; width: number; height: number }; confidence: number; antispoofing?: { is_real: boolean | null; confidence: number; status: 'real' | 'fake' | 'error' } }, 
+    recognitionResult: { person_id?: string; confidence?: number; name?: string } | null, 
+    recognitionEnabled: boolean
+  ) => {
     const isRecognized = recognitionEnabled && recognitionResult?.person_id;
     
     if (isRecognized) return "#00ff41"; // Green for recognized faces
@@ -1480,7 +1490,7 @@ export default function LiveVideo() {
 
 
   // Elite Tracking Helper Functions
-  const calculateAngleConsistency = useCallback((history: Array<{ timestamp: number; bbox: any; confidence: number }>) => {
+  const calculateAngleConsistency = useCallback((history: Array<{ timestamp: number; bbox: { x: number; y: number; width: number; height: number }; confidence: number }>) => {
     if (history.length < 2) return 1.0;
     
     let consistencyScore = 0;
@@ -1522,9 +1532,9 @@ export default function LiveVideo() {
     });
   }, []);
 
-  const reacquireFace = useCallback((newFace: any, personId?: string) => {
+  const reacquireFace = useCallback((newFace: { bbox: { x: number; y: number; width: number; height: number }; confidence: number }, personId?: string) => {
     const currentTime = Date.now();
-    let bestMatch: any = null;
+    let bestMatch: { id: string; personId?: string; bbox: { x: number; y: number; width: number; height: number }; lastSeen: number; confidence: number } | null = null;
     let bestScore = 0;
     
     // Find best matching track for re-acquisition
@@ -2157,9 +2167,10 @@ export default function LiveVideo() {
                                            // Refresh attendance data
                                            await loadAttendanceData();
                                            setError(null);
-                                         } catch (error: any) {
-                                           console.error('Failed to confirm attendance:', error);
-                                           setError(error.message || 'Failed to confirm attendance');
+                                         } catch (error: unknown) {
+                                            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                                            console.error('Failed to confirm attendance:', error);
+                                            setError(errorMessage || 'Failed to confirm attendance');
                                          }
                                        }}
                                        className="px-2 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 rounded text-xs transition-colors"
