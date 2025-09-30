@@ -125,7 +125,16 @@ export default function LiveVideo() {
 
   // Attendance system state
   const attendanceEnabled = true;
-  const [currentGroup, setCurrentGroup] = useState<AttendanceGroup | null>(null);
+  const [currentGroup, setCurrentGroupInternal] = useState<AttendanceGroup | null>(null);
+  const currentGroupRef = useRef<AttendanceGroup | null>(null);
+  
+  // Debug wrapper for setCurrentGroup
+  const setCurrentGroup = useCallback((group: AttendanceGroup | null) => {
+    console.log('🔄 setCurrentGroup called with:', group?.name || 'null');
+    console.log('🔍 Stack trace for setCurrentGroup:', new Error().stack);
+    setCurrentGroupInternal(group);
+    currentGroupRef.current = group; // Keep ref in sync
+  }, []);
   
   // Recognition is enabled when backend is ready (removed group dependency for instant recognition)
   const recognitionEnabled = true;
@@ -324,8 +333,12 @@ export default function LiveVideo() {
   const performFaceRecognition = useCallback(async (detectionResult: DetectionResult) => {
     try {
       // Only perform recognition when a group is selected
-      if (!currentGroup) {
+      const currentGroupValue = currentGroupRef.current;
+      if (!currentGroupValue) {
         console.log('ℹ️ No group selected - skipping face recognition, faces will show as Unknown');
+        console.log('🔍 currentGroup ref:', currentGroupValue, 'type:', typeof currentGroupValue);
+        console.log('🔍 currentGroup state:', currentGroup, 'type:', typeof currentGroup);
+        console.log('🔍 Stack trace for null currentGroup:', new Error().stack);
         setCurrentRecognitionResults(new Map());
         return;
       }
@@ -337,7 +350,7 @@ export default function LiveVideo() {
       }
 
       // Capture current group at start of processing to validate later
-      const processingGroup = currentGroup;
+      const processingGroup = currentGroupValue;
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`🎯 Starting face recognition for group: ${processingGroup?.name || 'null'} (ID: ${processingGroup?.id || 'null'})`);
@@ -363,7 +376,7 @@ export default function LiveVideo() {
           const response = await backendServiceRef.current.recognizeFace(
             frameData,
             landmarks,
-            currentGroup?.id
+            currentGroupValue?.id
           );
 
           if (response.success && response.person_id) {
@@ -383,7 +396,7 @@ export default function LiveVideo() {
             
             // Group-based filtering: Only process faces that belong to the current group (by name)
             let memberName = response.person_id; // Default to person_id if no member found
-            if (currentGroup) {
+            if (currentGroupValue) {
               try {
                 const member = await attendanceManager.getMember(response.person_id);
                 if (!member) {
@@ -395,18 +408,18 @@ export default function LiveVideo() {
                 memberName = member.name || response.person_id;
                 
                 // Compare group IDs directly for reliable filtering
-                if (member.group_id !== currentGroup.id) {
+                if (member.group_id !== currentGroupValue.id) {
                   // Get the member's group information for logging purposes
                   try {
                     const memberGroup = await attendanceManager.getGroup(member.group_id);
                     const memberGroupName = memberGroup ? memberGroup.name : 'unknown group';
-                    console.log(`🚫 Face ${index} filtered out: ${memberName} belongs to group "${memberGroupName}" (ID: ${member.group_id}), not current group "${currentGroup.name}" (ID: ${currentGroup.id})`);
+                    console.log(`🚫 Face ${index} filtered out: ${memberName} belongs to group "${memberGroupName}" (ID: ${member.group_id}), not current group "${currentGroupValue.name}" (ID: ${currentGroupValue.id})`);
                   } catch (groupError) {
                     console.warn(groupError)
                   }
                   return null; // Filter out this face completely
                 }
-                console.log(`✅ Face ${index} belongs to current group "${currentGroup.name}" (ID: ${currentGroup.id}): ${memberName}`);
+                console.log(`✅ Face ${index} belongs to current group "${currentGroupValue.name}" (ID: ${currentGroupValue.id}): ${memberName}`);
               } catch (error) {
                 console.warn(`⚠️ Error validating group membership for ${response.person_id}:`, error);
                 return null; // Filter out on error
@@ -479,8 +492,8 @@ export default function LiveVideo() {
             });
             
             // Enhanced Attendance Processing with comprehensive error handling
-            if (attendanceEnabled && currentGroup && response.person_id) {
-              console.log(`🔍 Processing attendance for ${memberName} in group ${currentGroup.name}`);
+            if (attendanceEnabled && currentGroupValue && response.person_id) {
+              console.log(`🔍 Processing attendance for ${memberName} in group ${currentGroupValue.name}`);
               console.log(`📊 Recognition details:`, {
                 person_id: response.person_id,
                 similarity: response.similarity,
@@ -565,8 +578,10 @@ export default function LiveVideo() {
                       return newPersistent;
                     });
                     
-                    // Refresh attendance data
-                    await loadAttendanceData();
+                    // Refresh attendance data only if we have a current group
+                    if (currentGroupValue) {
+                      await loadAttendanceData();
+                    }
                     
                     // Show success notification
                     setError(null);
@@ -609,7 +624,7 @@ export default function LiveVideo() {
               }
             } else {
               if (!attendanceEnabled) console.log(`ℹ️ Attendance is disabled`);
-              if (!currentGroup) console.log(`ℹ️ No current group selected`);
+              if (!currentGroupValue) console.log(`ℹ️ No current group selected`);
               if (!response.person_id) console.log(`ℹ️ No person ID in response`);
             }
             
@@ -647,8 +662,8 @@ export default function LiveVideo() {
       const recognitionResults = await Promise.all(recognitionPromises);
       
       // Validate that group hasn't changed during processing
-      if (processingGroup?.id !== currentGroup?.id) {
-        console.log(`🚫 Discarding recognition results - group changed during processing (was: ${processingGroup?.name}, now: ${currentGroup?.name})`);
+      if (processingGroup?.id !== currentGroupRef.current?.id) {
+        console.log(`🚫 Discarding recognition results - group changed during processing (was: ${processingGroup?.name}, now: ${currentGroupRef.current?.name})`);
         return;
       }
       
@@ -1581,20 +1596,43 @@ export default function LiveVideo() {
   // Attendance Management Functions
   const loadAttendanceData = useCallback(async () => {
     try {
+      console.log('🔍 loadAttendanceData called. currentGroup:', currentGroup?.name || 'null');
+      
+      // Early return if no current group - nothing to load
+      if (!currentGroup) {
+        console.log('🔍 No current group, only loading groups list');
+        const groups = await attendanceManager.getGroups();
+        setAttendanceGroups(groups);
+        return;
+      }
+      
       const groups = await attendanceManager.getGroups();
+      console.log('🔍 Available groups:', groups.map(g => g.name));
       setAttendanceGroups(groups);
       
       // Validate that currentGroup still exists in the available groups
       if (currentGroup) {
+        console.log('🔍 Validating currentGroup:', currentGroup.name, 'ID:', currentGroup.id);
         const groupStillExists = groups.some(group => group.id === currentGroup.id);
+        console.log('🔍 Group still exists:', groupStillExists);
         if (!groupStillExists) {
-          // Clear currentGroup if it no longer exists (e.g., was deleted)
-          console.warn(`⚠️ Current group "${currentGroup.name}" no longer exists. Clearing selection.`);
-          setCurrentGroup(null);
-          setGroupMembers([]);
-          setAttendanceStats(null);
-          setRecentAttendance([]);
-          setSelectedPersonForRegistration('');
+          // Only clear currentGroup if it was explicitly deleted, not during normal operations
+          console.warn(`⚠️ Current group "${currentGroup.name}" no longer exists. This might be due to deletion.`);
+          // Add a small delay to avoid race conditions during group switching
+          setTimeout(() => {
+            // Double-check that the group still doesn't exist before clearing
+            attendanceManager.getGroups().then(latestGroups => {
+              const stillMissing = !latestGroups.some(group => group.id === currentGroup.id);
+              if (stillMissing) {
+                console.warn(`⚠️ Confirmed: group "${currentGroup.name}" no longer exists. Clearing selection.`);
+                setCurrentGroup(null);
+                setGroupMembers([]);
+                setAttendanceStats(null);
+                setRecentAttendance([]);
+                setSelectedPersonForRegistration('');
+              }
+            });
+          }, 100);
           return;
         }
 
@@ -1831,9 +1869,30 @@ export default function LiveVideo() {
   }, [newGroupName, newGroupType, currentGroup, loadAttendanceData]);
 
   const handleSelectGroup = useCallback(async (group: AttendanceGroup) => {
+    console.log('🔄 Switching to group:', group.name, 'ID:', group.id);
     setCurrentGroup(group);
-    await loadAttendanceData();
-  }, [loadAttendanceData]);
+    
+    // Load data for the specific group to avoid race condition
+    try {
+      const [members, stats, records] = await Promise.all([
+        attendanceManager.getGroupMembers(group.id),
+        attendanceManager.getGroupStats(group.id),
+        attendanceManager.getRecords({
+          group_id: group.id,
+          limit: 50
+        })
+      ]);
+      
+      setGroupMembers(members);
+      setAttendanceStats(stats);
+      setRecentAttendance(records);
+      
+      // Clear selected person for registration when switching groups
+      setSelectedPersonForRegistration('');
+    } catch (error) {
+      console.error('❌ Failed to load data for selected group:', error);
+    }
+  }, []);
 
 
 
@@ -1990,6 +2049,7 @@ export default function LiveVideo() {
 
   // Clear recognition state whenever group changes to prevent data mixing
   useEffect(() => {
+    console.log('🔄 Group change detected in useEffect. currentGroup:', currentGroup?.name || 'null');
     // Handle group changes (including switching to null when group is deleted)
     
     // Clear all recognition and tracking state to prevent data mixing
@@ -2017,12 +2077,13 @@ export default function LiveVideo() {
     }
   }, [currentGroup, stopCamera, loadRegisteredPersons]);
 
-  // Load attendance data when current group changes
+  // Keep ref in sync with state for async callbacks
   useEffect(() => {
-    if (currentGroup) {
-      loadAttendanceData();
-    }
-  }, [currentGroup, loadAttendanceData]);
+    currentGroupRef.current = currentGroup;
+  }, [currentGroup]);
+
+  // Note: Removed useEffect that called loadAttendanceData on currentGroup change
+  // to prevent circular dependency. Attendance data is now loaded directly in handleSelectGroup.
 
   // Initialize attendance system on component mount
   useEffect(() => {
