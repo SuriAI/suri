@@ -142,8 +142,16 @@ class FaceMeshDetector:
             crop_width = crop_x2 - crop_x1
             crop_height = crop_y2 - crop_y1
             
+            # Validate crop dimensions
+            if crop_width <= 0 or crop_height <= 0:
+                raise ValueError(f"Invalid crop dimensions: width={crop_width}, height={crop_height}")
+            
             # Crop face region
             face_crop = image[crop_y1:crop_y2, crop_x1:crop_x2]
+            
+            # Validate face crop is not empty
+            if face_crop.size == 0:
+                raise ValueError(f"Empty face crop: shape={face_crop.shape}")
             
             # Resize to model input size (192x192) without preserving aspect ratio
             resized_face = cv2.resize(face_crop, self.input_size, interpolation=cv2.INTER_LINEAR)

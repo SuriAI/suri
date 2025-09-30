@@ -836,12 +836,16 @@ async def register_face_for_group_person(
         # Decode and validate image
         image_data = request.get("image")
         landmarks = request.get("landmarks")
+        bbox = request.get("bbox")
         
         if not image_data:
             raise HTTPException(status_code=400, detail="Image data required")
         
         if not landmarks:
             raise HTTPException(status_code=400, detail="Facial landmarks required")
+        
+        if not bbox:
+            raise HTTPException(status_code=400, detail="Face bounding box required")
         
         try:
             image = decode_base64_image(image_data)
@@ -855,7 +859,8 @@ async def register_face_for_group_person(
         result = await edgeface_detector.register_person_async(
             person_id,
             image,
-            landmarks
+            landmarks,
+            bbox
         )
         
         if result["success"]:
