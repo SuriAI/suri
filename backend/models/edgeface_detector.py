@@ -755,6 +755,6 @@ class EdgeFaceDetector:
             "description": "EdgeFace recognition model for face identification",
             "version": "production",
             "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-            "requires_landmarks": True,
-            "landmark_count": 5
+            "requires_landmarks": False,
+            "landmark_count": 0
         }
