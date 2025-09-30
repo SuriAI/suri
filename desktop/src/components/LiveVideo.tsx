@@ -1765,11 +1765,15 @@ export default function LiveVideo() {
 
       console.log(`🎯 Registering elite face for ${selectedPersonForRegistration} in group ${currentGroup.name}`);
 
+      // Convert bbox from object format to array format [x, y, width, height]
+      const bbox = [face.bbox.x, face.bbox.y, face.bbox.width, face.bbox.height];
+
       const result = await attendanceManager.registerFaceForGroupPerson(
         currentGroup.id,
         selectedPersonForRegistration,
         frameData,
-        landmarks
+        landmarks,
+        bbox
       );
 
       if (result.success) {

@@ -622,14 +622,16 @@ export class AttendanceManager {
      groupId: string, 
      personId: string, 
      imageData: string, 
-     landmarks: number[][]
+     landmarks: number[][],
+     bbox: number[]
    ): Promise<{ success: boolean; message?: string; error?: string }> {
      try {
        const result = await this.httpClient.post<{ success: boolean; message: string; person_id: string; group_id: string; total_persons: number }>(
          `${API_ENDPOINTS.groups}/${groupId}/persons/${personId}/register-face`,
          {
            image: imageData,
-           landmarks: landmarks
+           landmarks: landmarks,
+           bbox: bbox
          }
        );
        return { success: true, message: result.message };
