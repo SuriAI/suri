@@ -163,44 +163,13 @@ class EdgeFaceDetector:
             logger.error(f"Failed to initialize EdgeFace model: {e}")
             raise
     
-    def _convert_yunet_landmarks_to_edgeface_order(self, landmarks: np.ndarray) -> np.ndarray:
-        """
-        Convert YuNet landmark order to EdgeFace expected order
-        
-        YuNet order: [right_eye, left_eye, nose_tip, right_mouth_corner, left_mouth_corner]
-        EdgeFace order: [left_eye, right_eye, nose_tip, left_mouth_corner, right_mouth_corner]
-        
-        Args:
-            landmarks: YuNet landmarks array of shape (5, 2)
-            
-        Returns:
-            Converted landmarks array in EdgeFace order
-        """
-        if landmarks.shape[0] < 5:
-            raise ValueError("Insufficient landmarks for conversion (need 5 points)")
-            
-        logger.debug(f"Original YuNet landmarks: {landmarks}")
-        
-        # Convert from YuNet order to EdgeFace order
-        converted_landmarks = np.zeros_like(landmarks[:5])
-        converted_landmarks[0] = landmarks[1]  # left_eye (YuNet index 1 -> EdgeFace index 0)
-        converted_landmarks[1] = landmarks[0]  # right_eye (YuNet index 0 -> EdgeFace index 1)
-        converted_landmarks[2] = landmarks[2]  # nose_tip (same position)
-        converted_landmarks[3] = landmarks[4]  # left_mouth_corner (YuNet index 4 -> EdgeFace index 3)
-        converted_landmarks[4] = landmarks[3]  # right_mouth_corner (YuNet index 3 -> EdgeFace index 4)
-        
-        logger.debug(f"Converted EdgeFace landmarks: {converted_landmarks}")
-        return converted_landmarks
     
-
-    
-    def _align_face(self, image: np.ndarray, landmarks: np.ndarray, bbox: List[float]) -> np.ndarray:
+    def _align_face(self, image: np.ndarray, bbox: List[float]) -> np.ndarray:
         """
         Align face using FaceMesh detector for high-quality alignment
         
         Args:
             image: Input image
-            landmarks: 5-point landmarks from YuNet (not used, kept for compatibility)
             bbox: Face bounding box [x, y, width, height] for FaceMesh (required)
             
         Returns:
@@ -288,103 +257,7 @@ class EdgeFaceDetector:
             face_crop = image[y1:y2, x1:x2]
             return cv2.resize(face_crop, self.input_size)
     
-    def _validate_landmarks_quality(self, landmarks: np.ndarray) -> bool:
-        """
-        Validate landmark quality with improved handling for angled faces
-        
-        Args:
-            landmarks: 5-point landmarks array
-            
-        Returns:
-            True if landmarks are of sufficient quality
-        """
-        try:
-            if landmarks is None or len(landmarks) != 5:
-                logger.debug(f"Invalid landmarks: None or wrong length {len(landmarks) if landmarks is not None else 'None'}")
-                return False
-            
-            # Extract key points
-            left_eye = landmarks[0]
-            right_eye = landmarks[1]
-            nose = landmarks[2]
-            left_mouth = landmarks[3]
-            right_mouth = landmarks[4]
-            
-            logger.debug(f"Landmarks after conversion: left_eye={left_eye}, right_eye={right_eye}, nose={nose}, left_mouth={left_mouth}, right_mouth={right_mouth}")
-            
-            # Basic distance checks
-            eye_distance = np.linalg.norm(right_eye - left_eye)
-            logger.debug(f"Eye distance: {eye_distance}")
-            if eye_distance < 10:  # Too close eyes
-                logger.debug("Validation failed: eye distance too small")
-                return False
-            
-            # Check if landmarks form reasonable face geometry
-            # Even for angled faces, certain relationships should hold
-            
-            # 1. Eyes should be roughly horizontal (allowing for more tilt)
-            eye_vector = right_eye - left_eye
-            eye_angle = abs(np.arctan2(eye_vector[1], eye_vector[0]))
-            
-            # Handle the case where eyes might be swapped (angle close to 180 degrees)
-            if eye_angle > np.pi/2:
-                eye_angle = np.pi - eye_angle
-            
-            logger.debug(f"Eye angle: {eye_angle} radians ({np.degrees(eye_angle)} degrees)")
-            if eye_angle > np.pi/2.5:  # More than 72 degrees tilt (was 60)
-                logger.debug("Validation failed: eye angle too large")
-                return False
-            
-            # 2. Nose should be between eyes (with more tolerance for side views)
-            eye_center = (left_eye + right_eye) / 2
-            nose_to_eye_center = nose - eye_center
-            
-            # For side views, nose might be offset horizontally
-            horizontal_offset = abs(nose_to_eye_center[0]) / eye_distance
-            logger.debug(f"Horizontal offset: {horizontal_offset}")
-            if horizontal_offset > 1.3:  # Increased tolerance (was 1.0)
-                logger.debug("Validation failed: horizontal offset too large")
-                return False
-            
-            # 3. Mouth should be below nose (with tolerance for up/down views)
-            mouth_center = (left_mouth + right_mouth) / 2
-            nose_to_mouth_vertical = mouth_center[1] - nose[1]
-            logger.debug(f"Nose to mouth vertical: {nose_to_mouth_vertical}")
-            
-            # Allow negative values for upward looking faces
-            if nose_to_mouth_vertical < -eye_distance * 0.8:  # Too far above
-                logger.debug("Validation failed: mouth too far above nose")
-                return False
-            
-            # 4. Mouth corners should have reasonable separation
-            mouth_distance = np.linalg.norm(right_mouth - left_mouth)
-            mouth_to_eye_ratio = mouth_distance / eye_distance
-            logger.debug(f"Mouth to eye ratio: {mouth_to_eye_ratio}")
-            if mouth_to_eye_ratio < 0.3 or mouth_to_eye_ratio > 2.0:
-                logger.debug("Validation failed: mouth to eye ratio out of range")
-                return False
-            
-            # 5. Check for reasonable face proportions (relaxed for angled faces)
-            face_height = max(landmarks[:, 1]) - min(landmarks[:, 1])
-            face_width = max(landmarks[:, 0]) - min(landmarks[:, 0])
-            logger.debug(f"Face dimensions: width={face_width}, height={face_height}")
-            
-            if face_height < 20 or face_width < 20:  # Too small
-                logger.debug("Validation failed: face too small")
-                return False
-            
-            aspect_ratio = face_width / face_height
-            logger.debug(f"Face aspect ratio: {aspect_ratio}")
-            if aspect_ratio < 0.3 or aspect_ratio > 3.0:  # Too extreme
-                logger.debug("Validation failed: aspect ratio too extreme")
-                return False
-            
-            logger.debug("Landmark validation passed")
-            return True
-            
-        except Exception as e:
-            logger.warning(f"Landmark validation error: {e}")
-            return False
+
 
     def _preprocess_image(self, aligned_face: np.ndarray) -> np.ndarray:
         """
@@ -413,21 +286,20 @@ class EdgeFaceDetector:
             logger.error(f"Image preprocessing failed: {e}")
             raise
     
-    def _extract_embedding(self, image: np.ndarray, landmarks: np.ndarray, bbox: List[float]) -> np.ndarray:
+    def _extract_embedding(self, image: np.ndarray, bbox: List[float]) -> np.ndarray:
         """
-        Extract face embedding from image using landmarks
+        Extract face embedding from image using FaceMesh alignment
         
         Args:
             image: Input image
-            landmarks: 5-point facial landmarks
             bbox: Bounding box [x, y, width, height] from face detection (required)
             
         Returns:
             Normalized face embedding (512-dim)
         """
         try:
-            # Align face using landmarks
-            aligned_face = self._align_face(image, landmarks, bbox)
+            # Align face using FaceMesh
+            aligned_face = self._align_face(image, bbox)
             
             # Preprocess for model
             input_tensor = self._preprocess_image(aligned_face)
@@ -499,44 +371,28 @@ class EdgeFaceDetector:
         else:
             return None, best_similarity
     
-    def recognize_face(self, image: np.ndarray, landmarks: List[List[float]], bbox: List[float]) -> Dict:
+    def recognize_face(self, image: np.ndarray, bbox: List[float]) -> Dict:
         """
-        Recognize face in image using landmarks (synchronous)
+        Recognize face in image using FaceMesh alignment (synchronous)
         
         Args:
             image: Input image as numpy array (BGR format)
-            landmarks: 5-point facial landmarks in YuNet order [[x1,y1], [x2,y2], ...]
             bbox: Bounding box [x, y, width, height] from face detection (required)
             
         Returns:
             Recognition result with person_id and similarity
         """
         try:
-            # Convert landmarks to numpy array
-            landmarks_array = np.array(landmarks, dtype=np.float32)
+            # Extract embedding using FaceMesh alignment
+            embedding = self._extract_embedding(image, bbox)
             
-            if landmarks_array.shape[0] < 5:
-                raise ValueError("Insufficient landmarks for face recognition (need 5 points)")
-            
-            # Take first 5 landmarks if more are provided
-            landmarks_array = landmarks_array[:5]
-            
-            # Convert from YuNet order to EdgeFace expected order
-            landmarks_array = self._convert_yunet_landmarks_to_edgeface_order(landmarks_array)
-            
-            # Validate landmark quality with improved handling for angled faces
-            if not self._validate_landmarks_quality(landmarks_array):
-                raise ValueError("Landmark quality insufficient for reliable recognition")
-            
-            # Extract embedding
-            embedding = self._extract_embedding(image, landmarks_array, bbox)
-            
-            # Find best match with pose-aware thresholding
-            person_id, similarity = self._find_best_match(embedding, landmarks_array)
+            # Find best match
+            person_id, similarity = self._find_best_match(embedding)
             
             # Apply temporal smoothing if enabled
             if self.enable_temporal_smoothing:
-                stable_face_id = self._generate_stable_face_id(landmarks_array)
+                # Generate stable face ID from bbox for temporal smoothing
+                stable_face_id = f"bbox_{bbox[0]:.1f}_{bbox[1]:.1f}_{bbox[2]:.1f}_{bbox[3]:.1f}"
                 person_id, similarity = self._apply_recognition_temporal_smoothing(
                     stable_face_id, person_id, similarity
                 )
@@ -558,13 +414,12 @@ class EdgeFaceDetector:
                 "error": str(e)
             }
     
-    async def recognize_face_async(self, image: np.ndarray, landmarks: List[List[float]], bbox: List[float]) -> Dict:
+    async def recognize_face_async(self, image: np.ndarray, bbox: List[float]) -> Dict:
         """
-        Recognize face in image using landmarks (asynchronous)
+        Recognize face in image using FaceMesh alignment (asynchronous)
         
         Args:
             image: Input image as numpy array (BGR format)
-            landmarks: 5-point facial landmarks
             bbox: Bounding box [x, y, width, height] from face detection (required)
             
         Returns:
@@ -572,40 +427,23 @@ class EdgeFaceDetector:
         """
         # Run recognition in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.recognize_face, image, landmarks, bbox)
+        return await loop.run_in_executor(None, self.recognize_face, image, bbox)
     
-    def register_person(self, person_id: str, image: np.ndarray, landmarks: List[List[float]], bbox: List[float]) -> Dict:
+    def register_person(self, person_id: str, image: np.ndarray, bbox: List[float]) -> Dict:
         """
-        Register a new person in the database
+        Register a new person in the database using FaceMesh alignment
         
         Args:
             person_id: Unique identifier for the person
             image: Input image
-            landmarks: 5-point facial landmarks in YuNet order
             bbox: Bounding box [x, y, width, height] from face detection (required)
             
         Returns:
             Registration result
         """
         try:
-            # Convert landmarks to numpy array
-            landmarks_array = np.array(landmarks, dtype=np.float32)
-            
-            if landmarks_array.shape[0] < 5:
-                raise ValueError("Insufficient landmarks for registration (need 5 points)")
-            
-            # Take first 5 landmarks if more are provided
-            landmarks_array = landmarks_array[:5]
-            
-            # Convert from YuNet order to EdgeFace expected order
-            landmarks_array = self._convert_yunet_landmarks_to_edgeface_order(landmarks_array)
-            
-            # Validate landmark quality with improved handling for angled faces
-            if not self._validate_landmarks_quality(landmarks_array):
-                raise ValueError("Landmark quality insufficient for reliable registration")
-            
-            # Extract embedding
-            embedding = self._extract_embedding(image, landmarks_array, bbox)
+            # Extract embedding using FaceMesh alignment
+            embedding = self._extract_embedding(image, bbox)
             
             # Store in SQLite database
             if self.db_manager:
@@ -634,10 +472,10 @@ class EdgeFaceDetector:
                 "person_id": person_id
             }
     
-    async def register_person_async(self, person_id: str, image: np.ndarray, landmarks: List[List[float]], bbox: List[float]) -> Dict:
-        """Register person asynchronously"""
+    async def register_person_async(self, person_id: str, image: np.ndarray, bbox: List[float]) -> Dict:
+        """Register person asynchronously using FaceMesh alignment"""
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.register_person, person_id, image, landmarks, bbox)
+        return await loop.run_in_executor(None, self.register_person, person_id, image, bbox)
     
     def remove_person(self, person_id: str) -> Dict:
         """

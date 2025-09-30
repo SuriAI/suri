@@ -86,14 +86,12 @@ class StreamingRequest(BaseModel):
 
 class FaceRecognitionRequest(BaseModel):
     image: str  # Base64 encoded image
-    landmarks: List[List[float]]  # 5-point facial landmarks [[x1,y1], [x2,y2], ...]
-    bbox: Optional[List[float]] = None  # Optional bounding box [x, y, width, height]
+    bbox: List[float]  # Face bounding box [x, y, width, height]
 
 class FaceRegistrationRequest(BaseModel):
     person_id: str
     image: str  # Base64 encoded image
-    landmarks: List[List[float]]  # 5-point facial landmarks
-    bbox: Optional[List[float]] = None  # Optional bounding box [x, y, width, height]
+    bbox: List[float]  # Face bounding box [x, y, width, height]
 
 class FaceRecognitionResponse(BaseModel):
     success: bool
@@ -483,7 +481,7 @@ async def recognize_face(request: FaceRecognitionRequest):
         image = decode_base64_image(request.image)
         
         # Perform face recognition
-        result = await edgeface_detector.recognize_face_async(image, request.landmarks, request.bbox)
+        result = await edgeface_detector.recognize_face_async(image, request.bbox)
         
         processing_time = time.time() - start_time
         
@@ -525,7 +523,6 @@ async def register_person(request: FaceRegistrationRequest):
         result = await edgeface_detector.register_person_async(
             request.person_id, 
             image, 
-            request.landmarks,
             request.bbox
         )
         
