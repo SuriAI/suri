@@ -110,11 +110,20 @@ class EdgeFaceDetector:
         # Initialize FaceMesh detector if enabled
         if self.facemesh_alignment and self.facemesh_model_path:
             try:
+                # Extract only valid FaceMeshDetector parameters from config
+                valid_params = {}
+                if 'input_size' in self.facemesh_config:
+                    valid_params['input_size'] = self.facemesh_config['input_size']
+                if 'score_threshold' in self.facemesh_config:
+                    valid_params['score_threshold'] = self.facemesh_config['score_threshold']
+                if 'margin_ratio' in self.facemesh_config:
+                    valid_params['margin_ratio'] = self.facemesh_config['margin_ratio']
+                
                 self.facemesh_detector = FaceMeshDetector(
                     model_path=self.facemesh_model_path,
                     providers=self.providers,
                     session_options=self.session_options,
-                    **self.facemesh_config
+                    **valid_params
                 )
                 logger.info(f"Initialized FaceMesh detector: {self.facemesh_model_path}")
             except Exception as e:
@@ -199,8 +208,12 @@ class EdgeFaceDetector:
         """
         # Use FaceMesh alignment (required)
         if self.facemesh_alignment and self.facemesh_detector is not None:
+            # Convert bbox from [x, y, width, height] to [x1, y1, x2, y2] format for FaceMesh
+            x, y, width, height = bbox
+            facemesh_bbox = [x, y, x + width, y + height]
+            
             # Get FaceMesh landmarks
-            facemesh_result = self.facemesh_detector.detect_landmarks(image, bbox)
+            facemesh_result = self.facemesh_detector.detect_landmarks(image, facemesh_bbox)
             if facemesh_result['success'] and facemesh_result['landmarks_5']:
                 # Use FaceMesh-derived 5-point landmarks for alignment
                 facemesh_landmarks = np.array(facemesh_result['landmarks_5'], dtype=np.float32)
