@@ -151,6 +151,8 @@ class EdgeFaceDetector:
         if landmarks.shape[0] < 5:
             raise ValueError("Insufficient landmarks for conversion (need 5 points)")
             
+        logger.debug(f"Original YuNet landmarks: {landmarks}")
+        
         # Convert from YuNet order to EdgeFace order
         converted_landmarks = np.zeros_like(landmarks[:5])
         converted_landmarks[0] = landmarks[1]  # left_eye (YuNet index 1 -> EdgeFace index 0)
@@ -159,6 +161,7 @@ class EdgeFaceDetector:
         converted_landmarks[3] = landmarks[4]  # left_mouth_corner (YuNet index 4 -> EdgeFace index 3)
         converted_landmarks[4] = landmarks[3]  # right_mouth_corner (YuNet index 3 -> EdgeFace index 4)
         
+        logger.debug(f"Converted EdgeFace landmarks: {converted_landmarks}")
         return converted_landmarks
     
 
@@ -230,6 +233,7 @@ class EdgeFaceDetector:
         """
         try:
             if landmarks is None or len(landmarks) != 5:
+                logger.debug(f"Invalid landmarks: None or wrong length {len(landmarks) if landmarks is not None else 'None'}")
                 return False
             
             # Extract key points
@@ -239,9 +243,13 @@ class EdgeFaceDetector:
             left_mouth = landmarks[3]
             right_mouth = landmarks[4]
             
+            logger.debug(f"Landmarks after conversion: left_eye={left_eye}, right_eye={right_eye}, nose={nose}, left_mouth={left_mouth}, right_mouth={right_mouth}")
+            
             # Basic distance checks
             eye_distance = np.linalg.norm(right_eye - left_eye)
+            logger.debug(f"Eye distance: {eye_distance}")
             if eye_distance < 10:  # Too close eyes
+                logger.debug("Validation failed: eye distance too small")
                 return False
             
             # Check if landmarks form reasonable face geometry
@@ -250,7 +258,14 @@ class EdgeFaceDetector:
             # 1. Eyes should be roughly horizontal (allowing for more tilt)
             eye_vector = right_eye - left_eye
             eye_angle = abs(np.arctan2(eye_vector[1], eye_vector[0]))
+            
+            # Handle the case where eyes might be swapped (angle close to 180 degrees)
+            if eye_angle > np.pi/2:
+                eye_angle = np.pi - eye_angle
+            
+            logger.debug(f"Eye angle: {eye_angle} radians ({np.degrees(eye_angle)} degrees)")
             if eye_angle > np.pi/2.5:  # More than 72 degrees tilt (was 60)
+                logger.debug("Validation failed: eye angle too large")
                 return False
             
             # 2. Nose should be between eyes (with more tolerance for side views)
@@ -259,34 +274,45 @@ class EdgeFaceDetector:
             
             # For side views, nose might be offset horizontally
             horizontal_offset = abs(nose_to_eye_center[0]) / eye_distance
+            logger.debug(f"Horizontal offset: {horizontal_offset}")
             if horizontal_offset > 1.3:  # Increased tolerance (was 1.0)
+                logger.debug("Validation failed: horizontal offset too large")
                 return False
             
             # 3. Mouth should be below nose (with tolerance for up/down views)
             mouth_center = (left_mouth + right_mouth) / 2
             nose_to_mouth_vertical = mouth_center[1] - nose[1]
+            logger.debug(f"Nose to mouth vertical: {nose_to_mouth_vertical}")
             
             # Allow negative values for upward looking faces
             if nose_to_mouth_vertical < -eye_distance * 0.8:  # Too far above
+                logger.debug("Validation failed: mouth too far above nose")
                 return False
             
             # 4. Mouth corners should have reasonable separation
             mouth_distance = np.linalg.norm(right_mouth - left_mouth)
             mouth_to_eye_ratio = mouth_distance / eye_distance
+            logger.debug(f"Mouth to eye ratio: {mouth_to_eye_ratio}")
             if mouth_to_eye_ratio < 0.3 or mouth_to_eye_ratio > 2.0:
+                logger.debug("Validation failed: mouth to eye ratio out of range")
                 return False
             
             # 5. Check for reasonable face proportions (relaxed for angled faces)
             face_height = max(landmarks[:, 1]) - min(landmarks[:, 1])
             face_width = max(landmarks[:, 0]) - min(landmarks[:, 0])
+            logger.debug(f"Face dimensions: width={face_width}, height={face_height}")
             
             if face_height < 20 or face_width < 20:  # Too small
+                logger.debug("Validation failed: face too small")
                 return False
             
             aspect_ratio = face_width / face_height
+            logger.debug(f"Face aspect ratio: {aspect_ratio}")
             if aspect_ratio < 0.3 or aspect_ratio > 3.0:  # Too extreme
+                logger.debug("Validation failed: aspect ratio too extreme")
                 return False
             
+            logger.debug("Landmark validation passed")
             return True
             
         except Exception as e:
