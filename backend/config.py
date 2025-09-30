@@ -154,8 +154,8 @@ MODEL_CONFIGS = {
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "embedding_dimension": 512,  # Face embedding dimension
         "database_path": BASE_DIR / "data" / "face_database.db",  # SQLite database storage
-        "requires_landmarks": True,  # Requires 5-point landmarks for alignment
-        "landmark_count": 5,  # Number of required landmarks
+        "requires_landmarks": False,  # Uses FaceMesh alignment instead of external landmarks
+        "landmark_count": 0,  # No external landmarks required
         "batch_size": 4,  # Enable small batch processing
         "enable_face_alignment": True,
         "alignment_method": "facemesh_dense",  # Use FaceMesh for high-quality alignment
