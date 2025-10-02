@@ -8,7 +8,6 @@ import type {
   FaceRecognitionResponse,
   AttendanceGroup,
   AttendanceMember,
-  AttendanceStats,
   AttendanceRecord,
   GroupType
 } from '../types/recognition';
@@ -183,7 +182,6 @@ export default function LiveVideo() {
   }>>([]);
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>([]);
   const [groupMembers, setGroupMembers] = useState<AttendanceMember[]>([]);
-  const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   const [showGroupManagement, setShowGroupManagement] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -201,9 +199,6 @@ export default function LiveVideo() {
     startTime: number;
     memberName?: string;
   }>>(new Map());
-  
-  // Current time state for countdown updates
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Real-time countdown updater
   useEffect(() => {
@@ -233,7 +228,8 @@ export default function LiveVideo() {
                 }
               } else if (track.cooldownRemaining !== undefined) {
                 // Cooldown expired, remove it
-                const { cooldownRemaining, ...trackWithoutCooldown } = track;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { cooldownRemaining: _, ...trackWithoutCooldown } = track;
                 newTracked.set(trackId, trackWithoutCooldown);
                 hasChanges = true;
               }
@@ -280,9 +276,6 @@ export default function LiveVideo() {
         
         return hasExpired ? newCooldowns : prev;
       });
-      
-      // Update current time for countdown calculations
-      setCurrentTime(now);
     }, 1000); // Update every second
     
     return () => clearInterval(interval);
@@ -555,32 +548,37 @@ export default function LiveVideo() {
                       face.antispoofing?.confidence
                     );
                     
-                    console.log(`📋 ✅ Attendance automatically recorded: ${response.person_id} - ${attendanceEvent.type} at ${attendanceEvent.timestamp}`);
+                    if (attendanceEvent) {
+                      console.log(`📋 ✅ Attendance automatically recorded: ${response.person_id} - ${attendanceEvent.type} at ${attendanceEvent.timestamp}`);
+                    }
                     
                     // Set cooldown to prevent duplicate logging (only if not already active)
                     const logTime = Date.now();
-                    console.log(`🔄 Setting new cooldown for ${response.person_id} at ${logTime}`);
-                    setAttendanceCooldowns(prev => {
-                      const newCooldowns = new Map(prev);
-                      newCooldowns.set(response.person_id, logTime);
-                      return newCooldowns;
-                    });
-                    
-                    // Add persistent cooldown for visual display (only if not already active)
-                    setPersistentCooldowns(prev => {
-                      const newPersistent = new Map(prev);
-                      const existingCooldown = newPersistent.get(response.person_id);
-                      if (existingCooldown) {
-                        console.log(`⚠️ WARNING: Attempted to overwrite existing cooldown for ${response.person_id}! Keeping existing startTime: ${existingCooldown.startTime}`);
-                        return prev; // Don't update if cooldown already exists
-                      }
-                      newPersistent.set(response.person_id, {
-                        personId: response.person_id,
-                        startTime: logTime,
-                        memberName: memberName
+                    const personId = response.person_id;
+                    if (personId) {
+                      console.log(`🔄 Setting new cooldown for ${personId} at ${logTime}`);
+                      setAttendanceCooldowns(prev => {
+                        const newCooldowns = new Map(prev);
+                        newCooldowns.set(personId, logTime);
+                        return newCooldowns;
                       });
-                      return newPersistent;
-                    });
+                      
+                      // Add persistent cooldown for visual display (only if not already active)
+                      setPersistentCooldowns(prev => {
+                        const newPersistent = new Map(prev);
+                        const existingCooldown = newPersistent.get(personId);
+                        if (existingCooldown) {
+                          console.log(`⚠️ WARNING: Attempted to overwrite existing cooldown for ${personId}! Keeping existing startTime: ${existingCooldown.startTime}`);
+                          return prev; // Don't update if cooldown already exists
+                        }
+                        newPersistent.set(personId, {
+                          personId: personId,
+                          startTime: logTime,
+                          memberName: memberName
+                        });
+                        return newPersistent;
+                      });
+                    }
                     
                     // Refresh attendance data only if we have a current group
                     if (currentGroupValue) {
@@ -865,8 +863,27 @@ export default function LiveVideo() {
         }
       });
 
+      // Handle attendance event broadcasts
+      backendServiceRef.current.onMessage('attendance_event', (data) => {
+        const attendanceData = data.data as { 
+          person_id: string; 
+          group_id: string; 
+          attendance_type: string;
+          member_name: string;
+          timestamp: string;
+        } | undefined;
+        
+        if (attendanceData) {
+          console.log('📋 Attendance event received:', attendanceData);
+          // Reload attendance data to reflect the new event
+          loadAttendanceData().catch(error => {
+            console.error('Failed to reload attendance data:', error);
+          });
+        }
+      });
+
       // Handle next frame requests from adaptive backend
-      backendServiceRef.current.onMessage('request_next_frame', (data: { message?: string }) => {
+      backendServiceRef.current.onMessage('request_next_frame', () => {
         if (process.env.NODE_ENV === 'development') {
           console.log('🎯 Backend requesting next frame for adaptive processing', {
             detectionEnabled: detectionEnabledRef.current,
@@ -899,6 +916,7 @@ export default function LiveVideo() {
       setBackendServiceReady(false);
       backendServiceReadyRef.current = false;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recognitionEnabled, performFaceRecognition]);
 
   // Process current frame directly without queue
@@ -1259,7 +1277,6 @@ export default function LiveVideo() {
 
   // Helper function to determine face color
   const getFaceColor = (
-    face: { bbox: { x: number; y: number; width: number; height: number }; confidence: number; antispoofing?: { is_real: boolean | null; confidence: number; status: 'real' | 'fake' | 'error' } }, 
     recognitionResult: { person_id?: string; confidence?: number; name?: string } | null, 
     recognitionEnabled: boolean
   ) => {
@@ -1347,7 +1364,7 @@ export default function LiveVideo() {
     const landmarkColor = '#00D4FF'; // Modern cyan that matches the UI theme
 
     // Draw each landmark point
-    Object.entries(landmarks).forEach(([_, point]) => {
+    Object.entries(landmarks).forEach(([, point]) => {
       // Scale and position the landmark
       const x = point.x * scaleX + offsetX;
       const y = point.y * scaleY + offsetY;
@@ -1447,7 +1464,7 @@ export default function LiveVideo() {
 
     // Draw each face detection
     currentDetections.faces.forEach((face, index) => {
-      const { bbox, confidence, antispoofing, landmarks } = face;
+      const { bbox, antispoofing } = face;
       
       // Validate bbox
       if (!bbox || !isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
@@ -1461,10 +1478,8 @@ export default function LiveVideo() {
       // Validate scaled coordinates
       if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) return;
 
-      const width = x2 - x1;
-      const height = y2 - y1;
       const recognitionResult = currentRecognitionResults.get(index);
-      const color = getFaceColor(face, recognitionResult, recognitionEnabled);
+      const color = getFaceColor(recognitionResult || null, recognitionEnabled);
 
       // Setup context and draw bounding box
       setupCanvasContext(ctx, color);
@@ -1474,8 +1489,8 @@ export default function LiveVideo() {
       const isRecognized = recognitionEnabled && recognitionResult?.person_id;
       let label = "Unknown";
       
-      if (isRecognized) {
-        label = (recognitionResult.memberName || recognitionResult.person_id)
+      if (isRecognized && recognitionResult) {
+        label = recognitionResult.person_id || "Unknown"
       } else if (antispoofing?.status === 'fake') {
         label = "⚠ SPOOF";
       }
@@ -1570,7 +1585,7 @@ export default function LiveVideo() {
     if (isStreaming) {
       animationFrameRef.current = requestAnimationFrame(animate);
     }
-  }, [isStreaming, drawOverlays, currentDetections, persistentCooldowns, attendanceCooldownSeconds]);
+  }, [isStreaming, drawOverlays, currentDetections, currentRecognitionResults]);
 
 
 
@@ -1601,77 +1616,6 @@ export default function LiveVideo() {
       console.error('❌ Failed to load database stats:', error);
     }
   }, []);
-
-  const handleRegisterFace = useCallback(async (faceIndex: number) => {
-    if (!currentDetections?.faces?.[faceIndex] || !selectedPersonForRegistration.trim()) {
-      setError('Please select a person and a valid face');
-      return;
-    }
-
-    try {
-      if (!backendServiceRef.current) {
-        setError('Backend service not initialized');
-        return;
-      }
-
-      const frameData = captureFrame();
-      if (!frameData) {
-        setError('Failed to capture frame for registration');
-        return;
-      }
-
-      const face = currentDetections.faces[faceIndex];
-      
-      // Convert bbox to array format [x, y, width, height]
-      const bbox = [face.bbox.x, face.bbox.y, face.bbox.width, face.bbox.height];
-      
-      const response = await backendServiceRef.current.registerFace(
-        frameData,
-        selectedPersonForRegistration.trim(),
-        bbox,
-        currentGroup?.id
-      );
-
-      if (response.success) {
-        setSelectedPersonForRegistration('');
-        setShowRegistrationDialog(false);
-        await loadRegisteredPersons();
-        await loadDatabaseStats();
-        
-        // Trigger immediate face recognition on current detections
-        if (currentDetections && currentDetections.faces.length > 0) {
-          await performFaceRecognition(currentDetections);
-        }
-        
-        console.log('✅ Face registered successfully:', `Person "${response.person_id}" added to database (${response.total_persons} total persons)`);
-      } else {
-        setError(response.error || 'Failed to register face');
-      }
-    } catch (error) {
-      console.error('❌ Face recognition failed:', error);
-      setError('Failed to register face');
-    }
-  }, [currentDetections, selectedPersonForRegistration, captureFrame, loadRegisteredPersons, loadDatabaseStats, performFaceRecognition]);
-
-  const handleRemovePerson = useCallback(async (personId: string) => {
-    try {
-      if (!backendServiceRef.current) {
-        setError('Backend service not initialized');
-        return;
-      }
-      const response = await backendServiceRef.current.removePerson(personId);
-      if (response.success) {
-        await loadRegisteredPersons();
-        await loadDatabaseStats();
-        console.log('✅ Person removed successfully:', response.message);
-      } else {
-        setError(response.message || 'Failed to remove person');
-      }
-    } catch (error) {
-      console.error('❌ Failed to remove person:', error);
-      setError('Failed to remove person');
-    }
-  }, [loadRegisteredPersons, loadDatabaseStats]);
 
   // Attendance Management Functions
   const loadAttendanceData = useCallback(async () => {
@@ -1707,7 +1651,6 @@ export default function LiveVideo() {
                 console.warn(`⚠️ Confirmed: group "${currentGroup.name}" no longer exists. Clearing selection.`);
                 setCurrentGroup(null);
                 setGroupMembers([]);
-                setAttendanceStats(null);
                 setRecentAttendance([]);
                 setSelectedPersonForRegistration('');
               }
@@ -1716,7 +1659,7 @@ export default function LiveVideo() {
           return;
         }
 
-        const [members, stats, records] = await Promise.all([
+        const [members, , records] = await Promise.all([
           attendanceManager.getGroupMembers(currentGroup.id),
           attendanceManager.getGroupStats(currentGroup.id),
           attendanceManager.getRecords({
@@ -1726,7 +1669,6 @@ export default function LiveVideo() {
         ]);
         
         setGroupMembers(members);
-        setAttendanceStats(stats);
         setRecentAttendance(records);
         
         // Validate and clear selectedPersonForRegistration if they're no longer in the group
@@ -1739,6 +1681,7 @@ export default function LiveVideo() {
     } catch (error) {
       console.error('❌ Failed to load attendance data:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentGroup]);
 
   // Elite Registration Handler Functions
@@ -1810,7 +1753,7 @@ export default function LiveVideo() {
       console.error('❌ Elite registration error:', error);
       setError(error instanceof Error ? error.message : 'Registration failed');
     }
-  }, [currentDetections, selectedPersonForRegistration, currentGroup, loadRegisteredPersons, loadDatabaseStats, loadAttendanceData]);
+  }, [currentDetections, selectedPersonForRegistration, currentGroup, loadRegisteredPersons, loadDatabaseStats, loadAttendanceData, groupMembers]);
 
   const handleRemoveGroupPersonFace = useCallback(async (personId: string) => {
     if (!currentGroup) return;
@@ -1942,6 +1885,7 @@ export default function LiveVideo() {
       console.error('❌ Failed to create group:', error);
       setError('Failed to create group');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newGroupName, newGroupType, currentGroup, loadAttendanceData]);
 
   const handleSelectGroup = useCallback(async (group: AttendanceGroup) => {
@@ -1950,7 +1894,7 @@ export default function LiveVideo() {
     
     // Load data for the specific group to avoid race condition
     try {
-      const [members, stats, records] = await Promise.all([
+      const [members, , records] = await Promise.all([
         attendanceManager.getGroupMembers(group.id),
         attendanceManager.getGroupStats(group.id),
         attendanceManager.getRecords({
@@ -1960,7 +1904,6 @@ export default function LiveVideo() {
       ]);
       
       setGroupMembers(members);
-      setAttendanceStats(stats);
       setRecentAttendance(records);
       
       // Clear selected person for registration when switching groups
@@ -1968,6 +1911,7 @@ export default function LiveVideo() {
     } catch (error) {
       console.error('❌ Failed to load data for selected group:', error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
@@ -2002,6 +1946,7 @@ export default function LiveVideo() {
       setShowDeleteConfirmation(false);
       setGroupToDelete(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupToDelete, currentGroup, loadAttendanceData]);
 
   const cancelDeleteGroup = useCallback(() => {
@@ -2198,6 +2143,7 @@ export default function LiveVideo() {
     initializeAttendance().catch(error => {
       console.error('Error in initializeAttendance:', error);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleSelectGroup]); // Include handleSelectGroup dependency
 
   // Removed delayed recognition useEffect for real-time performance
@@ -2374,7 +2320,7 @@ export default function LiveVideo() {
                     if (timeSinceStart >= 0 && timeSinceStart < cooldownMs) {
                       const remainingCooldown = Math.max(1, Math.ceil((cooldownMs - timeSinceStart) / 1000));
                       // Add currentTime to ensure re-renders (but don't use it in calculation)
-                      const _ = currentTime; // This ensures re-renders happen
+                      // Current time ensures re-renders happen
                       
                       return (
                         <div key={cooldownInfo.personId} className="flex items-center justify-between bg-red-900/20 border border-red-500/30 rounded px-2 py-1">
@@ -2415,7 +2361,7 @@ export default function LiveVideo() {
                             <div className="flex items-center space-x-2">
                               <div className="font-medium">
                                 {isRecognized && recognitionResult?.person_id ?
-                                  (recognitionResult.memberName || recognitionResult.person_id) :
+                                  recognitionResult.person_id :
                                   `Unknown`
                                 }
                               </div>
@@ -2540,10 +2486,10 @@ export default function LiveVideo() {
                                              'LiveVideo Camera'
                                            );
   
-                                           console.log(`📋 ✅ Manual confirmation: ${pending.personId} - ${attendanceEvent.type}`);
-  
-  
-  
+                                           if (attendanceEvent) {
+                                             console.log(`📋 ✅ Manual confirmation: ${pending.personId} - ${attendanceEvent.type}`);
+                                           }
+
                                            // Remove from pending queue
                                            setPendingAttendance(prev => prev.filter(p => p.id !== pending.id));
   
@@ -2894,7 +2840,7 @@ export default function LiveVideo() {
                           <div>
                             <span className="font-medium">{getGroupTypeIcon(group.type)} {group.name}</span>
                             <div className="text-sm text-gray-400">
-                              {group.type} • {attendanceManager.getGroupMembers(group.id).length} members
+                              {group.type} • Members
                             </div>
                           </div>
                           <div className="flex space-x-2">

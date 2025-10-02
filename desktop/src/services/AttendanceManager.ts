@@ -359,7 +359,7 @@ export class AttendanceManager {
     try {
       // For now, we'll implement a basic report generation
       // This would typically be a dedicated backend endpoint
-      const [group, members, records, sessions] = await Promise.all([
+      const [group, members, , sessions] = await Promise.all([
         this.getGroup(groupId),
         this.getGroupMembers(groupId),
         this.getRecords({ 
@@ -516,7 +516,9 @@ export class AttendanceManager {
   }
 
   // Utility
-  private generateId(): string {
+  // Utility method kept for potential future use
+  // @ts-expect-error - Intentionally unused
+  private _generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
@@ -545,13 +547,13 @@ export class AttendanceManager {
     }
   }
 
-  async importData(jsonData: string): Promise<boolean> {
+  async importData(): Promise<boolean> {
     try {
       // This would require a dedicated import endpoint on the backend
       // For now, we'll throw an error indicating this needs backend support
       throw new Error('Import functionality requires backend implementation');
-    } catch (error) {
-      console.error('Error importing data:', error);
+    } catch (err) {
+      console.error('Error importing data:', err instanceof Error ? err.message : 'Unknown error');
       return false;
     }
   }
@@ -560,9 +562,9 @@ export class AttendanceManager {
   async cleanupOldData(daysToKeep: number = 90): Promise<void> {
     try {
       await this.httpClient.post('/attendance/cleanup', { days_to_keep: daysToKeep });
-    } catch (error) {
-      console.error('Error cleaning up old data:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error cleaning up old data:', err);
+      throw err;
     }
   }
 
@@ -571,7 +573,7 @@ export class AttendanceManager {
     try {
       await this.httpClient.get('/');
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
