@@ -11,6 +11,7 @@ export interface FaceRecognitionRequest {
 export interface FaceRecognitionResponse {
   success: boolean;
   person_id?: string;
+  name?: string;
   similarity?: number;
   processing_time: number;
   error?: string;
