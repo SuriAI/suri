@@ -526,7 +526,7 @@ export default function LiveVideo() {
                   return newTracked;
                 });
                 
-                return { index, result: { ...response, memberName, cooldownRemaining: remainingCooldown } };
+                return { index, result: { ...response, name: memberName, memberName, cooldownRemaining: remainingCooldown } };
               }
               
               try {
@@ -630,7 +630,8 @@ export default function LiveVideo() {
               if (!response.person_id) console.log(`ℹ️ No person ID in response`);
             }
             
-            return { index, result: { ...response, memberName } };
+            // Store name in response for overlay display
+            return { index, result: { ...response, name: memberName, memberName } };
           } else if (response.success) {
             console.log(`👤 Face ${index} not recognized (similarity: ${((response.similarity || 0) * 100).toFixed(1)}%)`);
             
@@ -1490,7 +1491,8 @@ export default function LiveVideo() {
       let label = "Unknown";
       
       if (isRecognized && recognitionResult) {
-        label = recognitionResult.person_id || "Unknown"
+        // Show name if available, fallback to person_id
+        label = recognitionResult.name || recognitionResult.person_id || "Unknown"
       } else if (antispoofing?.status === 'fake') {
         label = "⚠ SPOOF";
       }
@@ -2361,7 +2363,7 @@ export default function LiveVideo() {
                             <div className="flex items-center space-x-2">
                               <div className="font-medium">
                                 {isRecognized && recognitionResult?.person_id ?
-                                  recognitionResult.person_id :
+                                  (recognitionResult.name || recognitionResult.person_id) :
                                   `Unknown`
                                 }
                               </div>
