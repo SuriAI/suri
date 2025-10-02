@@ -713,6 +713,12 @@ export class BackendService {
     } else {
       console.log('Unhandled WebSocket message:', messageType, data);
     }
+    
+    // Always invoke the generic broadcast handler if registered
+    const broadcastHandler = this.messageHandlers.get('*');
+    if (broadcastHandler && messageType !== '*') {
+      broadcastHandler(data);
+    }
   }
 
   private scheduleReconnect(): void {
