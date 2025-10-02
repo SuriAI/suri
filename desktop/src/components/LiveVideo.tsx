@@ -369,8 +369,8 @@ export default function LiveVideo() {
           }
           
           // Use track_id as stable identifier (from SORT tracker)
-          // Fallback to index-based ID only if track_id not available
-          const trackId = face.track_id ?? index;
+          // Backend always provides track_id (confirmed SORT tracks or temporary negative IDs)
+          const trackId = face.track_id!; // Non-null assertion: backend guarantees track_id
           
           // Convert bbox to array format [x, y, width, height]
           const bbox = [face.bbox.x, face.bbox.y, face.bbox.width, face.bbox.height];
@@ -440,7 +440,7 @@ export default function LiveVideo() {
             
             // Elite Tracking System - Update tracked face with recognition data
             // Use track_id from SORT tracker as the stable identifier
-            const trackId = face.track_id ? `track_${face.track_id}` : `face_${index}_${Date.now()}`;
+            const trackedFaceId = `track_${face.track_id}`;
             const currentTime = Date.now();
             
             // Update tracking data
@@ -449,12 +449,7 @@ export default function LiveVideo() {
               const currentAntispoofingStatus = face.antispoofing?.status;
               
               // Find existing track using track_id (from SORT) for consistent identity
-              const existingTrack = face.track_id ? newTracked.get(trackId) : 
-                Array.from(newTracked.values()).find(
-                  track => track.personId === response.person_id && 
-                  Math.abs(track.bbox.x - face.bbox.x) < 100 && 
-                  Math.abs(track.bbox.y - face.bbox.y) < 100
-                );
+              const existingTrack = newTracked.get(trackedFaceId);
               
               if (existingTrack) {
                 // Update existing track
@@ -478,8 +473,8 @@ export default function LiveVideo() {
                 newTracked.set(existingTrack.id, existingTrack);
               } else {
                 // Create new track using track_id as the key
-                newTracked.set(trackId, {
-                  id: trackId,
+                newTracked.set(trackedFaceId, {
+                  id: trackedFaceId,
                   bbox: face.bbox,
                   confidence: face.confidence,
                   lastSeen: currentTime,
@@ -509,7 +504,7 @@ export default function LiveVideo() {
               // Check cooldown to prevent duplicate attendance logging
               // Use track_id as key to ensure each tracked face has its own cooldown
               const currentTime = Date.now();
-              const cooldownKey = face.track_id ? `track_${face.track_id}` : response.person_id;
+              const cooldownKey = `track_${face.track_id}`;
               const existingCooldown = persistentCooldowns.get(cooldownKey);
               const lastAttendanceTime = existingCooldown?.startTime || 0;
               const timeSinceLastAttendance = currentTime - lastAttendanceTime;
@@ -524,8 +519,8 @@ export default function LiveVideo() {
                 // Update the tracked face with cooldown info for overlay display using track_id
                 setTrackedFaces(prev => {
                   const newTracked = new Map(prev);
-                  const trackKey = face.track_id ? `track_${face.track_id}` : null;
-                  if (trackKey && newTracked.has(trackKey)) {
+                  const trackKey = `track_${face.track_id}`;
+                  if (newTracked.has(trackKey)) {
                     newTracked.set(trackKey, {
                       ...newTracked.get(trackKey)!,
                       cooldownRemaining: remainingCooldown
@@ -563,8 +558,8 @@ export default function LiveVideo() {
                     
                     // Set cooldown to prevent duplicate logging using track_id as key
                     const logTime = Date.now();
-                    const cooldownKey = face.track_id ? `track_${face.track_id}` : response.person_id;
-                    if (cooldownKey) {
+                    const cooldownKey = `track_${face.track_id}`;
+                    {
                       console.log(`🔄 Setting new cooldown for ${memberName} (key: ${cooldownKey}) at ${logTime}`);
                       setAttendanceCooldowns(prev => {
                         const newCooldowns = new Map(prev);
@@ -646,7 +641,7 @@ export default function LiveVideo() {
             console.log(`👤 Face ${index} not recognized (similarity: ${((response.similarity || 0) * 100).toFixed(1)}%)`);
             
             // Track unrecognized faces for potential manual registration
-            const faceId = `unknown_${index}_${Date.now()}`;
+            const faceId = `unknown_track_${face.track_id}`;
             const currentTime = Date.now();
             
             setTrackedFaces(prev => {
@@ -1475,7 +1470,7 @@ export default function LiveVideo() {
     if (!isFinite(scaleX) || !isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
 
     // Draw each face detection
-    currentDetections.faces.forEach((face, index) => {
+    currentDetections.faces.forEach((face) => {
       const { bbox, antispoofing } = face;
       
       // Validate bbox
@@ -1490,8 +1485,8 @@ export default function LiveVideo() {
       // Validate scaled coordinates
       if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) return;
 
-      // Look up recognition by track_id (from SORT), fallback to index
-      const trackId = face.track_id ?? index;
+      // Look up recognition by track_id (from SORT)
+      const trackId = face.track_id!; // Backend always provides track_id
       const recognitionResult = currentRecognitionResults.get(trackId);
       const color = getFaceColor(recognitionResult || null, recognitionEnabled);
 
@@ -1516,7 +1511,7 @@ export default function LiveVideo() {
       // Show modern logged indicator if person is in cooldown
       if (isRecognized && recognitionResult?.person_id) {
         // Use same cooldown key format as in performFaceRecognition
-        const cooldownKey = face.track_id ? `track_${face.track_id}` : recognitionResult.person_id;
+        const cooldownKey = `track_${face.track_id}`;
         const cooldownInfo = persistentCooldowns.get(cooldownKey);
         if (cooldownInfo) {
           const currentTime = Date.now();
@@ -2360,8 +2355,8 @@ export default function LiveVideo() {
                   </div>
                 ) : (
                   currentDetections.faces.map((face, index) => {
-                    // Look up recognition by track_id (from SORT), fallback to index
-                    const trackId = face.track_id ?? index;
+                    // Look up recognition by track_id (from SORT)
+                    const trackId = face.track_id!; // Backend always provides track_id
                     const recognitionResult = currentRecognitionResults.get(trackId);
                     const isRecognized = recognitionEnabled && recognitionResult?.person_id;
   

@@ -792,6 +792,11 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                             loop = asyncio.get_event_loop()
                             faces = await loop.run_in_executor(None, face_tracker.update, faces)
                             logger.debug(f"Assigned track IDs to {len(faces)} faces")
+                            
+                            # Debug: Check if track_id is present
+                            for i, face in enumerate(faces):
+                                track_id = face.get('track_id')
+                                logger.debug(f"Face {i}: track_id={track_id}, keys={list(face.keys())}")
                         except Exception as e:
                             logger.warning(f"Face tracking failed: {e}")
                             # Continue without tracking on error

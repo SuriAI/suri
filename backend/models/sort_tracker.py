@@ -484,6 +484,11 @@ class FaceTracker:
         dets_array = np.array(dets, dtype=np.float32)
         tracks = self.tracker.update(dets_array)
         
+        # Debug logging
+        print(f"[FaceTracker] Input: {len(face_detections)} faces, Output: {len(tracks)} tracks")
+        if len(tracks) > 0:
+            print(f"[FaceTracker] Track IDs: {[int(t[4]) for t in tracks]}")
+        
         # Map track IDs back to face detections
         # IMPORTANT: Return ALL face detections, not just tracked ones
         # This prevents faces from disappearing during initial tracking phase
@@ -514,14 +519,17 @@ class FaceTracker:
                     # Mark this detection as used
                     iou_matrix[:, best_det_idx] = 0
         
-        # Add unmatched detections WITHOUT track_id (new faces being tracked)
-        # This ensures all detected faces are returned, even during initial tracking
+        # Add unmatched detections WITH temporary negative track_id
+        # This ensures ALL faces have track_id for consistent frontend handling
+        # Use negative IDs to distinguish temporary tracks from confirmed SORT tracks
         for det_idx, face in enumerate(face_detections):
             if det_idx not in matched_detection_indices:
-                # Face doesn't have track_id yet (still building confidence)
+                # Assign temporary negative track_id until SORT confirms the track
+                # This allows frontend to track faces consistently even in first frame
                 face_result = face.copy()
-                # Don't set track_id - frontend will use fallback tracking
+                face_result['track_id'] = -(det_idx + 1)  # -1, -2, -3, etc.
                 result.append(face_result)
+                print(f"[FaceTracker] Unmatched face {det_idx} assigned temporary track_id: {face_result['track_id']}")
         
         return result
     
