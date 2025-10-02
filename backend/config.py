@@ -113,7 +113,7 @@ MODEL_CONFIGS = {
         "name": "AntiSpoofing",
         "model_path": WEIGHTS_DIR / "AntiSpoofing_bin_1.5_128.onnx",
         "input_size": (128, 128),
-        "threshold": 0.6,  # More conservative threshold for better accuracy with multiple faces
+        "threshold": 0.7,  # More conservative threshold for better accuracy with multiple faces
         "providers": OPTIMIZED_PROVIDERS,  # Use optimized providers
         "session_options": OPTIMIZED_SESSION_OPTIONS,
         "description": "Anti-spoofing model for real vs fake face detection - OPTIMIZED",
