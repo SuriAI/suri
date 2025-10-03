@@ -33,7 +33,9 @@ interface DetectionResult {
     antispoofing?: {
       is_real: boolean | null;
       confidence: number;
-      status: 'real' | 'fake' | 'error';
+      status: 'real' | 'fake' | 'error' | 'too_small';
+      label?: string;
+      message?: string;
     };
   }>;
   model_used: string;
@@ -49,7 +51,9 @@ interface WebSocketFaceData {
   antispoofing?: {
     is_real?: boolean | null;
     confidence?: number;
-    status?: 'real' | 'fake' | 'error';
+    status?: 'real' | 'fake' | 'error' | 'too_small';
+    label?: string;
+    message?: string;
   };
 }
 
