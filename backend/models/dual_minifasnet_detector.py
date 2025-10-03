@@ -38,7 +38,7 @@ class DualMiniFASNetDetector:
         model_v2_path: str,
         model_v1se_path: str,
         input_size: Tuple[int, int] = (80, 80),
-        threshold: float = 0.7,
+        threshold: float = 0.5,
         providers: Optional[List[str]] = None,
         max_batch_size: int = 8,
         session_options: Optional[Dict] = None,
