@@ -208,13 +208,31 @@ async def process_antispoofing(faces: List[Dict], image: np.ndarray, enable: boo
             if is_real_value is not None:
                 is_real_value = bool(is_real_value)
             
-            face['antispoofing'] = {
-                'is_real': is_real_value,
-                'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                'real_score': float(antispoofing_data.get('real_score', 0.0)),
-                'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
-                'status': 'real' if is_real_value else 'fake'
-            }
+            # Check if detector already set a specific status (e.g., 'too_small', 'error')
+            detector_status = antispoofing_data.get('status')
+            if detector_status in ['too_small', 'error']:
+                # Preserve special status and include label/message if present
+                face['antispoofing'] = {
+                    'is_real': is_real_value,
+                    'confidence': float(antispoofing_data.get('confidence', 0.0)),
+                    'real_score': float(antispoofing_data.get('real_score', 0.0)),
+                    'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
+                    'status': detector_status
+                }
+                # Add optional fields if present
+                if 'label' in antispoofing_data:
+                    face['antispoofing']['label'] = antispoofing_data['label']
+                if 'message' in antispoofing_data:
+                    face['antispoofing']['message'] = antispoofing_data['message']
+            else:
+                # Normal case: determine status from is_real value
+                face['antispoofing'] = {
+                    'is_real': is_real_value,
+                    'confidence': float(antispoofing_data.get('confidence', 0.0)),
+                    'real_score': float(antispoofing_data.get('real_score', 0.0)),
+                    'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
+                    'status': 'real' if is_real_value else 'fake'
+                }
     except Exception as e:
         logger.warning(f"Anti-spoofing failed: {e}")
     
