@@ -487,9 +487,30 @@ class DualMiniFASNetDetector:
                 v1se_result.get("background_score", 0.0) * self.v1se_weight
             )
             
-            # Final decision based on ensemble threshold
-            is_real = ensemble_real_score > self.threshold
-            confidence = ensemble_real_score if is_real else ensemble_fake_score
+            # CRITICAL FIX: Stricter anti-spoofing checks for replay attacks
+            # 1. Check if background score is too high (poor face crop/quality)
+            BACKGROUND_THRESHOLD = 0.6  # Reject if background > 60%
+            if ensemble_background_score > BACKGROUND_THRESHOLD:
+                # High background score = poor detection, classify as FAKE for safety
+                is_real = False
+                confidence = ensemble_background_score
+                logger.warning(
+                    f"High background score detected ({ensemble_background_score:.3f}), "
+                    f"classifying as FAKE (poor quality/replay)"
+                )
+            else:
+                # 2. Both models must agree it's real (prevent single-model bypass)
+                MIN_AGREEMENT_SCORE = 0.4  # Each model should contribute > 40%
+                v2_agrees = v2_result["real_score"] > MIN_AGREEMENT_SCORE
+                v1se_agrees = v1se_result["real_score"] > MIN_AGREEMENT_SCORE
+                
+                # 3. Ensemble score must exceed threshold AND both models must agree
+                is_real = (
+                    ensemble_real_score > self.threshold and 
+                    v2_agrees and 
+                    v1se_agrees
+                )
+                confidence = ensemble_real_score if is_real else ensemble_fake_score
             
             return {
                 "is_real": is_real,
