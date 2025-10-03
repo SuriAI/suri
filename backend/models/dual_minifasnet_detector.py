@@ -46,11 +46,6 @@ class DualMiniFASNetDetector:
         self.v2_weight = v2_weight / total_weight
         self.v1se_weight = v1se_weight / total_weight
         
-        # Temporal consistency tracking for replay attack detection
-        self.track_history = {}  # track_id -> list of (timestamp, real_score, fake_score)
-        self.max_history_length = 10  # Keep last 10 frames per track
-        self.history_window = 2.0  # 2 seconds window
-        
         # Model sessions
         self.session_v2 = None
         self.session_v1se = None
@@ -526,101 +521,27 @@ class DualMiniFASNetDetector:
                 "fake_score": ensemble_fake_score,
                 "background_score": ensemble_background_score,
                 "confidence": confidence,
+                "threshold": self.threshold,
+                "v2_real_score": v2_result["real_score"],
+                "v2_fake_score": v2_result["fake_score"],
+                "v2_background_score": v2_result.get("background_score", 0.0),
+                "v1se_real_score": v1se_result["real_score"],
+                "v1se_fake_score": v1se_result["fake_score"],
+                "v1se_background_score": v1se_result.get("background_score", 0.0),
+                "ensemble_method": "weighted_average"
             }
             
         except Exception as e:
             logger.error(f"Error in ensemble prediction: {e}")
             return {
-                "is_real": False,
+                "is_real": True,
                 "real_score": 0.5,
                 "fake_score": 0.5,
                 "background_score": 0.0,
                 "confidence": 0.5,
+                "threshold": self.threshold,
                 "error": str(e)
             }
-    
-    def _check_temporal_consistency(self, track_id: int, ensemble_real_score: float, ensemble_fake_score: float) -> bool:
-        """
-        CRITICAL ANTI-REPLAY CHECK: Detect replay attacks by analyzing score temporal patterns.
-        
-        Replay attacks (video/screen) have characteristic patterns:
-        1. Unnaturally stable high scores (99%+ over many frames)
-        2. Zero variation in scores (real faces have natural micro-movements)
-        3. Both models consistently give perfect scores
-        
-        Args:
-            track_id: Face track ID
-            ensemble_real_score: Current ensemble real score
-            ensemble_fake_score: Current ensemble fake score
-            
-        Returns:
-            True if passes temporal check (likely real), False if suspicious (likely replay)
-        """
-        if track_id is None or track_id < 0:
-            # No tracking info, can't do temporal analysis
-            return True
-        
-        current_time = time.time()
-        
-        # Initialize history for new tracks
-        if track_id not in self.track_history:
-            self.track_history[track_id] = []
-        
-        # Add current score to history
-        self.track_history[track_id].append((current_time, ensemble_real_score, ensemble_fake_score))
-        
-        # Clean old entries (keep only last N frames or within time window)
-        history = self.track_history[track_id]
-        history = [(t, r, f) for t, r, f in history if current_time - t < self.history_window]
-        history = history[-self.max_history_length:]
-        self.track_history[track_id] = history
-        
-        # Need at least 5 frames for reliable temporal analysis
-        if len(history) < 5:
-            return True
-        
-        # Extract scores from history
-        real_scores = [r for _, r, _ in history]
-        fake_scores = [f for _, _, f in history]
-        
-        # Calculate temporal statistics
-        real_mean = np.mean(real_scores)
-        real_std = np.std(real_scores)
-        fake_mean = np.mean(fake_scores)
-        
-        # REPLAY DETECTION PATTERN 1: Unnaturally stable very high scores
-        # Real faces: micro-movements cause score variation (std > 0.02)
-        # Replay attacks: perfect stability (std < 0.01) with high scores (> 0.95)
-        REPLAY_HIGH_SCORE_THRESHOLD = 0.95
-        REPLAY_LOW_VARIATION_THRESHOLD = 0.015
-        
-        if real_mean > REPLAY_HIGH_SCORE_THRESHOLD and real_std < REPLAY_LOW_VARIATION_THRESHOLD:
-            logger.warning(
-                f"[TEMPORAL REJECT] Track {track_id}: Replay attack pattern - "
-                f"unnaturally stable high scores (mean={real_mean:.3f}, std={real_std:.4f} < {REPLAY_LOW_VARIATION_THRESHOLD})"
-            )
-            return False
-        
-        # REPLAY DETECTION PATTERN 2: Perfect scores with zero fake scores
-        # Real faces: occasional small fake scores due to lighting/pose changes
-        # Replay attacks: consistently zero fake scores
-        perfect_frames = sum(1 for r, f in zip(real_scores, fake_scores) if r > 0.98 and f < 0.01)
-        perfect_ratio = perfect_frames / len(history)
-        
-        REPLAY_PERFECT_RATIO_THRESHOLD = 0.8  # 80% of frames are "perfect"
-        
-        if perfect_ratio > REPLAY_PERFECT_RATIO_THRESHOLD and real_mean > 0.95:
-            logger.warning(
-                f"[TEMPORAL REJECT] Track {track_id}: Replay attack pattern - "
-                f"too many perfect frames ({perfect_frames}/{len(history)} = {perfect_ratio:.1%}, threshold={REPLAY_PERFECT_RATIO_THRESHOLD:.0%})"
-            )
-            return False
-        
-        logger.debug(
-            f"[TEMPORAL PASS] Track {track_id}: Natural variation detected "
-            f"(real: mean={real_mean:.3f}, std={real_std:.4f}, perfect_ratio={perfect_ratio:.1%})"
-        )
-        return True
     
     def _process_single_face(self, face_crop_v2: np.ndarray, face_crop_v1se: np.ndarray) -> Dict:
         """Process face crops with both models and ensemble"""
@@ -820,25 +741,6 @@ class DualMiniFASNetDetector:
         
         # Package results
         for (face_id, face), antispoofing_result in zip(valid_faces, antispoofing_results):
-            # CRITICAL: Apply temporal consistency check for replay attack detection
-            track_id = face.get('track_id', -1)
-            original_is_real = antispoofing_result.get('is_real', False)
-            
-            if original_is_real and track_id is not None and track_id >= 0:
-                # Only check temporal consistency if initially classified as REAL
-                passes_temporal_check = self._check_temporal_consistency(
-                    track_id,
-                    antispoofing_result.get('real_score', 0.5),
-                    antispoofing_result.get('fake_score', 0.5)
-                )
-                
-                if not passes_temporal_check:
-                    # OVERRIDE: Temporal analysis detected replay attack
-                    antispoofing_result['is_real'] = False
-                    antispoofing_result['confidence'] = antispoofing_result.get('fake_score', 0.5)
-                    antispoofing_result['temporal_override'] = True
-                    logger.warning(f"Face {face_id} (track {track_id}): Overriding REAL->SPOOF due to temporal analysis")
-            
             # Add processing time
             antispoofing_result['processing_time'] = processing_time / len(antispoofing_results)  # Average per face
             antispoofing_result['cached'] = False
