@@ -113,7 +113,6 @@ MODEL_CONFIGS = {
         "name": "MiniFASNetV2",
         "model_path": WEIGHTS_DIR / "MiniFASNetV2_80x80.onnx",
         "input_size": (80, 80),
-        "threshold": 0.5,  # Threshold for binary classification (real vs fake)
         "providers": OPTIMIZED_PROVIDERS,
         "session_options": OPTIMIZED_SESSION_OPTIONS,
         "description": "MiniFASNet V2 anti-spoofing model - texture-based detection (2.7_80x80)",
@@ -130,7 +129,6 @@ MODEL_CONFIGS = {
         "name": "MiniFASNetV1SE",
         "model_path": WEIGHTS_DIR / "MiniFASNetV1SE_80x80.onnx",
         "input_size": (80, 80),
-        "threshold": 0.5,  # Threshold for binary classification (real vs fake)
         "providers": OPTIMIZED_PROVIDERS,
         "session_options": OPTIMIZED_SESSION_OPTIONS,
         "description": "MiniFASNet V1SE anti-spoofing model with Squeeze-Excitation - shape-based detection (4.0.0_80x80)",
@@ -147,7 +145,7 @@ MODEL_CONFIGS = {
         "name": "DualMiniFASNet",
         "ensemble_mode": True,  # Enable ensemble prediction
         "models": ["antispoofing_v2", "antispoofing_v1se"],  # Both models used
-        "threshold": 0.7,  # Combined threshold for ensemble decision
+        "threshold": 0.5,  # Combined threshold for ensemble decision (matched to original repo)
         "voting_method": "weighted_average",  # Weighted average of both models
         "description": "Dual MiniFASNet ensemble (V2 + V1SE) for robust anti-spoofing",
         "version": "ensemble_2.7_4.0",

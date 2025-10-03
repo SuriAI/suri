@@ -192,6 +192,35 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown"""
 
+# Helper function to eliminate code duplication
+async def process_antispoofing(faces: List[Dict], image: np.ndarray, enable: bool) -> List[Dict]:
+    """Helper to process anti-spoofing across all endpoints"""
+    if not (enable and faces and optimized_antispoofing_detector):
+        return faces
+    
+    optimized_antispoofing_detector.set_threshold(ANTISPOOFING_CONFIG['threshold'])
+    
+    try:
+        antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, faces)
+        
+        for i, (face, result) in enumerate(zip(faces, antispoofing_results)):
+            antispoofing_data = result.get('antispoofing', {})
+            is_real_value = antispoofing_data.get('is_real', None)
+            if is_real_value is not None:
+                is_real_value = bool(is_real_value)
+            
+            face['antispoofing'] = {
+                'is_real': is_real_value,
+                'confidence': float(antispoofing_data.get('confidence', 0.0)),
+                'real_score': float(antispoofing_data.get('real_score', 0.0)),
+                'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
+                'status': 'real' if is_real_value else 'fake'
+            }
+    except Exception as e:
+        logger.warning(f"Anti-spoofing failed: {e}")
+    
+    return faces
+
 @app.get("/")
 async def root():
     """Health check endpoint"""
@@ -290,37 +319,7 @@ async def detect_faces(request: DetectionRequest):
             faces = await yunet_detector.detect_async(image)
             
             # Apply anti-spoofing if enabled and faces detected
-            if request.enable_antispoofing and faces and optimized_antispoofing_detector:
-                optimized_antispoofing_detector.set_threshold(ANTISPOOFING_CONFIG['threshold'])
-                
-                try:
-                    # Use the optimized batch processing method
-                    antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, faces)
-                    
-                    # Add anti-spoofing results to each face
-                    for i, (face, result) in enumerate(zip(faces, antispoofing_results)):
-                        
-                        # The result contains antispoofing data nested under 'antispoofing' key
-                        antispoofing_data = result.get('antispoofing', {})
-                        
-                        # Convert numpy types to Python native types for JSON serialization
-                        is_real_value = antispoofing_data.get('is_real', None)
-                        if is_real_value is not None:
-                            is_real_value = bool(is_real_value)  # Convert numpy.bool_ to Python bool
-                        
-                        face['antispoofing'] = {
-                            'is_real': is_real_value,
-                            'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                            'real_score': float(antispoofing_data.get('real_score', 0.0)),
-                            'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
-                            'status': 'real' if is_real_value else 'fake'
-                        }
-                        
-                except Exception as e:
-                    logger.error(f"Anti-spoofing processing failed: {e}")
-                    # Don't add anti-spoofing data when processing fails to prevent accumulation
-                    # Just return the original face detections without anti-spoofing
-                    logger.warning("Anti-spoofing failed - returning faces without anti-spoofing data to prevent accumulation")
+            faces = await process_antispoofing(faces, image, request.enable_antispoofing)
             
             # Add FaceMesh 468 landmarks for frontend visualization
             if faces and facemesh_detector:
@@ -404,35 +403,7 @@ async def detect_faces_upload(
             faces = await yunet_detector.detect_async(image)
             
             # Apply anti-spoofing if enabled and faces detected
-            if enable_antispoofing and faces and optimized_antispoofing_detector:
-                optimized_antispoofing_detector.set_threshold(ANTISPOOFING_CONFIG['threshold'])
-                
-                # Process all detected faces for anti-spoofing using optimized batch method
-                try:
-                    antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, faces)
-                    
-                    # Add anti-spoofing results to each face
-                    for i, (face, result) in enumerate(zip(faces, antispoofing_results)):
-                        # The result contains antispoofing data nested under 'antispoofing' key
-                        antispoofing_data = result.get('antispoofing', {})
-                        
-                        # Convert numpy types to Python native types for JSON serialization
-                        is_real_value = antispoofing_data.get('is_real', None)
-                        if is_real_value is not None:
-                            is_real_value = bool(is_real_value)  # Convert numpy.bool_ to Python bool
-                        
-                        face['antispoofing'] = {
-                            'is_real': is_real_value,
-                            'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                            'real_score': float(antispoofing_data.get('real_score', 0.0)),
-                            'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
-                            'status': 'real' if is_real_value else 'fake'
-                        }
-                        
-                except Exception as e:
-                    logger.warning(f"Anti-spoofing failed for all faces: {e}")
-                    # Don't add anti-spoofing data when processing fails
-                    # Just return the original face detections without anti-spoofing
+            faces = await process_antispoofing(faces, image, enable_antispoofing)
             
             # Add FaceMesh 468 landmarks for frontend visualization
             if facemesh_detector and faces:
@@ -813,39 +784,8 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     # Apply anti-spoofing detection if enabled and faces detected
                     enable_antispoofing = message.get("enable_antispoofing", True)
                     
-                    if enable_antispoofing and faces and optimized_antispoofing_detector:
-                        optimized_antispoofing_detector.set_threshold(ANTISPOOFING_CONFIG['threshold'])
-                        
-                        # Process all detected faces for anti-spoofing
-                        try:
-                            # Use the optimized async method that processes all faces
-                            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, faces)
-                            
-                            # Merge anti-spoofing results back into the faces
-                            for i, face in enumerate(faces):
-                                if i < len(antispoofing_results):
-                                    antispoofing_data = antispoofing_results[i].get('antispoofing', {})
-                                    face['antispoofing'] = {
-                                        'is_real': bool(antispoofing_data.get('is_real', True)),
-                                        'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                                        'real_score': float(antispoofing_data.get('real_score', 0.5)),
-                                        'fake_score': float(antispoofing_data.get('fake_score', 0.5)),
-                                        'status': 'real' if antispoofing_data.get('is_real', True) else 'fake'
-                                    }
-                                else:
-                                    # Fallback if no anti-spoofing result for this face
-                                    face['antispoofing'] = {
-                                        'is_real': None,
-                                        'confidence': 0.0,
-                                        'real_score': 0.5,
-                                        'fake_score': 0.5,
-                                        'status': 'error'
-                                    }
-                                    
-                        except Exception as e:
-                            logger.warning(f"Anti-spoofing failed for all faces: {e}")
-                            # Don't add anti-spoofing data when processing fails
-                            # Just return the original face detections without anti-spoofing
+                    # Apply anti-spoofing if enabled and faces detected
+                    faces = await process_antispoofing(faces, image, enable_antispoofing)
                     
                     # Add FaceMesh 468-landmark detection for each face
                     if faces and facemesh_detector:
