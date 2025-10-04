@@ -2224,7 +2224,7 @@ export default function LiveVideo() {
             
              {/* Face Detection Display - Half of remaining space */}
              <div className="flex-1 border-b border-white/[0.08] flex flex-col min-h-0">
-               <div className="flex-1 overflow-y-auto space-y-2">
+               <div className="flex-1 overflow-y-auto space-y-2 custom-scroll">
             {/* Active Cooldowns - Only show in Auto mode */}
             {trackingMode === 'auto' && persistentCooldowns.size > 0 && (
               <div className="p-4 border-b border-white/[0.08] flex-shrink-0">
@@ -2371,11 +2371,10 @@ export default function LiveVideo() {
                    )}
                    
                    {/* Scrollable Content Section */}
-                   <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                   <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 custom-scroll">
                      {/* Recent Attendance */}
                      {recentAttendance.length > 0 && (
                        <div>
-                         <h4 className="text-sm font-medium mb-2 text-white/80">Log:</h4>
                          <div className="space-y-1">
                            {recentAttendance.slice(0, 10).map(record => {
                              const member = groupMembers.find(m => m.person_id === record.person_id);
