@@ -2182,7 +2182,7 @@ export default function LiveVideo() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 my-3 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full">
+        <div className="w-96 mt-3 bg-white/[0.02] border-l border-white/[0.08] flex flex-col max-h-full">
           <div className="px-4 py-2 border-b border-white/[0.08]">
             <div className="space-y-3">
                 <div className="flex justify-between">
@@ -2344,8 +2344,7 @@ export default function LiveVideo() {
                  <div className="flex-1 flex flex-col overflow-hidden">
                    {/* Fixed Header Section - Active Group Selection */}
                    {attendanceGroups.length > 0 && (
-                     <div className="p-4 pb-2 border-b border-white/[0.08] flex-shrink-0">
-                       <label className="block text-sm font-medium mb-2 text-white/80">Active Group:</label>
+                     <div className="p-4 pb-2  flex-shrink-0">
                        <select
                          value={currentGroup?.id || ''}
                          onChange={(e) => {
