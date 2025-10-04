@@ -28,7 +28,7 @@ from models.attendance_models import (
     SuccessResponse, ErrorResponse, DatabaseStatsResponse,
     ExportDataResponse, ImportDataRequest, CleanupRequest,
     # Enums
-    AttendanceType, GroupType, AttendanceStatus
+    GroupType, AttendanceStatus
 )
 from utils.attendance_database import AttendanceDatabaseManager
 
@@ -468,7 +468,6 @@ async def add_record(
             "person_id": record_data.person_id,
             "group_id": member["group_id"],
             "timestamp": timestamp,
-            "type": record_data.type.value,
             "confidence": record_data.confidence,
             "location": record_data.location,
             "notes": record_data.notes,
@@ -607,21 +606,12 @@ async def process_attendance_event(
                         id=None,
                         person_id=event_data.person_id,
                         group_id=member["group_id"],
-                        type=None,
                         timestamp=current_time,
                         confidence=event_data.confidence,
                         location=event_data.location,
                         processed=False,
                         error=f"Attendance cooldown active. Please wait {int(cooldown_seconds - time_diff)} more seconds."
                     )
-        
-        # Determine attendance type based on current session state
-        today = datetime.now().date().strftime('%Y-%m-%d')
-        session_id = f"{event_data.person_id}_{today}"
-        current_session = db.get_session(event_data.person_id, today)
-        
-        # Determine attendance type
-        attendance_type = _determine_attendance_type(current_session, settings)
         
         # Create attendance record
         record_id = generate_id()
@@ -632,7 +622,6 @@ async def process_attendance_event(
             "person_id": event_data.person_id,
             "group_id": member["group_id"],
             "timestamp": timestamp,
-            "type": attendance_type.value,
             "confidence": event_data.confidence,
             "location": event_data.location,
             "notes": None,
@@ -645,15 +634,6 @@ async def process_attendance_event(
         if not success:
             raise HTTPException(status_code=500, detail="Failed to add attendance record")
         
-        # Update session
-        updated_session = _update_session_from_event(
-            current_session, attendance_type, timestamp, member, settings
-        )
-        
-        success = db.upsert_session(updated_session)
-        if not success:
-            logger.warning(f"Failed to update session for {event_data.person_id}")
-        
         # Broadcast attendance event to all connected WebSocket clients
         broadcast_message = {
             "type": "attendance_event",
@@ -661,7 +641,6 @@ async def process_attendance_event(
                 "id": record_id,
                 "person_id": event_data.person_id,
                 "group_id": member["group_id"],
-                "attendance_type": attendance_type.value,
                 "timestamp": timestamp.isoformat(),
                 "confidence": event_data.confidence,
                 "location": event_data.location,
@@ -676,7 +655,6 @@ async def process_attendance_event(
             id=record_id,
             person_id=event_data.person_id,
             group_id=member["group_id"],
-            type=attendance_type,
             timestamp=timestamp,
             confidence=event_data.confidence,
             location=event_data.location,
@@ -982,104 +960,6 @@ async def cleanup_old_data(
 
 
 # Helper Functions
-def _determine_attendance_type(current_session: Optional[dict], settings: dict) -> AttendanceType:
-    """Determine the attendance type based on current session state"""
-    if not current_session or not current_session.get("check_in"):
-        return AttendanceType.CHECK_IN
-    
-    if current_session.get("status") == "on_break":
-        return AttendanceType.BREAK_END
-    
-    if (current_session.get("status") == "present" and 
-        settings.get("enable_break_tracking", True) and
-        not current_session.get("break_start")):
-        # Check if enough time has passed for a break
-        check_in_time = current_session.get("check_in")
-        if check_in_time:
-            if isinstance(check_in_time, str):
-                check_in_time = datetime.fromisoformat(check_in_time.replace('Z', '+00:00'))
-            
-            hours_worked = (datetime.now() - check_in_time).total_seconds() / 3600
-            if hours_worked >= 4:  # Allow break after 4 hours
-                return AttendanceType.BREAK_START
-    
-    return AttendanceType.CHECK_OUT
-
-
-def _update_session_from_event(
-    current_session: Optional[dict], 
-    attendance_type: AttendanceType, 
-    timestamp: datetime,
-    member: dict,
-    settings: dict
-) -> dict:
-    """Update session data based on attendance event"""
-    today = timestamp.date().strftime('%Y-%m-%d')
-    session_id = f"{member['person_id']}_{today}"
-    
-    if not current_session:
-        current_session = {
-            "id": session_id,
-            "person_id": member["person_id"],
-            "group_id": member["group_id"],
-            "date": today,
-            "status": "absent",
-            "is_late": False
-        }
-    
-    late_threshold = settings.get("late_threshold_minutes", 15)
-    
-    if attendance_type == AttendanceType.CHECK_IN:
-        current_session["check_in"] = timestamp
-        current_session["status"] = "present"
-        
-        # Check if late (assuming 9 AM start time)
-        work_start = timestamp.replace(hour=9, minute=0, second=0, microsecond=0)
-        if timestamp > work_start:
-            late_minutes = (timestamp - work_start).total_seconds() / 60
-            if late_minutes > late_threshold:
-                current_session["is_late"] = True
-                current_session["late_minutes"] = int(late_minutes)
-                current_session["status"] = "late"
-    
-    elif attendance_type == AttendanceType.CHECK_OUT:
-        current_session["check_out"] = timestamp
-        current_session["status"] = "checked_out"
-        
-        # Calculate total hours
-        if current_session.get("check_in"):
-            check_in = current_session["check_in"]
-            if isinstance(check_in, str):
-                check_in = datetime.fromisoformat(check_in.replace('Z', '+00:00'))
-            
-            total_seconds = (timestamp - check_in).total_seconds()
-            
-            # Subtract break time if applicable
-            if current_session.get("break_duration"):
-                total_seconds -= current_session["break_duration"] * 60
-            
-            current_session["total_hours"] = round(total_seconds / 3600, 2)
-    
-    elif attendance_type == AttendanceType.BREAK_START:
-        current_session["break_start"] = timestamp
-        current_session["status"] = "on_break"
-    
-    elif attendance_type == AttendanceType.BREAK_END:
-        current_session["break_end"] = timestamp
-        current_session["status"] = "present"
-        
-        # Calculate break duration
-        if current_session.get("break_start"):
-            break_start = current_session["break_start"]
-            if isinstance(break_start, str):
-                break_start = datetime.fromisoformat(break_start.replace('Z', '+00:00'))
-            
-            break_duration = (timestamp - break_start).total_seconds() / 60
-            current_session["break_duration"] = round(break_duration, 2)
-    
-    return current_session
-
-
 def _calculate_group_stats(members: List[dict], sessions: List[dict]) -> dict:
     """Calculate group attendance statistics"""
     total_members = len(members)

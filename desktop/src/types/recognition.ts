@@ -103,7 +103,6 @@ export interface DetectionWithRecognitionResult {
  * Attendance System Types and Interfaces
  */
 
-export type AttendanceType = 'check_in' | 'check_out' | 'break_start' | 'break_end';
 export type GroupType = 'employee' | 'student' | 'visitor' | 'general';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'on_break' | 'checked_out';
 
@@ -139,7 +138,6 @@ export interface AttendanceRecord {
   person_id: string;
   group_id: string;
   timestamp: Date;
-  type: AttendanceType;
   confidence: number;
   location?: string;
   notes?: string;
@@ -216,7 +214,6 @@ export interface AttendanceEvent {
   id: string;
   person_id: string;
   group_id: string;
-  type: AttendanceType;
   timestamp: Date;
   confidence: number;
   location?: string;

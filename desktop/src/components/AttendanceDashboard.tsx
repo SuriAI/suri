@@ -427,14 +427,6 @@ export function AttendanceDashboard({ onBack }: AttendanceDashboardProps) {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <div className={`px-2 py-1 rounded text-xs ${
-                                    record.type === 'check_in' ? 'bg-green-600/20 text-green-300' :
-                                    record.type === 'check_out' ? 'bg-red-600/20 text-red-300' :
-                                    record.type === 'break_start' ? 'bg-blue-600/20 text-blue-300' :
-                                    'bg-purple-600/20 text-purple-300'
-                                  }`}>
-                                    {record.type.replace('_', ' ').toUpperCase()}
-                                  </div>
                                   <div className="text-xs text-white/40 mt-1">
                                     {(record.confidence * 100).toFixed(0)}%
                                   </div>

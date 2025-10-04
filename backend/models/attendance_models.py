@@ -4,13 +4,6 @@ from pydantic import BaseModel, Field, validator
 from enum import Enum
 
 
-class AttendanceType(str, Enum):
-    CHECK_IN = "check_in"
-    CHECK_OUT = "check_out"
-    BREAK_START = "break_start"
-    BREAK_END = "break_end"
-
-
 class GroupType(str, Enum):
     EMPLOYEE = "employee"
     STUDENT = "student"
@@ -95,7 +88,6 @@ class AttendanceMemberResponse(BaseModel):
 # Record Models
 class AttendanceRecordCreate(BaseModel):
     person_id: str = Field(..., min_length=1)
-    type: AttendanceType
     timestamp: Optional[datetime] = None
     confidence: float = Field(1.0, ge=0.0, le=1.0)
     location: Optional[str] = Field(None, max_length=255)
@@ -109,7 +101,6 @@ class AttendanceRecordResponse(BaseModel):
     person_id: str
     group_id: str
     timestamp: datetime
-    type: AttendanceType
     confidence: float
     location: Optional[str]
     notes: Optional[str]
@@ -146,7 +137,6 @@ class AttendanceEventResponse(BaseModel):
     id: Optional[str]
     person_id: str
     group_id: str
-    type: Optional[AttendanceType]
     timestamp: datetime
     confidence: float
     location: Optional[str]
