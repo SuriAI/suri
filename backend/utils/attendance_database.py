@@ -74,7 +74,6 @@ class AttendanceDatabaseManager:
                         person_id TEXT NOT NULL,
                         group_id TEXT NOT NULL,
                         timestamp TIMESTAMP NOT NULL,
-                        type TEXT NOT NULL,
                         confidence REAL NOT NULL,
                         location TEXT,
                         notes TEXT,
@@ -433,15 +432,14 @@ class AttendanceDatabaseManager:
                     
                     cursor.execute("""
                         INSERT INTO attendance_records 
-                        (id, person_id, group_id, timestamp, type, confidence, 
+                        (id, person_id, group_id, timestamp, confidence, 
                          location, notes, is_manual, created_by)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         record_data['id'],
                         record_data['person_id'],
                         record_data['group_id'],
                         record_data['timestamp'],
-                        record_data['type'],
                         record_data['confidence'],
                         record_data.get('location'),
                         record_data.get('notes'),

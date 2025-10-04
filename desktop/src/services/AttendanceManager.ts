@@ -7,7 +7,6 @@ import type {
   AttendanceReport,
   AttendanceSettings,
   AttendanceEvent,
-  AttendanceType,
   GroupType
 } from '../types/recognition.js';
 
@@ -305,29 +304,6 @@ export class AttendanceManager {
       return processedEvent;
     } catch (error: unknown) {
       console.error('Error processing attendance event:', error);
-      throw error;
-    }
-  }
-
-  // Manual Attendance
-  async addManualRecord(personId: string, type: AttendanceType, timestamp?: Date, notes?: string): Promise<AttendanceRecord> {
-    try {
-      const recordData = {
-        person_id: personId,
-        type,
-        timestamp: timestamp?.toISOString(),
-        confidence: 1.0,
-        notes,
-        is_manual: true
-      };
-
-      const record = await this.httpClient.post<AttendanceRecord>(API_ENDPOINTS.records, recordData);
-      return {
-        ...record,
-        timestamp: new Date(record.timestamp)
-      };
-    } catch (error) {
-      console.error('Error adding manual record:', error);
       throw error;
     }
   }

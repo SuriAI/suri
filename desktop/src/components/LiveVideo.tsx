@@ -1929,16 +1929,6 @@ export default function LiveVideo() {
 
 
 
-  const formatAttendanceType = (type: string): string => {
-    switch (type) {
-      case 'check_in': return 'Check In';
-      case 'check_out': return 'Check Out';
-      case 'break_start': return 'Break Start';
-      case 'break_end': return 'Break End';
-      default: return type;
-    }
-  };
-
   const getGroupTypeIcon = (type: GroupType): string => {
     switch (type) {
       case 'employee': return '👔';
@@ -2511,14 +2501,6 @@ export default function LiveVideo() {
                                    </span>
                                  </div>
                                  <div className="flex justify-between items-center mt-1">
-                                   <span className={`px-2 py-1 rounded text-xs ${
-                                     record.type === 'check_in' ? 'bg-green-600/20 text-green-300' :
-                                     record.type === 'check_out' ? 'bg-red-600/20 text-red-300' :
-                                     record.type === 'break_start' ? 'bg-blue-600/20 text-blue-300' :
-                                     'bg-purple-600/20 text-purple-300'
-                                   }`}>
-                                     {formatAttendanceType(record.type)}
-                                   </span>
                                    <span className="text-white/40 text-xs">
                                      {(record.confidence * 100).toFixed(0)}%
                                    </span>
