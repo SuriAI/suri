@@ -68,14 +68,11 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
   const [frames, setFrames] = useState<CapturedFrame[]>([]);
   const [activeAngle, setActiveAngle] = useState<string>(REQUIRED_ANGLES.quick[0]);
   const [memberStatus, setMemberStatus] = useState<Map<string, boolean>>(new Map());
-  const [backendReady, setBackendReady] = useState(false);
-  const [backendStatus, setBackendStatus] = useState<string>('Checking systems...');
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isCheckingBackend, setIsCheckingBackend] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -143,33 +140,6 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
       console.error('⚠️ Failed to load member registration status:', error);
     }
   }, [group]);
-
-  const checkBackend = useCallback(async () => {
-    setIsCheckingBackend(true);
-    try {
-      setBackendStatus('Aligning recognition engines...');
-      const readiness = await backendService.checkReadiness();
-      if (readiness.ready && readiness.modelsLoaded) {
-        setBackendReady(true);
-        setBackendStatus('Recognition core online');
-      } else {
-        setBackendReady(false);
-        setBackendStatus(readiness.error || 'Models are still loading. Please wait a few seconds.');
-      }
-    } catch (error) {
-      setBackendReady(false);
-      setBackendStatus('Backend unreachable. Please start the FastAPI backend.');
-      console.error('⚠️ Backend readiness check failed:', error);
-    } finally {
-      setIsCheckingBackend(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    checkBackend();
-    const interval = setInterval(checkBackend, 20000);
-    return () => clearInterval(interval);
-  }, [checkBackend]);
 
   useEffect(() => {
     loadMemberStatus();
@@ -297,7 +267,13 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
     ctx.drawImage(video, 0, 0, width, height);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     await captureProcessedFrame(angle, dataUrl, width, height);
-  }, [captureProcessedFrame]);
+    
+    // Auto-advance to next angle in Full Spectrum mode
+    const currentIndex = requiredAngles.indexOf(angle);
+    if (currentIndex >= 0 && currentIndex < requiredAngles.length - 1) {
+      setActiveAngle(requiredAngles[currentIndex + 1]);
+    }
+  }, [captureProcessedFrame, requiredAngles]);
 
   const handleFileSelected = useCallback(async (angle: string, files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -415,77 +391,37 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
   }, [resetFrames]);
 
   return (
-    <div className="h-full overflow-y-auto p-6 bg-gradient-to-br from-black via-slate-950 to-black">
-      {!backendReady && (
-        <div className="mb-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-yellow-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium tracking-wide uppercase">{backendStatus}</span>
-            <button
-              type="button"
-              onClick={checkBackend}
-              disabled={isCheckingBackend}
-              className="rounded-full border border-yellow-500/40 px-3 py-1 text-xs uppercase tracking-wider text-yellow-200 transition hover:bg-yellow-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isCheckingBackend ? 'Syncing...' : 'Re-check'}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-yellow-200/80">
-            Make sure the FastAPI backend is running so we can analyse faces in real-time.
-          </p>
-        </div>
-      )}
-
+    <div className="h-full overflow-y-auto p-4 bg-black">
       {globalError && (
-        <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-200">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold uppercase tracking-wide">{globalError}</span>
-            <button
-              type="button"
-              onClick={() => setGlobalError(null)}
-              className="text-red-200/70 transition hover:text-red-100"
-            >
-              ✕
-            </button>
-          </div>
+        <div className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200 flex items-center justify-between">
+          <span>{globalError}</span>
+          <button onClick={() => setGlobalError(null)} className="text-red-200/70 hover:text-red-100">✕</button>
         </div>
       )}
 
       {successMessage && (
-        <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-emerald-200">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold uppercase tracking-wide">{successMessage}</span>
-            <button
-              type="button"
-              onClick={() => setSuccessMessage(null)}
-              className="text-emerald-200/70 transition hover:text-emerald-100"
-            >
-              ✕
-            </button>
-          </div>
+        <div className="mb-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200 flex items-center justify-between">
+          <span>{successMessage}</span>
+          <button onClick={() => setSuccessMessage(null)} className="text-emerald-200/70 hover:text-emerald-100">✕</button>
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-  <div className="rounded-2xl border border-white/5 bg-white/5 bg-gradient-to-br from-slate-900/80 via-black to-slate-950/80 p-5 backdrop-blur-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Members</h2>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Select identity target</p>
-            </div>
-          </div>
-
+      <div className="grid gap-4 lg:grid-cols-[280px,1fr]">
+        {/* Members List */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <h2 className="text-sm font-semibold text-white mb-3">Members</h2>
           <input
             type="search"
             value={memberSearch}
-            onChange={(event) => setMemberSearch(event.target.value)}
-            placeholder="Search by name or ID..."
-            className="mb-4 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-cyan-400 focus:outline-none"
+            onChange={(e) => setMemberSearch(e.target.value)}
+            placeholder="Search..."
+            className="mb-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/40 focus:border-cyan-400 focus:outline-none"
           />
 
-          <div className="max-h-[520px] space-y-2 overflow-y-auto pr-1">
+          <div className="max-h-[500px] space-y-2 overflow-y-auto">
             {filteredMembers.length === 0 && (
-              <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-4 text-center text-sm text-white/60">
-                No members found.
+              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-3 text-center text-xs text-white/60">
+                No members found
               </div>
             )}
 
@@ -495,48 +431,25 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
               return (
                 <div
                   key={member.person_id}
-                  className={`group rounded-xl border px-3 py-3 transition-all ${
-                    isSelected
-                      ? 'border-cyan-400/60 bg-cyan-500/10'
-                      : 'border-white/10 bg-white/5 hover:border-cyan-500/30 hover:bg-white/10'
+                  className={`rounded-lg border px-3 py-2 transition ${
+                    isSelected ? 'border-cyan-400/60 bg-cyan-500/10' : 'border-white/10 bg-white/5 hover:bg-white/10'
                   }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMemberId(member.person_id)}
-                    className="flex w-full items-start justify-between text-left"
-                  >
-                    <div>
-                      <div className="text-sm font-semibold text-white">
-                        {member.name}
-                      </div>
-                      <div className="text-xs text-white/60">ID: {member.person_id}</div>
-                      {member.role && (
-                        <div className="mt-1 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
-                          {member.role}
-                        </div>
-                      )}
-                    </div>
-                    <div className="ml-3 flex items-center space-x-2">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-widest ${
-                          hasEmbeddings
-                            ? 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
-                            : 'border border-white/10 bg-white/5 text-white/50'
-                        }`}
-                      >
-                        {hasEmbeddings ? 'Registered' : 'No Embeddings'}
-                      </span>
-                    </div>
+                  <button onClick={() => setSelectedMemberId(member.person_id)} className="w-full text-left">
+                    <div className="text-sm font-medium text-white">{member.name}</div>
+                    <div className="text-xs text-white/50 mt-0.5">ID: {member.person_id}</div>
+                    <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] uppercase ${
+                      hasEmbeddings ? 'bg-emerald-500/20 text-emerald-200' : 'bg-white/10 text-white/40'
+                    }`}>
+                      {hasEmbeddings ? '✓ Registered' : 'Not registered'}
+                    </span>
                   </button>
-
                   {hasEmbeddings && (
                     <button
-                      type="button"
                       onClick={() => handleRemoveFaceData(member)}
-                      className="mt-3 w-full rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs uppercase tracking-wider text-red-200 transition-all hover:bg-red-500/20"
+                      className="mt-2 w-full rounded-lg bg-red-500/10 px-2 py-1.5 text-xs text-red-200 hover:bg-red-500/20"
                     >
-                      Remove Embeddings
+                      Remove
                     </button>
                   )}
                 </div>
@@ -545,242 +458,200 @@ export function FaceRegistrationLab({ group, members, onRefresh }: FaceRegistrat
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/5 bg-gradient-to-br from-slate-900/80 via-black to-slate-950/90 p-6 backdrop-blur-xl shadow-[0_0_60px_rgba(14,116,144,0.25)]">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="text-2xl font-light tracking-[0.2em] text-white uppercase">Face Registration Lab</h2>
-                <p className="text-sm text-white/60">Craft high-fidelity embeddings via upload or live capture.</p>
-              </div>
-              <div className="flex gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.3em] text-white/60">
-                  Group: {group ? group.name : 'None selected'}
-                </div>
-                <div className={`rounded-2xl border px-3 py-2 text-xs uppercase tracking-[0.3em] ${
-                  backendReady ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-yellow-500/40 bg-yellow-500/10 text-yellow-200'
-                }`}>
-                  {backendReady ? 'Engines Online' : 'Awaiting Backend'}
-                </div>
-              </div>
-            </div>
+        {/* Registration Panel */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-white">Face Registration</h2>
+            <p className="text-xs text-white/50 mt-1">Group: {group ? group.name : 'None selected'}</p>
+          </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4">
-                <span className="text-xs uppercase tracking-[0.4em] text-cyan-200">Mode</span>
-                <div className="mt-3 flex gap-2">
-                  {(['quick', 'full'] as RegistrationMode[]).map(option => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setMode(option)}
-                      className={`flex-1 rounded-xl border px-3 py-2 text-sm uppercase tracking-[0.3em] transition ${
-                        mode === option
-                          ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100'
-                          : 'border-white/10 bg-white/5 text-white/50 hover:border-cyan-400/40 hover:text-cyan-200'
-                      }`}
-                    >
-                      {option === 'quick' ? 'Quick Capture' : 'Full Spectrum'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4">
-                <span className="text-xs uppercase tracking-[0.4em] text-purple-200">Source</span>
-                <div className="mt-3 flex gap-2">
-                  {(['upload', 'live'] as CaptureSource[]).map(option => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setSource(option)}
-                      className={`flex-1 rounded-xl border px-3 py-2 text-sm uppercase tracking-[0.3em] transition ${
-                        source === option
-                          ? 'border-purple-300 bg-purple-400/20 text-purple-100'
-                          : 'border-white/10 bg-white/5 text-white/50 hover:border-purple-400/40 hover:text-purple-200'
-                      }`}
-                    >
-                      {option === 'upload' ? 'Upload' : 'Live Camera'}
-                    </button>
-                  ))}
-                </div>
+          {/* Mode & Source */}
+          <div className="grid gap-3 md:grid-cols-2 mb-4">
+            <div>
+              <span className="text-xs text-white/50 uppercase">Mode</span>
+              <div className="mt-1 flex gap-2">
+                {(['quick', 'full'] as RegistrationMode[]).map(option => (
+                  <button
+                    key={option}
+                    onClick={() => setMode(option)}
+                    className={`flex-1 rounded-lg px-3 py-1.5 text-xs uppercase transition ${
+                      mode === option ? 'bg-cyan-400/20 text-cyan-100 border border-cyan-400/40' : 'bg-white/5 text-white/50 border border-white/10'
+                    }`}
+                  >
+                    {option === 'quick' ? 'Quick' : 'Full'}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {source === 'live' && (
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Live Capture Feed</h3>
-                    <p className="text-xs text-white/50">Align the subject, then capture per required angle.</p>
-                  </div>
-                  <div className={`text-xs uppercase tracking-[0.3em] ${cameraReady ? 'text-emerald-300' : 'text-yellow-200'}`}>
-                    {cameraReady ? 'Camera Ready' : 'Booting Camera'}
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black/80">
-                  <video
-                    ref={videoRef}
-                    className="w-full rounded-xl"
-                    playsInline
-                    muted
-                  />
-                  {!cameraReady && !cameraError && (
-                    <div className="absolute inset-0 flex items-center justify-center text-white/60">
-                      Initializing camera...
-                    </div>
-                  )}
-                  {cameraError && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-center text-sm text-red-200">
-                      {cameraError}
-                    </div>
-                  )}
-                </div>
+            <div>
+              <span className="text-xs text-white/50 uppercase">Source</span>
+              <div className="mt-1 flex gap-2">
+                {(['upload', 'live'] as CaptureSource[]).map(option => (
+                  <button
+                    key={option}
+                    onClick={() => setSource(option)}
+                    className={`flex-1 rounded-lg px-3 py-1.5 text-xs uppercase transition ${
+                      source === option ? 'bg-purple-400/20 text-purple-100 border border-purple-400/40' : 'bg-white/5 text-white/50 border border-white/10'
+                    }`}
+                  >
+                    {option === 'upload' ? 'Upload' : 'Camera'}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
+          </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="flex flex-wrap items-center gap-3">
-                {requiredAngles.map(angle => {
-                  const frame = frames.find(item => item.angle === angle);
-                  return (
-                    <button
-                      key={angle}
-                      type="button"
-                      onClick={() => setActiveAngle(angle)}
-                      className={`rounded-xl border px-3 py-2 text-xs uppercase tracking-[0.3em] transition ${
-                        activeAngle === angle
-                          ? 'border-white/60 bg-white/20 text-white'
-                          : 'border-white/10 bg-white/5 text-white/50 hover:border-white/40 hover:text-white/80'
-                      }`}
-                    >
-                      {angle}
-                      {frame && (
-                        <span className="ml-2 inline-flex items-center rounded-full border border-white/10 bg-black/40 px-2 py-0.5 text-[10px] uppercase tracking-[0.25em] text-white/60">
-                          {frame.status === 'ready' && 'Analysed'}
-                          {frame.status === 'processing' && 'Processing'}
-                          {frame.status === 'error' && 'Retry needed'}
-                          {frame.status === 'registered' && 'Synced'}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-white/10 bg-black/60 p-4">
-                <h3 className="text-sm font-semibold text-white">{activeAngle}</h3>
-                <p className="text-xs text-white/50">{mode === 'quick' ? 'Capture a clean frontal face.' : 'Capture each angle for extreme precision.'}</p>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,360px),1fr]">
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    {source === 'upload' ? (
-                      <label className="flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-black/60 px-4 text-center text-xs text-white/50 transition hover:border-cyan-400/40 hover:text-cyan-200">
-                        <span>Drop an image here or click to browse</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => {
-                            void handleFileSelected(activeAngle, event.target.files);
-                            event.target.value = '';
-                          }}
-                        />
-                      </label>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => void captureFromCamera(activeAngle)}
-                        disabled={!cameraReady || !!cameraError}
-                        className="flex h-48 w-full items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-500/10 text-sm uppercase tracking-[0.3em] text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/40"
-                      >
-                        {cameraError ? 'Camera unavailable' : 'Capture frame'}
-                      </button>
+          {/* Split Layout: Live Feed Left, Controls Right */}
+          <div className="grid gap-3 md:grid-cols-2 mb-4">
+            {/* LEFT: Live Feed */}
+            <div className="rounded-lg border border-white/10 bg-black/40 p-3">
+              {source === 'live' ? (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-white">Live Feed</span>
+                    <span className={`text-xs uppercase ${cameraReady ? 'text-emerald-300' : 'text-yellow-200'}`}>
+                      {cameraReady ? '● Ready' : '○ Loading'}
+                    </span>
+                  </div>
+                  <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black">
+                    <video ref={videoRef} className="w-full rounded-lg" playsInline muted />
+                    {!cameraReady && !cameraError && (
+                      <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
+                        Initializing camera...
+                      </div>
                     )}
-                  </div>
-
-                  <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                    {frames.find(frame => frame.angle === activeAngle) ? (
-                      frames.filter(frame => frame.angle === activeAngle).map(frame => {
-                        const left = frame.bbox ? (frame.bbox[0] / frame.width) * 100 : 0;
-                        const top = frame.bbox ? (frame.bbox[1] / frame.height) * 100 : 0;
-                        const width = frame.bbox ? (frame.bbox[2] / frame.width) * 100 : 0;
-                        const height = frame.bbox ? (frame.bbox[3] / frame.height) * 100 : 0;
-                        return (
-                          <div key={frame.id} className="space-y-3">
-                            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-black">
-                              <img src={frame.dataUrl} alt={`${frame.label} capture`} className="w-full" />
-                              {frame.status === 'processing' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-sm text-white/70">
-                                  Analysing facial geometry...
-                                </div>
-                              )}
-                              {frame.status === 'error' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-red-500/30 text-center text-sm text-red-100">
-                                  {frame.error || 'Detection failed. Retake required.'}
-                                </div>
-                              )}
-                              {frame.status !== 'error' && frame.bbox && (
-                                <div
-                                  className="absolute border border-cyan-300/90 bg-cyan-400/10"
-                                  style={{
-                                    left: `${left}%`,
-                                    top: `${top}%`,
-                                    width: `${width}%`,
-                                    height: `${height}%`
-                                  }}
-                                />
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between text-xs text-white/60">
-                              <span>Status: {frame.status === 'ready' ? 'Ready for embedding' : frame.status === 'registered' ? 'Registered' : frame.status === 'error' ? 'Needs attention' : 'Processing'}</span>
-                              {frame.confidence && (
-                                <span className="font-mono text-emerald-300">Confidence: {(frame.confidence * 100).toFixed(1)}%</span>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFrame(frame.angle)}
-                                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.3em] text-white/60 transition hover:border-red-400/40 hover:text-red-200"
-                              >
-                                Retake
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-white/10 bg-black/60 text-xs text-white/40">
-                        Awaiting capture for {activeAngle}
+                    {cameraError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-center text-sm text-red-200 p-4">
+                        {cameraError}
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
+                  <button
+                    onClick={() => void captureFromCamera(activeAngle)}
+                    disabled={!cameraReady || !!cameraError}
+                    className="mt-3 w-full flex items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-500/10 py-3 text-sm uppercase text-cyan-100 hover:bg-cyan-500/20 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/40"
+                  >
+                    📸 Capture {activeAngle}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs text-white/50 block mb-2">Upload Image</span>
+                  <label className="flex h-64 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/20 bg-black/60 text-center text-xs text-white/50 hover:border-cyan-400/40">
+                    <span className="text-4xl mb-2">📁</span>
+                    <span>Click to upload {activeAngle}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        void handleFileSelected(activeAngle, e.target.files);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </>
+              )}
             </div>
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/60">
-                {framesReady ? 'All required captures analysed. Ready to embed.' : 'Complete all captures to unlock registration.'}
+            {/* RIGHT: Controls & Preview */}
+            <div className="space-y-3">
+              {/* Angle Selector */}
+              <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                <span className="text-xs text-white/50 uppercase block mb-2">Capture Angles</span>
+                <div className="flex flex-wrap gap-2">
+                  {requiredAngles.map(angle => {
+                    const frame = frames.find(item => item.angle === angle);
+                    const statusColor = frame?.status === 'ready' || frame?.status === 'registered' 
+                      ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200' 
+                      : frame?.status === 'error' 
+                      ? 'border-red-400/60 bg-red-500/10 text-red-200'
+                      : 'border-white/10 bg-white/5 text-white/50';
+                    
+                    return (
+                      <button
+                        key={angle}
+                        onClick={() => setActiveAngle(angle)}
+                        className={`rounded-lg px-3 py-1.5 text-xs uppercase transition border ${
+                          activeAngle === angle ? 'border-white/60 bg-white/20 text-white' : statusColor
+                        }`}
+                      >
+                        {angle}
+                        {frame && <span className="ml-1">{frame.status === 'ready' || frame.status === 'registered' ? '✓' : frame.status === 'error' ? '✕' : '...'}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={resetWorkflow}
-                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/60 transition hover:border-white/40 hover:text-white"
-                >
-                  Reset Workflow
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleRegister()}
-                  disabled={!framesReady || !selectedMemberId || !backendReady || isRegistering}
-                  className="rounded-xl border border-cyan-400/60 bg-cyan-500/20 px-5 py-2 text-xs uppercase tracking-[0.4em] text-cyan-100 transition hover:bg-cyan-500/30 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-white/40"
-                >
-                  {isRegistering ? 'Embedding...' : 'Register Identity'}
-                </button>
+
+              {/* Preview */}
+              <div className="rounded-lg border border-white/10 bg-black/40 p-3">
+                <span className="text-xs text-white/50 block mb-2">Preview - {activeAngle}</span>
+                {frames.find(f => f.angle === activeAngle) ? (
+                  frames.filter(f => f.angle === activeAngle).map(frame => {
+                    const left = frame.bbox ? (frame.bbox[0] / frame.width) * 100 : 0;
+                    const top = frame.bbox ? (frame.bbox[1] / frame.height) * 100 : 0;
+                    const width = frame.bbox ? (frame.bbox[2] / frame.width) * 100 : 0;
+                    const height = frame.bbox ? (frame.bbox[3] / frame.height) * 100 : 0;
+                    
+                    return (
+                      <div key={frame.id} className="space-y-2">
+                        <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black">
+                          <img src={frame.dataUrl} alt={frame.label} className="w-full" />
+                          {frame.status === 'processing' && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-xs text-white/70">
+                              Processing...
+                            </div>
+                          )}
+                          {frame.status === 'error' && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-red-500/30 text-xs text-red-100 p-2 text-center">
+                              {frame.error || 'Error'}
+                            </div>
+                          )}
+                          {frame.status !== 'error' && frame.bbox && (
+                            <div
+                              className="absolute border-2 border-cyan-300"
+                              style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}
+                            />
+                          )}
+                        </div>
+                        {frame.confidence && (
+                          <div className="text-xs text-emerald-300">✓ Confidence: {(frame.confidence * 100).toFixed(0)}%</div>
+                        )}
+                        <button
+                          onClick={() => handleRemoveFrame(frame.angle)}
+                          className="w-full rounded-lg bg-white/5 px-2 py-1 text-xs text-white/60 hover:bg-red-500/20 hover:text-red-200"
+                        >
+                          Retake
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/60 text-xs text-white/40">
+                    No capture yet
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={resetWorkflow}
+              className="rounded-lg bg-white/5 px-4 py-2 text-xs uppercase text-white/60 hover:bg-white/10"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => void handleRegister()}
+              disabled={!framesReady || !selectedMemberId || isRegistering}
+              className="rounded-lg bg-cyan-500/20 border border-cyan-400/60 px-5 py-2 text-xs uppercase text-cyan-100 hover:bg-cyan-500/30 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/40"
+            >
+              {isRegistering ? 'Registering...' : 'Register'}
+            </button>
           </div>
         </div>
       </div>

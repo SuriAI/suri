@@ -432,7 +432,6 @@ export function Menu({ onBack, initialSection }: MenuProps) {
 
       <div className="px-8 py-4 border-b border-white/10 bg-black/60 flex flex-wrap gap-4 items-end">
         <div className="flex-1 min-w-[220px]">
-          <label className="block text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Group</label>
           <select
             value={selectedGroup?.id ?? ''}
             onChange={event => {
@@ -450,7 +449,6 @@ export function Menu({ onBack, initialSection }: MenuProps) {
           </select>
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Date</label>
           <input
             type="date"
             value={selectedDate}
