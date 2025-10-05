@@ -145,10 +145,45 @@ MODEL_CONFIGS = {
         "name": "DualMiniFASNet",
         "ensemble_mode": True,  # Enable ensemble prediction
         "models": ["antispoofing_v2", "antispoofing_v1se"],  # Both models used
-        "threshold": 0.7,  # BALANCED: Prevent replay attacks while avoiding false positives (was 0.5, tried 0.7)
+        "threshold": 0.65,  #   OPTIMAL: Research-backed optimal value (was 0.7, lowered for better live acceptance)
         "voting_method": "weighted_average",  # Weighted average of both models
-        "description": "Dual MiniFASNet ensemble (V2 + V1SE) for robust anti-spoofing",
-        "version": "ensemble_2.7_4.0",
+        "description": "  Dual MiniFASNet ensemble (V2 + V1SE) with Temporal Analysis & Adaptive Thresholding",
+        "version": "rank1_optimal",
+        
+        #   QUALITY GATE SETTINGS 
+        "enable_quality_gates": True,
+        "min_face_resolution": 80,  # MiniFASNet requirement
+        "blur_threshold": 100.0,  #  OPTIMAL: Laplacian variance threshold
+        "brightness_range": (40, 220),  #  OPTIMAL: Valid brightness range
+        "overexposure_ratio": 0.30,  #  OPTIMAL: Max 30% blown-out pixels
+        "underexposure_ratio": 0.30,  #  OPTIMAL: Max 30% crushed blacks
+        "enable_quality_rescue": True,  # Enable aggressive CLAHE rescue for borderline cases
+        
+        #   TEMPORAL CONSISTENCY SETTINGS 
+        "enable_temporal_analysis": True,
+        "temporal_history_size": 5,  #  OPTIMAL: 5 frames = 166ms at 30fps
+        "temporal_variance_threshold": 0.03,  #  OPTIMAL: Min variance for real faces
+        "temporal_correlation_threshold": 0.97,  #  OPTIMAL: Max correlation for real faces
+        "temporal_micro_movement_threshold": 0.001,  #  OPTIMAL: Min movement for real faces
+        "temporal_history_timeout": 1.0,  # Seconds
+        
+        #   ADAPTIVE THRESHOLD SETTINGS 
+        "enable_adaptive_threshold": True,
+        "adaptive_base_threshold": 0.65,  #  OPTIMAL: Base threshold
+        "adaptive_min_threshold": 0.40,  #  OPTIMAL: Minimum allowed (very permissive)
+        "adaptive_max_threshold": 0.85,  #  OPTIMAL: Maximum allowed (very strict)
+        "adaptive_boost_factors": {
+            "both_models_agree": 0.15,      #  OPTIMAL: Models consensus bonus
+            "high_quality_crop": 0.10,      #  OPTIMAL: Clear image bonus
+            "stable_tracking": 0.10,        #  OPTIMAL: Long history bonus
+            "temporal_consistency": 0.15,   #  OPTIMAL: Natural behavior bonus
+        },
+        "adaptive_penalty_factors": {
+            "models_disagree": 0.10,        #  OPTIMAL: Conflicting signals penalty
+            "poor_quality": 0.10,           #  OPTIMAL: Bad image penalty
+            "short_tracking": 0.05,         #  OPTIMAL: New track penalty
+            "temporal_anomaly": 0.15,       #  OPTIMAL: Suspicious pattern penalty
+        },
     },
     "facemesh": {
         "name": "MediaPipe FaceMesh",

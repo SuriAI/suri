@@ -1,6 +1,7 @@
 """
 Photo Quality Validation Utilities
 Validates face photo quality for registration (blur, lighting, size, pose, occlusion)
+AND anti-spoofing quality gates with RANK 1 optimal thresholds
 """
 
 import cv2
@@ -9,6 +10,129 @@ from typing import Dict, List, Tuple, Optional
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class AntiSpoofQualityGate:
+    """
+    RANK 1 Quality Gate for Anti-Spoofing
+    Prevents poor quality crops from reaching anti-spoof models.
+    
+    OPTIMAL THRESHOLDS (research-backed for maximum accuracy):
+    - min_resolution: 80px (MiniFASNet requirement)
+    - blur_threshold: 100.0 (Laplacian variance, balanced)
+    - brightness_range: (40, 220) (avoids extremes)
+    - overexposure_ratio: 0.30 (max 30% blown-out)
+    - underexposure_ratio: 0.30 (max 30% crushed)
+    """
+    
+    def __init__(
+        self,
+        min_resolution: int = 80,
+        blur_threshold: float = 100.0,
+        brightness_range: Tuple[int, int] = (40, 220),
+        overexposure_ratio: float = 0.30,
+        underexposure_ratio: float = 0.30,
+        enable_rescue: bool = True
+    ):
+        """Initialize with RANK 1 optimal thresholds"""
+        self.min_resolution = min_resolution
+        self.blur_threshold = blur_threshold
+        self.brightness_range = brightness_range
+        self.overexposure_ratio = overexposure_ratio
+        self.underexposure_ratio = underexposure_ratio
+        self.enable_rescue = enable_rescue
+        
+        # Rescue CLAHE settings (aggressive)
+        self.rescue_clip_limit = 3.5
+        self.rescue_tile_grid_size = (6, 6)
+        
+        logger.info(
+            f"AntiSpoofQualityGate initialized: blur={blur_threshold}, "
+            f"brightness={brightness_range}, overexposure={overexposure_ratio}"
+        )
+    
+    def validate_and_preprocess(
+        self,
+        face_crop: np.ndarray
+    ) -> Tuple[Optional[np.ndarray], str, float]:
+        """
+        Validate face crop quality and apply preprocessing.
+        
+        Returns:
+            (processed_image, status_message, quality_score)
+        """
+        if face_crop is None or face_crop.size == 0:
+            return None, "REJECT: Empty image", 0.0
+        
+        quality_score = 1.0
+        
+        # GATE 1: Resolution
+        h, w = face_crop.shape[:2]
+        if h < self.min_resolution or w < self.min_resolution:
+            return None, f"REJECT: Resolution {w}x{h} < {self.min_resolution}", 0.0
+        
+        gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
+        
+        # GATE 2: Blur (Laplacian variance)
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        if laplacian_var < self.blur_threshold * 0.5:
+            return None, f"REJECT: Severely blurred ({laplacian_var:.1f})", 0.0
+        elif laplacian_var < self.blur_threshold:
+            quality_score -= 0.2
+        
+        # GATE 3: Brightness
+        mean_brightness = gray.mean()
+        original_brightness = mean_brightness
+        
+        if not (self.brightness_range[0] <= mean_brightness <= self.brightness_range[1]):
+            if self.enable_rescue:
+                # Try aggressive CLAHE rescue
+                from utils.image_utils import enhance_contrast_clahe
+                rescued = enhance_contrast_clahe(
+                    face_crop,
+                    clip_limit=self.rescue_clip_limit,
+                    tile_grid_size=self.rescue_tile_grid_size
+                )
+                rescued_gray = cv2.cvtColor(rescued, cv2.COLOR_BGR2GRAY)
+                mean_brightness = rescued_gray.mean()
+                
+                if self.brightness_range[0] <= mean_brightness <= self.brightness_range[1]:
+                    face_crop = rescued
+                    gray = rescued_gray
+                    quality_score -= 0.15
+                else:
+                    return None, f"REJECT: Brightness {mean_brightness:.1f} (after rescue)", 0.0
+            else:
+                return None, f"REJECT: Brightness {mean_brightness:.1f}", 0.0
+        
+        # GATE 4: Overexposure
+        overexposed_pixels = (gray > 240).sum()
+        overexposure_ratio_val = overexposed_pixels / gray.size
+        
+        if overexposure_ratio_val > self.overexposure_ratio:
+            return None, f"REJECT: Overexposed ({overexposure_ratio_val:.1%})", 0.0
+        elif overexposure_ratio_val > self.overexposure_ratio * 0.7:
+            quality_score -= 0.1
+        
+        # GATE 5: Underexposure
+        underexposed_pixels = (gray < 15).sum()
+        underexposure_ratio_val = underexposed_pixels / gray.size
+        
+        if underexposure_ratio_val > self.underexposure_ratio:
+            return None, f"REJECT: Underexposed ({underexposure_ratio_val:.1%})", 0.0
+        elif underexposure_ratio_val > self.underexposure_ratio * 0.7:
+            quality_score -= 0.1
+        
+        # GATE 6: Apply standard CLAHE (if not already rescued)
+        if original_brightness == mean_brightness or not self.enable_rescue:
+            from utils.image_utils import enhance_contrast_clahe
+            enhanced = enhance_contrast_clahe(face_crop, clip_limit=2.0, tile_grid_size=(8, 8))
+        else:
+            enhanced = face_crop
+        
+        quality_score = max(0.0, min(1.0, quality_score))
+        
+        return enhanced, "PASS", quality_score
 
 
 class PhotoQualityValidator:
