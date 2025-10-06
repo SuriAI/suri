@@ -670,6 +670,10 @@ class DualMiniFASNetDetector:
             exp_pred = np.exp(prediction - np.max(prediction))
             softmax_probs = exp_pred / np.sum(exp_pred)
             
+            # DEBUG: Log raw model outputs to understand what's happening
+            logger.warning(f"[RAW-MODEL-OUTPUT] Raw prediction: {prediction}")
+            logger.warning(f"[RAW-MODEL-OUTPUT] Softmax probs: {softmax_probs}")
+            
             # CORRECT class indices based on Silent-Face-Anti-Spoofing training:
             # Index 0: 2D SPOOF (2D spoof/attack - photos, screens, etc.)
             # Index 1: REAL (live face)
@@ -679,6 +683,9 @@ class DualMiniFASNetDetector:
             spoof_2d_score = float(softmax_probs[0])
             real_score = float(softmax_probs[1])
             spoof_3d_score = float(softmax_probs[2])
+            
+            # DEBUG: Log individual scores
+            logger.warning(f"[MODEL-SCORES] 2D_spoof={spoof_2d_score:.3f}, real={real_score:.3f}, 3D_spoof={spoof_3d_score:.3f}")
             
             # BINARY CLASSIFICATION: Combine all spoof types (2D + 3D) into single "spoof" class
             fake_score = spoof_2d_score + spoof_3d_score
@@ -782,16 +789,35 @@ class DualMiniFASNetDetector:
         3. Quality-aware confidence scoring
         """
         try:
-            # Weighted average of real scores (exactly like APK)
-            ensemble_real_score = (
-                v2_result["real_score"] * self.v2_weight +
-                v1se_result["real_score"] * self.v1se_weight
-            )
+            # CONSENSUS VOTING: Both models must agree for a face to be considered "real"
+            # This prevents one confused model from swaying the entire decision
+            v2_threshold = 0.7  # V2 must be confident it's real
+            v1se_threshold = 0.7  # V1SE must be confident it's real
             
-            ensemble_fake_score = (
-                v2_result["fake_score"] * self.v2_weight +
-                v1se_result["fake_score"] * self.v1se_weight
-            )
+            v2_says_real = v2_result["real_score"] > v2_threshold
+            v1se_says_real = v1se_result["real_score"] > v1se_threshold
+            
+            # CONSENSUS: Both models must agree it's real
+            if v2_says_real and v1se_says_real:
+                # Both models agree it's real - use weighted average for confidence
+                ensemble_real_score = (
+                    v2_result["real_score"] * self.v2_weight +
+                    v1se_result["real_score"] * self.v1se_weight
+                )
+                ensemble_fake_score = (
+                    v2_result["fake_score"] * self.v2_weight +
+                    v1se_result["fake_score"] * self.v1se_weight
+                )
+            else:
+                # At least one model says it's fake - default to fake with high confidence
+                ensemble_real_score = min(v2_result["real_score"], v1se_result["real_score"])
+                ensemble_fake_score = max(v2_result["fake_score"], v1se_result["fake_score"])
+            
+            # DEBUG: Log ensemble calculation details
+            logger.warning(f"[CONSENSUS-VOTING] V2: real={v2_result['real_score']:.3f}, fake={v2_result['fake_score']:.3f}, says_real={v2_says_real}")
+            logger.warning(f"[CONSENSUS-VOTING] V1SE: real={v1se_result['real_score']:.3f}, fake={v1se_result['fake_score']:.3f}, says_real={v1se_says_real}")
+            logger.warning(f"[CONSENSUS-VOTING] Consensus: {'AGREE_REAL' if (v2_says_real and v1se_says_real) else 'DISAGREE_FAKE'}")
+            logger.warning(f"[CONSENSUS-VOTING] Final: real={ensemble_real_score:.3f}, fake={ensemble_fake_score:.3f}")
             
             # No background class in 3-class model - removed background score calculation
             
@@ -844,7 +870,7 @@ class DualMiniFASNetDetector:
                         "v2_fake_score": v2_result["fake_score"],
                         "v1se_real_score": v1se_result["real_score"],
                         "v1se_fake_score": v1se_result["fake_score"],
-                        "ensemble_method": "rank1_temporal_override",
+                        "ensemble_method": "consensus_temporal_override",
                         "temporal_verdict": temporal_verdict,
                         "temporal_confidence": temporal_confidence,
                         "temporal_analysis": temporal_analysis
@@ -887,7 +913,8 @@ class DualMiniFASNetDetector:
                 f"[ANTISPOOF-DECISION] Track {track_id}: "
                 f"real_score={ensemble_real_score:.3f}, fake_score={ensemble_fake_score:.3f}, "
                 f"threshold={adjusted_threshold:.3f}, decision={'REAL' if is_real else 'FAKE'}, "
-                f"v2={v2_result['real_score']:.3f}, v1se={v1se_result['real_score']:.3f}"
+                f"v2={v2_result['real_score']:.3f}, v1se={v1se_result['real_score']:.3f}, "
+                f"spoof_type={v2_result.get('spoof_type', 'unknown')}"
             )
 
             if is_real:
@@ -915,7 +942,7 @@ class DualMiniFASNetDetector:
                 "v2_fake_score": v2_result["fake_score"],
                 "v1se_real_score": v1se_result["real_score"],
                 "v1se_fake_score": v1se_result["fake_score"],
-                "ensemble_method": "rank1_adaptive_temporal"
+                "ensemble_method": "consensus_voting_secure"
             }
             
             # Add temporal analysis results if available

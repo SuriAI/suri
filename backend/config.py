@@ -145,7 +145,7 @@ MODEL_CONFIGS = {
         "name": "DualMiniFASNet",
         "ensemble_mode": True,  # Enable ensemble prediction
         "models": ["antispoofing_v2", "antispoofing_v1se"],  # Both models used
-        "threshold": 0.75,  #   INCREASED: More strict spoof detection (was 0.70, increased for better spoof rejection)
+        "threshold": 0.85,  #   ULTRA-STRICT: Maximum security for spoof detection (was 0.75, increased for 100% spoof rejection)
         "voting_method": "weighted_average",  # Weighted average of both models
         "description": "  Dual MiniFASNet ensemble (V2 + V1SE) with Temporal Analysis & Adaptive Thresholding",
         "version": "rank1_optimal",
@@ -160,7 +160,7 @@ MODEL_CONFIGS = {
         "enable_quality_rescue": True,  # Enable aggressive CLAHE rescue for borderline cases
         
         #   TEMPORAL CONSISTENCY SETTINGS - DISABLED FOR CONSISTENCY
-        "enable_temporal_analysis": False,  # DISABLED: Use fixed threshold for consistent spoof detection
+        "enable_temporal_analysis": True,  # ENABLED: Use temporal analysis to detect static/repetitive spoof patterns
         "temporal_history_size": 3,  # REDUCED: 3 frames = 100ms at 30fps (less aggressive)
         "temporal_variance_threshold": 0.02,  # RELAXED: Lower threshold for live camera movement
         "temporal_correlation_threshold": 0.95,  # RELAXED: Allow more variation for live faces
