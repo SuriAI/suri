@@ -32,9 +32,9 @@ interface DetectionResult {
     antispoofing?: {
       is_real: boolean | null;
       confidence: number;
-      real_score?: number;
-      fake_score?: number;
-      status: 'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown';
+      live_score?: number;
+      spoof_score?: number;
+      status: 'real' | 'fake' | 'error';
       label?: string;
       message?: string;
     };
@@ -52,9 +52,9 @@ interface WebSocketFaceData {
   antispoofing?: {
     is_real?: boolean | null;
     confidence?: number;
-    real_score?: number;
-    fake_score?: number;
-    status?: 'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown';
+    live_score?: number;
+    spoof_score?: number;
+    status?: 'real' | 'fake' | 'error';
     label?: string;
     message?: string;
   };
@@ -90,9 +90,7 @@ interface WebSocketErrorMessage {
 
 type DashboardTab = MenuSection;
 
-const NON_LOGGING_ANTISPOOF_STATUSES = new Set<
-  'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown'
->(['fake', 'too_small', 'error', 'processing_failed', 'invalid_bbox', 'out_of_frame', 'unknown']);
+const NON_LOGGING_ANTISPOOF_STATUSES = new Set<'real' | 'fake' | 'error'>(['fake', 'error']);
 
 export default function LiveVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -304,10 +302,10 @@ export default function LiveVideo() {
         if (face.antispoofing) {
           console.log(`DEBUG: Face ${index} antispoofing data:`, {
             status: face.antispoofing.status,
-            real_score: face.antispoofing.real_score,
-            fake_score: face.antispoofing.fake_score,
-            real_score_defined: face.antispoofing.real_score !== undefined,
-            fake_score_defined: face.antispoofing.fake_score !== undefined,
+            live_score: face.antispoofing.live_score,
+            spoof_score: face.antispoofing.spoof_score,
+            live_score_defined: face.antispoofing.live_score !== undefined,
+            spoof_score_defined: face.antispoofing.spoof_score !== undefined,
             confidence: face.antispoofing.confidence
           });
         }
@@ -357,8 +355,8 @@ export default function LiveVideo() {
       // Draw current video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // OPTIMIZATION: Use lower quality for better performance (0.4 instead of 0.6)
-      const base64 = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
+      // Use maximum quality for best anti-spoofing accuracy (1.0 = 100%)
+      const base64 = canvas.toDataURL('image/jpeg', 1.0).split(',')[1];
       return base64;
     } catch (error) {
       console.error('❌ captureFrame: Failed to capture frame:', error);
@@ -406,11 +404,7 @@ export default function LiveVideo() {
             };
           }
           
-          // SECURITY FIX: Block "too_small" faces - prevents tilted/compressed spoof bypass
-          if (face.antispoofing?.status === 'too_small') {
-            console.log(`🚫 Face too small, blocking recognition (track ${face.track_id})`);
-            return null; // Prevent recognition of compressed/tilted spoofed faces
-          }
+          // Note: Simplified anti-spoofing status handling - only 'real', 'fake', 'error' are supported
           
           // Also reject faces with anti-spoofing errors for safety
           if (face.antispoofing?.status === 'error') {
@@ -885,8 +879,8 @@ export default function LiveVideo() {
                 antispoofing: face.antispoofing ? {
                   is_real: face.antispoofing.is_real ?? null,
                   confidence: face.antispoofing.confidence || 0,
-                  real_score: face.antispoofing.real_score,
-                  fake_score: face.antispoofing.fake_score,
+                  live_score: face.antispoofing.live_score,
+                  spoof_score: face.antispoofing.spoof_score,
                   status: face.antispoofing.status || 'error'
                 } : undefined
               };
@@ -2097,11 +2091,11 @@ export default function LiveVideo() {
                   
                   {/* Detailed Spoof Detection Info */}
                   {currentDetections.faces.map((face, index) => (
-                    face.antispoofing && face.antispoofing.real_score !== undefined && face.antispoofing.fake_score !== undefined && (
+                    face.antispoofing && face.antispoofing.live_score !== undefined && face.antispoofing.spoof_score !== undefined && (
                       <div key={index} className="border-t border-white/10 pt-1 mt-1">
                         <div className="text-white/60">Face {index + 1}:</div>
-                        <div className="text-green-400">Live: {(face.antispoofing.real_score * 100).toFixed(1)}%</div>
-                        <div className="text-red-400">Spoof: {(face.antispoofing.fake_score * 100).toFixed(1)}%</div>
+                        <div className="text-green-400">Live: {(face.antispoofing.live_score * 100).toFixed(1)}%</div>
+                        <div className="text-red-400">Spoof: {(face.antispoofing.spoof_score * 100).toFixed(1)}%</div>
                         <div className="text-white/60">Status: <span className={face.antispoofing.status === 'real' ? 'text-green-400' : 'text-red-400'}>{face.antispoofing.status}</span></div>
                       </div>
                     )
@@ -2294,29 +2288,29 @@ export default function LiveVideo() {
                               <div className={`text-xs px-2 py-1 rounded mt-1 ${
                                 face.antispoofing.status === 'real' ? 'bg-green-900 text-green-300' :
                                 face.antispoofing.status === 'fake' ? 'bg-red-900 text-red-300' :
-                                face.antispoofing.status === 'too_small' ? 'bg-blue-900 text-blue-300' :
-                                'bg-yellow-900 text-yellow-300'
+                                face.antispoofing.status === 'error' ? 'bg-yellow-900 text-yellow-300' :
+                                'bg-gray-900 text-gray-300'
                               }`}>
                                 <div className="flex items-center justify-between">
                                   <span>
                                     {face.antispoofing.status === 'real' ? '✓ Live' :
                                      face.antispoofing.status === 'fake' ? '⚠ Spoof' :
-                                     face.antispoofing.status === 'too_small' ? '📏 Move Closer' : '? Unknown'}
+                                     face.antispoofing.status === 'error' ? '❌ Error' : '? Unknown'}
                                   </span>
                                   {/* Show percentages if available - show if at least one score is defined */}
-                                  {((face.antispoofing.real_score !== undefined && face.antispoofing.real_score !== null) || 
-                                    (face.antispoofing.fake_score !== undefined && face.antispoofing.fake_score !== null)) && (
+                                  {((face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null) || 
+                                    (face.antispoofing.spoof_score !== undefined && face.antispoofing.spoof_score !== null)) && (
                                     <div className="text-xs ml-2 text-right">
-                                      {face.antispoofing.real_score !== undefined && face.antispoofing.real_score !== null && (
+                                      {face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null && (
                                         <div className="flex items-center gap-1">
                                           <span className="text-green-200">Live:</span>
-                                          <span className="font-mono">{((face.antispoofing.real_score || 0) * 100).toFixed(0)}%</span>
+                                          <span className="font-mono">{((face.antispoofing.live_score || 0) * 100).toFixed(0)}%</span>
                                         </div>
                                       )}
-                                      {face.antispoofing.fake_score !== undefined && face.antispoofing.fake_score !== null && (
+                                      {face.antispoofing.spoof_score !== undefined && face.antispoofing.spoof_score !== null && (
                                         <div className="flex items-center gap-1">
                                           <span className="text-red-200">Spoof:</span>
-                                          <span className="font-mono">{((face.antispoofing.fake_score || 0) * 100).toFixed(0)}%</span>
+                                          <span className="font-mono">{((face.antispoofing.spoof_score || 0) * 100).toFixed(0)}%</span>
                                         </div>
                                       )}
                                       {/* Confidence bar */}
@@ -2327,8 +2321,8 @@ export default function LiveVideo() {
                                           }`}
                                           style={{ 
                                             width: `${(face.antispoofing?.status === 'real' ? 
-                                              (face.antispoofing?.real_score || 0) : 
-                                              (face.antispoofing?.fake_score || 0)) * 100}%` 
+                                              (face.antispoofing?.live_score || 0) : 
+                                              (face.antispoofing?.spoof_score || 0)) * 100}%` 
                                           }}
                                         />
                                       </div>

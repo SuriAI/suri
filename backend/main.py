@@ -19,8 +19,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from models.yunet_detector import YuNetDetector
-from models.dual_minifasnet_detector import DualMiniFASNetDetector
+from models.yunet_detector import YuNet
+from models.antispoof_detector import AntiSpoof
 from models.edgeface_detector import EdgeFaceDetector
 from models.facemesh_detector import FaceMeshDetector
 from models.sort_tracker import FaceTracker
@@ -28,7 +28,7 @@ from utils.image_utils import decode_base64_image, encode_image_to_base64
 from utils.websocket_manager import manager, handle_websocket_message
 from utils.attendance_database import AttendanceDatabaseManager
 from routes import attendance
-from config import YUNET_MODEL_PATH, YUNET_CONFIG, ANTISPOOFING_CONFIG, ANTISPOOFING_V2_CONFIG, ANTISPOOFING_V1SE_CONFIG, EDGEFACE_MODEL_PATH, EDGEFACE_CONFIG, MODEL_CONFIGS, CORS_CONFIG
+from config import YUNET_MODEL_PATH, YUNET_CONFIG, ANTISPOOFING_CONFIG, EDGEFACE_MODEL_PATH, EDGEFACE_CONFIG, MODEL_CONFIGS, CORS_CONFIG
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -125,27 +125,19 @@ async def startup_event():
     """Initialize models on startup"""
     global yunet_detector, optimized_antispoofing_detector, edgeface_detector, facemesh_detector, face_tracker, attendance_database
     try:
-        yunet_detector = YuNetDetector(
+        # Initialize simple YuNet face detector
+        yunet_detector = YuNet(
             model_path=str(YUNET_MODEL_PATH),
-            input_size=list(YUNET_CONFIG["input_size"]),
+            input_size=tuple(YUNET_CONFIG["input_size"]),
             conf_threshold=YUNET_CONFIG["score_threshold"],
             nms_threshold=YUNET_CONFIG["nms_threshold"],
-            backend_id=YUNET_CONFIG.get("backend_id", 0),
-            target_id=YUNET_CONFIG.get("target_id", 0)
+            bbox_expansion=0.1
         )
-        # Initialize Dual MiniFASNet detector (ensemble of V2 and V1SE)
-        optimized_antispoofing_detector = DualMiniFASNetDetector(
-            model_v2_path=str(ANTISPOOFING_V2_CONFIG["model_path"]),
-            model_v1se_path=str(ANTISPOOFING_V1SE_CONFIG["model_path"]),
-            input_size=ANTISPOOFING_V2_CONFIG["input_size"],
-            threshold=ANTISPOOFING_CONFIG["threshold"],
-            providers=ANTISPOOFING_V2_CONFIG["providers"],
-            max_batch_size=ANTISPOOFING_V2_CONFIG.get("max_batch_size", 8),
-            session_options=ANTISPOOFING_V2_CONFIG.get("session_options"),
-            v2_weight=ANTISPOOFING_V2_CONFIG.get("weight", 0.6),
-            v1se_weight=ANTISPOOFING_V1SE_CONFIG.get("weight", 0.4),
-            enable_adaptive_threshold=ANTISPOOFING_CONFIG.get("enable_adaptive_threshold", False),
-            enable_temporal_analysis=ANTISPOOFING_CONFIG.get("enable_temporal_analysis", False)
+        
+        # Initialize simple Anti-Spoofing detector
+        optimized_antispoofing_detector = AntiSpoof(
+            model_path=str(ANTISPOOFING_CONFIG["model_path"]),
+            model_img_size=128
         )
         
         # Initialize shared FaceMesh detector first
@@ -200,119 +192,35 @@ async def process_antispoofing(faces: List[Dict], image: np.ndarray, enable: boo
     if not (enable and faces and optimized_antispoofing_detector):
         return faces
     
-    special_statuses = {
-        'too_small',
-        'error',
-        'out_of_frame',
-        'processing_failed',
-        'background',
-        'invalid_bbox'
-    }
-
-    # Threshold is already set during initialization (line 140) - no need to set on every request
     try:
-        antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, faces)
-
-        # CRITICAL FIX: Ensure antispoofing results match input faces count
-        if len(antispoofing_results) != len(faces):
-            logger.error(
-                f"Anti-spoofing result count mismatch: {len(faces)} faces, "
-                f"{len(antispoofing_results)} results. Marking unprocessed as FAKE."
-            )
-
-        # Build lookup maps for robust face/result alignment
-        result_map_by_track: Dict[int, Dict] = {}
-        result_map_by_index: Dict[int, Dict] = {}
-        unkeyed_results: List[Dict] = []
-
-        for result in antispoofing_results:
-            track_id_value = result.get('track_id')
-            if track_id_value is not None and hasattr(track_id_value, "item"):
-                track_id_value = track_id_value.item()
-
-            if isinstance(track_id_value, int):
-                # Intentionally keep latest detection for track to avoid stale reuse
-                result_map_by_track[track_id_value] = result
-
-            face_id = result.get('face_id')
-            if face_id is not None:
-                try:
-                    result_map_by_index[int(face_id)] = result
-                except (TypeError, ValueError):
-                    logger.warning(f"Unable to normalize face_id {face_id} to int for antispoofing result")
-            else:
-                logger.warning(f"Antispoofing result missing face_id: {result}")
-
-            if track_id_value is None and face_id is None:
-                unkeyed_results.append(result)
-
-        unkeyed_iter = iter(unkeyed_results)
-
-        # Apply antispoofing data to each face (GUARANTEED to process ALL faces)
+        # DEBUG: Log input faces before anti-spoofing
+        logger.info(f"DEBUG process_antispoofing: Input {len(faces)} faces")
         for i, face in enumerate(faces):
-            face_track_id = face.get('track_id')
-            if face_track_id is not None and hasattr(face_track_id, "item"):
-                face_track_id = face_track_id.item()
-
-            result = None
-            if isinstance(face_track_id, int) and face_track_id in result_map_by_track:
-                result = result_map_by_track.pop(face_track_id)
-            elif i in result_map_by_index:
-                result = result_map_by_index.pop(i)
-            else:
-                try:
-                    result = next(unkeyed_iter)
-                except StopIteration:
-                    result = None
-
-            if not result:
-                logger.warning(f"Face {i} missing antispoofing result, marking as PROCESSING_FAILED")
-                antispoofing_data = {
-                    'status': 'processing_failed',
-                    'label': 'Processing Failed',
-                    'is_real': False,
-                    'confidence': 0.0,
-                    'real_score': 0.0,
-                    'fake_score': 1.0,
-                    'message': f'Anti-spoofing result missing for face {i}'
-                }
-            else:
-                antispoofing_data = result.get('antispoofing', {})
-
-            is_real_value = antispoofing_data.get('is_real', None)
-            if is_real_value is not None:
-                is_real_value = bool(is_real_value)
-
-                detector_status = antispoofing_data.get('status')
-                if detector_status in special_statuses:
-                    face['antispoofing'] = {
-                        'is_real': is_real_value,
-                        'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                        'real_score': float(antispoofing_data.get('real_score', 0.0)),
-                        'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
-                        'status': detector_status
-                    }
-                    if 'label' in antispoofing_data:
-                        face['antispoofing']['label'] = antispoofing_data['label']
-                    if 'message' in antispoofing_data:
-                        face['antispoofing']['message'] = antispoofing_data['message']
-                else:
-                    face['antispoofing'] = {
-                        'is_real': is_real_value,
-                        'confidence': float(antispoofing_data.get('confidence', 0.0)),
-                        'real_score': float(antispoofing_data.get('real_score', 0.0)),
-                        'fake_score': float(antispoofing_data.get('fake_score', 0.0)),
-                        'status': 'real' if is_real_value else 'fake'
-                    }
+            bbox = face.get('bbox', {})
+            conf = face.get('confidence', 0)
+            logger.info(f"DEBUG Input face {i}: bbox={bbox}, confidence={conf}")
+        
+        # Use simple anti-spoofing detector
+        faces_with_antispoofing = optimized_antispoofing_detector.detect_faces(image, faces)
+        
+        # DEBUG: Log anti-spoofing results
+        logger.info(f"DEBUG process_antispoofing: {len(faces_with_antispoofing)} faces processed")
+        for i, face in enumerate(faces_with_antispoofing):
+            if 'antispoofing' in face:
+                antispoof = face['antispoofing']
+                logger.info(f"DEBUG Face {i} result: is_real={antispoof['is_real']}, live_score={antispoof['live_score']:.3f}, spoof_score={antispoof['spoof_score']:.3f}, predicted_class={antispoof.get('predicted_class', 'N/A')}")
+        
+        return faces_with_antispoofing
+        
     except Exception as e:
         logger.warning(f"Anti-spoofing failed: {e}")
-        # CRITICAL FIX: Mark ALL faces as FAKE on error for security
+        # Mark ALL faces as FAKE on error for security
         for face in faces:
             face['antispoofing'] = {
                 'is_real': False,
+                'live_score': 0.0,
+                'spoof_score': 1.0,
                 'confidence': 0.0,
-                'real_score': 0.0,
-                'fake_score': 1.0,
                 'status': 'error',
                 'label': 'Error',
                 'message': f'Anti-spoofing error: {str(e)}'
@@ -414,8 +322,14 @@ async def detect_faces(request: DetectionRequest):
             yunet_detector.set_confidence_threshold(request.confidence_threshold)
             yunet_detector.set_nms_threshold(request.nms_threshold)
             
-            # Perform face detection
-            faces = await yunet_detector.detect_async(image)
+            # Perform face detection with rotation correction and multi-scale
+            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
+            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
+            faces = yunet_detector.detect_faces_with_corrections(
+                image, 
+                enable_rotation_correction=enable_rotation_correction,
+                enable_multi_scale=enable_multi_scale
+            )
             
             # Apply anti-spoofing if enabled and faces detected
             faces = await process_antispoofing(faces, image, request.enable_antispoofing)
@@ -498,8 +412,14 @@ async def detect_faces_upload(
             yunet_detector.set_confidence_threshold(confidence_threshold)
             yunet_detector.set_nms_threshold(nms_threshold)
             
-            # Perform face detection
-            faces = await yunet_detector.detect_async(image)
+            # Perform face detection with rotation correction and multi-scale
+            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
+            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
+            faces = yunet_detector.detect_faces_with_corrections(
+                image, 
+                enable_rotation_correction=enable_rotation_correction,
+                enable_multi_scale=enable_multi_scale
+            )
             
             # Apply anti-spoofing if enabled and faces detected
             faces = await process_antispoofing(faces, image, enable_antispoofing)
@@ -943,11 +863,31 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     nms_threshold = message.get("nms_threshold", 0.3)
                     frame_timestamp = message.get("frame_timestamp", asyncio.get_event_loop().time())
                     
-                    # Perform detection
+                    # Perform detection - ensure synchronous completion
                     if model_type == "yunet" and yunet_detector:
                         yunet_detector.set_confidence_threshold(confidence_threshold)
                         yunet_detector.set_nms_threshold(nms_threshold)
-                        faces = await yunet_detector.detect_async(image)
+                        
+                        # Use enhanced detection with rotation correction and multi-scale
+                        enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
+                        enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
+                        
+                        # Force synchronous face detection to complete fully
+                        faces = yunet_detector.detect_faces_with_corrections(
+                            image, 
+                            enable_rotation_correction=enable_rotation_correction,
+                            enable_multi_scale=enable_multi_scale
+                        )
+                        
+                        # Ensure faces are fully processed before continuing
+                        if faces:
+                            logger.info(f"DEBUG: Face detection completed, found {len(faces)} faces")
+                            # Log first face details for debugging
+                            if len(faces) > 0:
+                                first_face = faces[0]
+                                logger.info(f"DEBUG: First face bbox: {first_face.get('bbox', 'N/A')}, confidence: {first_face.get('confidence', 'N/A')}")
+                        else:
+                            logger.info("DEBUG: Face detection completed, no faces found")
                     else:
                         faces = []
                     
@@ -965,7 +905,17 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     enable_antispoofing = message.get("enable_antispoofing", True)
                     
                     # Apply anti-spoofing if enabled and faces detected
+                    logger.info(f"DEBUG: About to process anti-spoofing for {len(faces)} faces")
+                    # Add small delay to ensure face detection is fully complete
+                    await asyncio.sleep(0.001)  # 1ms delay
                     faces = await process_antispoofing(faces, image, enable_antispoofing)
+                    logger.info(f"DEBUG: Anti-spoofing completed for {len(faces)} faces")
+                    
+                    # DEBUG: Log anti-spoofing results before sending to frontend
+                    if faces:
+                        for i, face in enumerate(faces):
+                            if 'antispoofing' in face:
+                                logger.info(f"DEBUG Face {i} anti-spoofing data: {face['antispoofing']}")
                     
                     # OPTIMIZATION: Compute FaceMesh ONCE per face and share result
                     # This eliminates duplicate FaceMesh calls (visualization + EdgeFace alignment)
@@ -974,16 +924,28 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                         for face in faces:
                             try:
                                 # Convert YuNet bbox format to FaceMesh format
-                                bbox = face.get('bbox', [0, 0, 0, 0])
-                                facemesh_bbox = [bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]]
+                                bbox = face.get('bbox', {})
                                 
-                                # Run FaceMesh detection in executor to avoid blocking
-                                landmarks_result = await loop.run_in_executor(
-                                    None, 
-                                    facemesh_detector.detect_landmarks, 
-                                    image, 
-                                    facemesh_bbox
-                                )
+                                # Handle both dict and list formats
+                                if isinstance(bbox, dict):
+                                    x, y, w, h = bbox.get('x', 0), bbox.get('y', 0), bbox.get('width', 0), bbox.get('height', 0)
+                                else:
+                                    x, y, w, h = bbox[0] if len(bbox) > 0 else 0, bbox[1] if len(bbox) > 1 else 0, bbox[2] if len(bbox) > 2 else 0, bbox[3] if len(bbox) > 3 else 0
+                                
+                                # Validate bbox dimensions
+                                if w > 0 and h > 0:
+                                    facemesh_bbox = [x, y, x + w, y + h]
+                                    
+                                    # Run FaceMesh detection in executor to avoid blocking
+                                    landmarks_result = await loop.run_in_executor(
+                                        None, 
+                                        facemesh_detector.detect_landmarks, 
+                                        image, 
+                                        facemesh_bbox
+                                    )
+                                else:
+                                    # Invalid bbox, skip FaceMesh detection
+                                    landmarks_result = None
                                 
                                 if landmarks_result and landmarks_result.get('landmarks_468'):
                                     # Store 468-point landmarks for visualization
@@ -1010,6 +972,12 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     processing_times.append(processing_time)
                     if len(processing_times) > max_samples:
                         processing_times.pop(0)
+                    
+                    # Convert bounding box format from dict to list for frontend compatibility
+                    for face in faces:
+                        if 'bbox' in face and isinstance(face['bbox'], dict):
+                            bbox = face['bbox']
+                            face['bbox'] = [bbox.get('x', 0), bbox.get('y', 0), bbox.get('width', 0), bbox.get('height', 0)]
                     
                     # Send response with simplified performance metrics
                     avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else processing_time
