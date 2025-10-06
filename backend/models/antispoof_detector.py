@@ -161,7 +161,7 @@ class AntiSpoof:
                 
                 spoof_score = print_score + replay_score
                 
-                is_real = (predicted_class == 0) and (live_score > 0.5)
+                is_real = (predicted_class == 0)
                 
                 result = {
                     'is_real': bool(is_real),
