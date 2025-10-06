@@ -145,7 +145,7 @@ MODEL_CONFIGS = {
         "name": "DualMiniFASNet",
         "ensemble_mode": True,  # Enable ensemble prediction
         "models": ["antispoofing_v2", "antispoofing_v1se"],  # Both models used
-        "threshold": 0.65,  #   OPTIMAL: Research-backed optimal value (was 0.7, lowered for better live acceptance)
+        "threshold": 0.75,  #   INCREASED: More strict spoof detection (was 0.70, increased for better spoof rejection)
         "voting_method": "weighted_average",  # Weighted average of both models
         "description": "  Dual MiniFASNet ensemble (V2 + V1SE) with Temporal Analysis & Adaptive Thresholding",
         "version": "rank1_optimal",
@@ -159,17 +159,17 @@ MODEL_CONFIGS = {
         "underexposure_ratio": 0.30,  #  OPTIMAL: Max 30% crushed blacks
         "enable_quality_rescue": True,  # Enable aggressive CLAHE rescue for borderline cases
         
-        #   TEMPORAL CONSISTENCY SETTINGS - RELAXED FOR LIVE CAMERA
-        "enable_temporal_analysis": True,
+        #   TEMPORAL CONSISTENCY SETTINGS - DISABLED FOR CONSISTENCY
+        "enable_temporal_analysis": False,  # DISABLED: Use fixed threshold for consistent spoof detection
         "temporal_history_size": 3,  # REDUCED: 3 frames = 100ms at 30fps (less aggressive)
         "temporal_variance_threshold": 0.02,  # RELAXED: Lower threshold for live camera movement
         "temporal_correlation_threshold": 0.95,  # RELAXED: Allow more variation for live faces
         "temporal_micro_movement_threshold": 0.0005,  # RELAXED: Lower movement threshold
         "temporal_history_timeout": 0.5,  # REDUCED: Shorter timeout for faster adaptation
         
-        #   ADAPTIVE THRESHOLD SETTINGS - CONSERVATIVE FOR LIVE CAMERA
-        "enable_adaptive_threshold": True,
-        "adaptive_base_threshold": 0.65,  #  OPTIMAL: Base threshold
+        #   ADAPTIVE THRESHOLD SETTINGS - DISABLED FOR CONSISTENCY
+        "enable_adaptive_threshold": False,  # DISABLED: Use fixed threshold for consistent spoof detection
+        "adaptive_base_threshold": 0.75,  #  INCREASED: More strict base threshold
         "adaptive_min_threshold": 0.45,  # INCREASED: Less permissive to reduce false positives
         "adaptive_max_threshold": 0.80,  # REDUCED: Less strict to allow more real faces
         "adaptive_boost_factors": {

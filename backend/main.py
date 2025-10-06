@@ -143,7 +143,9 @@ async def startup_event():
             max_batch_size=ANTISPOOFING_V2_CONFIG.get("max_batch_size", 8),
             session_options=ANTISPOOFING_V2_CONFIG.get("session_options"),
             v2_weight=ANTISPOOFING_V2_CONFIG.get("weight", 0.6),
-            v1se_weight=ANTISPOOFING_V1SE_CONFIG.get("weight", 0.4)
+            v1se_weight=ANTISPOOFING_V1SE_CONFIG.get("weight", 0.4),
+            enable_adaptive_threshold=ANTISPOOFING_CONFIG.get("enable_adaptive_threshold", False),
+            enable_temporal_analysis=ANTISPOOFING_CONFIG.get("enable_temporal_analysis", False)
         )
         
         # Initialize shared FaceMesh detector first

@@ -48,8 +48,8 @@ class DualMiniFASNetDetector:
         v1se_weight: float = 0.4,
         cache_confidence_floor: float = 0.98,
         enable_quality_gates: bool = True,
-        enable_temporal_analysis: bool = True,
-        enable_adaptive_threshold: bool = True
+        enable_temporal_analysis: bool = False,  # DISABLED: Use fixed threshold for consistent spoof detection
+        enable_adaptive_threshold: bool = False  # DISABLED: Use fixed threshold for consistent spoof detection
     ):
         self.model_v2_path = model_v2_path
         self.model_v1se_path = model_v1se_path
@@ -120,6 +120,9 @@ class DualMiniFASNetDetector:
         else:
             self.adaptive_threshold_mgr = None
             logger.warning("[WARNING] Adaptive Thresholding DISABLED")
+        
+        # Log final configuration for debugging
+        logger.info(f"[CONFIG] Final antispoofing settings: adaptive_threshold={self.enable_adaptive_threshold}, temporal_analysis={self.enable_temporal_analysis}, fixed_threshold={self.threshold}")
         
         # Initialize both models
         self._initialize_models()
@@ -873,9 +876,19 @@ class DualMiniFASNetDetector:
                     f"[ADAPTIVE-THRESHOLD] Adaptive threshold: {self.threshold:.2f} -> {adjusted_threshold:.2f} "
                     f"(boost={threshold_info['total_boost']:+.2f}). {threshold_info['explanation']}"
                 )
+            else:
+                logger.debug(f"[FIXED-THRESHOLD] Using fixed threshold: {adjusted_threshold:.2f}")
             
             # Make decision using adjusted threshold (no background class in 3-class model)
             is_real = ensemble_real_score > adjusted_threshold
+
+            # DEBUG LOGGING: Log decision process for consistency debugging
+            logger.info(
+                f"[ANTISPOOF-DECISION] Track {track_id}: "
+                f"real_score={ensemble_real_score:.3f}, fake_score={ensemble_fake_score:.3f}, "
+                f"threshold={adjusted_threshold:.3f}, decision={'REAL' if is_real else 'FAKE'}, "
+                f"v2={v2_result['real_score']:.3f}, v1se={v1se_result['real_score']:.3f}"
+            )
 
             if is_real:
                 confidence = ensemble_real_score
@@ -1047,7 +1060,10 @@ class DualMiniFASNetDetector:
 
         self._ensure_sessions_ready()
 
-        image, scaled_faces = self._ensure_scale_separation(image, face_detections)
+        # DISABLED: Scale separation logic removed for consistent results
+        # image, scaled_faces = self._ensure_scale_separation(image, face_detections)
+        scaled_faces = face_detections  # Use original faces without scaling
+        logger.debug(f"[SCALE-SEPARATION] DISABLED - Using original image and faces without scaling for consistency")
         results: List[Optional[Dict]] = [None] * len(scaled_faces)
         pending: List[Dict[str, Any]] = []
 
