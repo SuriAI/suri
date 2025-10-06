@@ -95,10 +95,11 @@ interface WebSocketMessage {
     landmarks_468?: number[][]; // FaceMesh 468 landmarks for frontend visualization
     antispoofing?: {
       is_real?: boolean | null;
+      live_score?: number;
+      spoof_score?: number;
       confidence?: number;
-      real_score?: number;
-      fake_score?: number;
       status?: 'real' | 'fake' | 'error';
+      label?: string;
     };
   }>;
   model_used?: string;

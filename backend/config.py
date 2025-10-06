@@ -97,93 +97,26 @@ MODEL_CONFIGS = {
         "name": "YuNet",
         "model_path": WEIGHTS_DIR / "face_detection_yunet_2023mar.onnx",
         "input_size": (320, 320),  # Fixed size for consistent performance
-        "score_threshold": 0.9,    # Balanced for speed vs accuracy
+        "score_threshold": 0.3,    # Match original prototype threshold
         "nms_threshold": 0.3,      # Optimized for speed vs accuracy balance
-        "top_k": 5000,             # Reduced for faster processing
+        "top_k": 1000,             # Further reduced for maximum speed
         "backend_id": 0,  # OpenCV DNN backend
         "target_id": 0,   # CPU target (can be changed to GPU if available)
-        "description": "YuNet face detection model from OpenCV Zoo - OPTIMIZED",
+        "description": "YuNet face detection model from OpenCV Zoo - SIMPLE",
         "version": "2023mar",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "max_image_size": (1920, 1080),  # Limit max resolution for performance
         "min_face_size": (10, 10),
-        "enable_dynamic_sizing": True
-    },
-    "antispoofing_v2": {
-        "name": "MiniFASNetV2",
-        "model_path": WEIGHTS_DIR / "MiniFASNetV2_80x80.onnx",
-        "input_size": (80, 80),
-        "providers": OPTIMIZED_PROVIDERS,
-        "session_options": OPTIMIZED_SESSION_OPTIONS,
-        "description": "MiniFASNet V2 anti-spoofing model - texture-based detection (2.7_80x80)",
-        "version": "2.7_80x80",
-        "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "margin": 0.2,  # Face crop margin (20%)
-        "max_batch_size": 8,
-        "enable_temporal_smoothing": True,
-        "smoothing_factor": 0.3,
-        "hysteresis_margin": 0.15,
-        "weight": 0.6,  # Higher weight for V2 (better texture detection)
-    },
-    "antispoofing_v1se": {
-        "name": "MiniFASNetV1SE",
-        "model_path": WEIGHTS_DIR / "MiniFASNetV1SE_80x80.onnx",
-        "input_size": (80, 80),
-        "providers": OPTIMIZED_PROVIDERS,
-        "session_options": OPTIMIZED_SESSION_OPTIONS,
-        "description": "MiniFASNet V1SE anti-spoofing model with Squeeze-Excitation - shape-based detection (4.0.0_80x80)",
-        "version": "4.0.0_80x80",
-        "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "margin": 0.2,  # Face crop margin (20%)
-        "max_batch_size": 8,
-        "enable_temporal_smoothing": True,
-        "smoothing_factor": 0.3,
-        "hysteresis_margin": 0.15,
-        "weight": 0.4,  # Lower weight for V1SE (complementary shape detection)
+        "enable_dynamic_sizing": True,
+        "enable_rotation_correction": True,  # Enable rotation correction for better anti-spoofing (conditional)
+        "enable_multi_scale": True  # Enable multi-scale detection for better accuracy (conditional)
     },
     "antispoofing": {
-        "name": "DualMiniFASNet",
-        "ensemble_mode": True,  # Enable ensemble prediction
-        "models": ["antispoofing_v2", "antispoofing_v1se"],  # Both models used
-        "threshold": 0.85,  #   ULTRA-STRICT: Maximum security for spoof detection (was 0.75, increased for 100% spoof rejection)
-        "voting_method": "weighted_average",  # Weighted average of both models
-        "description": "  Dual MiniFASNet ensemble (V2 + V1SE) with Temporal Analysis & Adaptive Thresholding",
-        "version": "rank1_optimal",
-        
-        #   QUALITY GATE SETTINGS 
-        "enable_quality_gates": True,
-        "min_face_resolution": 80,  # MiniFASNet requirement
-        "blur_threshold": 100.0,  #  OPTIMAL: Laplacian variance threshold
-        "brightness_range": (40, 220),  #  OPTIMAL: Valid brightness range
-        "overexposure_ratio": 0.30,  #  OPTIMAL: Max 30% blown-out pixels
-        "underexposure_ratio": 0.30,  #  OPTIMAL: Max 30% crushed blacks
-        "enable_quality_rescue": True,  # Enable aggressive CLAHE rescue for borderline cases
-        
-        #   TEMPORAL CONSISTENCY SETTINGS - DISABLED FOR CONSISTENCY
-        "enable_temporal_analysis": True,  # ENABLED: Use temporal analysis to detect static/repetitive spoof patterns
-        "temporal_history_size": 3,  # REDUCED: 3 frames = 100ms at 30fps (less aggressive)
-        "temporal_variance_threshold": 0.02,  # RELAXED: Lower threshold for live camera movement
-        "temporal_correlation_threshold": 0.95,  # RELAXED: Allow more variation for live faces
-        "temporal_micro_movement_threshold": 0.0005,  # RELAXED: Lower movement threshold
-        "temporal_history_timeout": 0.5,  # REDUCED: Shorter timeout for faster adaptation
-        
-        #   ADAPTIVE THRESHOLD SETTINGS - DISABLED FOR CONSISTENCY
-        "enable_adaptive_threshold": False,  # DISABLED: Use fixed threshold for consistent spoof detection
-        "adaptive_base_threshold": 0.75,  #  INCREASED: More strict base threshold
-        "adaptive_min_threshold": 0.45,  # INCREASED: Less permissive to reduce false positives
-        "adaptive_max_threshold": 0.80,  # REDUCED: Less strict to allow more real faces
-        "adaptive_boost_factors": {
-            "both_models_agree": 0.10,      # REDUCED: Less aggressive boosting
-            "high_quality_crop": 0.08,      # REDUCED: More conservative
-            "stable_tracking": 0.08,        # REDUCED: Less aggressive
-            "temporal_consistency": 0.10,   # REDUCED: Less temporal influence
-        },
-        "adaptive_penalty_factors": {
-            "models_disagree": 0.08,        # REDUCED: Less penalty for disagreement
-            "poor_quality": 0.08,           # REDUCED: More tolerant of quality issues
-            "short_tracking": 0.03,         # REDUCED: Less penalty for new tracks
-            "temporal_anomaly": 0.10,       # REDUCED: Less aggressive temporal penalties
-        },
+        "name": "SimpleAntiSpoof",
+        "model_path": WEIGHTS_DIR / "AntiSpoofing_print-replay_1.5_128.onnx",
+        "threshold": 0.5,
+        "description": "Simple anti-spoofing detector based on Face-AntiSpoofing prototype",
+        "version": "prototype_accurate"
     },
     "facemesh": {
         "name": "MediaPipe FaceMesh",
@@ -425,7 +358,5 @@ PORT = config["server"]["port"]
 YUNET_MODEL_PATH = config["models"]["yunet"]["model_path"]
 YUNET_CONFIG = config["models"]["yunet"]
 ANTISPOOFING_CONFIG = config["models"]["antispoofing"]
-ANTISPOOFING_V2_CONFIG = config["models"]["antispoofing_v2"]
-ANTISPOOFING_V1SE_CONFIG = config["models"]["antispoofing_v1se"]
 EDGEFACE_MODEL_PATH = config["models"]["edgeface"]["model_path"]
 EDGEFACE_CONFIG = config["models"]["edgeface"]
