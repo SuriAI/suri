@@ -31,9 +31,9 @@ if (process.platform === 'win32') {
   app.commandLine.appendSwitch('use-angle', 'default') // Let ANGLE choose best backend
 }
 
-// Suppress GPU process errors for old hardware (cosmetic fix)
-app.commandLine.appendSwitch('disable-logging')
-app.commandLine.appendSwitch('log-level', '3') // Only show fatal errors
+// Enable logging for debugging (commented out GPU error suppression)
+// app.commandLine.appendSwitch('disable-logging')
+// app.commandLine.appendSwitch('log-level', '3') // Only show fatal errors
 
 let mainWindowRef: BrowserWindow | null = null
 // Removed legacy scrfdService usage
@@ -315,15 +315,19 @@ app.whenReady().then(async () => {
     createWindow()
     
     // Start backend service
+    console.log('[Main] Starting backend service...');
     try {
         await startBackend();
+        console.log('[Main] Backend service started successfully!');
     } catch (error) {
         console.error('[ERROR] Failed to start backend service:', error);
     }
     
     // Pre-load models for optimal performance
+    console.log('[Main] Pre-loading models...');
     try {
         await preloadModels();
+        console.log('[Main] Models pre-loaded successfully!');
     } catch (error) {
         console.error('[ERROR] Failed to pre-load models:', error);
     }

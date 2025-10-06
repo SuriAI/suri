@@ -192,10 +192,11 @@ export class BackendService {
       }
 
       // Spawn the process
+      console.log(`[BackendService] Starting backend with command: ${command} ${args.join(' ')}`);
       this.process = spawn(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         detached: false,
-        windowsHide: true, // Hide console window on Windows
+        windowsHide: false, // Show console window for debugging
       });
 
       // Set up process event handlers
@@ -209,11 +210,14 @@ export class BackendService {
       this.status.startTime = new Date();
       this.status.error = undefined;
 
+      console.log(`[BackendService] Backend started successfully! PID: ${this.process.pid}, Port: ${this.config.port}`);
+
       // Start health monitoring
       this.startHealthMonitoring();
 
 
     } catch (error) {
+      console.error(`[BackendService] Failed to start backend: ${error}`);
       this.status.error = error instanceof Error ? error.message : String(error);
       this.cleanup();
       throw error;
@@ -228,12 +232,12 @@ export class BackendService {
   private setupProcessHandlers(): void {
     if (!this.process) return;
 
-    this.process.stdout?.on('data', () => {
-      // Backend stdout output ignored
+    this.process.stdout?.on('data', (data) => {
+      console.log('[Backend]', data.toString().trim());
     });
 
-    this.process.stderr?.on('data', () => {
-      // Backend stderr output ignored
+    this.process.stderr?.on('data', (data) => {
+      console.error('[Backend Error]', data.toString().trim());
     });
 
     this.process.on('error', (error) => {
