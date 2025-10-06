@@ -806,11 +806,13 @@ class DualMiniFASNetDetector:
                         ensemble_fake_score
                     )
                 
-                # CRITICAL: If temporal analysis detects SPOOF with high confidence, OVERRIDE
-                if temporal_verdict == "SPOOF" and temporal_confidence >= 0.85:
+                # CONSERVATIVE: Only override if temporal analysis is VERY confident and ensemble is borderline
+                if (temporal_verdict == "SPOOF" and temporal_confidence >= 0.90 and 
+                    ensemble_real_score < 0.7 and ensemble_fake_score > 0.6):
                     logger.warning(
                         f"🚨 TEMPORAL OVERRIDE: Track {track_id} detected as SPOOF "
-                        f"(confidence={temporal_confidence:.2f}). Reason: {temporal_analysis.get('decision_reason', 'Unknown')}"
+                        f"(temporal_conf={temporal_confidence:.2f}, ensemble_real={ensemble_real_score:.2f}). "
+                        f"Reason: {temporal_analysis.get('decision_reason', 'Unknown')}"
                     )
                     return {
                         "is_real": False,

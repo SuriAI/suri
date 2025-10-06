@@ -337,9 +337,9 @@ export class BackendService {
     imageData: ImageData | string,
     options: {
       model_type?: string;
-      confidence_threshold?: number;
       nms_threshold?: number;
       enable_antispoofing?: boolean;
+      frame_timestamp?: number;
     } = {}
   ): Promise<void> {
     if (!this.isWebSocketReady()) {
@@ -357,9 +357,9 @@ export class BackendService {
       type: 'detection_request',
       image: imageBase64,
       model_type: options.model_type || 'yunet',
-      confidence_threshold: options.confidence_threshold || 0.5,
       nms_threshold: options.nms_threshold || 0.3,
-      enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true
+      enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true,
+      frame_timestamp: options.frame_timestamp || Date.now()
     };
 
     this.websocket!.send(JSON.stringify(message));
