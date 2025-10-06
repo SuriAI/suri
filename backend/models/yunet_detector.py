@@ -61,9 +61,10 @@ class YuNet:
     def detect_faces(self, image: np.ndarray) -> List[dict]:
         """
         Detect faces in image
+        CRITICAL: Processes RGB image (Face-AntiSpoofing compatibility)
         
         Args:
-            image: Input image (BGR format)
+            image: Input image (RGB format - already converted from BGR)
             
         Returns:
             List of face detection dictionaries with bbox, confidence, and landmarks
@@ -71,13 +72,12 @@ class YuNet:
         if not self.detector:
             return []
     
-        # Store original image dimensions
         orig_height, orig_width = image.shape[:2]
         
-        # Resize image to match YuNet's expected input size
-        resized_img = cv2.resize(image, self.input_size)
+        image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         
-        # Detect faces on resized image
+        resized_img = cv2.resize(image_bgr, self.input_size)
+        
         _, faces = self.detector.detect(resized_img)
         
         if faces is None or len(faces) == 0:
@@ -94,45 +94,60 @@ class YuNet:
                 scale_x = orig_width / self.input_size[0]
                 scale_y = orig_height / self.input_size[1]
                 
-                # Make bounding box larger for better anti-spoofing accuracy
+                x1_orig = int(x * scale_x)
+                y1_orig = int(y * scale_y)
+                x2_orig = int((x + w) * scale_x)
+                y2_orig = int((y + h) * scale_y)
+                
+                x1_orig = max(0, x1_orig)
+                y1_orig = max(0, y1_orig)
+                x2_orig = min(orig_width, x2_orig)
+                y2_orig = min(orig_height, y2_orig)
+                
+                face_width_orig = x2_orig - x1_orig
+                face_height_orig = y2_orig - y1_orig
+                
+                if face_width_orig < 50 or face_height_orig < 50:
+                    continue
+                
                 bbox_expansion = self.bbox_expansion
                 
-                x1 = int((x - w * bbox_expansion) * scale_x)
-                y1 = int((y - h * bbox_expansion) * scale_y)
-                x2 = int((x + w + w * bbox_expansion) * scale_x)
-                y2 = int((y + h + h * bbox_expansion) * scale_y)
+                x1_expanded = int((x - w * bbox_expansion) * scale_x)
+                y1_expanded = int((y - h * bbox_expansion) * scale_y)
+                x2_expanded = int((x + w + w * bbox_expansion) * scale_x)
+                y2_expanded = int((y + h + h * bbox_expansion) * scale_y)
                 
-                # Ensure coordinates are within image bounds
-                x1 = max(0, x1)
-                y1 = max(0, y1)
-                x2 = min(orig_width, x2)
-                y2 = min(orig_height, y2)
+                x1_expanded = max(0, x1_expanded)
+                y1_expanded = max(0, y1_expanded)
+                x2_expanded = min(orig_width, x2_expanded)
+                y2_expanded = min(orig_height, y2_expanded)
                 
-                # Extract landmarks if available
                 landmarks = []
                 if len(face) > 5:
-                    landmarks = face[5:15]  # 10 landmarks (x1,y1,x2,y2,...,x5,y5)
-                    # Scale landmarks to original image
+                    landmarks = face[5:15]
                     scaled_landmarks = []
                     for i in range(0, len(landmarks), 2):
-                        lx = float(landmarks[i] * scale_x)  # Ensure native Python float
-                        ly = float(landmarks[i+1] * scale_y)  # Ensure native Python float
+                        lx = float(landmarks[i] * scale_x)
+                        ly = float(landmarks[i+1] * scale_y)
                         scaled_landmarks.extend([lx, ly])
                     landmarks = scaled_landmarks
                 
-                # Normalize confidence to 0-1 range
                 normalized_conf = float(conf)
                 if normalized_conf > 1.0:
-                    # If confidence is > 1, normalize it to 0-1 range
-                    # YuNet seems to return confidence in a different scale
-                    normalized_conf = min(1.0, normalized_conf / 3.0)  # Scale down from ~3.0 to 1.0
+                    normalized_conf = min(1.0, normalized_conf / 3.0)
                 
                 detection = {
                     'bbox': {
-                        'x': x1,
-                        'y': y1,
-                        'width': x2 - x1,
-                        'height': y2 - y1
+                        'x': x1_expanded,
+                        'y': y1_expanded,
+                        'width': x2_expanded - x1_expanded,
+                        'height': y2_expanded - y1_expanded
+                    },
+                    'bbox_original': {
+                        'x': x1_orig,
+                        'y': y1_orig,
+                        'width': face_width_orig,
+                        'height': face_height_orig
                     },
                     'confidence': normalized_conf,
                     'landmarks': landmarks

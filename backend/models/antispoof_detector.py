@@ -60,18 +60,17 @@ class AntiSpoof:
         Preprocess image for anti-spoofing model
         
         Args:
-            img: Input image (BGR format)
+            img: Input image (BGR format from OpenCV)
             
         Returns:
             Preprocessed image tensor
         """
         new_size = self.model_img_size
-        old_size = img.shape[:2]  # old_size is in (height, width) format
+        old_size = img.shape[:2]
 
         ratio = float(new_size) / max(old_size)
         scaled_shape = tuple([int(x * ratio) for x in old_size])
 
-        # new_size should be in (width, height) format
         img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]))
 
         delta_w = new_size - scaled_shape[1]
@@ -102,14 +101,15 @@ class AntiSpoof:
     def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float = 1.2) -> np.ndarray:
         """
         Crop face with increased bounding box for better anti-spoofing accuracy
+        Matches Face-AntiSpoofing prototype implementation exactly
         
         Args:
-            img: Input image
+            img: Input image (RGB format)
             bbox: Bounding box (x1, y1, x2, y2)
-            bbox_inc: Bounding box expansion factor
+            bbox_inc: Bounding box expansion factor (default 1.2 from prototype)
             
         Returns:
-            Cropped face image
+            Cropped face image in RGB format
         """
         real_h, real_w = img.shape[:2]
         
@@ -134,9 +134,10 @@ class AntiSpoof:
     def predict(self, imgs: List[np.ndarray]) -> List[Dict]:
         """
         Predict anti-spoofing for list of face images
+        CRITICAL: Matches Face-AntiSpoofing prototype implementation exactly
         
         Args:
-            imgs: List of face images (BGR format)
+            imgs: List of face images (RGB format - already converted from BGR)
             
         Returns:
             List of prediction results
@@ -152,46 +153,39 @@ class AntiSpoof:
                 pred = onnx_result[0]
                 pred = self.postprocessing(pred)
                 
-                # Extract scores - original model has 3 classes: 0=Live, 1=Print, 2=Replay
-                live_score = float(pred[0][0])  # Live class probability
-                print_score = float(pred[0][1])  # Print class probability  
-                replay_score = float(pred[0][2])  # Replay class probability
+                live_score = float(pred[0][0])
+                print_score = float(pred[0][1])
+                replay_score = float(pred[0][2])
                 
-                # Use argmax to determine the most likely class (like original implementation)
                 predicted_class = np.argmax(pred[0])
                 
-                # Calculate combined spoof score (Print + Replay)
                 spoof_score = print_score + replay_score
                 
-                # Determine if real based on class prediction and confidence
-                # If predicted as Live (0) and confidence is high enough, it's real
-                # Otherwise, it's spoof (Print or Replay)
-                # Use original prototype threshold (0.5)
                 is_real = (predicted_class == 0) and (live_score > 0.5)
                 
                 result = {
-                    'is_real': bool(is_real),  # Ensure native Python bool
-                    'live_score': float(live_score),  # Ensure native Python float
-                    'spoof_score': float(spoof_score),  # Ensure native Python float
-                    'confidence': float(max(live_score, spoof_score)),  # Ensure native Python float
+                    'is_real': bool(is_real),
+                    'live_score': float(live_score),
+                    'spoof_score': float(spoof_score),
+                    'confidence': float(max(live_score, spoof_score)),
                     'label': 'Live' if is_real else 'Spoof',
-                    'predicted_class': int(predicted_class),  # Ensure native Python int
-                    'print_score': float(print_score),  # Ensure native Python float
-                    'replay_score': float(replay_score)  # Ensure native Python float
+                    'predicted_class': int(predicted_class),
+                    'print_score': float(print_score),
+                    'replay_score': float(replay_score)
                 }
                 results.append(result)
                 
             except Exception as e:
                 logger.error(f"Error in anti-spoofing prediction: {e}")
                 results.append({
-                    'is_real': False,  # Native Python bool
-                    'live_score': 0.0,  # Native Python float
-                    'spoof_score': 1.0,  # Native Python float
-                    'confidence': 0.0,  # Native Python float
+                    'is_real': False,
+                    'live_score': 0.0,
+                    'spoof_score': 1.0,
+                    'confidence': 0.0,
                     'label': 'Error',
-                    'predicted_class': 1,  # Native Python int (assume spoof on error)
-                    'print_score': 0.5,  # Native Python float
-                    'replay_score': 0.5  # Native Python float
+                    'predicted_class': 1,
+                    'print_score': 0.5,
+                    'replay_score': 0.5
                 })
         
         return results
@@ -199,9 +193,10 @@ class AntiSpoof:
     def detect_faces(self, image: np.ndarray, face_detections: List[Dict]) -> List[Dict]:
         """
         Process face detections with anti-spoofing
+        CRITICAL: Input is already RGB from main.py - NO CONVERSION NEEDED
         
         Args:
-            image: Input image
+            image: Input image (RGB format - already converted in main.py)
             face_detections: List of face detection dictionaries
             
         Returns:
@@ -210,7 +205,6 @@ class AntiSpoof:
         if not face_detections:
             return []
         
-        # Extract face crops
         face_crops = []
         valid_detections = []
         
@@ -227,13 +221,12 @@ class AntiSpoof:
             if w <= 0 or h <= 0:
                 continue
             
-            # Extract face crop with increased bounding box for better accuracy
             try:
                 face_crop = self.increased_crop(image, (x, y, x+w, y+h), bbox_inc=1.2)
                 if face_crop is None or face_crop.size == 0:
                     continue
             except Exception as e:
-                # Fallback to simple crop if increased_crop fails
+                logger.warning(f"increased_crop failed, using simple crop: {e}")
                 face_crop = image[y:y+h, x:x+w]
                 if face_crop.size == 0:
                     continue
@@ -244,18 +237,14 @@ class AntiSpoof:
         if not face_crops:
             return face_detections
         
-        # Get anti-spoofing predictions
         predictions = self.predict(face_crops)
         
-        # Combine results
         results = []
         for i, detection in enumerate(face_detections):
             if i < len(valid_detections):
-                # This detection was processed
                 valid_idx = valid_detections.index(detection)
                 prediction = predictions[valid_idx]
                 
-                # Add anti-spoofing results to detection
                 detection['antispoofing'] = {
                     'is_real': prediction['is_real'],
                     'live_score': prediction['live_score'],
@@ -268,17 +257,16 @@ class AntiSpoof:
                     'replay_score': prediction['replay_score']
                 }
             else:
-                # This detection was not processed (invalid bbox, etc.)
                 detection['antispoofing'] = {
-                    'is_real': False,  # Native Python bool
-                    'live_score': 0.0,  # Native Python float
-                    'spoof_score': 1.0,  # Native Python float
-                    'confidence': 0.0,  # Native Python float
+                    'is_real': False,
+                    'live_score': 0.0,
+                    'spoof_score': 1.0,
+                    'confidence': 0.0,
                     'label': 'Error',
                     'status': 'error',
-                    'predicted_class': 1,  # Native Python int (assume spoof on error)
-                    'print_score': 0.5,  # Native Python float
-                    'replay_score': 0.5  # Native Python float
+                    'predicted_class': 1,
+                    'print_score': 0.5,
+                    'replay_score': 0.5
                 }
             
             results.append(detection)

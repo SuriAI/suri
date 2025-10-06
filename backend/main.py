@@ -125,19 +125,18 @@ async def startup_event():
     """Initialize models on startup"""
     global yunet_detector, optimized_antispoofing_detector, edgeface_detector, facemesh_detector, face_tracker, attendance_database
     try:
-        # Initialize simple YuNet face detector
         yunet_detector = YuNet(
             model_path=str(YUNET_MODEL_PATH),
             input_size=tuple(YUNET_CONFIG["input_size"]),
             conf_threshold=YUNET_CONFIG["score_threshold"],
             nms_threshold=YUNET_CONFIG["nms_threshold"],
-            bbox_expansion=0.1
+            top_k=YUNET_CONFIG["top_k"],
+            bbox_expansion=YUNET_CONFIG.get("bbox_expansion", 0.3)
         )
         
-        # Initialize simple Anti-Spoofing detector
         optimized_antispoofing_detector = AntiSpoof(
             model_path=str(ANTISPOOFING_CONFIG["model_path"]),
-            model_img_size=128
+            model_img_size=ANTISPOOFING_CONFIG.get("model_img_size", 128)
         )
         
         # Initialize shared FaceMesh detector first
@@ -310,43 +309,40 @@ async def detect_faces(request: DetectionRequest):
     start_time = time.time()
     
     try:
-        # Decode base64 image
-        image = decode_base64_image(request.image)
+        image_bgr = decode_base64_image(request.image)
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         
-        # Select detector based on model type
         if request.model_type == "yunet":
             if not yunet_detector:
                 raise HTTPException(status_code=500, detail="YuNet model not available")
             
-            # Update detector parameters
             yunet_detector.set_confidence_threshold(request.confidence_threshold)
             yunet_detector.set_nms_threshold(request.nms_threshold)
             
-            # Perform face detection with rotation correction and multi-scale
-            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
-            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
-            faces = yunet_detector.detect_faces_with_corrections(
-                image, 
-                enable_rotation_correction=enable_rotation_correction,
-                enable_multi_scale=enable_multi_scale
-            )
+            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", False)
+            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", False)
             
-            # Apply anti-spoofing if enabled and faces detected
-            faces = await process_antispoofing(faces, image, request.enable_antispoofing)
+            if enable_rotation_correction or enable_multi_scale:
+                faces = yunet_detector.detect_faces_with_corrections(
+                    image_rgb, 
+                    enable_rotation_correction=enable_rotation_correction,
+                    enable_multi_scale=enable_multi_scale
+                )
+            else:
+                faces = yunet_detector.detect_faces(image_rgb)
             
-            # Add FaceMesh 468 landmarks for frontend visualization
+            faces = await process_antispoofing(faces, image_rgb, request.enable_antispoofing)
+            
             if faces and facemesh_detector:
                 try:
                     for face in faces:
-                        bbox = face['bbox']  # [x, y, width, height]
+                        bbox_orig = face.get('bbox_original', face['bbox'])
                         
-                        # Convert bbox to format expected by FaceMesh: [x1, y1, x2, y2]
-                        x, y, w, h = bbox
+                        x, y, w, h = bbox_orig['x'], bbox_orig['y'], bbox_orig['width'], bbox_orig['height']
                         face_bbox = [x, y, x + w, y + h]
                         
-                        # Detect FaceMesh landmarks for this face (run in executor for async)
                         loop = asyncio.get_event_loop()
-                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image, face_bbox)
+                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image_bgr, face_bbox)
                         
                         if facemesh_result and 'landmarks_468' in facemesh_result:
                             # Add 468-point landmarks for frontend visualization
@@ -393,55 +389,52 @@ async def detect_faces_upload(
     start_time = time.time()
     
     try:
-        # Read uploaded file
         contents = await file.read()
         
-        # Convert to OpenCV image
         nparr = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        image_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        if image is None:
+        if image_bgr is None:
             raise HTTPException(status_code=400, detail="Invalid image file")
         
-        # Select detector based on model type
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        
         if model_type == "yunet":
             if not yunet_detector:
                 raise HTTPException(status_code=500, detail="YuNet model not available")
             
-            # Update detector parameters
             yunet_detector.set_confidence_threshold(confidence_threshold)
             yunet_detector.set_nms_threshold(nms_threshold)
             
-            # Perform face detection with rotation correction and multi-scale
-            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
-            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
-            faces = yunet_detector.detect_faces_with_corrections(
-                image, 
-                enable_rotation_correction=enable_rotation_correction,
-                enable_multi_scale=enable_multi_scale
-            )
+            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", False)
+            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", False)
             
-            # Apply anti-spoofing if enabled and faces detected
-            faces = await process_antispoofing(faces, image, enable_antispoofing)
+            if enable_rotation_correction or enable_multi_scale:
+                faces = yunet_detector.detect_faces_with_corrections(
+                    image_rgb, 
+                    enable_rotation_correction=enable_rotation_correction,
+                    enable_multi_scale=enable_multi_scale
+                )
+            else:
+                faces = yunet_detector.detect_faces(image_rgb)
+            
+            faces = await process_antispoofing(faces, image_rgb, enable_antispoofing)
             
             # Add FaceMesh 468 landmarks for frontend visualization
             if facemesh_detector and faces:
                 for face in faces:
                     try:
-                        # Convert YuNet bbox format to FaceMesh expected format
-                        bbox = face.get('bbox', [])
-                        if len(bbox) >= 4:
-                            x, y, w, h = bbox
-                            face_bbox = [x, y, x + w, y + h]
-                            
-                            # Detect FaceMesh landmarks for this face (run in executor for async)
-                            loop = asyncio.get_event_loop()
-                            facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image, face_bbox)
-                            
-                            if facemesh_result and 'landmarks_468' in facemesh_result:
-                                face['landmarks_468'] = facemesh_result['landmarks_468']
-                            else:
-                                face['landmarks_468'] = []  # Empty array if detection failed
+                        bbox_orig = face.get('bbox_original', face.get('bbox', {}))
+                        x, y, w, h = bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)
+                        face_bbox = [x, y, x + w, y + h]
+                        
+                        loop = asyncio.get_event_loop()
+                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image_bgr, face_bbox)
+                        
+                        if facemesh_result and 'landmarks_468' in facemesh_result:
+                            face['landmarks_468'] = facemesh_result['landmarks_468']
+                        else:
+                            face['landmarks_468'] = []
                     except Exception as e:
                         logger.warning(f"FaceMesh detection failed for face: {e}")
                         face['landmarks_468'] = []  # Empty array on error
@@ -476,12 +469,10 @@ async def recognize_face(request: FaceRecognitionRequest):
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="EdgeFace detector not available")
         
-        # Decode base64 image
-        image = decode_base64_image(request.image)
+        image_bgr = decode_base64_image(request.image)
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         
-        # CRITICAL SECURITY FIX: Perform antispoofing validation before recognition
         if optimized_antispoofing_detector:
-            # Create a temporary face detection from the bbox for antispoofing
             temp_face = {
                 'bbox': {
                     'x': request.bbox[0],
@@ -489,12 +480,11 @@ async def recognize_face(request: FaceRecognitionRequest):
                     'width': request.bbox[2],
                     'height': request.bbox[3]
                 },
-                'confidence': 1.0,  # High confidence since we're using provided bbox
-                'track_id': -1  # Temporary track ID
+                'confidence': 1.0,
+                'track_id': -1
             }
             
-            # Run antispoofing detection
-            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, [temp_face])
+            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image_rgb, [temp_face])
             
             if antispoofing_results and len(antispoofing_results) > 0:
                 antispoofing_data = antispoofing_results[0].get('antispoofing', {})
@@ -525,8 +515,7 @@ async def recognize_face(request: FaceRecognitionRequest):
                         error=f"Recognition blocked: face status {status}"
                     )
         
-        # Perform face recognition only if antispoofing passes
-        result = await edgeface_detector.recognize_face_async(image, request.bbox)
+        result = await edgeface_detector.recognize_face_async(image_bgr, request.bbox)
         
         processing_time = time.time() - start_time
         
@@ -561,12 +550,10 @@ async def register_person(request: FaceRegistrationRequest):
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="EdgeFace detector not available")
         
-        # Decode base64 image
-        image = decode_base64_image(request.image)
+        image_bgr = decode_base64_image(request.image)
+        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         
-        # CRITICAL SECURITY FIX: Perform antispoofing validation before registration
         if optimized_antispoofing_detector:
-            # Create a temporary face detection from the bbox for antispoofing
             temp_face = {
                 'bbox': {
                     'x': request.bbox[0],
@@ -574,12 +561,11 @@ async def register_person(request: FaceRegistrationRequest):
                     'width': request.bbox[2],
                     'height': request.bbox[3]
                 },
-                'confidence': 1.0,  # High confidence since we're using provided bbox
-                'track_id': -1  # Temporary track ID
+                'confidence': 1.0,
+                'track_id': -1
             }
             
-            # Run antispoofing detection
-            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, [temp_face])
+            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image_rgb, [temp_face])
             
             if antispoofing_results and len(antispoofing_results) > 0:
                 antispoofing_data = antispoofing_results[0].get('antispoofing', {})
@@ -610,10 +596,9 @@ async def register_person(request: FaceRegistrationRequest):
                         error=f"Registration blocked: face status {status}"
                     )
         
-        # Register person only if antispoofing passes
         result = await edgeface_detector.register_person_async(
             request.person_id, 
-            image, 
+            image_bgr, 
             request.bbox
         )
         
@@ -857,27 +842,29 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     import time
                     start_time = time.time()
                     
-                    image = decode_base64_image(message["image"])
+                    image_bgr = decode_base64_image(message["image"])
+                    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+                    
                     model_type = message.get("model_type", "yunet")
                     confidence_threshold = message.get("confidence_threshold", 0.6)
                     nms_threshold = message.get("nms_threshold", 0.3)
                     frame_timestamp = message.get("frame_timestamp", asyncio.get_event_loop().time())
                     
-                    # Perform detection - ensure synchronous completion
                     if model_type == "yunet" and yunet_detector:
                         yunet_detector.set_confidence_threshold(confidence_threshold)
                         yunet_detector.set_nms_threshold(nms_threshold)
                         
-                        # Use enhanced detection with rotation correction and multi-scale
-                        enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", True)
-                        enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", True)
+                        enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", False)
+                        enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", False)
                         
-                        # Force synchronous face detection to complete fully
-                        faces = yunet_detector.detect_faces_with_corrections(
-                            image, 
-                            enable_rotation_correction=enable_rotation_correction,
-                            enable_multi_scale=enable_multi_scale
-                        )
+                        if enable_rotation_correction or enable_multi_scale:
+                            faces = yunet_detector.detect_faces_with_corrections(
+                                image_rgb, 
+                                enable_rotation_correction=enable_rotation_correction,
+                                enable_multi_scale=enable_multi_scale
+                            )
+                        else:
+                            faces = yunet_detector.detect_faces(image_rgb)
                         
                         # Ensure faces are fully processed before continuing
                         if faces:
@@ -891,24 +878,18 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     else:
                         faces = []
                     
-                    # Apply face tracking to assign consistent track IDs
                     if faces and face_tracker:
                         try:
-                            # Update tracker with detected faces
                             loop = asyncio.get_event_loop()
                             faces = await loop.run_in_executor(None, face_tracker.update, faces)
                         except Exception as e:
                             logger.warning(f"Face tracking failed: {e}")
-                            # Continue without tracking on error
                     
-                    # Apply anti-spoofing detection if enabled and faces detected
                     enable_antispoofing = message.get("enable_antispoofing", True)
                     
-                    # Apply anti-spoofing if enabled and faces detected
                     logger.info(f"DEBUG: About to process anti-spoofing for {len(faces)} faces")
-                    # Add small delay to ensure face detection is fully complete
-                    await asyncio.sleep(0.001)  # 1ms delay
-                    faces = await process_antispoofing(faces, image, enable_antispoofing)
+                    await asyncio.sleep(0.001)
+                    faces = await process_antispoofing(faces, image_rgb, enable_antispoofing)
                     logger.info(f"DEBUG: Anti-spoofing completed for {len(faces)} faces")
                     
                     # DEBUG: Log anti-spoofing results before sending to frontend
@@ -917,34 +898,27 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                             if 'antispoofing' in face:
                                 logger.info(f"DEBUG Face {i} anti-spoofing data: {face['antispoofing']}")
                     
-                    # OPTIMIZATION: Compute FaceMesh ONCE per face and share result
-                    # This eliminates duplicate FaceMesh calls (visualization + EdgeFace alignment)
                     if faces and facemesh_detector:
                         loop = asyncio.get_event_loop()
                         for face in faces:
                             try:
-                                # Convert YuNet bbox format to FaceMesh format
-                                bbox = face.get('bbox', {})
+                                bbox_orig = face.get('bbox_original', face.get('bbox', {}))
                                 
-                                # Handle both dict and list formats
-                                if isinstance(bbox, dict):
-                                    x, y, w, h = bbox.get('x', 0), bbox.get('y', 0), bbox.get('width', 0), bbox.get('height', 0)
+                                if isinstance(bbox_orig, dict):
+                                    x, y, w, h = bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)
                                 else:
-                                    x, y, w, h = bbox[0] if len(bbox) > 0 else 0, bbox[1] if len(bbox) > 1 else 0, bbox[2] if len(bbox) > 2 else 0, bbox[3] if len(bbox) > 3 else 0
+                                    x, y, w, h = bbox_orig[0] if len(bbox_orig) > 0 else 0, bbox_orig[1] if len(bbox_orig) > 1 else 0, bbox_orig[2] if len(bbox_orig) > 2 else 0, bbox_orig[3] if len(bbox_orig) > 3 else 0
                                 
-                                # Validate bbox dimensions
                                 if w > 0 and h > 0:
                                     facemesh_bbox = [x, y, x + w, y + h]
                                     
-                                    # Run FaceMesh detection in executor to avoid blocking
                                     landmarks_result = await loop.run_in_executor(
                                         None, 
                                         facemesh_detector.detect_landmarks, 
-                                        image, 
+                                        image_bgr, 
                                         facemesh_bbox
                                     )
                                 else:
-                                    # Invalid bbox, skip FaceMesh detection
                                     landmarks_result = None
                                 
                                 if landmarks_result and landmarks_result.get('landmarks_468'):
@@ -973,11 +947,10 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     if len(processing_times) > max_samples:
                         processing_times.pop(0)
                     
-                    # Convert bounding box format from dict to list for frontend compatibility
                     for face in faces:
                         if 'bbox' in face and isinstance(face['bbox'], dict):
-                            bbox = face['bbox']
-                            face['bbox'] = [bbox.get('x', 0), bbox.get('y', 0), bbox.get('width', 0), bbox.get('height', 0)]
+                            bbox_orig = face.get('bbox_original', face['bbox'])
+                            face['bbox'] = [bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)]
                     
                     # Send response with simplified performance metrics
                     avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else processing_time
