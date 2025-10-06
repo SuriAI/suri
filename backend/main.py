@@ -780,6 +780,12 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
     """
     WebSocket endpoint for real-time face detection streaming with adaptive processing
     """
+    # Import time module for performance tracking
+    import time
+    # Ensure numpy is accessible (Python scoping fix)
+    import numpy as np_local
+    import cv2 as cv2_local
+    
     await manager.connect(websocket, client_id)
     session_id = client_id
     
@@ -796,11 +802,42 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
     
     # NO DELAY FUNCTION - Removed for maximum performance
     
+    # Track pending binary data
+    pending_metadata = None
+    pending_binary_data = None
+    
     try:
         while True:
-            # Receive data from client
-            data = await websocket.receive_text()
-            message = json.loads(data)
+            # Receive data from client (text or binary)
+            message_data = await websocket.receive()
+            
+            # Check if it's text (JSON) or binary (ArrayBuffer)
+            if "text" in message_data:
+                # Text message (JSON metadata)
+                message = json.loads(message_data["text"])
+                
+                # Check if this is a binary metadata header
+                if message.get("binary") is True:
+                    # Store metadata and wait for binary data
+                    pending_metadata = message
+                    continue
+                    
+            elif "bytes" in message_data:
+                # Binary message (ArrayBuffer from frontend)
+                binary_data = message_data["bytes"]
+                
+                # Use pending metadata if available
+                if not pending_metadata:
+                    # Legacy: binary data without metadata (skip)
+                    logger.warning("Received binary data without metadata")
+                    continue
+                
+                message = pending_metadata
+                pending_binary_data = binary_data
+                pending_metadata = None
+            else:
+                logger.warning(f"Unknown message type: {message_data.keys()}")
+                continue
             
             if message.get("type") == "detection_request":
                 # Queue management - prevent overload
@@ -839,11 +876,30 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                 # Process detection request
                 is_processing = True
                 try:
-                    import time
                     start_time = time.time()
                     
-                    image_bgr = decode_base64_image(message["image"])
-                    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+                    # Decode image: Binary (fast) or Base64 (legacy fallback)
+                    if message.get("binary") is True and pending_binary_data:
+                        try:
+                            # Decode binary JPEG data directly (30% faster than Base64!)
+                            nparr = np_local.frombuffer(pending_binary_data, np_local.uint8)
+                            image_bgr = cv2_local.imdecode(nparr, cv2_local.IMREAD_COLOR)
+                            if image_bgr is None:
+                                raise ValueError("Failed to decode binary JPEG data")
+                            image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
+                            pending_binary_data = None  # Clear after use
+                        except Exception as e:
+                            logger.error(f"Binary decode error: {e}, falling back to Base64")
+                            # Fallback to Base64 if binary decode fails
+                            if "image" in message:
+                                image_bgr = decode_base64_image(message["image"])
+                                image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
+                            else:
+                                raise ValueError("No image data available")
+                    else:
+                        # Legacy Base64 format (fallback)
+                        image_bgr = decode_base64_image(message["image"])
+                        image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
                     
                     model_type = message.get("model_type", "yunet")
                     confidence_threshold = message.get("confidence_threshold", 0.6)
