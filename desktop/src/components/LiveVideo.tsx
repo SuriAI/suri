@@ -60,6 +60,18 @@ interface WebSocketDetectionResponse {
   faces?: WebSocketFaceData[];
   model_used?: string;
   processing_time?: number;
+  timestamp?: number;
+  frame_timestamp?: number;  // Original frame timestamp for ordering
+  frame_dropped?: boolean;
+  performance_metrics?: {
+    actual_fps?: number;
+    avg_processing_time?: number;
+    overload_counter?: number;
+    samples_count?: number;
+    queue_size?: number;
+    dropped_frames?: number;
+    max_performance_mode?: boolean;
+  };
 }
 
 interface WebSocketConnectionMessage {
@@ -106,6 +118,7 @@ export default function LiveVideo() {
   const [websocketStatus, setWebsocketStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const backendServiceReadyRef = useRef(false);
   const lastDetectionRef = useRef<DetectionResult | null>(null);
+  const lastFrameTimestampRef = useRef<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>('');
@@ -713,6 +726,19 @@ export default function LiveVideo() {
         backendServiceRef.current.onMessage('detection_response', (data: WebSocketDetectionResponse) => {
         // Reduced logging for performance
         
+        // FRAME ORDERING: Check if this response is for the most recent frame
+        const responseFrameTimestamp = data.frame_timestamp || 0;
+        const lastFrameTimestamp = lastFrameTimestampRef.current || 0;
+        
+        // Skip outdated responses to prevent inconsistent results
+        if (responseFrameTimestamp < lastFrameTimestamp) {
+          console.debug(`⏭️ Skipping outdated frame response: ${responseFrameTimestamp} < ${lastFrameTimestamp}`);
+          return;
+        }
+        
+        // Update last processed frame timestamp
+        lastFrameTimestampRef.current = responseFrameTimestamp;
+        
         // ACCURATE FPS calculation with rolling average
         const now = Date.now();
         const fpsTracking = fpsTrackingRef.current;
@@ -880,7 +906,7 @@ export default function LiveVideo() {
 
   // Process current frame directly without queue
   const processCurrentFrame = useCallback(() => {
-    // OPTIMIZATION: Enhanced frame skipping logic
+    // OPTIMIZATION: Enhanced frame skipping logic with frame ID tracking
     if (isProcessingRef.current || 
         !backendServiceRef.current?.isWebSocketReady() || 
         !detectionEnabledRef.current ||
@@ -897,11 +923,15 @@ export default function LiveVideo() {
 
       isProcessingRef.current = true;
       
+      // Add frame timestamp for synchronization
+      const frameTimestamp = Date.now();
+      
       // Backend handles all threshold configuration
       backendServiceRef.current.sendDetectionRequest(frameData, {
         model_type: 'yunet',
         nms_threshold: 0.3,
-        enable_antispoofing: true
+        enable_antispoofing: true,
+        frame_timestamp: frameTimestamp  // Add timestamp for frame ordering
       }).catch(error => {
         console.error('❌ WebSocket detection request failed:', error);
         isProcessingRef.current = false;

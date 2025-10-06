@@ -159,30 +159,30 @@ MODEL_CONFIGS = {
         "underexposure_ratio": 0.30,  #  OPTIMAL: Max 30% crushed blacks
         "enable_quality_rescue": True,  # Enable aggressive CLAHE rescue for borderline cases
         
-        #   TEMPORAL CONSISTENCY SETTINGS 
+        #   TEMPORAL CONSISTENCY SETTINGS - RELAXED FOR LIVE CAMERA
         "enable_temporal_analysis": True,
-        "temporal_history_size": 5,  #  OPTIMAL: 5 frames = 166ms at 30fps
-        "temporal_variance_threshold": 0.03,  #  OPTIMAL: Min variance for real faces
-        "temporal_correlation_threshold": 0.97,  #  OPTIMAL: Max correlation for real faces
-        "temporal_micro_movement_threshold": 0.001,  #  OPTIMAL: Min movement for real faces
-        "temporal_history_timeout": 1.0,  # Seconds
+        "temporal_history_size": 3,  # REDUCED: 3 frames = 100ms at 30fps (less aggressive)
+        "temporal_variance_threshold": 0.02,  # RELAXED: Lower threshold for live camera movement
+        "temporal_correlation_threshold": 0.95,  # RELAXED: Allow more variation for live faces
+        "temporal_micro_movement_threshold": 0.0005,  # RELAXED: Lower movement threshold
+        "temporal_history_timeout": 0.5,  # REDUCED: Shorter timeout for faster adaptation
         
-        #   ADAPTIVE THRESHOLD SETTINGS 
+        #   ADAPTIVE THRESHOLD SETTINGS - CONSERVATIVE FOR LIVE CAMERA
         "enable_adaptive_threshold": True,
         "adaptive_base_threshold": 0.65,  #  OPTIMAL: Base threshold
-        "adaptive_min_threshold": 0.40,  #  OPTIMAL: Minimum allowed (very permissive)
-        "adaptive_max_threshold": 0.85,  #  OPTIMAL: Maximum allowed (very strict)
+        "adaptive_min_threshold": 0.45,  # INCREASED: Less permissive to reduce false positives
+        "adaptive_max_threshold": 0.80,  # REDUCED: Less strict to allow more real faces
         "adaptive_boost_factors": {
-            "both_models_agree": 0.15,      #  OPTIMAL: Models consensus bonus
-            "high_quality_crop": 0.10,      #  OPTIMAL: Clear image bonus
-            "stable_tracking": 0.10,        #  OPTIMAL: Long history bonus
-            "temporal_consistency": 0.15,   #  OPTIMAL: Natural behavior bonus
+            "both_models_agree": 0.10,      # REDUCED: Less aggressive boosting
+            "high_quality_crop": 0.08,      # REDUCED: More conservative
+            "stable_tracking": 0.08,        # REDUCED: Less aggressive
+            "temporal_consistency": 0.10,   # REDUCED: Less temporal influence
         },
         "adaptive_penalty_factors": {
-            "models_disagree": 0.10,        #  OPTIMAL: Conflicting signals penalty
-            "poor_quality": 0.10,           #  OPTIMAL: Bad image penalty
-            "short_tracking": 0.05,         #  OPTIMAL: New track penalty
-            "temporal_anomaly": 0.15,       #  OPTIMAL: Suspicious pattern penalty
+            "models_disagree": 0.08,        # REDUCED: Less penalty for disagreement
+            "poor_quality": 0.08,           # REDUCED: More tolerant of quality issues
+            "short_tracking": 0.03,         # REDUCED: Less penalty for new tracks
+            "temporal_anomaly": 0.10,       # REDUCED: Less aggressive temporal penalties
         },
     },
     "facemesh": {

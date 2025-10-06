@@ -847,6 +847,7 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     model_type = message.get("model_type", "yunet")
                     confidence_threshold = message.get("confidence_threshold", 0.6)
                     nms_threshold = message.get("nms_threshold", 0.3)
+                    frame_timestamp = message.get("frame_timestamp", asyncio.get_event_loop().time())
                     
                     # Perform detection
                     if model_type == "yunet" and yunet_detector:
@@ -927,6 +928,7 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                         "model_used": model_type,
                         "processing_time": processing_time,
                         "timestamp": asyncio.get_event_loop().time(),
+                        "frame_timestamp": frame_timestamp,  # Include original frame timestamp
                         "frame_dropped": False,
                         "performance_metrics": {
                             "actual_fps": actual_fps,
