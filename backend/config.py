@@ -96,27 +96,30 @@ MODEL_CONFIGS = {
     "yunet": {
         "name": "YuNet",
         "model_path": WEIGHTS_DIR / "face_detection_yunet_2023mar.onnx",
-        "input_size": (320, 320),  # Fixed size for consistent performance
-        "score_threshold": 0.3,    # Match original prototype threshold
-        "nms_threshold": 0.3,      # Optimized for speed vs accuracy balance
-        "top_k": 1000,             # Further reduced for maximum speed
-        "backend_id": 0,  # OpenCV DNN backend
-        "target_id": 0,   # CPU target (can be changed to GPU if available)
-        "description": "YuNet face detection model from OpenCV Zoo - SIMPLE",
+        "input_size": (320, 320),
+        "score_threshold": 0.4,
+        "nms_threshold": 0.2,
+        "top_k": 100,
+        "bbox_expansion": 0.15,
+        "backend_id": 0,
+        "target_id": 0,
+        "description": "YuNet face detection - No bbox expansion for precise anti-spoofing",
         "version": "2023mar",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "max_image_size": (1920, 1080),  # Limit max resolution for performance
-        "min_face_size": (10, 10),
+        "max_image_size": (1920, 1080),
+        "min_face_size": (50, 50),
         "enable_dynamic_sizing": True,
-        "enable_rotation_correction": True,  # Enable rotation correction for better anti-spoofing (conditional)
-        "enable_multi_scale": True  # Enable multi-scale detection for better accuracy (conditional)
+        "enable_rotation_correction": False,
+        "enable_multi_scale": False
     },
     "antispoofing": {
         "name": "SimpleAntiSpoof",
         "model_path": WEIGHTS_DIR / "AntiSpoofing_print-replay_1.5_128.onnx",
         "threshold": 0.5,
-        "description": "Simple anti-spoofing detector based on Face-AntiSpoofing prototype",
-        "version": "prototype_accurate"
+        "bbox_inc": 1.2,
+        "model_img_size": 128,
+        "description": "Anti-spoofing detector - Matches Face-AntiSpoofing prototype exactly",
+        "version": "prototype_accurate_fixed"
     },
     "facemesh": {
         "name": "MediaPipe FaceMesh",
