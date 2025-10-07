@@ -309,8 +309,8 @@ async def detect_faces(request: DetectionRequest):
     start_time = time.time()
     
     try:
-        image_bgr = decode_base64_image(request.image)
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # OPTIMIZATION: Keep BGR format throughout (OpenCV native format)
+        image = decode_base64_image(request.image)  # Returns BGR
         
         if request.model_type == "yunet":
             if not yunet_detector:
@@ -324,14 +324,14 @@ async def detect_faces(request: DetectionRequest):
             
             if enable_rotation_correction or enable_multi_scale:
                 faces = yunet_detector.detect_faces_with_corrections(
-                    image_rgb, 
+                    image, 
                     enable_rotation_correction=enable_rotation_correction,
                     enable_multi_scale=enable_multi_scale
                 )
             else:
-                faces = yunet_detector.detect_faces(image_rgb)
+                faces = yunet_detector.detect_faces(image)
             
-            faces = await process_antispoofing(faces, image_rgb, request.enable_antispoofing)
+            faces = await process_antispoofing(faces, image, request.enable_antispoofing)
             
             if faces and facemesh_detector:
                 try:
@@ -342,7 +342,7 @@ async def detect_faces(request: DetectionRequest):
                         face_bbox = [x, y, x + w, y + h]
                         
                         loop = asyncio.get_event_loop()
-                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image_bgr, face_bbox)
+                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image, face_bbox)
                         
                         if facemesh_result and 'landmarks_468' in facemesh_result:
                             # Add 468-point landmarks for frontend visualization
@@ -397,7 +397,8 @@ async def detect_faces_upload(
         if image_bgr is None:
             raise HTTPException(status_code=400, detail="Invalid image file")
         
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # OPTIMIZATION: Keep BGR format (no conversion needed)
+        image = image_bgr
         
         if model_type == "yunet":
             if not yunet_detector:
@@ -411,14 +412,14 @@ async def detect_faces_upload(
             
             if enable_rotation_correction or enable_multi_scale:
                 faces = yunet_detector.detect_faces_with_corrections(
-                    image_rgb, 
+                    image, 
                     enable_rotation_correction=enable_rotation_correction,
                     enable_multi_scale=enable_multi_scale
                 )
             else:
-                faces = yunet_detector.detect_faces(image_rgb)
+                faces = yunet_detector.detect_faces(image)
             
-            faces = await process_antispoofing(faces, image_rgb, enable_antispoofing)
+            faces = await process_antispoofing(faces, image, enable_antispoofing)
             
             # Add FaceMesh 468 landmarks for frontend visualization
             if facemesh_detector and faces:
@@ -429,7 +430,7 @@ async def detect_faces_upload(
                         face_bbox = [x, y, x + w, y + h]
                         
                         loop = asyncio.get_event_loop()
-                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image_bgr, face_bbox)
+                        facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image, face_bbox)
                         
                         if facemesh_result and 'landmarks_468' in facemesh_result:
                             face['landmarks_468'] = facemesh_result['landmarks_468']
@@ -469,8 +470,8 @@ async def recognize_face(request: FaceRecognitionRequest):
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="EdgeFace detector not available")
         
-        image_bgr = decode_base64_image(request.image)
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # OPTIMIZATION: Keep BGR format (no conversion needed)
+        image = decode_base64_image(request.image)
         
         if optimized_antispoofing_detector:
             temp_face = {
@@ -484,7 +485,7 @@ async def recognize_face(request: FaceRecognitionRequest):
                 'track_id': -1
             }
             
-            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image_rgb, [temp_face])
+            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, [temp_face])
             
             if antispoofing_results and len(antispoofing_results) > 0:
                 antispoofing_data = antispoofing_results[0].get('antispoofing', {})
@@ -515,7 +516,7 @@ async def recognize_face(request: FaceRecognitionRequest):
                         error=f"Recognition blocked: face status {status}"
                     )
         
-        result = await edgeface_detector.recognize_face_async(image_bgr, request.bbox)
+        result = await edgeface_detector.recognize_face_async(image, request.bbox)
         
         processing_time = time.time() - start_time
         
@@ -550,8 +551,8 @@ async def register_person(request: FaceRegistrationRequest):
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="EdgeFace detector not available")
         
-        image_bgr = decode_base64_image(request.image)
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # OPTIMIZATION: Keep BGR format (no conversion needed)
+        image = decode_base64_image(request.image)
         
         if optimized_antispoofing_detector:
             temp_face = {
@@ -565,7 +566,7 @@ async def register_person(request: FaceRegistrationRequest):
                 'track_id': -1
             }
             
-            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image_rgb, [temp_face])
+            antispoofing_results = await optimized_antispoofing_detector.detect_faces_async(image, [temp_face])
             
             if antispoofing_results and len(antispoofing_results) > 0:
                 antispoofing_data = antispoofing_results[0].get('antispoofing', {})
@@ -598,7 +599,7 @@ async def register_person(request: FaceRegistrationRequest):
         
         result = await edgeface_detector.register_person_async(
             request.person_id, 
-            image_bgr, 
+            image, 
             request.bbox
         )
         
@@ -883,23 +884,23 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                         try:
                             # Decode binary JPEG data directly (30% faster than Base64!)
                             nparr = np_local.frombuffer(pending_binary_data, np_local.uint8)
-                            image_bgr = cv2_local.imdecode(nparr, cv2_local.IMREAD_COLOR)
-                            if image_bgr is None:
+                            image = cv2_local.imdecode(nparr, cv2_local.IMREAD_COLOR)  # Returns BGR
+                            if image is None:
                                 raise ValueError("Failed to decode binary JPEG data")
-                            image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
+                            # OPTIMIZATION: No color conversion - keep BGR format
                             pending_binary_data = None  # Clear after use
                         except Exception as e:
                             logger.error(f"Binary decode error: {e}, falling back to Base64")
                             # Fallback to Base64 if binary decode fails
                             if "image" in message:
-                                image_bgr = decode_base64_image(message["image"])
-                                image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
+                                image = decode_base64_image(message["image"])  # Returns BGR
+                                # OPTIMIZATION: No color conversion - keep BGR format
                             else:
                                 raise ValueError("No image data available")
                     else:
                         # Legacy Base64 format (fallback)
-                        image_bgr = decode_base64_image(message["image"])
-                        image_rgb = cv2_local.cvtColor(image_bgr, cv2_local.COLOR_BGR2RGB)
+                        image = decode_base64_image(message["image"])  # Returns BGR
+                        # OPTIMIZATION: No color conversion - keep BGR format
                     
                     model_type = message.get("model_type", "yunet")
                     confidence_threshold = message.get("confidence_threshold", 0.6)
@@ -915,12 +916,12 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                         
                         if enable_rotation_correction or enable_multi_scale:
                             faces = yunet_detector.detect_faces_with_corrections(
-                                image_rgb, 
+                                image, 
                                 enable_rotation_correction=enable_rotation_correction,
                                 enable_multi_scale=enable_multi_scale
                             )
                         else:
-                            faces = yunet_detector.detect_faces(image_rgb)
+                            faces = yunet_detector.detect_faces(image)
                         
                         pass
                     else:
@@ -935,7 +936,7 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                     
                     enable_antispoofing = message.get("enable_antispoofing", True)
                     
-                    faces = await process_antispoofing(faces, image_rgb, enable_antispoofing)
+                    faces = await process_antispoofing(faces, image, enable_antispoofing)
                     
                     # Add FaceMesh 468 landmarks for accurate face alignment
                     if facemesh_detector and faces:
@@ -946,7 +947,7 @@ async def websocket_stream_endpoint(websocket: WebSocket, client_id: str):
                                 face_bbox = [x, y, x + w, y + h]
                                 
                                 loop = asyncio.get_event_loop()
-                                facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image_bgr, face_bbox)
+                                facemesh_result = await loop.run_in_executor(None, facemesh_detector.detect_landmarks, image, face_bbox)
                                 
                                 if facemesh_result and 'landmarks_468' in facemesh_result:
                                     face['landmarks_468'] = facemesh_result['landmarks_468']

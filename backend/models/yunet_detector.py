@@ -61,10 +61,10 @@ class YuNet:
     def detect_faces(self, image: np.ndarray) -> List[dict]:
         """
         Detect faces in image
-        CRITICAL: Processes RGB image (Face-AntiSpoofing compatibility)
+        OPTIMIZED: Processes BGR image (OpenCV native format)
         
         Args:
-            image: Input image (RGB format - already converted from BGR)
+            image: Input image (BGR format - OpenCV native)
             
         Returns:
             List of face detection dictionaries with bbox, confidence, and landmarks
@@ -74,9 +74,8 @@ class YuNet:
     
         orig_height, orig_width = image.shape[:2]
         
-        image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
-        resized_img = cv2.resize(image_bgr, self.input_size)
+        # OPTIMIZATION: No color conversion - YuNet expects BGR natively
+        resized_img = cv2.resize(image, self.input_size)
         
         _, faces = self.detector.detect(resized_img)
         

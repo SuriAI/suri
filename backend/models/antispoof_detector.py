@@ -58,12 +58,13 @@ class AntiSpoof:
     def preprocessing(self, img: np.ndarray) -> np.ndarray:
         """
         Preprocess image for anti-spoofing model
+        OPTIMIZED: Convert BGR to RGB only at model input (not earlier)
         
         Args:
             img: Input image (BGR format from OpenCV)
             
         Returns:
-            Preprocessed image tensor
+            Preprocessed image tensor (RGB format for ONNX model)
         """
         new_size = self.model_img_size
         old_size = img.shape[:2]
@@ -71,6 +72,7 @@ class AntiSpoof:
         ratio = float(new_size) / max(old_size)
         scaled_shape = tuple([int(x * ratio) for x in old_size])
 
+        # Resize in BGR format (faster)
         img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]))
 
         delta_w = new_size - scaled_shape[1]
@@ -78,11 +80,15 @@ class AntiSpoof:
         top, bottom = delta_h // 2, delta_h - (delta_h // 2)
         left, right = delta_w // 2, delta_w - (delta_w // 2)
 
+        # Add padding in BGR format
         img = cv2.copyMakeBorder(img, top, bottom, left, right, 
                                  cv2.BORDER_CONSTANT, value=[0, 0, 0])
-        img = img.transpose(2, 0, 1).astype(np.float32) / 255.0
-        img = np.expand_dims(img, axis=0)
-        return img
+        
+        # OPTIMIZATION: Convert BGR to RGB only once at the end for ONNX model
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_rgb = img_rgb.transpose(2, 0, 1).astype(np.float32) / 255.0
+        img_rgb = np.expand_dims(img_rgb, axis=0)
+        return img_rgb
 
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
         """
@@ -134,10 +140,10 @@ class AntiSpoof:
     def predict(self, imgs: List[np.ndarray]) -> List[Dict]:
         """
         Predict anti-spoofing for list of face images
-        CRITICAL: Matches Face-AntiSpoofing prototype implementation exactly
+        OPTIMIZED: Accepts BGR input, converts to RGB in preprocessing
         
         Args:
-            imgs: List of face images (RGB format - already converted from BGR)
+            imgs: List of face images (BGR format - OpenCV native)
             
         Returns:
             List of prediction results
