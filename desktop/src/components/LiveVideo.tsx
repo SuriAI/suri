@@ -378,12 +378,15 @@ export default function LiveVideo() {
   // Face recognition function
   const performFaceRecognition = useCallback(async (detectionResult: DetectionResult) => {
     try {
+      console.log('🔍 performFaceRecognition called with', detectionResult.faces.length, 'faces');
       // Only perform recognition when a group is selected
       const currentGroupValue = currentGroupRef.current;
       if (!currentGroupValue) {
+        console.log('❌ No group selected, clearing recognition results');
         setCurrentRecognitionResults(new Map());
         return;
       }
+      console.log('✅ Group selected:', currentGroupValue.name);
 
       const frameData = await captureFrame();
       if (!frameData) {
@@ -919,9 +922,16 @@ export default function LiveVideo() {
 
           // Perform face recognition if enabled
           if (recognitionEnabled && backendServiceReadyRef.current && detectionResult.faces.length > 0) {
+            console.log('🔍 Starting face recognition for', detectionResult.faces.length, 'faces');
             // Perform face recognition asynchronously without blocking next frame processing
             performFaceRecognition(detectionResult).catch(error => {
               console.error('Face recognition failed:', error);
+            });
+          } else {
+            console.log('❌ Face recognition skipped:', {
+              recognitionEnabled,
+              backendReady: backendServiceReadyRef.current,
+              facesCount: detectionResult.faces.length
             });
           }
 
@@ -944,8 +954,10 @@ export default function LiveVideo() {
 
       // Handle connection messages
       backendServiceRef.current.onMessage('connection', (data: WebSocketConnectionMessage) => {
+        console.log('🔗 WebSocket connection message:', data);
         // Set backend service as ready when connection is confirmed
         if (data.status === 'connected') {
+          console.log('✅ Backend service marked as ready');
           backendServiceReadyRef.current = true;
         }
       });
@@ -1102,6 +1114,14 @@ export default function LiveVideo() {
   // Start camera stream
   const startCamera = useCallback(async () => {
     try {
+      console.log('🚀 Starting camera - Current state:', {
+        isStreaming: isStreamingRef.current,
+        detectionEnabled: detectionEnabledRef.current,
+        websocketStatus,
+        backendReady: backendServiceReadyRef.current,
+        currentGroup: currentGroup?.name || 'No group selected',
+        recognitionEnabled
+      });
       setError(null);
       
       // Refresh camera devices list to ensure we have current devices
@@ -1196,7 +1216,14 @@ export default function LiveVideo() {
           
           if (websocketStatus === 'disconnected') {
             try {
+              console.log('🔌 Initializing WebSocket...');
               await initializeWebSocket();
+              console.log('✅ WebSocket initialized, waiting for readiness...');
+              
+              // CRITICAL: Set backend ready immediately for IPC mode since connection is instant
+              backendServiceReadyRef.current = true;
+              console.log('✅ Backend service marked as ready (IPC mode)');
+              
               // Wait for WebSocket to be fully ready before starting detection
               let attempts = 0;
               const maxAttempts = 20; // Increased attempts for better reliability
@@ -1225,7 +1252,10 @@ export default function LiveVideo() {
               setError('Failed to connect to detection service');
             }
           } else if (websocketStatus === 'connected') {
-            // WebSocket is already connected, start detection immediately
+            // WebSocket is already connected, set backend ready and start detection immediately
+            console.log('🔌 WebSocket already connected, setting backend ready');
+            backendServiceReadyRef.current = true;
+            console.log('✅ Backend service marked as ready (existing connection)');
             startDetectionInterval();
           }
         } catch (error) {
@@ -1235,6 +1265,12 @@ export default function LiveVideo() {
           detectionEnabledRef.current = false;
         }
         // If websocketStatus is 'connecting', the useEffect will handle starting detection when connected
+        // But also set backend ready for IPC mode
+        if (websocketStatus === 'connecting') {
+          console.log('🔌 WebSocket connecting, setting backend ready for IPC mode');
+          backendServiceReadyRef.current = true;
+          console.log('✅ Backend service marked as ready (connecting state)');
+        }
       }
     } catch (err) {
       console.error('Error starting camera:', err);
@@ -1244,6 +1280,12 @@ export default function LiveVideo() {
 
   // Stop camera stream
   const stopCamera = useCallback(() => {
+    console.log('🛑 Stopping camera - Current state:', {
+      isStreaming: isStreamingRef.current,
+      detectionEnabled: detectionEnabledRef.current,
+      websocketStatus,
+      backendReady: backendServiceReadyRef.current
+    });
     
     // Stop media stream
     if (streamRef.current) {
@@ -1275,6 +1317,10 @@ export default function LiveVideo() {
       backendServiceRef.current.disconnect();
     }
     setWebsocketStatus('disconnected');
+    
+    // Reset all processing refs to ensure clean state
+    lastFrameTimestampRef.current = 0;
+    lastDetectionHashRef.current = '';
     
     // Clear all intervals and animation frames
     if (animationFrameRef.current) {
