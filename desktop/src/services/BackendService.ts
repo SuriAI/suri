@@ -1,6 +1,8 @@
+/// <reference types="../types/global.d.ts" />
+
 /**
  * Backend Service for integrating with FastAPI face detection backend
- * Provides HTTP and WebSocket communication with the Python backend
+ * Uses IPC for fast, zero-overhead communication with Python backend
  */
 
 interface DetectionRequest {
@@ -24,7 +26,6 @@ interface DetectionResponse {
 
 interface BackendConfig {
   baseUrl: string;
-  wsUrl: string;
   timeout: number;
   retryAttempts: number;
 }
@@ -80,7 +81,7 @@ interface DatabaseStatsResponse {
   persons: PersonInfo[];
 }
 
-interface WebSocketMessage {
+interface IPCMessage {
   type?: string;
   message?: string;
   status?: string;
@@ -92,7 +93,7 @@ interface WebSocketMessage {
     bbox?: number[];
     confidence?: number;
     landmarks?: number[][];
-    landmarks_468?: number[][]; // FaceMesh 468 landmarks for frontend visualization
+    landmarks_468?: number[][];
     antispoofing?: {
       is_real?: boolean | null;
       live_score?: number;
@@ -101,6 +102,7 @@ interface WebSocketMessage {
       status?: 'real' | 'fake' | 'error';
       label?: string;
     };
+    track_id?: number;
   }>;
   model_used?: string;
   processing_time?: number;
@@ -109,24 +111,20 @@ interface WebSocketMessage {
 
 export class BackendService {
   private config: BackendConfig;
-  private websocket: WebSocket | null = null;
   private clientId: string;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000; // Start with 1 second
-  private messageHandlers: Map<string, (data: WebSocketMessage) => void> = new Map();
-  private isConnecting = false;
+  private messageHandlers: Map<string, (data: IPCMessage) => void> = new Map();
+  private isProcessing = false;
 
   constructor(config?: Partial<BackendConfig>) {
     this.config = {
       baseUrl: 'http://127.0.0.1:8700',
-    wsUrl: 'ws://127.0.0.1:8700',
       timeout: 30000,
       retryAttempts: 3,
       ...config
     };
     
-    this.clientId = `electron_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.clientId = `ipc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log('[BackendService] IPC mode enabled - Fast processing, zero overhead');
   }
 
   /**
@@ -283,58 +281,24 @@ export class BackendService {
   }
 
   /**
-   * Connect to WebSocket for real-time detection
+   * Connect to IPC (instant connection, no setup needed)
    */
   async connectWebSocket(): Promise<void> {
-    if (this.websocket?.readyState === WebSocket.OPEN || this.isConnecting) {
-      return;
-    }
-
-    this.isConnecting = true;
-
-    try {
-      const wsUrl = `${this.config.wsUrl}/ws/${this.clientId}`;
-      this.websocket = new WebSocket(wsUrl);
-
-      this.websocket.onopen = () => {
-        this.isConnecting = false;
-        this.reconnectAttempts = 0;
-        this.reconnectDelay = 1000;
-      };
-
-      this.websocket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          this.handleWebSocketMessage(data);
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
-        }
-      };
-
-      this.websocket.onclose = (event) => {
-        this.isConnecting = false;
-        this.websocket = null;
-        
-        // Auto-reconnect if not a clean close
-        if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-          this.scheduleReconnect();
-        }
-      };
-
-      this.websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        this.isConnecting = false;
-      };
-
-    } catch (error) {
-      this.isConnecting = false;
-      console.error('Failed to connect WebSocket:', error);
-      throw error;
-    }
+    console.log('[BackendService] IPC connection ready (instant, no overhead)');
+    
+    // Send connection message to handlers
+    setTimeout(() => {
+      this.handleMessage({
+        type: 'connection',
+        status: 'connected',
+        client_id: this.clientId,
+        timestamp: Date.now()
+      });
+    }, 50);
   }
 
   /**
-   * Send detection request via WebSocket (Binary ArrayBuffer for 30% performance boost)
+   * Send detection request via IPC (fast, zero overhead)
    */
   async sendDetectionRequest(
     imageData: ImageData | string | ArrayBuffer,
@@ -345,64 +309,62 @@ export class BackendService {
       frame_timestamp?: number;
     } = {}
   ): Promise<void> {
-    if (!this.isWebSocketReady()) {
-      throw new Error('WebSocket not connected or not ready');
-    }
-
-    // Handle Binary ArrayBuffer (30% faster, SaaS-ready!)
-    if (imageData instanceof ArrayBuffer) {
-      // Create metadata header
-      const metadata = {
-        type: 'detection_request',
-        model_type: options.model_type || 'yunet',
-        nms_threshold: options.nms_threshold || 0.3,
-        enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true,
-        frame_timestamp: options.frame_timestamp || Date.now(),
-        binary: true  // Flag to indicate binary data follows
-      };
-
-      // Send metadata first (small JSON message)
-      this.websocket!.send(JSON.stringify(metadata));
-      
-      // Send binary image data (ArrayBuffer - no Base64 overhead!)
-      this.websocket!.send(imageData);
+    // Skip if already processing (prevent queue buildup)
+    if (this.isProcessing) {
       return;
     }
 
-    // Fallback: Handle legacy Base64 format
-    let imageBase64: string;
-    if (typeof imageData === 'string') {
-      imageBase64 = imageData;
-    } else {
-      imageBase64 = await this.imageDataToBase64(imageData);
+    this.isProcessing = true;
+
+    try {
+      let imageToSend: ArrayBuffer | string;
+
+      // Handle different image data types
+      if (imageData instanceof ArrayBuffer) {
+        imageToSend = imageData;
+      } else if (typeof imageData === 'string') {
+        imageToSend = imageData;
+      } else {
+        // Convert ImageData to base64
+        imageToSend = await this.imageDataToBase64(imageData);
+      }
+
+      // Send via IPC
+      const result = await window.electronAPI.backend.detectStream(imageToSend, {
+        model_type: options.model_type || 'yunet',
+        nms_threshold: options.nms_threshold || 0.3,
+        enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true,
+        frame_timestamp: options.frame_timestamp || Date.now()
+      });
+
+      // Trigger message handlers with result
+      this.handleMessage(result as IPCMessage);
+
+    } catch (error) {
+      console.error('[BackendService] IPC detection failed:', error);
+      
+      // Send error to handlers
+      this.handleMessage({
+        type: 'error',
+        message: error instanceof Error ? error.message : String(error),
+        timestamp: Date.now()
+      });
+    } finally {
+      this.isProcessing = false;
     }
-
-    const message = {
-      type: 'detection_request',
-      image: imageBase64,
-      model_type: options.model_type || 'yunet',
-      nms_threshold: options.nms_threshold || 0.3,
-      enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true,
-      frame_timestamp: options.frame_timestamp || Date.now(),
-      binary: false
-    };
-
-    this.websocket!.send(JSON.stringify(message));
   }
 
   /**
-   * Send ping to keep connection alive
+   * Send ping (no-op for IPC, always connected)
    */
   ping(): void {
-    if (this.isWebSocketReady()) {
-      this.websocket!.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
-    }
+    // IPC is always connected, no ping needed
   }
 
   /**
-   * Register message handler for WebSocket responses
+   * Register message handler for IPC responses
    */
-  onMessage(type: string, handler: (data: WebSocketMessage) => void): void {
+  onMessage(type: string, handler: (data: IPCMessage) => void): void {
     this.messageHandlers.set(type, handler);
   }
 
@@ -414,13 +376,9 @@ export class BackendService {
   }
 
   /**
-   * Disconnect WebSocket
+   * Disconnect (cleanup handlers)
    */
   disconnect(): void {
-    if (this.websocket) {
-      this.websocket.close(1000, 'Client disconnect');
-      this.websocket = null;
-    }
     this.messageHandlers.clear();
   }
 
@@ -433,43 +391,30 @@ export class BackendService {
     clientId: string;
   } {
     return {
-      http: true, // HTTP is stateless, assume available
-      websocket: this.websocket?.readyState === WebSocket.OPEN,
+      http: true,
+      websocket: true, // IPC is always "connected"
       clientId: this.clientId
     };
   }
 
   /**
-   * Get WebSocket status string for UI display
+   * Get connection status string
    */
   getWebSocketStatus(): 'disconnected' | 'connecting' | 'connected' {
-    if (!this.websocket) {
-      return 'disconnected';
-    }
-    
-    switch (this.websocket.readyState) {
-      case WebSocket.CONNECTING:
-        return 'connecting';
-      case WebSocket.OPEN:
-        return 'connected';
-      case WebSocket.CLOSING:
-      case WebSocket.CLOSED:
-      default:
-        return 'disconnected';
-    }
+    return 'connected'; // IPC is always connected
   }
 
   /**
-   * Check if WebSocket is ready for sending messages
+   * Check if ready for sending messages
    */
   isWebSocketReady(): boolean {
-    return this.websocket?.readyState === WebSocket.OPEN;
+    return true; // IPC is always ready
   }
 
   // Face Recognition Methods
 
   /**
-   * Recognize a face from image data (supports Binary ArrayBuffer)
+   * Recognize a face from image data (via IPC)
    */
   async recognizeFace(
     imageData: ImageData | string | ArrayBuffer,
@@ -481,7 +426,7 @@ export class BackendService {
       if (typeof imageData === 'string') {
         base64Image = imageData;
       } else if (imageData instanceof ArrayBuffer) {
-        // Convert ArrayBuffer to Base64 for recognition API
+        // Convert ArrayBuffer to Base64
         const blob = new Blob([imageData], { type: 'image/jpeg' });
         const dataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -493,26 +438,7 @@ export class BackendService {
         base64Image = await this.imageDataToBase64(imageData);
       }
 
-      const requestBody = {
-        image: base64Image,
-        bbox: bbox,
-        group_id: groupId
-      };
-
-      const response = await fetch(`${this.config.baseUrl}/face/recognize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.recognizeFace(base64Image, bbox || [], groupId);
     } catch (error) {
       console.error('Face recognition failed:', error);
       throw error;
@@ -520,7 +446,7 @@ export class BackendService {
   }
 
   /**
-   * Register a new face with person ID
+   * Register a new face with person ID (via IPC)
    */
   async registerFace(
     imageData: ImageData | string,
@@ -533,27 +459,7 @@ export class BackendService {
         ? imageData 
         : await this.imageDataToBase64(imageData);
 
-      const requestBody = {
-        image: base64Image,
-        person_id: personId,
-        bbox: bbox,
-        group_id: groupId
-      };
-
-      const response = await fetch(`${this.config.baseUrl}/face/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.registerFace(base64Image, personId, bbox || [], groupId);
     } catch (error) {
       console.error('Face registration failed:', error);
       throw error;
@@ -561,47 +467,23 @@ export class BackendService {
   }
 
   /**
-   * Remove a person from the database
+   * Remove a person from the database (via IPC)
    */
   async removePerson(personId: string): Promise<RemovalResult> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/face/person/${encodeURIComponent(personId)}`, {
-        method: 'DELETE',
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.removePerson(personId);
     } catch (error) {
       console.error('Person removal failed:', error);
       throw error;
     }
   }
 
+  /**
+   * Update person ID (via IPC)
+   */
   async updatePerson(oldPersonId: string, newPersonId: string): Promise<UpdateResult> {
     try {
-      const requestBody = {
-        old_person_id: oldPersonId,
-        new_person_id: newPersonId
-      };
-
-      const response = await fetch(`${this.config.baseUrl}/face/person`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.updatePerson(oldPersonId, newPersonId);
     } catch (error) {
       console.error('Person update failed:', error);
       throw error;
@@ -609,21 +491,12 @@ export class BackendService {
   }
 
   /**
-   * Get all registered persons
+   * Get all registered persons (via IPC)
    */
   async getAllPersons(): Promise<PersonInfo[]> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/face/stats`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const stats = await response.json();
-      return stats.persons || [];
+      const result = await window.electronAPI.backend.getAllPersons();
+      return result.persons || [];
     } catch (error) {
       console.error('Failed to get persons:', error);
       throw error;
@@ -631,28 +504,11 @@ export class BackendService {
   }
 
   /**
-   * Set similarity threshold for recognition
+   * Set similarity threshold for recognition (via IPC)
    */
   async setSimilarityThreshold(threshold: number): Promise<ThresholdResult> {
     try {
-      const requestBody = {
-        threshold: threshold
-      };
-
-      const response = await fetch(`${this.config.baseUrl}/face/threshold`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.setThreshold(threshold);
     } catch (error) {
       console.error('Failed to set similarity threshold:', error);
       throw error;
@@ -660,20 +516,11 @@ export class BackendService {
   }
 
   /**
-   * Clear the face database
+   * Clear the face database (via IPC)
    */
   async clearDatabase(): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/face/database`, {
-        method: 'DELETE',
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.clearDatabase();
     } catch (error) {
       console.error('Failed to clear database:', error);
       throw error;
@@ -717,20 +564,11 @@ export class BackendService {
   }
 
   /**
-   * Get database statistics
+   * Get database statistics (via IPC)
    */
   async getDatabaseStats(): Promise<DatabaseStatsResponse> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/face/stats`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(this.config.timeout)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return await response.json();
+      return await window.electronAPI.backend.getFaceStats();
     } catch (error) {
       console.error('Failed to get database stats:', error);
       throw error;
@@ -739,7 +577,7 @@ export class BackendService {
 
   // Private methods
 
-  private handleWebSocketMessage(data: WebSocketMessage): void {
+  private handleMessage(data: IPCMessage): void {
     const messageType = data.type || 'unknown';
     const handler = this.messageHandlers.get(messageType);
     if (handler) {
@@ -751,19 +589,6 @@ export class BackendService {
     if (broadcastHandler && messageType !== '*') {
       broadcastHandler(data);
     }
-  }
-
-  private scheduleReconnect(): void {
-    this.reconnectAttempts++;
-    
-    setTimeout(() => {
-      this.connectWebSocket().catch(error => {
-        console.error('Reconnect failed:', error);
-      });
-    }, this.reconnectDelay);
-    
-    // Exponential backoff with max delay of 30 seconds
-    this.reconnectDelay = Math.min(this.reconnectDelay * 2, 30000);
   }
 
   private async imageDataToBase64(imageData: ImageData): Promise<string> {

@@ -362,6 +362,12 @@ async def detect_faces(request: DetectionRequest):
         
         processing_time = time.time() - start_time
 
+        # Convert bbox from dict to array format for frontend compatibility
+        # This ensures IPC and WebSocket have the same format
+        for face in faces:
+            if 'bbox' in face and isinstance(face['bbox'], dict):
+                bbox_orig = face.get('bbox_original', face['bbox'])
+                face['bbox'] = [bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)]
         
         return DetectionResponse(
             success=True,
@@ -444,6 +450,13 @@ async def detect_faces_upload(
             raise HTTPException(status_code=400, detail=f"Unsupported model type: {model_type}")
         
         processing_time = time.time() - start_time
+        
+        # Convert bbox from dict to array format for frontend compatibility
+        # This ensures IPC and WebSocket have the same format
+        for face in faces:
+            if 'bbox' in face and isinstance(face['bbox'], dict):
+                bbox_orig = face.get('bbox_original', face['bbox'])
+                face['bbox'] = [bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)]
         
         return {
             "success": True,

@@ -92,6 +92,289 @@ ipcMain.handle('backend:detect-faces', async (_event, imageBase64: string, optio
     }
 });
 
+// Real-time detection with binary support (IPC replacement for WebSocket)
+ipcMain.handle('backend:detect-stream', async (_event, imageData: ArrayBuffer | string, options: {
+    model_type?: string;
+    nms_threshold?: number;
+    enable_antispoofing?: boolean;
+    frame_timestamp?: number;
+} = {}) => {
+    try {
+        const url = `${backendService.getUrl()}/detect`;
+        
+        let imageBase64: string;
+        if (imageData instanceof ArrayBuffer) {
+            // Convert ArrayBuffer to base64
+            const bytes = new Uint8Array(imageData);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            imageBase64 = Buffer.from(binary, 'binary').toString('base64');
+        } else {
+            imageBase64 = imageData;
+        }
+
+        const requestBody = {
+            image: imageBase64,
+            model_type: options.model_type || 'yunet',
+            confidence_threshold: 0.6,
+            nms_threshold: options.nms_threshold || 0.3,
+            enable_antispoofing: options.enable_antispoofing !== undefined ? options.enable_antispoofing : true
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        return {
+            type: 'detection_response',
+            faces: result.faces || [],
+            model_used: result.model_used || 'yunet',
+            processing_time: result.processing_time || 0,
+            timestamp: Date.now(),
+            frame_timestamp: options.frame_timestamp || Date.now(),
+            success: result.success !== undefined ? result.success : true
+        };
+    } catch (error) {
+        console.error('Stream detection failed:', error);
+        return {
+            type: 'error',
+            message: error instanceof Error ? error.message : String(error),
+            timestamp: Date.now()
+        };
+    }
+});
+
+// Face recognition via IPC
+ipcMain.handle('backend:recognize-face', async (_event, imageData: string, bbox: number[], groupId?: string) => {
+    try {
+        const url = `${backendService.getUrl()}/face/recognize`;
+        
+        const requestBody = {
+            image: imageData,
+            bbox: bbox,
+            group_id: groupId
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Face recognition failed:', error);
+        return {
+            success: false,
+            person_id: null,
+            similarity: 0.0,
+            processing_time: 0,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+});
+
+// Face registration via IPC
+ipcMain.handle('backend:register-face', async (_event, imageData: string, personId: string, bbox: number[], groupId?: string) => {
+    try {
+        const url = `${backendService.getUrl()}/face/register`;
+        
+        const requestBody = {
+            image: imageData,
+            person_id: personId,
+            bbox: bbox,
+            group_id: groupId
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(30000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Face registration failed:', error);
+        return {
+            success: false,
+            person_id: personId,
+            total_persons: 0,
+            processing_time: 0,
+            error: error instanceof Error ? error.message : String(error)
+        };
+    }
+});
+
+// Get face database stats via IPC
+ipcMain.handle('backend:get-face-stats', async () => {
+    try {
+        const url = `${backendService.getUrl()}/face/stats`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Get face stats failed:', error);
+        throw error;
+    }
+});
+
+// Remove person via IPC
+ipcMain.handle('backend:remove-person', async (_event, personId: string) => {
+    try {
+        const url = `${backendService.getUrl()}/face/person/${encodeURIComponent(personId)}`;
+        
+        const response = await fetch(url, {
+            method: 'DELETE',
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Remove person failed:', error);
+        throw error;
+    }
+});
+
+// Update person via IPC
+ipcMain.handle('backend:update-person', async (_event, oldPersonId: string, newPersonId: string) => {
+    try {
+        const url = `${backendService.getUrl()}/face/person`;
+        
+        const requestBody = {
+            old_person_id: oldPersonId,
+            new_person_id: newPersonId
+        };
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Update person failed:', error);
+        throw error;
+    }
+});
+
+// Get all persons via IPC
+ipcMain.handle('backend:get-all-persons', async () => {
+    try {
+        const url = `${backendService.getUrl()}/face/persons`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Get all persons failed:', error);
+        throw error;
+    }
+});
+
+// Set similarity threshold via IPC
+ipcMain.handle('backend:set-threshold', async (_event, threshold: number) => {
+    try {
+        const url = `${backendService.getUrl()}/face/threshold`;
+        
+        const requestBody = {
+            threshold: threshold
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Set threshold failed:', error);
+        throw error;
+    }
+});
+
+// Clear face database via IPC
+ipcMain.handle('backend:clear-database', async () => {
+    try {
+        const url = `${backendService.getUrl()}/face/database`;
+        
+        const response = await fetch(url, {
+            method: 'DELETE',
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Clear database failed:', error);
+        throw error;
+    }
+});
+
 // Window control IPC handlers
 ipcMain.handle('window:minimize', () => {
     if (mainWindowRef) mainWindowRef.minimize()

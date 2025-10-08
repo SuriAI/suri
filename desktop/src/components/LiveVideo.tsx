@@ -919,10 +919,21 @@ export default function LiveVideo() {
               console.error('Face recognition failed:', error);
             });
           }
+
+          // Trigger next frame for continuous processing (IPC continuous loop)
+          if (detectionEnabledRef.current && isStreamingRef.current) {
+            // Use requestAnimationFrame for smooth continuous processing
+            requestAnimationFrame(() => processCurrentFrame());
+          }
         } else {
           // No faces detected, reset processing flag - backend will request next frame
           isProcessingRef.current = false;
-          // Backend controls the adaptive processing flow
+          
+          // Trigger next frame for continuous processing (IPC continuous loop)
+          if (detectionEnabledRef.current && isStreamingRef.current) {
+            // Use requestAnimationFrame for smooth continuous processing
+            requestAnimationFrame(() => processCurrentFrame());
+          }
         }
       });
 
@@ -939,8 +950,12 @@ export default function LiveVideo() {
         console.error('❌ WebSocket error message:', data);
         setError(`Detection error: ${data.message || 'Unknown error'}`);
         isProcessingRef.current = false;
-        // Backend will handle error recovery and request next frame when ready
-        // No manual intervention needed - adaptive processing will resume automatically
+        
+        // Trigger next frame for continuous processing (IPC continuous loop)
+        if (detectionEnabledRef.current && isStreamingRef.current) {
+          // Use requestAnimationFrame for smooth continuous processing
+          requestAnimationFrame(() => processCurrentFrame());
+        }
       });
 
       // Handle pong messages
@@ -1022,10 +1037,20 @@ export default function LiveVideo() {
       }).catch(error => {
         console.error('❌ WebSocket detection request failed:', error);
         isProcessingRef.current = false;
+        
+        // Trigger next frame for continuous processing (IPC continuous loop)
+        if (detectionEnabledRef.current && isStreamingRef.current) {
+          requestAnimationFrame(() => processCurrentFrame());
+        }
       });
     } catch (error) {
       console.error('❌ Frame capture failed:', error);
       isProcessingRef.current = false;
+      
+      // Trigger next frame for continuous processing (IPC continuous loop)
+      if (detectionEnabledRef.current && isStreamingRef.current) {
+        requestAnimationFrame(() => processCurrentFrame());
+      }
     }
   }, [captureFrame]);
 
