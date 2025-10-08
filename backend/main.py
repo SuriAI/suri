@@ -331,6 +331,14 @@ async def detect_faces(request: DetectionRequest):
             else:
                 faces = yunet_detector.detect_faces(image)
             
+            # CRITICAL: Add face tracking for consistent track_id (like WebSocket)
+            if faces and face_tracker:
+                try:
+                    loop = asyncio.get_event_loop()
+                    faces = await loop.run_in_executor(None, face_tracker.update, faces)
+                except Exception as e:
+                    logger.warning(f"Face tracking failed: {e}")
+            
             faces = await process_antispoofing(faces, image, request.enable_antispoofing)
             
             if faces and facemesh_detector:
@@ -368,6 +376,13 @@ async def detect_faces(request: DetectionRequest):
             if 'bbox' in face and isinstance(face['bbox'], dict):
                 bbox_orig = face.get('bbox_original', face['bbox'])
                 face['bbox'] = [bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)]
+            
+            # Convert track_id to native Python int if it exists (for JSON serialization)
+            if 'track_id' in face:
+                import numpy as np
+                track_id_value = face['track_id']
+                if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
+                    face['track_id'] = int(track_id_value)
         
         return DetectionResponse(
             success=True,
@@ -425,6 +440,14 @@ async def detect_faces_upload(
             else:
                 faces = yunet_detector.detect_faces(image)
             
+            # CRITICAL: Add face tracking for consistent track_id (like WebSocket)
+            if faces and face_tracker:
+                try:
+                    loop = asyncio.get_event_loop()
+                    faces = await loop.run_in_executor(None, face_tracker.update, faces)
+                except Exception as e:
+                    logger.warning(f"Face tracking failed: {e}")
+            
             faces = await process_antispoofing(faces, image, enable_antispoofing)
             
             # Add FaceMesh 468 landmarks for frontend visualization
@@ -457,6 +480,13 @@ async def detect_faces_upload(
             if 'bbox' in face and isinstance(face['bbox'], dict):
                 bbox_orig = face.get('bbox_original', face['bbox'])
                 face['bbox'] = [bbox_orig.get('x', 0), bbox_orig.get('y', 0), bbox_orig.get('width', 0), bbox_orig.get('height', 0)]
+            
+            # Convert track_id to native Python int if it exists (for JSON serialization)
+            if 'track_id' in face:
+                import numpy as np
+                track_id_value = face['track_id']
+                if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
+                    face['track_id'] = int(track_id_value)
         
         return {
             "success": True,
