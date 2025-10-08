@@ -54,6 +54,88 @@ declare global {
       model_used: string;
       processing_time: number;
     }>
+    // Real-time detection via IPC (replaces WebSocket)
+    detectStream: (imageData: ArrayBuffer | string, options?: {
+      model_type?: string;
+      nms_threshold?: number;
+      enable_antispoofing?: boolean;
+      frame_timestamp?: number;
+    }) => Promise<{
+      type: string;
+      faces: Array<{
+        bbox: number[] | { x: number; y: number; width: number; height: number };
+        confidence: number;
+        landmarks?: number[][];
+        landmarks_468?: number[][];
+        antispoofing?: {
+          is_real?: boolean | null;
+          live_score?: number;
+          spoof_score?: number;
+          confidence?: number;
+          status?: 'real' | 'fake' | 'error';
+          label?: string;
+        };
+        track_id?: number;
+      }>;
+      model_used: string;
+      processing_time: number;
+      timestamp: number;
+      frame_timestamp?: number;
+      success: boolean;
+      message?: string;
+    }>
+    // Face recognition APIs
+    recognizeFace: (imageData: string, bbox: number[], groupId?: string) => Promise<{
+      success: boolean;
+      person_id?: string;
+      similarity?: number;
+      processing_time: number;
+      error?: string;
+    }>
+    registerFace: (imageData: string, personId: string, bbox: number[], groupId?: string) => Promise<{
+      success: boolean;
+      person_id: string;
+      processing_time: number;
+      total_persons?: number;
+      error?: string;
+    }>
+    getFaceStats: () => Promise<{
+      total_persons: number;
+      total_embeddings: number;
+      persons: Array<{
+        person_id: string;
+        embedding_count: number;
+        last_seen?: string;
+      }>;
+    }>
+    removePerson: (personId: string) => Promise<{
+      success: boolean;
+      message: string;
+      total_persons?: number;
+    }>
+    updatePerson: (oldPersonId: string, newPersonId: string) => Promise<{
+      success: boolean;
+      message: string;
+      updated_records: number;
+    }>
+    getAllPersons: () => Promise<{
+      success: boolean;
+      persons: Array<{
+        person_id: string;
+        embedding_count: number;
+      }>;
+      total_count: number;
+    }>
+    setThreshold: (threshold: number) => Promise<{
+      success: boolean;
+      message: string;
+      threshold: number;
+    }>
+    clearDatabase: () => Promise<{
+      success: boolean;
+      message: string;
+      total_persons: number;
+    }>
   }
 
   // Backend Service API interface is now the primary interface for face recognition functionality
@@ -68,7 +150,7 @@ declare global {
     suriWS?: SuriWSClientAPI
     suriVideo?: SuriVideoAPI
     suriElectron?: SuriElectronAPI
-    electronAPI?: BackendServiceAPI
+    electronAPI: BackendServiceAPI  // Required for IPC mode
     __suriOffFrame?: () => void
   }
 }
