@@ -28,6 +28,7 @@ export interface FaceRegistrationResponse {
   success: boolean;
   person_id: string;
   processing_time: number;
+  total_persons?: number;
   error?: string;
 }
 
@@ -37,7 +38,9 @@ export interface PersonRemovalRequest {
 
 export interface PersonRemovalResponse {
   success: boolean;
-  person_id: string;
+  person_id?: string;
+  message: string;
+  total_persons?: number;
   error?: string;
 }
 
@@ -47,6 +50,7 @@ export interface SimilarityThresholdRequest {
 
 export interface SimilarityThresholdResponse {
   success: boolean;
+  message: string;
   threshold: number;
   error?: string;
 }
@@ -61,6 +65,27 @@ export interface DatabaseStatsResponse {
   total_persons: number;
   total_embeddings: number;
   persons: PersonInfo[];
+}
+
+export interface PersonUpdateResponse {
+  success: boolean;
+  message: string;
+  updated_records: number;
+}
+
+export interface PersonListResponse {
+  success: boolean;
+  persons: Array<{
+    person_id: string;
+    embedding_count: number;
+  }>;
+  total_count: number;
+}
+
+export interface DatabaseClearResponse {
+  success: boolean;
+  message: string;
+  total_persons: number;
 }
 
 export interface RecognitionResult {

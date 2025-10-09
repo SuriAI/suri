@@ -1,3 +1,14 @@
+import type {
+  FaceRecognitionResponse,
+  FaceRegistrationResponse,
+  PersonRemovalResponse,
+  DatabaseStatsResponse,
+  SimilarityThresholdResponse,
+  PersonUpdateResponse,
+  PersonListResponse,
+  DatabaseClearResponse
+} from './recognition.js'
+
 export {}
 
 declare global {
@@ -85,57 +96,14 @@ declare global {
       message?: string;
     }>
     // Face recognition APIs
-    recognizeFace: (imageData: string, bbox: number[], groupId?: string) => Promise<{
-      success: boolean;
-      person_id?: string;
-      similarity?: number;
-      processing_time: number;
-      error?: string;
-    }>
-    registerFace: (imageData: string, personId: string, bbox: number[], groupId?: string) => Promise<{
-      success: boolean;
-      person_id: string;
-      processing_time: number;
-      total_persons?: number;
-      error?: string;
-    }>
-    getFaceStats: () => Promise<{
-      total_persons: number;
-      total_embeddings: number;
-      persons: Array<{
-        person_id: string;
-        embedding_count: number;
-        last_seen?: string;
-      }>;
-    }>
-    removePerson: (personId: string) => Promise<{
-      success: boolean;
-      message: string;
-      total_persons?: number;
-    }>
-    updatePerson: (oldPersonId: string, newPersonId: string) => Promise<{
-      success: boolean;
-      message: string;
-      updated_records: number;
-    }>
-    getAllPersons: () => Promise<{
-      success: boolean;
-      persons: Array<{
-        person_id: string;
-        embedding_count: number;
-      }>;
-      total_count: number;
-    }>
-    setThreshold: (threshold: number) => Promise<{
-      success: boolean;
-      message: string;
-      threshold: number;
-    }>
-    clearDatabase: () => Promise<{
-      success: boolean;
-      message: string;
-      total_persons: number;
-    }>
+    recognizeFace: (imageData: string, bbox: number[], groupId?: string) => Promise<FaceRecognitionResponse>
+    registerFace: (imageData: string, personId: string, bbox: number[], groupId?: string) => Promise<FaceRegistrationResponse>
+    getFaceStats: () => Promise<DatabaseStatsResponse>
+    removePerson: (personId: string) => Promise<PersonRemovalResponse>
+    updatePerson: (oldPersonId: string, newPersonId: string) => Promise<PersonUpdateResponse>
+    getAllPersons: () => Promise<PersonListResponse>
+    setThreshold: (threshold: number) => Promise<SimilarityThresholdResponse>
+    clearDatabase: () => Promise<DatabaseClearResponse>
   }
 
   interface ModelsAPI {

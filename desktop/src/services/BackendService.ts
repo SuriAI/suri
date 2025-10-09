@@ -1,5 +1,15 @@
 /// <reference types="../types/global.d.ts" />
 
+import type {
+  FaceRecognitionResponse,
+  FaceRegistrationResponse,
+  PersonRemovalResponse,
+  PersonUpdateResponse,
+  SimilarityThresholdResponse,
+  DatabaseStatsResponse,
+  PersonInfo,
+} from '../types/recognition.js';
+
 /**
  * Backend Service for integrating with FastAPI face detection backend
  * Uses IPC for fast, zero-overhead communication with Python backend
@@ -34,51 +44,6 @@ interface ModelInfo {
   name: string;
   description?: string;
   version?: string;
-}
-
-interface FaceRecognitionResponse {
-  success: boolean;
-  person_id?: string;
-  similarity?: number;
-  processing_time: number;
-  error?: string;
-}
-
-interface FaceRegistrationResponse {
-  success: boolean;
-  person_id: string;
-  processing_time: number;
-  error?: string;
-  total_persons?: number;
-}
-
-interface RemovalResult {
-  success: boolean;
-  message: string;
-}
-
-interface UpdateResult {
-  success: boolean;
-  message: string;
-  updated_records: number;
-}
-
-export interface PersonInfo {
-  person_id: string;
-  embedding_count: number;
-  last_seen?: string;
-}
-
-interface ThresholdResult {
-  success: boolean;
-  message: string;
-  threshold: number;
-}
-
-interface DatabaseStatsResponse {
-  total_persons: number;
-  total_embeddings: number;
-  persons: PersonInfo[];
 }
 
 interface IPCMessage {
@@ -481,7 +446,7 @@ export class BackendService {
   /**
    * Remove a person from the database (via IPC)
    */
-  async removePerson(personId: string): Promise<RemovalResult> {
+  async removePerson(personId: string): Promise<PersonRemovalResponse> {
     try {
       return await window.electronAPI.backend.removePerson(personId);
     } catch (error) {
@@ -493,7 +458,7 @@ export class BackendService {
   /**
    * Update person ID (via IPC)
    */
-  async updatePerson(oldPersonId: string, newPersonId: string): Promise<UpdateResult> {
+  async updatePerson(oldPersonId: string, newPersonId: string): Promise<PersonUpdateResponse> {
     try {
       return await window.electronAPI.backend.updatePerson(oldPersonId, newPersonId);
     } catch (error) {
@@ -518,7 +483,7 @@ export class BackendService {
   /**
    * Set similarity threshold for recognition (via IPC)
    */
-  async setSimilarityThreshold(threshold: number): Promise<ThresholdResult> {
+  async setSimilarityThreshold(threshold: number): Promise<SimilarityThresholdResponse> {
     try {
       return await window.electronAPI.backend.setThreshold(threshold);
     } catch (error) {
