@@ -178,8 +178,10 @@ async def startup_event():
         # Initialize attendance database
         attendance_database = AttendanceDatabaseManager("data/attendance.db")
         
-        # Set the database instance in the attendance routes module
+        # Set the database instance and models in the attendance routes module
         attendance.attendance_db = attendance_database
+        attendance.yunet_detector = yunet_detector
+        attendance.edgeface_detector = edgeface_detector
         
     except Exception as e:
         logger.error(f"Failed to initialize models: {e}")
