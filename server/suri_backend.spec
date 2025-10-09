@@ -35,13 +35,17 @@ hidden_imports = [
     'numpy',
     'PIL',
     'PIL._imaging',
+    # Windows-specific imports
+    'win32ctypes',
+    'win32ctypes.pywin32',
+    'win32ctypes.pywin32.pywintypes',
+    'win32ctypes.pywin32.win32api',
+    'win32ctypes.core',
+    'win32ctypes.core.ctypes',
 ]
 
-# Add custom hook for onnxruntime if it exists
-if os.path.exists('hook-onnxruntime.py'):
-    runtime_hooks = ['hook-onnxruntime.py']
-else:
-    runtime_hooks = []
+# Disable custom runtime hook to avoid bundling PyInstaller dependencies
+runtime_hooks = []
 
 a = Analysis(
     ['main.py'],
@@ -51,6 +55,7 @@ a = Analysis(
         ('models', 'models'),
         ('utils', 'utils'),
         ('routes', 'routes'),
+        ('../desktop/public/weights', 'weights'),  # Bundle model weights
     ],
     hiddenimports=hidden_imports,
     hookspath=['.'],
