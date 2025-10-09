@@ -40,6 +40,10 @@ router = APIRouter(prefix="/attendance", tags=["attendance"])
 # Database manager instance (will be initialized in main.py)
 attendance_db: Optional[AttendanceDatabaseManager] = None
 
+# Face detection/recognition models (will be initialized in main.py)
+yunet_detector = None
+edgeface_detector = None
+
 
 def get_attendance_db() -> AttendanceDatabaseManager:
     """Dependency to get attendance database manager"""
@@ -862,10 +866,6 @@ async def get_group_persons(
         members = db.get_group_members(group_id)
         
         # For each member, get their face recognition data if available
-        import sys
-        main_module = sys.modules.get('main')
-        edgeface_detector = main_module.edgeface_detector if main_module and hasattr(main_module, 'edgeface_detector') else None
-        
         if not edgeface_detector:
             return [{"person_id": member["person_id"], "name": member["name"], "has_face_data": False} for member in members]
         
@@ -903,11 +903,7 @@ async def register_face_for_group_person(
     """Register face data for a specific person in a group with anti-duplicate protection"""
     try:
         # Import required modules
-        import sys
         from utils.image_utils import decode_base64_image
-        
-        main_module = sys.modules.get('main')
-        edgeface_detector = main_module.edgeface_detector if main_module and hasattr(main_module, 'edgeface_detector') else None
         
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="Face recognition system not available")
@@ -979,10 +975,6 @@ async def remove_face_data_for_group_person(
 ):
     """Remove face data for a specific person in a group"""
     try:
-        import sys
-        main_module = sys.modules.get('main')
-        edgeface_detector = main_module.edgeface_detector if main_module and hasattr(main_module, 'edgeface_detector') else None
-        
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="Face recognition system not available")
         
@@ -1214,21 +1206,7 @@ async def bulk_detect_faces(
     logger.info(f"[BULK-DETECT] Request data keys: {list(request.keys())}")
     
     try:
-        # Import inside function to avoid circular import
-        import sys
-        logger.info("[BULK-DETECT] Importing yunet_detector from main module")
-        main_module = sys.modules.get('main')
-        
-        if not main_module:
-            logger.error("[BULK-DETECT] Main module not found in sys.modules")
-            raise HTTPException(status_code=500, detail="Face detection system not initialized - main module missing")
-        
-        if not hasattr(main_module, 'yunet_detector'):
-            logger.error("[BULK-DETECT] yunet_detector attribute not found in main module")
-            raise HTTPException(status_code=500, detail="Face detection system not initialized - yunet_detector missing")
-        
-        yunet_detector = main_module.yunet_detector
-        
+        # Import inside function
         from utils.image_utils import decode_base64_image
         
         logger.info(f"[BULK-DETECT] YuNet detector available: {yunet_detector is not None}")
@@ -1346,11 +1324,7 @@ async def bulk_register_faces(
     Processes multiple faces in a single batch for efficiency
     """
     try:
-        import sys
         from utils.image_utils import decode_base64_image
-        
-        main_module = sys.modules.get('main')
-        edgeface_detector = main_module.edgeface_detector if main_module and hasattr(main_module, 'edgeface_detector') else None
         
         if not edgeface_detector:
             raise HTTPException(status_code=500, detail="Face recognition system not available")
