@@ -2,11 +2,7 @@ import { app, BrowserWindow, ipcMain, protocol } from "electron"
 import path from "path"
 import { fileURLToPath } from 'node:url'
 import isDev from "./util.js";
-import { readFile } from 'fs/promises';
 import { backendService, type DetectionOptions } from './backendService.js';
-
-// Pre-loaded model buffers for better performance
-const modelBuffers: Map<string, ArrayBuffer> = new Map();
 // Set consistent app name across all platforms for userData directory
 app.setName('Suri');
 
@@ -397,79 +393,11 @@ ipcMain.handle('window:close', () => {
     return true
 })
 
-// Pre-load all models during app startup
-async function preloadModels(): Promise<void> {
-  // Only preload models that are actually used in the current pipeline
-  // Based on backend/main.py startup configuration:
-  // - YuNet for face detection
-  // - AntiSpoof for liveness detection
-  // - FaceMesh for landmark detection and alignment
-  // - EdgeFace for face recognition
-  const modelNames = [
-    'face_detection_yunet_2023mar.onnx',
-    'AntiSpoofing_print-replay_1.5_128.onnx',
-    'face_mesh_Nx3x192x192_post.onnx',
-    'edgeface-recognition-xs.onnx'
-  ];
-  
-  try {
-    console.log('[Main] Starting model preloading...');
-    let loadedCount = 0;
-    
-    for (const modelName of modelNames) {
-      const modelPath = isDev()
-        ? path.join(__dirname, '../../public/weights', modelName)
-        : path.join(process.resourcesPath, 'weights', modelName);
-      
-      console.log(`[Main] Loading model: ${modelName}`);
-      const buffer = await readFile(modelPath);
-      const arrayBuffer = new ArrayBuffer(buffer.byteLength);
-      new Uint8Array(arrayBuffer).set(new Uint8Array(buffer));
-      modelBuffers.set(modelName, arrayBuffer);
-      
-      loadedCount++;
-      const progress = (loadedCount / modelNames.length) * 100;
-      console.log(`[Main] Loaded ${loadedCount}/${modelNames.length} models (${progress.toFixed(0)}%)`);
-      
-      // Notify renderer process of loading progress
-      if (mainWindowRef && !mainWindowRef.isDestroyed()) {
-        mainWindowRef.webContents.send('model-loading-progress', {
-          current: loadedCount,
-          total: modelNames.length,
-          modelName,
-          progress
-        });
-      }
-    }
-    
-    console.log('[Main] ✅ All models preloaded successfully!');
-  } catch (error) {
-    console.error('❌ Failed to pre-load models:', error);
-    throw error;
-  }
-}
-
-// Model loading IPC handlers - now returns pre-loaded buffers
-ipcMain.handle('model:load', async (_event, modelName: string) => {
-  const buffer = modelBuffers.get(modelName);
-  if (!buffer) {
-    throw new Error(`Model ${modelName} not found in pre-loaded cache`);
-  }
-  return buffer;
-});
-
-// Get all pre-loaded model buffers (for worker initialization)
-ipcMain.handle('models:get-all', async () => {
-  const result: Record<string, ArrayBuffer> = {};
-  for (const [name, buffer] of modelBuffers.entries()) {
-    result[name] = buffer;
-  }
-  return result;
-});
-
-// Check if models are ready
-ipcMain.handle('models:is-ready', async () => {
-  return modelBuffers.size > 0;
+// Check if backend server is ready
+// All AI models are loaded on the server side, not in Electron
+ipcMain.handle('backend:is-ready', async () => {
+  const result = await backendService.checkReadiness();
+  return result.ready && result.modelsLoaded;
 });
 
 function createWindow(): void {
@@ -624,22 +552,13 @@ app.whenReady().then(async () => {
     
     createWindow()
     
-    // Start backend service
+    // Start backend service (models are loaded on the server side)
     console.log('[Main] Starting backend service...');
     try {
         await startBackend();
         console.log('[Main] Backend service started successfully!');
     } catch (error) {
         console.error('[ERROR] Failed to start backend service:', error);
-    }
-    
-    // Pre-load models for optimal performance
-    console.log('[Main] Pre-loading models...');
-    try {
-        await preloadModels();
-        console.log('[Main] Models pre-loaded successfully!');
-    } catch (error) {
-        console.error('[ERROR] Failed to pre-load models:', error);
     }
 
     app.on('activate', function () {
