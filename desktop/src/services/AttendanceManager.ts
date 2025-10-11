@@ -234,7 +234,8 @@ export class AttendanceManager {
         joined_at: new Date(member.joined_at)
       };
     } catch (error) {
-      console.error('Error getting member:', error);
+      // Silently return undefined if member not found (person_id exists in face DB but not in attendance)
+      // This is normal when someone is recognized but not enrolled in the current group
       return undefined;
     }
   }
