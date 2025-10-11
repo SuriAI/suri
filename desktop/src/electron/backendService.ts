@@ -293,16 +293,37 @@ export class BackendService {
 
     this.cleanup();
 
-    if (this.process) {
-      // Try graceful shutdown first
-      this.process.kill('SIGTERM');
-
-      // Wait a bit for graceful shutdown
-      await sleep(2000);
-
-      // Force kill if still running
-      if (this.process && !this.process.killed) {
-        this.process.kill('SIGKILL');
+    if (this.process && this.status.pid) {
+      try {
+        // Windows-specific: Use taskkill to force kill Python and its children
+        if (process.platform === 'win32') {
+          console.log(`[BackendService] Killing backend process (PID: ${this.status.pid}) on Windows...`);
+          const { exec } = require('child_process');
+          
+          // /F = force, /T = kill child processes too, /PID = process ID
+          exec(`taskkill /F /T /PID ${this.status.pid}`, (error: Error | null) => {
+            if (error) {
+              console.error(`[BackendService] Error killing process: ${error.message}`);
+            } else {
+              console.log('[BackendService] Backend process killed successfully');
+            }
+          });
+        } else {
+          // Unix-like systems: SIGTERM then SIGKILL
+          console.log(`[BackendService] Stopping backend process (PID: ${this.status.pid})...`);
+          this.process.kill('SIGTERM');
+          
+          // Wait a bit for graceful shutdown
+          await sleep(2000);
+          
+          // Force kill if still running
+          if (this.process && !this.process.killed) {
+            console.log('[BackendService] Force killing backend process...');
+            this.process.kill('SIGKILL');
+          }
+        }
+      } catch (error) {
+        console.error(`[BackendService] Error stopping backend: ${error}`);
       }
 
       this.process = null;
