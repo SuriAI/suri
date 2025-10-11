@@ -568,17 +568,30 @@ app.whenReady().then(async () => {
     })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit()
+// Handle app quit - ensure backend is stopped
+let isQuitting = false;
+
+app.on('before-quit', async (event) => {
+    if (!isQuitting) {
+        event.preventDefault();
+        isQuitting = true;
+        
+        console.log('[Main] Cleaning up before quit...');
+        await backendService.stop();
+        console.log('[Main] Backend stopped, quitting app...');
+        
+        app.quit();
     }
 })
 
-// Handle app quit
-app.on('before-quit', () => {
-    // Clean up resources
-    stopBackend();
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on('window-all-closed', async () => {
+    console.log('[Main] All windows closed, stopping backend...');
+    await backendService.stop();
+    
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
 })
