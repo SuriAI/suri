@@ -55,7 +55,7 @@ a = Analysis(
         ('models', 'models'),
         ('utils', 'utils'),
         ('routes', 'routes'),
-        ('../desktop/public/weights', 'weights'),  # Bundle model weights
+        ('weights', 'weights'),  # Bundle model weights from server/weights
     ],
     hiddenimports=hidden_imports,
     hookspath=['.'],

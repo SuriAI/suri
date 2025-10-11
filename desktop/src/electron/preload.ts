@@ -6,15 +6,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     invoke: (channel: string, ...args: unknown[]) => {
         return ipcRenderer.invoke(channel, ...args)
     },
-    // Model loading API
-    models: {
+    // Backend readiness check (models are loaded on server side)
+    backend_ready: {
         isReady: () => {
-            return ipcRenderer.invoke('models:is-ready')
-        },
-        onLoadingProgress: (callback: (data: { current: number; total: number; modelName: string; progress: number }) => void) => {
-            const listener = (_event: any, data: any) => callback(data)
-            ipcRenderer.on('model-loading-progress', listener)
-            return () => ipcRenderer.removeListener('model-loading-progress', listener)
+            return ipcRenderer.invoke('backend:is-ready')
         }
     },
     // Backend Service API

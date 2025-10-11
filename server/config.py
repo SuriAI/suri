@@ -15,10 +15,9 @@ def get_weights_dir() -> Path:
         # Models are bundled in the weights directory relative to the executable
         return Path(sys._MEIPASS) / "weights"
     else:
-        # Development mode - use the desktop public weights directory
+        # Development mode - use the server weights directory
         base_dir = Path(__file__).parent
-        project_root = base_dir.parent
-        return project_root / "desktop" / "public" / "weights"
+        return base_dir / "weights"
 
 def get_data_dir() -> Path:
     """Get the data directory path, handling both development and production modes"""

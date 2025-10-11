@@ -6,19 +6,19 @@ interface ModelLoadingState {
 }
 
 /**
- * Custom hook to check if backend models are loaded and ready
- * Listens to model loading progress and updates state accordingly
+ * Custom hook to check if backend server is ready
+ * All AI models are loaded on the server side, not in Electron
  */
 export function useModelLoading(): ModelLoadingState {
   const [modelsReady, setModelsReady] = useState(false)
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    // Check if models are ready
-    const checkModelsReady = async () => {
+    // Check if backend server is ready
+    const checkBackendReady = async () => {
       try {
-        if (window.electronAPI && 'models' in window.electronAPI) {
-          const ready = await window.electronAPI.models.isReady()
+        if (window.electronAPI && 'backend_ready' in window.electronAPI) {
+          const ready = await window.electronAPI.backend_ready.isReady()
           setModelsReady(ready || false)
           setIsChecking(false)
         } else {
@@ -26,7 +26,7 @@ export function useModelLoading(): ModelLoadingState {
           setIsChecking(false)
         }
       } catch (error) {
-        console.error('Failed to check models readiness:', error)
+        console.error('Failed to check backend readiness:', error)
         // If check fails, assume not ready and show loading screen
         setModelsReady(false)
         setIsChecking(false)
@@ -34,21 +34,19 @@ export function useModelLoading(): ModelLoadingState {
     }
 
     // Initial check
-    checkModelsReady()
+    checkBackendReady()
 
-    // Listen for model loading progress to update readiness state
-    let removeListener: (() => void) | undefined
-    if (window.electronAPI && 'models' in window.electronAPI) {
-      removeListener = window.electronAPI.models.onLoadingProgress(() => {
-        // After any progress update, recheck readiness
-        checkModelsReady()
-      })
-    }
+    // Poll backend readiness every 500ms until ready
+    const pollInterval = setInterval(() => {
+      if (!modelsReady) {
+        checkBackendReady()
+      }
+    }, 500)
 
     return () => {
-      removeListener?.()
+      clearInterval(pollInterval)
     }
-  }, [])
+  }, [modelsReady])
 
   return { modelsReady, isChecking }
 }
