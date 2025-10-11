@@ -99,6 +99,7 @@ coverage/
 # IDE & EDITORS
 # ===================================
 .vscode/
+.cursor/
 .idea/
 *.swp
 *.swo
