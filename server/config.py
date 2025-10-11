@@ -20,10 +20,29 @@ def get_weights_dir() -> Path:
         project_root = base_dir.parent
         return project_root / "desktop" / "public" / "weights"
 
+def get_data_dir() -> Path:
+    """Get the data directory path, handling both development and production modes"""
+    # Check if running as PyInstaller executable
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Production mode - PyInstaller executable
+        # Data should be stored next to the executable (user-writable location)
+        # sys.executable gives the path to the .exe file
+        exe_dir = Path(sys.executable).parent
+        data_dir = exe_dir / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
+    else:
+        # Development mode - use server/data directory
+        base_dir = Path(__file__).parent
+        data_dir = base_dir / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
+
 # Base paths
 BASE_DIR = Path(__file__).parent
 PROJECT_ROOT = BASE_DIR.parent if not getattr(sys, 'frozen', False) else Path(sys._MEIPASS)
 WEIGHTS_DIR = get_weights_dir()
+DATA_DIR = get_data_dir()
 
 # Server configuration
 SERVER_CONFIG = {
@@ -168,7 +187,7 @@ MODEL_CONFIGS = {
         "version": "production",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "embedding_dimension": 512,  # Face embedding dimension
-        "database_path": BASE_DIR / "data" / "face_database.db",  # SQLite database storage
+        "database_path": DATA_DIR / "face_database.db",  # SQLite database storage (auto-handles dev/prod)
         "requires_landmarks": False,  # Uses FaceMesh alignment instead of external landmarks
         "landmark_count": 0,  # No external landmarks required
         "batch_size": 4,  # Enable small batch processing

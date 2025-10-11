@@ -28,7 +28,7 @@ from utils.image_utils import decode_base64_image, encode_image_to_base64
 from utils.websocket_manager import manager, handle_websocket_message
 from utils.attendance_database import AttendanceDatabaseManager
 from routes import attendance
-from config import YUNET_MODEL_PATH, YUNET_CONFIG, ANTISPOOFING_CONFIG, EDGEFACE_MODEL_PATH, EDGEFACE_CONFIG, MODEL_CONFIGS, CORS_CONFIG, DEEP_SORT_CONFIG
+from config import YUNET_MODEL_PATH, YUNET_CONFIG, ANTISPOOFING_CONFIG, EDGEFACE_MODEL_PATH, EDGEFACE_CONFIG, MODEL_CONFIGS, CORS_CONFIG, DEEP_SORT_CONFIG, DATA_DIR
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -174,8 +174,8 @@ async def startup_event():
         )
         logger.info("Deep SORT tracker initialized successfully")
         
-        # Initialize attendance database
-        attendance_database = AttendanceDatabaseManager("data/attendance.db")
+        # Initialize attendance database (auto-handles dev/prod paths)
+        attendance_database = AttendanceDatabaseManager(str(DATA_DIR / "attendance.db"))
         
         # Set the database instance and models in the attendance routes module
         attendance.attendance_db = attendance_database
