@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager.js';
 import type { GroupType, AttendanceGroup } from '../../../types/recognition.js';
+import { ErrorMessage } from '../../common/ErrorMessage';
+import { FormInput } from '../../common/FormInput';
+import { FormTextarea } from '../../common/FormTextarea';
 
 interface CreateGroupProps {
   onClose: () => void;
@@ -43,20 +46,17 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
         <p className="text-sm text-white/60 mb-4">Set up a new attendance group</p>
 
         {error && (
-          <div className="mb-4 px-4 py-2 bg-red-600/20 border border-red-500/40 text-red-200 rounded-lg text-sm">
-            {error}
-          </div>
+          <ErrorMessage message={error} />
         )}
 
         <div className="grid gap-4">
           <label className="text-sm">
             <span className="text-white/60 block mb-2">Group name *</span>
-            <input
-              type="text"
+            <FormInput
               value={name}
-              onChange={event => setName(event.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60"
+              onChange={(event) => setName(event.target.value)}
               placeholder="e.g. CS101 Section A, Engineering Team"
+              focusColor="border-emerald-500/60"
             />
           </label>
 
@@ -65,22 +65,23 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
             <select
               value={type}
               onChange={event => setType(event.target.value as GroupType)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60 text-white"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="general" className="bg-black">General</option>
-              <option value="student" className="bg-black">🎓 Student</option>
-              <option value="employee" className="bg-black">👔 Employee</option>
-              <option value="visitor" className="bg-black">👤 Visitor</option>
+              <option value="general" className="bg-black text-white">General</option>
+              <option value="student" className="bg-black text-white">🎓 Student</option>
+              <option value="employee" className="bg-black text-white">👔 Employee</option>
+              <option value="visitor" className="bg-black text-white">👤 Visitor</option>
             </select>
           </label>
 
           <label className="text-sm">
             <span className="text-white/60 block mb-2">Description (optional)</span>
-            <textarea
+            <FormTextarea
               value={description}
-              onChange={event => setDescription(event.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60 min-h-[80px]"
+              onChange={(event) => setDescription(event.target.value)}
               placeholder="Brief description of this group..."
+              focusColor="border-emerald-500/60"
             />
           </label>
         </div>
@@ -95,7 +96,7 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
           <button
             onClick={handleCreate}
             disabled={!name.trim() || loading}
-            className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-100 hover:bg-emerald-500/30 transition-colors text-sm disabled:opacity-50"
+            className="btn-success text-sm px-4 py-2 disabled:opacity-50"
           >
             {loading ? 'Creating…' : 'Create Group'}
           </button>

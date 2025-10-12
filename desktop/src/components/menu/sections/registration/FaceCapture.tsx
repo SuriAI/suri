@@ -635,7 +635,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                 ) : (
                   <label className="flex h-96 cursor-pointer flex-col items-center justify-center p-8 text-center hover:bg-white/5 transition-all group">
                     <div className="flex flex-col items-center gap-4">
-                      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
+                      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center text-4xl transition-transform">
                         📁
                       </div>
                       <div>

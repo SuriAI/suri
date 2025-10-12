@@ -13,6 +13,8 @@ import type {
 import { drawOverlays, getGroupTypeIcon } from './utils/overlayRenderer';
 import type { DetectionResult, DashboardTab, WebSocketFaceData, WebSocketDetectionResponse, WebSocketConnectionMessage, WebSocketErrorMessage } from './types';
 import { AttendancePanel } from './components/AttendancePanel';
+import { ControlBar } from './components/ControlBar';
+import { FormInput } from '../common/FormInput';
 
 const NON_LOGGING_ANTISPOOF_STATUSES = new Set<'real' | 'fake' | 'error'>(['fake', 'error']);
 
@@ -1967,72 +1969,16 @@ export default function Main() {
           </div>
 
           {/* Controls Bar */}
-          <div className="px-4 pt-2 pb-2">
-            <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-
-                {/* Camera Selection */}
-                {cameraDevices.length > 0 && (
-                  <div className="flex items-center space-x-2">
-                    <select
-                      value={selectedCamera}
-                      onChange={(e) => setSelectedCamera(e.target.value)}
-                      disabled={isStreaming || cameraDevices.length <= 1}
-                      className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-                    >
-                      {cameraDevices.map((device, index) => (
-                        <option key={device.deviceId} value={device.deviceId} className="bg-black text-white">
-                          {device.label || `Camera ${index + 1}`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    isStreaming ? 'bg-green-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                {/* Detection Settings - Toggle Switch */}
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-2">
-                    <span className={`text-xs transition-colors duration-200 ${
-                      trackingMode === 'auto' ? 'text-cyan-300' : 'text-white/40'
-                    }`}>Auto</span>
-                    <button
-                      onClick={() => setTrackingMode(trackingMode === 'auto' ? 'manual' : 'auto')}
-                      className={`relative w-10 h-3 rounded-full transition-all duration-300 focus:outline-none flex items-center ${
-                        trackingMode === 'auto' 
-                          ? 'bg-cyan-500' 
-                          : 'bg-orange-500'
-                      }`}
-                    >
-                      <div className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ${
-                        trackingMode === 'auto' ? 'translate-x-0' : 'translate-x-6'
-                      }`}></div>
-                    </button>
-                    <span className={`text-xs transition-colors duration-200 ${
-                      trackingMode === 'manual' ? 'text-orange-300' : 'text-white/40'
-                    }`}>Manual</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={isStreaming ? stopCamera : startCamera}
-                  className={`px-4 py-2 rounded font-medium transition-colors duration-150 ${
-                    isStreaming
-                      ? 'bg-red-600 hover:bg-red-700 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
-                  }`}
-                >
-                  {isStreaming ? 'Stop' : 'Start Scan'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <ControlBar
+            cameraDevices={cameraDevices}
+            selectedCamera={selectedCamera}
+            setSelectedCamera={setSelectedCamera}
+            isStreaming={isStreaming}
+            trackingMode={trackingMode}
+            setTrackingMode={setTrackingMode}
+            startCamera={startCamera}
+            stopCamera={stopCamera}
+          />
         </div>
 
         {/* Sidebar */}
@@ -2042,14 +1988,14 @@ export default function Main() {
                 <div className="flex items-center justify-between gap-3">
                   <button
                     onClick={() => openMenuPanel('overview')}
-                    className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/10"
+                    className="btn-secondary text-xs px-3 py-1.5"
                   >
                     <span>Menu</span>
                   </button>
 
                   <div
                     onClick={() => setShowSettings(true)}
-                    className="flex items-center space-x-2  text-white/80 hover:text-white rounded-xl font-light transition-all duration-300 cursor-pointer"
+                    className="btn-secondary text-xs px-3 py-1.5 cursor-pointer"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
@@ -2197,9 +2143,9 @@ export default function Main() {
                                   recognitionResult.name || recognitionResult.person_id!,
                                   face.confidence
                                 )}
-                                className="mt-2 w-full px-3 py-1 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 text-orange-300 rounded text-xs transition-colors font-medium"
+                                className="btn-warning text-xs mt-2 w-full px-2 py-1"
                               >
-                                📝 Log Attendance
+                                Log Attendance
                               </button>
                             )}
                           </div>
@@ -2225,41 +2171,42 @@ export default function Main() {
   
           {/* Group Management Modal */}
           {showGroupManagement && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
-                <h3 className="text-xl font-bold mb-4">Group Management</h3>
+            <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 px-4">
+              <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
+                <h3 className="text-xl font-semibold mb-2 text-white">Group Management</h3>
+                <p className="text-sm text-white/60 mb-4">Create and manage attendance groups</p>
   
                 {/* Create New Group */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-medium mb-3">Create New Group</h4>
-                  <div className="space-y-3">
+                  <h4 className="text-lg font-medium mb-3 text-white">Create New Group</h4>
+                  <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Group Name:</label>
-                      <input
-                        type="text"
+                      <label className="block text-sm font-medium mb-2 text-white/60">Group Name:</label>
+                      <FormInput
                         value={newGroupName}
                         onChange={(e) => setNewGroupName(e.target.value)}
                         placeholder="Enter group name"
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        focusColor="border-emerald-500/60"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Group Type:</label>
+                      <label className="block text-sm font-medium mb-2 text-white/60">Group Type:</label>
                       <select
                         value={newGroupType}
                         onChange={(e) => setNewGroupType(e.target.value as GroupType)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60 text-white"
+                        style={{ colorScheme: 'dark' }}
                       >
-                        <option value="general">General</option>
-                        <option value="employee">👔 Employee</option>
-                        <option value="student">🎓 Student</option>
-                        <option value="visitor">👤 Visitor</option>
+                        <option value="general" className="bg-black text-white">General</option>
+                        <option value="employee" className="bg-black text-white">👔 Employee</option>
+                        <option value="student" className="bg-black text-white">🎓 Student</option>
+                        <option value="visitor" className="bg-black text-white">👤 Visitor</option>
                       </select>
                     </div>
                     <button
                       onClick={handleCreateGroup}
                       disabled={!newGroupName.trim()}
-                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded transition-colors"
+                      className="btn-success w-full px-4 py-2 disabled:opacity-50"
                     >
                       Create Group
                     </button>
@@ -2269,13 +2216,13 @@ export default function Main() {
                 {/* Existing Groups */}
                 {attendanceGroups.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="text-lg font-medium mb-3">Existing Groups</h4>
+                    <h4 className="text-lg font-medium mb-3 text-white">Existing Groups</h4>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {attendanceGroups.map(group => (
-                        <div key={group.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
+                        <div key={group.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
                           <div>
-                            <span className="font-medium">{getGroupTypeIcon(group.type)} {group.name}</span>
-                            <div className="text-sm text-gray-400">
+                            <span className="font-medium text-white">{getGroupTypeIcon(group.type)} {group.name}</span>
+                            <div className="text-sm text-white/60">
                               {group.type} • Members
                             </div>
                           </div>
@@ -2284,15 +2231,15 @@ export default function Main() {
                               onClick={() => handleSelectGroup(group)}
                               className={`px-3 py-1 rounded text-sm transition-colors ${
                                 currentGroup?.id === group.id
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-600 hover:bg-gray-500 text-gray-200'
+                                  ? 'btn-accent'
+                                  : 'btn-secondary'
                               }`}
                             >
                               {currentGroup?.id === group.id ? 'Active' : 'Select'}
                             </button>
                             <button
                               onClick={() => handleDeleteGroup(group)}
-                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+                              className="btn-error px-3 py-1 text-sm"
                               title="Delete Group"
                             >
                               🗑️
@@ -2307,7 +2254,7 @@ export default function Main() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowGroupManagement(false)}
-                    className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                    className="btn-secondary flex-1 px-4 py-2"
                   >
                     Close
                   </button>
