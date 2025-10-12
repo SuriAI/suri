@@ -22,7 +22,7 @@ export function VideoCanvas({
   websocketStatus,
 }: VideoCanvasProps) {
   return (
-    <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] border border-white/[0.08]">
+    <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg glass-card">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-contain"
@@ -38,24 +38,21 @@ export function VideoCanvas({
         }}
       />
 
-      {/* FPS Counter Overlay */}
       {quickSettings.showFPS && detectionFps > 0 && (
-        <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 pointer-events-none" style={{ zIndex: 20 }}>
+        <div className="absolute top-4 left-4 glass-card px-2 py-1 pointer-events-none" style={{ zIndex: 20 }}>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-green-400 font-mono text-sm font-semibold">{detectionFps.toFixed(1)} FPS</span>
+            <span className="text-green-400 font-mono text-sm">{detectionFps.toFixed(1)} FPS</span>
           </div>
         </div>
       )}
 
-      {/* Debug Info Overlay */}
       {quickSettings.showDebugInfo && currentDetections && (
-        <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 pointer-events-none text-xs font-mono space-y-1" style={{ zIndex: 20 }}>
+        <div className="absolute top-4 right-4 glass-card px-2 py-1 pointer-events-none text-xs font-mono space-y-1" style={{ zIndex: 20 }}>
           <div className="text-white/60">Time: <span className="text-white">{currentDetections.processing_time.toFixed(1)}ms</span></div>
           <div className="text-white/60">Faces: <span className="text-white">{currentDetections.faces.length}</span></div>
           <div className="text-white/60">WS: <span className={websocketStatus === 'connected' ? 'text-green-400' : 'text-red-400'}>{websocketStatus}</span></div>
 
-          {/* Detailed Spoof Detection Info */}
           {currentDetections.faces.map((face, index) => (
             face.antispoofing && face.antispoofing.live_score !== undefined && face.antispoofing.spoof_score !== undefined && (
               <div key={index} className="border-t border-white/10 pt-1 mt-1">
@@ -69,7 +66,6 @@ export function VideoCanvas({
         </div>
       )}
 
-      {/* Hidden canvas for frame capture */}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );

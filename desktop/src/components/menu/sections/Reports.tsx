@@ -109,14 +109,14 @@ export function Reports({ group }: ReportsProps) {
           </label>
           <button
             onClick={generateReport}
-            className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-xs"
+            className="btn-secondary text-xs px-2 py-1"
           >
             Refresh
           </button>
           <button
             onClick={exportReport}
             disabled={!report}
-            className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-400/40 text-green-100 hover:bg-green-500/30 transition-colors text-xs disabled:opacity-50"
+            className="btn-success text-xs px-2 py-1 disabled:opacity-50"
           >
             Export
           </button>

@@ -55,7 +55,7 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
         <h2 className="text-lg font-semibold">Members</h2>
         <button
           onClick={onAdd}
-          className="px-3 py-1.5 rounded-lg bg-green-500/20 border border-green-400/40 text-green-100 hover:bg-green-500/30 transition-colors text-xs"
+          className="btn-success text-xs px-2 py-1"
         >
           Add member
         </button>
@@ -103,13 +103,13 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
                 <div className="flex gap-2 text-xs">
                   <button
                     onClick={() => onEdit(member)}
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-400/40 text-blue-100 hover:bg-blue-500/30 transition-colors"
+                    className="btn-secondary text-xs flex-1 px-2 py-1"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleRemoveMember(member.person_id)}
-                    className="flex-1 px-3 py-1.5 rounded-lg bg-rose-500/20 border border-rose-400/40 text-rose-100 hover:bg-rose-500/30 transition-colors"
+                    className="btn-error text-xs flex-1 px-2 py-1"
                   >
                     Remove
                   </button>
