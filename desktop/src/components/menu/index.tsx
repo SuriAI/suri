@@ -53,7 +53,7 @@ const getGroupTypeIcon = (type: GroupType): string => {
       return '👤';
     case 'general':
     default:
-      return '👥';
+      return '';
   }
 };
 

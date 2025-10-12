@@ -298,7 +298,7 @@ export const getGroupTypeIcon = (type: string): string => {
     case 'employee': return '👔';
     case 'student': return '🎓';
     case 'visitor': return '👤';
-    case 'general': return '👥';
-    default: return '👥';
+    case 'general': return '';
+    default: return '';
   }
 };
