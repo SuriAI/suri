@@ -57,27 +57,27 @@ export default function WindowBar() {
       >
         <button
           onClick={handleMinimize}
-          className="titlebar-btn w-10 h-9 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-white/80 hover:!rounded-none transition-all duration-200"
+          className="titlebar-btn w-12 h-11 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-white/80 hover:!rounded-none transition-all duration-200"
         >
-          <i className="fas fa-window-minimize text-[10px]"></i>
+          <i className="fas fa-window-minimize text-[12px]"></i>
         </button>
 
         <button
           onClick={handleMaximize}
-          className="titlebar-btn w-10 h-9 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-white/80 hover:!rounded-none transition-all duration-200"
+          className="titlebar-btn w-12 h-11 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-white/80 hover:!rounded-none transition-all duration-200"
         >
           {isMaximized ? (
-            <i className="far fa-window-restore text-[10px]"></i>
+            <i className="far fa-square text-[13px]"></i>
           ) : (
-            <i className="far fa-window-maximize text-[10px]"></i>
+            <i className="far fa-square text-[13px]"></i>
           )}
         </button>
 
         <button
           onClick={handleClose}
-          className="titlebar-btn w-10 h-9 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-red-500/90 hover:!rounded-none transition-all duration-200"
+          className="titlebar-btn w-12 h-11 flex items-center justify-center text-white/40 hover:!text-black hover:!bg-red-500/90 hover:!rounded-none transition-all duration-200"
         >
-          <i className="fas fa-times text-[10px]"></i>
+          <i className="fas fa-times text-[16px]"></i>
         </button>
       </div>
     </div>
