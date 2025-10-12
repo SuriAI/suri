@@ -57,18 +57,18 @@ export function Overview({ group, members }: OverviewProps) {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 h-full flex flex-col overflow-hidden">
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 flex-shrink-0">
         <StatsCard type="present" value={stats.present_today} total={stats.total_members} />
         <StatsCard type="absent" value={stats.absent_today} />
         <StatsCard type="late" value={stats.late_today} />
       </div>
 
       {/* Recent Activity */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <h3 className="text-sm font-semibold mb-3">Recent activity</h3>
-        <div className="max-h-64 overflow-y-auto pr-2 space-y-2 text-sm">
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4 overflow-hidden flex-1 flex flex-col min-h-0">
+        <h3 className="text-sm font-semibold mb-3 flex-shrink-0">Recent activity</h3>
+        <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden pr-2 space-y-2 text-sm">
           {recentRecords.length > 0 ? (
             recentRecords.slice(0, 24).map(record => {
               const member = members.find(item => item.person_id === record.person_id);

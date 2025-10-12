@@ -273,7 +273,7 @@ export function Menu({ onBack, initialSection }: MenuProps) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden bg-gradient-to-b from-black via-[#050505] to-black">
-        <div className="h-full overflow-y-auto px-6 py-6 space-y-6">
+        <div className="h-full px-6 py-6">
           {!selectedGroup ? (
             <EmptyState onCreateGroup={() => setShowCreateGroupModal(true)} />
           ) : (
