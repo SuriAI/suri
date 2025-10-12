@@ -55,14 +55,14 @@ export default function WindowBar() {
       >
         <button
           onClick={handleMinimize}
-          className="titlebar-btn w-15 h-11 flex items-center justify-center text-white/40 hover:text-black hover:bg-white/80 transition-all duration-200"
+          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
         >
           <i className="fas fa-window-minimize text-[12px] pb-1.5"></i>
         </button>
 
         <button
           onClick={handleMaximize}
-          className="titlebar-btn w-15 h-11 flex items-center justify-center text-white/40 hover:text-black hover:bg-white/80 transition-all duration-200"
+          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
         >
             {isMaximized ? (
               <i className="far fa-window-restore text-[13px]"></i>
@@ -73,7 +73,7 @@ export default function WindowBar() {
 
         <button
           onClick={handleClose}
-          className="titlebar-btn w-15 h-11 flex items-center justify-center text-white/40 hover:text-black hover:bg-red-500/90 transition-all duration-200"
+          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-red-500/90 hover:text-white bg-transparent transition-all duration-200 border-none p-0 rounded"
         >
           <i className="fa fa-times text-[16px]"></i>
         </button>
