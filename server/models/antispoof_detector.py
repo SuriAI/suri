@@ -110,7 +110,7 @@ class AntiSpoof:
         pred = softmax(prediction)
         return pred
 
-    def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float = 1.2) -> np.ndarray:
+    def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float = 1.5) -> np.ndarray:
         """
         Crop face with increased bounding box for better anti-spoofing accuracy
         Matches Face-AntiSpoofing prototype implementation exactly
@@ -252,7 +252,7 @@ class AntiSpoof:
                 continue
             
             try:
-                face_crop = self.increased_crop(image, (x, y, x+w, y+h), bbox_inc=1.2)
+                face_crop = self.increased_crop(image, (x, y, x+w, y+h), bbox_inc=1.5)
                 if face_crop is None or face_crop.size == 0:
                     continue
             except Exception as e:
