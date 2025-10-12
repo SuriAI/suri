@@ -153,7 +153,7 @@ MODEL_CONFIGS = {
         "name": "SimpleAntiSpoof",
         "model_path": WEIGHTS_DIR / "AntiSpoofing_print-replay_1.5_128.onnx",
         "threshold": 0.5,
-        "bbox_inc": 1.2,
+        "bbox_inc": 1.5,
         "model_img_size": 128,
         "description": "Anti-spoofing detector - Matches Face-AntiSpoofing prototype exactly",
         "version": "prototype_accurate_fixed"
