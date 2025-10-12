@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { backendService } from '../../services/BackendService';
-import { attendanceManager } from '../../services/AttendanceManager';
-import type { AttendanceGroup } from '../../types/recognition';
 import { Display } from './sections/Display';
 import { Database } from './sections/Database';
-import { Attendance } from './sections/Attendance';
 import type { QuickSettings, SettingsOverview } from './types';
 
 // Re-export QuickSettings for backward compatibility
@@ -15,17 +12,13 @@ interface SettingsProps {
   isModal?: boolean;
   quickSettings?: QuickSettings;
   onQuickSettingsChange?: (settings: QuickSettings) => void;
-  attendanceGroup?: AttendanceGroup;
-  onAttendanceGroupUpdate?: () => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({ 
   onBack, 
   isModal = false, 
   quickSettings: externalQuickSettings, 
-  onQuickSettingsChange,
-  attendanceGroup,
-  onAttendanceGroupUpdate
+  onQuickSettingsChange
 }) => {
   const [expandedSection, setExpandedSection] = useState<string>('display');
   const [systemData, setSystemData] = useState<SettingsOverview>({
@@ -34,7 +27,6 @@ export const Settings: React.FC<SettingsProps> = ({
     lastUpdated: new Date().toISOString()
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [localAttendanceGroup, setLocalAttendanceGroup] = useState<AttendanceGroup | null>(attendanceGroup || null);
 
   const [internalQuickSettings, setInternalQuickSettings] = useState<QuickSettings>({
     showFPS: true,
@@ -60,12 +52,6 @@ export const Settings: React.FC<SettingsProps> = ({
   useEffect(() => {
     loadSystemData();
   }, []);
-
-  useEffect(() => {
-    if (attendanceGroup) {
-      setLocalAttendanceGroup(attendanceGroup);
-    }
-  }, [attendanceGroup]);
 
   const loadSystemData = async () => {
     setIsLoading(true);
@@ -95,29 +81,6 @@ export const Settings: React.FC<SettingsProps> = ({
       alert('❌ Failed to clear database');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const updateAttendance = async (key: string, value: string | number) => {
-    if (!localAttendanceGroup) return;
-    
-    const updatedSettings = {
-      ...localAttendanceGroup.settings,
-      [key]: value,
-    };
-    
-    setLocalAttendanceGroup({
-      ...localAttendanceGroup,
-      settings: updatedSettings,
-    });
-
-    try {
-      await attendanceManager.updateGroup(localAttendanceGroup.id, { settings: updatedSettings });
-      if (onAttendanceGroupUpdate) {
-        onAttendanceGroupUpdate();
-      }
-    } catch (error) {
-      console.error('Failed to update attendance settings:', error);
     }
   };
 
@@ -178,30 +141,6 @@ export const Settings: React.FC<SettingsProps> = ({
             />
           )}
         </div>
-
-        {/* Attendance Section */}
-        {localAttendanceGroup && (
-          <div className="mb-4">
-            <button
-              onClick={() => setExpandedSection(expandedSection === 'attendance' ? '' : 'attendance')}
-              className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all mb-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <span className="text-blue-400 text-lg">📋</span>
-                </div>
-                <span className="text-white font-medium">Attendance</span>
-              </div>
-              <svg className={`w-5 h-5 text-white/40 transition-transform ${expandedSection === 'attendance' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" strokeWidth={2}/></svg>
-            </button>
-            {expandedSection === 'attendance' && (
-              <Attendance 
-                attendanceGroup={localAttendanceGroup} 
-                onUpdate={updateAttendance}
-              />
-            )}
-          </div>
-        )}
         
       </div>
     </div>

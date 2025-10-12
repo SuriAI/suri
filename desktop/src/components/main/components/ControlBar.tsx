@@ -7,6 +7,12 @@ interface ControlBarProps {
   setTrackingMode: (mode: 'auto' | 'manual') => void;
   startCamera: () => void;
   stopCamera: () => void;
+  // Late threshold functionality
+  lateThresholdMinutes: number;
+  onLateThresholdChange: (minutes: number) => void;
+  // Start time functionality
+  classStartTime: string;
+  onClassStartTimeChange: (time: string) => void;
 }
 
 export function ControlBar({
@@ -18,6 +24,10 @@ export function ControlBar({
   setTrackingMode,
   startCamera,
   stopCamera,
+  lateThresholdMinutes,
+  onLateThresholdChange,
+  classStartTime,
+  onClassStartTimeChange,
 }: ControlBarProps) {
   return (
     <div className="px-4 pt-2 pb-2">
@@ -42,6 +52,38 @@ export function ControlBar({
           )}
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${isStreaming ? 'bg-green-400' : 'bg-red-400'}`}></div>
+          </div>
+
+          {/* Late Threshold Control */}
+          <div className="flex items-center space-x-3">
+            <span className="text-white/60 text-sm">Late Threshold</span>
+            <div className="flex items-center space-x-2">
+              <input
+                type="range"
+                min="5"
+                max="60"
+                step="5"
+                value={lateThresholdMinutes}
+                onChange={(e) => onLateThresholdChange(parseInt(e.target.value))}
+                className="w-20 accent-amber-500"
+                disabled={isStreaming}
+              />
+              <span className="text-white font-medium text-sm min-w-[3rem]">{lateThresholdMinutes}min</span>
+            </div>
+          </div>
+
+          {/* Class Start Time Control */}
+          <div className="flex items-center space-x-3">
+            <span className="text-white/60 text-sm">Start Time</span>
+            <div className="flex items-center space-x-2">
+              <input
+                type="time"
+                value={classStartTime}
+                onChange={(e) => onClassStartTimeChange(e.target.value)}
+                className="px-2 py-1 bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded focus:border-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                disabled={isStreaming}
+              />
+            </div>
           </div>
         </div>
 
