@@ -1978,6 +1978,44 @@ export default function Main() {
             setTrackingMode={setTrackingMode}
             startCamera={startCamera}
             stopCamera={stopCamera}
+            lateThresholdMinutes={currentGroup?.settings?.late_threshold_minutes ?? 15}
+            onLateThresholdChange={async (minutes: number) => {
+              if (currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  late_threshold_minutes: minutes,
+                };
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
+                  // Update local state
+                  setCurrentGroup({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  });
+                } catch (error) {
+                  console.error('Failed to update late threshold:', error);
+                }
+              }
+            }}
+            classStartTime={currentGroup?.settings?.class_start_time ?? '08:00'}
+            onClassStartTimeChange={async (time: string) => {
+              if (currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  class_start_time: time,
+                };
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
+                  // Update local state
+                  setCurrentGroup({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  });
+                } catch (error) {
+                  console.error('Failed to update class start time:', error);
+                }
+              }
+            }}
           />
         </div>
 
@@ -2285,16 +2323,6 @@ export default function Main() {
               isModal={true}
               quickSettings={quickSettings}
               onQuickSettingsChange={setQuickSettings}
-              attendanceGroup={currentGroup ?? undefined}
-              onAttendanceGroupUpdate={async () => {
-                // Refresh the current group data
-                if (currentGroup) {
-                  const updatedGroup = await attendanceManager.getGroup(currentGroup.id);
-                  if (updatedGroup) {
-                    setCurrentGroup(updatedGroup);
-                  }
-                }
-              }}
             />
           )}
   
