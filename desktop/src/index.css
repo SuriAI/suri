@@ -81,21 +81,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Ultra-sleek button styles */
-button {
-  border-radius: 6px;
-  border: 1px solid var(--border-primary);
-  padding: 0.75rem 1.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  outline: none;
-  position: relative;
-  overflow: hidden;
+/* Ultra-sleek button styles - wrapped in @layer base so Tailwind utilities can override */
+@layer base {
+  button {
+    border-radius: 6px;
+    border: 1px solid var(--border-primary);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    position: relative;
+    overflow: hidden;
+  }
 }
 
 /* Title bar buttons - override global button styles */
@@ -123,18 +125,20 @@ button {
   box-shadow: none !important;
 }
 
-button:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-}
+@layer base {
+  button:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
 
-button:active {
-  transform: translateY(0);
-}
+  button:active {
+    transform: translateY(0);
+  }
 
-button:focus-visible {
-  box-shadow: 0 0 0 2px var(--accent-subtle);
+  button:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent-subtle);
+  }
 }
 
 /* Primary button */
@@ -150,25 +154,27 @@ button:focus-visible {
 }
 
 /* Minimal input styles */
-input, textarea, select {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  padding: 0.75rem;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  outline: none;
-}
+@layer base {
+  input, textarea, select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    padding: 0.75rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    outline: none;
+  }
 
-input:focus, textarea:focus, select:focus {
-  border-color: var(--border-hover);
-  box-shadow: 0 0 0 2px var(--accent-subtle);
-}
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 0 2px var(--accent-subtle);
+  }
 
-input::placeholder, textarea::placeholder {
-  color: var(--text-muted);
+  input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+  }
 }
 
 /* Scrollbar styling - contained within rounded window */
