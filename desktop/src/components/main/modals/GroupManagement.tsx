@@ -55,7 +55,7 @@ export function GroupManagement({
                 onChange={(e) => setNewGroupType(e.target.value as GroupType)}
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
               >
-                <option value="general">👥 General</option>
+                <option value="general">General</option>
                 <option value="employee">👔 Employee</option>
                 <option value="student">🎓 Student</option>
                 <option value="visitor">👤 Visitor</option>

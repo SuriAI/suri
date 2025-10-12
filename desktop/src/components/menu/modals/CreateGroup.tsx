@@ -67,7 +67,7 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
               onChange={event => setType(event.target.value as GroupType)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60"
             >
-              <option value="general" className="bg-black">👥 General</option>
+              <option value="general" className="bg-black">General</option>
               <option value="student" className="bg-black">🎓 Student</option>
               <option value="employee" className="bg-black">👔 Employee</option>
               <option value="visitor" className="bg-black">👤 Visitor</option>

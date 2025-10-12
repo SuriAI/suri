@@ -468,7 +468,6 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
           <div className="max-h-[500px] space-y-1.5 overflow-y-auto custom-scroll">
             {members.length === 0 && (
               <div className="rounded-xl border border-dashed border-white/5 bg-white/[0.02] px-3 py-12 text-center">
-                <div className="text-3xl mb-2 opacity-40">👥</div>
                 <div className="text-xs text-white/40">No members yet</div>
               </div>
             )}

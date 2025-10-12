@@ -7,7 +7,7 @@ export function EmptyState({ onCreateGroup }: EmptyStateProps) {
     <div className="flex items-center justify-center h-full">
       <div className="text-center space-y-4 max-w-md">
         <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-white/10 flex items-center justify-center text-4xl">
-          👥
+          
         </div>
         <div>
           <h3 className="text-lg font-medium text-white/90 mb-2">No groups yet</h3>
