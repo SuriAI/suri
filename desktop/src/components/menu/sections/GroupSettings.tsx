@@ -58,11 +58,12 @@ export function GroupSettings({
   const groupCreatedAt = toDate(group.created_at);
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-lg font-semibold mb-4">Group Settings</h2>
+    <section className="h-full flex flex-col overflow-hidden space-y-4">
+      <h2 className="text-lg font-semibold flex-shrink-0">Group Settings</h2>
 
-      {/* Group Information Card */}
-      <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5">
+      <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2 space-y-4">
+        {/* Group Information Card */}
+        <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-2xl">
@@ -191,6 +192,7 @@ export function GroupSettings({
           </svg>
           Delete Group
         </button>
+      </div>
       </div>
     </section>
   );

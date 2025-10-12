@@ -50,8 +50,8 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
   };
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
+    <section className="h-full flex flex-col overflow-hidden space-y-4">
+      <div className="flex items-center justify-between flex-shrink-0">
         <h2 className="text-lg font-semibold">Members</h2>
         <button
           onClick={onAdd}
@@ -62,8 +62,9 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
       </div>
 
       {members.length > 0 && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-          {members.map(member => {
+        <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pr-2">
+            {members.map(member => {
             const session = todaySessions.find(item => item.person_id === member.person_id);
 
             const statusLabel = session?.status === 'present'
@@ -116,6 +117,7 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
               </div>
             );
           })}
+          </div>
         </div>
       )}
     </section>
