@@ -85,8 +85,8 @@ export function Reports({ group }: ReportsProps) {
   }, [generateReport]);
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+    <section className="h-full flex flex-col overflow-hidden space-y-4">
+      <div className="flex items-center justify-between gap-3 flex-shrink-0">
         <h2 className="text-lg font-semibold">Reports</h2>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs">
@@ -123,23 +123,24 @@ export function Reports({ group }: ReportsProps) {
         </div>
       </div>
 
-      {error && (
-        <div className="px-4 py-2 bg-red-600/20 border border-red-500/40 text-red-200 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {loading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-cyan-400 animate-spin" />
-            <span className="text-sm text-white/60">Generating report...</span>
+      <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2">
+        {error && (
+          <div className="px-4 py-2 bg-red-600/20 border border-red-500/40 text-red-200 rounded-lg text-sm mb-4">
+            {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {!loading && report && (
-        <div className="space-y-4">
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-cyan-400 animate-spin" />
+              <span className="text-sm text-white/60">Generating report...</span>
+            </div>
+          </div>
+        )}
+
+        {!loading && report && (
+          <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-xl border border-blue-500/20 bg-gradient-to-br from-blue-500/20 via-blue-500/10 to-transparent p-4">
               <p className="text-xs text-blue-100/60 uppercase tracking-wider">Days Tracked</p>
@@ -201,8 +202,9 @@ export function Reports({ group }: ReportsProps) {
               </table>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

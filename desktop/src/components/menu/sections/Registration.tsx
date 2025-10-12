@@ -42,21 +42,23 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
 
   if (mode === 'single') {
     return (
-      <div className="space-y-4">
+      <div className="h-full flex flex-col overflow-hidden space-y-4">
         <button
           onClick={() => setMode(null)}
-          className="group flex items-center gap-2 text-white/40 hover:text-white/80 transition-colors text-sm"
+          className="group flex items-center gap-2 text-white/40 hover:text-white/80 transition-colors text-sm flex-shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back
         </button>
-        <FaceCapture
-          group={group}
-          members={members}
-          onRefresh={onRefresh}
-        />
+        <div className="flex-1 overflow-hidden min-h-0">
+          <FaceCapture
+            group={group}
+            members={members}
+            onRefresh={onRefresh}
+          />
+        </div>
       </div>
     );
   }
@@ -68,9 +70,9 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
   const progress = total > 0 ? (registered / total) * 100 : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col overflow-hidden space-y-6">
       {/* Stats */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div>
           <div className="text-2xl font-light text-white">{registered}<span className="text-white/40">/{total}</span></div>
           <div className="text-xs text-white/40 mt-1">Registered</div>
@@ -87,7 +89,7 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
       </div>
 
       {/* Mode Cards */}
-      <div className="grid gap-3">
+      <div className="grid gap-3 flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2">
         {/* Single */}
         <button
           onClick={() => setMode('single')}
