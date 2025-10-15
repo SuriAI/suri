@@ -124,8 +124,8 @@ OPTIMIZED_SESSION_OPTIONS = {
     "enable_profiling": False,
     "execution_mode": ort.ExecutionMode.ORT_SEQUENTIAL,  # Best for single-threaded inference
     "graph_optimization_level": ort.GraphOptimizationLevel.ORT_ENABLE_ALL,  # Maximum optimization
-    "inter_op_num_threads": 2,  # Reduced from 0 (all cores) to 2 to avoid thread contention
-    "intra_op_num_threads": 4,  # Reduced from 0 (all cores) to 4 for parallel ops within a node
+    "inter_op_num_threads": 0,  # Reduced from 0 (all cores) to 2 to avoid thread contention
+    "intra_op_num_threads": 0,  # Reduced from 0 (all cores) to 4 for parallel ops within a node
     "log_severity_level": 3,    # Reduce logging overhead
 }
 
