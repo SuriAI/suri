@@ -143,11 +143,7 @@ MODEL_CONFIGS = {
         "description": "YuNet face detection",
         "version": "2023mar",
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "max_image_size": (1920, 1080),
-        "min_face_size": (50, 50),
-        "enable_dynamic_sizing": True,
-        "enable_rotation_correction": False,
-        "enable_multi_scale": False
+        "max_image_size": (1920, 1080)
     },
     "antispoofing": {
         "name": "SimpleAntiSpoof",

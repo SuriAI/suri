@@ -381,17 +381,7 @@ async def detect_faces(request: DetectionRequest):
             yunet_detector.set_confidence_threshold(request.confidence_threshold)
             yunet_detector.set_nms_threshold(request.nms_threshold)
             
-            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", False)
-            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", False)
-            
-            if enable_rotation_correction or enable_multi_scale:
-                faces = yunet_detector.detect_faces_with_corrections(
-                    image, 
-                    enable_rotation_correction=enable_rotation_correction,
-                    enable_multi_scale=enable_multi_scale
-                )
-            else:
-                faces = yunet_detector.detect_faces(image)
+            faces = yunet_detector.detect_faces(image)
             
             # CRITICAL: Add face tracking for consistent track_id (Deep SORT with embeddings)
             faces = await process_face_tracking(faces, image)
@@ -461,17 +451,7 @@ async def detect_faces_upload(
             yunet_detector.set_confidence_threshold(confidence_threshold)
             yunet_detector.set_nms_threshold(nms_threshold)
             
-            enable_rotation_correction = YUNET_CONFIG.get("enable_rotation_correction", False)
-            enable_multi_scale = YUNET_CONFIG.get("enable_multi_scale", False)
-            
-            if enable_rotation_correction or enable_multi_scale:
-                faces = yunet_detector.detect_faces_with_corrections(
-                    image, 
-                    enable_rotation_correction=enable_rotation_correction,
-                    enable_multi_scale=enable_multi_scale
-                )
-            else:
-                faces = yunet_detector.detect_faces(image)
+            faces = yunet_detector.detect_faces(image)
             
             # CRITICAL: Add face tracking for consistent track_id (Deep SORT with embeddings)
             faces = await process_face_tracking(faces, image)
