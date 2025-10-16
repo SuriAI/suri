@@ -167,7 +167,7 @@ export function AttendancePanel({
             {visibleRecords.map(record => {
               const member = groupMembers.find(m => m.person_id === record.person_id);
               return (
-                <div key={record.id} className="text-xs bg-white/[0.02] border border-white/[0.05] rounded p-2 hover:bg-white/[0.04] transition-colors">
+                <div key={record.id} className="text-xs bg-white/[0.02] border border-white/[0.05] rounded p-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                       <span className="font-medium">{member?.name || record.person_id}</span>
@@ -187,7 +187,7 @@ export function AttendancePanel({
             {hasMore && (
               <button
                 onClick={() => setDisplayLimit(prev => prev + 10)}
-                className="w-full mt-2 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 transition-colors"
+                className="w-full mt-2 py-2 text-xs bg-white/[0.05] border border-white/[0.1] rounded text-white/70"
               >
                 Load More ({processedRecords.length - displayLimit} more)
               </button>

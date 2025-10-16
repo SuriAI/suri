@@ -73,20 +73,24 @@ export interface WebSocketErrorMessage {
 export type DashboardTab = MenuSection;
 
 export interface TrackedFace {
-  personId: string;
-  name: string;
+  id: string;
+  bbox: { x: number; y: number; width: number; height: number };
   confidence: number;
   lastSeen: number;
-  occlusionStartTime: number | null;
-  bbox: { x: number; y: number; width: number; height: number };
-  history: Array<{ timestamp: number; bbox: { x: number; y: number; width: number; height: number }; confidence: number }>;
+  trackingHistory: Array<{ timestamp: number; bbox: { x: number; y: number; width: number; height: number }; confidence: number }>;
   isLocked: boolean;
+  personId?: string;
+  occlusionCount: number;
+  angleConsistency: number;
+  cooldownRemaining?: number;
+  antispoofingStatus?: 'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown';
 }
 
 export interface CooldownInfo {
   personId: string;
-  memberName: string;
+  memberName?: string;
   startTime: number;
+  lastKnownBbox?: { x: number; y: number; width: number; height: number };
 }
 
 // Re-export needed types
