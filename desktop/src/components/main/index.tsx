@@ -10,11 +10,13 @@ import type {
   AttendanceRecord,
   GroupType
 } from '../../types/recognition';
-import { drawOverlays, getGroupTypeIcon } from './utils/overlayRenderer';
-import type { DetectionResult, DashboardTab, WebSocketFaceData, WebSocketDetectionResponse, WebSocketConnectionMessage, WebSocketErrorMessage } from './types';
-import { AttendancePanel } from './components/AttendancePanel';
+import { drawOverlays } from './utils/overlayRenderer';
+import type { DetectionResult, DashboardTab, WebSocketFaceData, WebSocketDetectionResponse, WebSocketConnectionMessage, WebSocketErrorMessage, CooldownInfo, TrackedFace } from './types';
 import { ControlBar } from './components/ControlBar';
-import { FormInput } from '../common/FormInput';
+import { VideoCanvas } from './components/VideoCanvas';
+import { Sidebar } from './components/Sidebar';
+import { GroupManagementModal } from './components/GroupManagementModal';
+import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 
 const NON_LOGGING_ANTISPOOF_STATUSES = new Set<'real' | 'fake' | 'error'>(['fake', 'error']);
 
@@ -142,19 +144,7 @@ export default function Main() {
   
   // Elite Tracking System States
   const [trackingMode, setTrackingMode] = useState<'auto' | 'manual'>('auto');
-  const [trackedFaces, setTrackedFaces] = useState<Map<string, {
-    id: string;
-    bbox: { x: number; y: number; width: number; height: number };
-    confidence: number;
-    lastSeen: number;
-    trackingHistory: Array<{ timestamp: number; bbox: { x: number; y: number; width: number; height: number }; confidence: number }>;
-    isLocked: boolean;
-    personId?: string;
-    occlusionCount: number;
-    angleConsistency: number;
-    cooldownRemaining?: number;
-    antispoofingStatus?: 'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown';
-  }>>(new Map());
+  const [trackedFaces, setTrackedFaces] = useState<Map<string, TrackedFace>>(new Map());
   // Attendance states
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>([]);
   const [groupMembers, setGroupMembers] = useState<AttendanceMember[]>([]);
@@ -173,12 +163,7 @@ export default function Main() {
   const cooldownTimestampsRef = useRef<Map<string, number>>(new Map());
   
   // Persistent cooldown tracking (for recognized faces)
-  const [persistentCooldowns, setPersistentCooldowns] = useState<Map<string, {
-    personId: string;
-    startTime: number;
-    memberName?: string;
-    lastKnownBbox?: { x: number; y: number; width: number; height: number }; // For displaying cooldown when face disappears
-  }>>(new Map());
+  const [persistentCooldowns, setPersistentCooldowns] = useState<Map<string, CooldownInfo>>(new Map());
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -1875,56 +1860,15 @@ export default function Main() {
         <div className="flex-1 flex flex-col min-h-0">
           {/* Video Container */}
           <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-5">
-            <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-white/[0.02] border border-white/[0.08]">
-              <video
-                ref={videoRef}
-                className="absolute inset-0 w-full h-full object-contain"
-                playsInline
-                muted
-              />
-              <canvas
-                ref={overlayCanvasRef}
-                className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                style={{
-                  zIndex: 10,
-                  mixBlendMode: "normal",
-                }}
-              />
-              
-              {/* FPS Counter Overlay */}
-              {quickSettings.showFPS && detectionFps > 0 && (
-                <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 pointer-events-none" style={{ zIndex: 20 }}>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-green-400 font-mono text-sm font-semibold">{detectionFps.toFixed(1)} FPS</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Debug Info Overlay */}
-              {quickSettings.showDebugInfo && currentDetections && (
-                <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 pointer-events-none text-xs font-mono space-y-1" style={{ zIndex: 20 }}>
-                  <div className="text-white/60">Time: <span className="text-white">{currentDetections.processing_time.toFixed(1)}ms</span></div>
-                  <div className="text-white/60">Faces: <span className="text-white">{currentDetections.faces.length}</span></div>
-                  <div className="text-white/60">WS: <span className={websocketStatus === 'connected' ? 'text-green-400' : 'text-red-400'}>{websocketStatus}</span></div>
-                  
-                  {/* Detailed Spoof Detection Info */}
-                  {currentDetections.faces.map((face, index) => (
-                    face.antispoofing && face.antispoofing.live_score !== undefined && face.antispoofing.spoof_score !== undefined && (
-                      <div key={index} className="border-t border-white/10 pt-1 mt-1">
-                        <div className="text-white/60">Face {index + 1}:</div>
-                        <div className="text-green-400">Live: {(face.antispoofing.live_score * 100).toFixed(1)}%</div>
-                        <div className="text-red-400">Spoof: {(face.antispoofing.spoof_score * 100).toFixed(1)}%</div>
-                        <div className="text-white/60">Status: <span className={face.antispoofing.status === 'real' ? 'text-green-400' : 'text-red-400'}>{face.antispoofing.status}</span></div>
-                      </div>
-                    )
-                  ))}
-                </div>
-              )}
-              
-              {/* Hidden canvas for frame capture */}
-              <canvas ref={canvasRef} className="hidden" />
-            </div>
+            <VideoCanvas
+              videoRef={videoRef}
+              canvasRef={canvasRef}
+              overlayCanvasRef={overlayCanvasRef}
+              quickSettings={quickSettings}
+              currentDetections={currentDetections}
+              detectionFps={detectionFps}
+              websocketStatus={websocketStatus}
+            />
           </div>
 
           {/* Controls Bar */}
@@ -1979,183 +1923,15 @@ export default function Main() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-96 my-2 bg-white/[0.02] border-l border-b border-white/[0.08] flex flex-col max-h-full">
-          <div className="px-4 py-2 border-b border-white/[0.08]">
-            <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <button
-                    onClick={() => openMenuPanel('overview')}
-                    className="btn-secondary text-xs px-3 py-1.5"
-                  >
-                    <span>Menu</span>
-                  </button>
-
-                  <div
-                    onClick={() => setShowSettings(true)}
-                    className="text-xs px-3 py-1.5 cursor-pointer bg-transparent hover:bg-white/10 transition-all duration-200 rounded"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                </div>
-            </div>
-          </div>
-<div className="sidebar h-screen max-h-screen flex flex-col overflow-hidden">
-  
-            {/* Face Detection Display - Half of remaining space */}
-             <div className="flex-1 border-b border-white/[0.08] flex flex-col min-h-0">
-               <div className="flex-1 overflow-y-auto space-y-2 custom-scroll">
-            {/* Active Cooldowns - Only show in Auto mode */}
-            {trackingMode === 'auto' && persistentCooldowns.size > 0 && (
-              <div className="p-4 border-b border-white/[0.08] flex-shrink-0">
-                <div className="text-xs font-medium text-white/60 mb-2">Active Cooldowns:</div>
-                <div className="space-y-1">
-                  {Array.from(persistentCooldowns.values()).map((cooldownInfo) => {
-                    // Use Date.now() for accurate timing, currentTime for re-render trigger
-                    const now = Date.now();
-                    const timeSinceStart = now - cooldownInfo.startTime;
-                    const cooldownMs = attendanceCooldownSeconds * 1000;
-                    
-                    // Only show if within cooldown period and time is positive
-                    if (timeSinceStart >= 0 && timeSinceStart < cooldownMs) {
-                      const remainingCooldown = Math.max(1, Math.ceil((cooldownMs - timeSinceStart) / 1000));
-                      // Add currentTime to ensure re-renders (but don't use it in calculation)
-                      // Current time ensures re-renders happen
-                      
-                      return (
-                        <div key={cooldownInfo.personId} className="flex items-center justify-between bg-red-900/20 border border-red-500/30 rounded px-2 py-1">
-                          <span className="text-xs text-red-300">{cooldownInfo.memberName || cooldownInfo.personId}</span>
-                          <span className="text-xs text-red-300 font-mono">📝 {remainingCooldown}s</span>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
-            )}
-                {!currentDetections?.faces?.length ? (
-                  <div className="text-white/50 text-sm text-center flex items-center justify-center h-full">
-                    No faces detected
-                  </div>
-                ) : (
-                  currentDetections.faces.map((face, index) => {
-                    // Look up recognition by track_id (from SORT)
-                    const trackId = face.track_id!; // Backend always provides track_id
-                    const recognitionResult = currentRecognitionResults.get(trackId);
-                    const isRecognized = recognitionEnabled && recognitionResult?.person_id;
-  
-                    // Find corresponding tracked face
-                    const trackedFace = Array.from(trackedFaces.values()).find(track =>
-                      track.personId === recognitionResult?.person_id ||
-                      (Math.abs(track.bbox.x - face.bbox.x) < 30 && Math.abs(track.bbox.y - face.bbox.y) < 30)
-                    );
-  
-                    return (
-                      <div key={index} className={`bg-white/[0.05] border rounded p-3 transition-all duration-200 ${
-                        trackedFace?.isLocked ? 'border-cyan-500/50 bg-cyan-500/10' : 'border-white/[0.08]'
-                      }`}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <div className="font-medium">
-                                {isRecognized && recognitionResult?.person_id ?
-                                  (recognitionResult.name || recognitionResult.person_id) :
-                                  `Unknown`
-                                }
-                              </div>
-                              {trackedFace && (
-                                <div className={`w-2 h-2 rounded-full ${
-                                  trackedFace.isLocked ? 'bg-cyan-400' : 'bg-orange-400'
-                                }`} title={trackedFace.isLocked ? 'Locked Track' : 'Active Track'}></div>
-                              )}
-                            </div>
-                            <div className="text-xs text-white/60">
-                              Confidence: {(face.confidence * 100).toFixed(1)}%
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            {isRecognized && recognitionResult?.similarity && (
-                              <div className="text-xs text-green-300">
-                                {(recognitionResult.similarity * 100).toFixed(1)}% match
-                              </div>
-                            )}
-                            
-
-                            
-                            {face.antispoofing && (
-                              <div className={`text-xs px-2 py-1 rounded mt-1 ${
-                                face.antispoofing.status === 'real' ? 'bg-green-900 text-green-300' :
-                                face.antispoofing.status === 'fake' ? 'bg-red-900 text-red-300' :
-                                face.antispoofing.status === 'error' ? 'bg-yellow-900 text-yellow-300' :
-                                'bg-gray-900 text-gray-300'
-                              }`}>
-                                <div className="flex items-center justify-between">
-                                  <span>
-                                    {face.antispoofing.status === 'real' ? '✓ Live' :
-                                     face.antispoofing.status === 'fake' ? '⚠ Spoof' :
-                                     face.antispoofing.status === 'error' ? '❌ Error' : '? Unknown'}
-                                  </span>
-                                  {/* Show percentages if available - show if at least one score is defined */}
-                                  {((face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null) || 
-                                    (face.antispoofing.spoof_score !== undefined && face.antispoofing.spoof_score !== null)) && (
-                                    <div className="text-xs ml-2 text-right">
-                                      {face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null && (
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-green-200">Live:</span>
-                                          <span className="font-mono">{((face.antispoofing.live_score || 0) * 100).toFixed(0)}%</span>
-                                        </div>
-                                      )}
-                                      {face.antispoofing.spoof_score !== undefined && face.antispoofing.spoof_score !== null && (
-                                        <div className="flex items-center gap-1">
-                                          <span className="text-red-200">Spoof:</span>
-                                          <span className="font-mono">{((face.antispoofing.spoof_score || 0) * 100).toFixed(0)}%</span>
-                                        </div>
-                                      )}
-                                      {/* Confidence bar */}
-                                      <div className="w-full bg-white/20 rounded-full h-1 mt-1">
-                                        <div 
-                                          className={`h-1 rounded-full transition-all duration-300 ${
-                                            face.antispoofing?.status === 'real' ? 'bg-green-400' : 'bg-red-400'
-                                          }`}
-                                          style={{ 
-                                            width: `${(face.antispoofing?.status === 'real' ? 
-                                              (face.antispoofing?.live_score || 0) : 
-                                              (face.antispoofing?.spoof_score || 0)) * 100}%` 
-                                          }}
-                                        />
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            {/* Manual Log Button */}
-                            {trackingMode === 'manual' && isRecognized && recognitionResult?.person_id && (
-                              <button
-                                onClick={() => handleManualLog(
-                                  recognitionResult.person_id!,
-                                  recognitionResult.name || recognitionResult.person_id!,
-                                  face.confidence
-                                )}
-                                className="btn-warning text-xs mt-2 w-full px-2 py-1"
-                              >
-                                Log Attendance
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                 )}
-               </div>
-             </div>
-  
-            {/* Attendance Management or Recent Logs - Using AttendancePanel Component */}
-            <AttendancePanel
+        <Sidebar
+          currentDetections={currentDetections}
+          currentRecognitionResults={currentRecognitionResults}
+          recognitionEnabled={recognitionEnabled}
+          trackedFaces={trackedFaces}
+          trackingMode={trackingMode}
+          handleManualLog={handleManualLog}
+          persistentCooldowns={persistentCooldowns}
+          attendanceCooldownSeconds={attendanceCooldownSeconds}
               attendanceEnabled={attendanceEnabled}
               attendanceGroups={attendanceGroups}
               currentGroup={currentGroup}
@@ -2163,102 +1939,25 @@ export default function Main() {
               groupMembers={groupMembers}
               handleSelectGroup={handleSelectGroup}
               setShowGroupManagement={setShowGroupManagement}
+          openMenuPanel={openMenuPanel}
+          setShowSettings={setShowSettings}
             />
            </div>
   
           {/* Group Management Modal */}
-          {showGroupManagement && (
-            <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 px-4">
-              <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl p-6 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
-                <h3 className="text-xl font-semibold mb-2 text-white">Group Management</h3>
-                <p className="text-sm text-white/60 mb-4">Create and manage attendance groups</p>
-  
-                {/* Create New Group */}
-                <div className="mb-6">
-                  <h4 className="text-lg font-medium mb-3 text-white">Create New Group</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-white/60">Group Name:</label>
-                      <FormInput
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        placeholder="Enter group name"
-                        focusColor="border-emerald-500/60"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-white/60">Group Type:</label>
-                      <select
-                        value={newGroupType}
-                        onChange={(e) => setNewGroupType(e.target.value as GroupType)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60 text-white"
-                        style={{ colorScheme: 'dark' }}
-                      >
-                        <option value="general" className="bg-black text-white">General</option>
-                        <option value="employee" className="bg-black text-white">👔 Employee</option>
-                        <option value="student" className="bg-black text-white">🎓 Student</option>
-                        <option value="visitor" className="bg-black text-white">👤 Visitor</option>
-                      </select>
-                    </div>
-                    <button
-                      onClick={handleCreateGroup}
-                      disabled={!newGroupName.trim()}
-                      className="btn-success w-full px-4 py-2 disabled:opacity-50"
-                    >
-                      Create Group
-                    </button>
-                  </div>
-                </div>
-  
-                {/* Existing Groups */}
-                {attendanceGroups.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-lg font-medium mb-3 text-white">Existing Groups</h4>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {attendanceGroups.map(group => (
-                        <div key={group.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
-                          <div>
-                            <span className="font-medium text-white">{getGroupTypeIcon(group.type)} {group.name}</span>
-                            <div className="text-sm text-white/60">
-                              {group.type} • Members
-                            </div>
-                          </div>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleSelectGroup(group)}
-                              className={`px-3 py-1 rounded text-sm transition-colors ${
-                                currentGroup?.id === group.id
-                                  ? 'btn-accent'
-                                  : 'btn-secondary'
-                              }`}
-                            >
-                              {currentGroup?.id === group.id ? 'Active' : 'Select'}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteGroup(group)}
-                              className="btn-error px-3 py-1 text-sm"
-                              title="Delete Group"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-  
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowGroupManagement(false)}
-                    className="btn-secondary flex-1 px-4 py-2"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+      <GroupManagementModal
+        showGroupManagement={showGroupManagement}
+        setShowGroupManagement={setShowGroupManagement}
+        attendanceGroups={attendanceGroups}
+        currentGroup={currentGroup}
+        newGroupName={newGroupName}
+        setNewGroupName={setNewGroupName}
+        newGroupType={newGroupType}
+        setNewGroupType={setNewGroupType}
+        handleCreateGroup={handleCreateGroup}
+        handleSelectGroup={handleSelectGroup}
+        handleDeleteGroup={handleDeleteGroup}
+      />
   
 
 
@@ -2286,48 +1985,13 @@ export default function Main() {
           )}
   
           {/* Delete Group Confirmation Dialog */}
-          {showDeleteConfirmation && groupToDelete && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
-                <h3 className="text-xl font-bold mb-4 text-red-400">⚠️ Delete Group</h3>
-  
-                <div className="mb-6">
-                  <p className="text-white mb-4">
-                    Are you sure you want to delete the group <strong>"{groupToDelete.name}"</strong>?
-                  </p>
-                  <div className="bg-red-900/20 border border-red-500/30 rounded p-3 mb-4">
-                    <p className="text-red-300 text-sm">
-                      <strong>Warning:</strong> This action cannot be undone. All group data, members, and attendance records will be permanently removed.
-                    </p>
-                  </div>
-                  {currentGroup?.id === groupToDelete.id && (
-                    <div className="bg-orange-900/20 border border-orange-500/30 rounded p-3">
-                      <p className="text-orange-300 text-sm">
-                        <strong>Note:</strong> This is your currently active group. Deleting it will clear your current selection.
-                      </p>
-                    </div>
-                  )}
-                </div>
-  
-                <div className="flex gap-3">
-                  <button
-                    onClick={cancelDeleteGroup}
-                    className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDeleteGroup}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition-colors"
-                  >
-                    Delete Group
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-</div>
-      </div>
+      <DeleteConfirmationModal
+        showDeleteConfirmation={showDeleteConfirmation}
+        groupToDelete={groupToDelete}
+        currentGroup={currentGroup}
+        cancelDeleteGroup={cancelDeleteGroup}
+        confirmDeleteGroup={confirmDeleteGroup}
+      />
     </div>
   );
 }

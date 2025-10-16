@@ -39,7 +39,7 @@ export function DetectionPanel({
         );
 
         return (
-          <div key={index} className={`glass-card rounded-lg p-3 transition-all duration-200 ${trackedFace?.isLocked ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/10 to-transparent' : ''}`}>
+          <div key={index} className={`glass-card rounded-lg p-3 ${trackedFace?.isLocked ? 'border-cyan-500/50 bg-gradient-to-br from-cyan-500/10 to-transparent' : ''}`}>
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
@@ -89,7 +89,7 @@ export function DetectionPanel({
                           )}
                           <div className="w-full bg-white/20 rounded-full h-1 mt-1">
                             <div
-                              className={`h-1 rounded-full transition-all duration-300 ${face.antispoofing?.status === 'real' ? 'bg-green-400' : 'bg-red-400'}`}
+                              className={`h-1 rounded-full ${face.antispoofing?.status === 'real' ? 'bg-green-400' : 'bg-red-400'}`}
                               style={{
                                 width: `${(face.antispoofing?.status === 'real' ?
                                   (face.antispoofing?.live_score || 0) :

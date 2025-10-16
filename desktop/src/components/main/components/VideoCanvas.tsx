@@ -3,9 +3,9 @@ import type { DetectionResult } from '../types';
 import type { QuickSettings } from '../../settings';
 
 interface VideoCanvasProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  canvasRef: RefObject<HTMLCanvasElement>;
-  overlayCanvasRef: RefObject<HTMLCanvasElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  overlayCanvasRef: RefObject<HTMLCanvasElement | null>;
   quickSettings: QuickSettings;
   currentDetections: DetectionResult | null;
   detectionFps: number;

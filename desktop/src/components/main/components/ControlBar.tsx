@@ -40,7 +40,7 @@ export function ControlBar({
                 value={selectedCamera}
                 onChange={(e) => setSelectedCamera(e.target.value)}
                 disabled={isStreaming || cameraDevices.length <= 1}
-                className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-2 py-1 focus:border-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cameraDevices.map((device, index) => (
                   <option key={device.deviceId} value={device.deviceId} className="bg-black text-white">
@@ -80,7 +80,7 @@ export function ControlBar({
                 type="time"
                 value={classStartTime}
                 onChange={(e) => onClassStartTimeChange(e.target.value)}
-                className="px-2 py-1 bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded focus:border-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-2 py-1 bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded focus:border-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isStreaming}
               />
             </div>
@@ -91,24 +91,24 @@ export function ControlBar({
           {/* Tracking Mode Toggle */}
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <span className={`text-xs transition-colors ${trackingMode === 'auto' ? 'text-white' : 'text-white/40'}`}>Auto</span>
+              <span className={`text-xs ${trackingMode === 'auto' ? 'text-white' : 'text-white/40'}`}>Auto</span>
               <button
                 onClick={() => setTrackingMode(trackingMode === 'auto' ? 'manual' : 'auto')}
-                className={`relative w-10 h-3 rounded-full transition-all focus:outline-none flex items-center ${
+                className={`relative w-10 h-3 rounded-full focus:outline-none flex items-center ${
                   trackingMode === 'auto' ? 'bg-white/20' : 'bg-white/10'
                 }`}
               >
-                <div className={`absolute left-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-transform ${
+                <div className={`absolute left-0.5 w-4 h-4 bg-white rounded-full shadow-md ${
                   trackingMode === 'auto' ? 'translate-x-0' : 'translate-x-4'
                 }`}></div>
               </button>
-              <span className={`text-xs transition-colors ${trackingMode === 'manual' ? 'text-white' : 'text-white/40'}`}>Manual</span>
+              <span className={`text-xs ${trackingMode === 'manual' ? 'text-white' : 'text-white/40'}`}>Manual</span>
             </div>
           </div>
 
           <button
             onClick={isStreaming ? stopCamera : startCamera}
-            className={`px-4 py-2 rounded font-medium transition-colors ${
+            className={`px-4 py-2 rounded font-medium ${
               isStreaming ? 'btn-error' : 'btn-success'
             }`}
           >
