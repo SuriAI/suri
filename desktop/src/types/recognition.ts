@@ -137,6 +137,7 @@ export interface AttendanceGroup {
   settings: {
     auto_checkout_hours?: number;
     late_threshold_minutes?: number;
+    late_threshold_enabled?: boolean;
     require_checkout: boolean;
     class_start_time?: string; // HH:MM format (e.g., "08:00")
   };

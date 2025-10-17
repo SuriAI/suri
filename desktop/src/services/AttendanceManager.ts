@@ -158,6 +158,7 @@ export class AttendanceManager {
         settings: {
           auto_checkout_hours: this.settings.auto_checkout_hours,
           late_threshold_minutes: this.settings.late_threshold_minutes,
+          late_threshold_enabled: true,
           require_checkout: !this.settings.auto_checkout_enabled
         }
       };

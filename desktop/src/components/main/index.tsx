@@ -1900,6 +1900,25 @@ export default function Main() {
                 }
               }
             }}
+            lateThresholdEnabled={(currentGroup?.settings as any)?.late_threshold_enabled ?? true}
+            onLateThresholdToggle={async (enabled: boolean) => {
+              if (currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  late_threshold_enabled: enabled,
+                };
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
+                  // Update local state
+                  setCurrentGroup({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  });
+                } catch (error) {
+                  console.error('Failed to update late threshold toggle:', error);
+                }
+              }
+            }}
             classStartTime={currentGroup?.settings?.class_start_time ?? '08:00'}
             onClassStartTimeChange={async (time: string) => {
               if (currentGroup) {
