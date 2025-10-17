@@ -546,6 +546,7 @@ async def get_sessions(
             # Get settings from group
             late_threshold_minutes = group.get("settings", {}).get("late_threshold_minutes", 15)
             class_start_time = group.get("settings", {}).get("class_start_time", "08:00")
+            late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", True)
             
             # Get members
             members = db.get_group_members(group_id)
@@ -579,7 +580,8 @@ async def get_sessions(
                     members=members,
                     late_threshold_minutes=late_threshold_minutes,
                     target_date=date_str,
-                    class_start_time=class_start_time
+                    class_start_time=class_start_time,
+                    late_threshold_enabled=late_threshold_enabled
                 )
                 
                 # Persist sessions to database
@@ -803,6 +805,7 @@ async def get_group_stats(
         # Get the group's late threshold and class start time settings
         late_threshold_minutes = group.get("settings", {}).get("late_threshold_minutes", 15)
         class_start_time = group.get("settings", {}).get("class_start_time", "08:00")
+        late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", True)
         
         # Get existing sessions for the target date
         sessions = db.get_sessions(
@@ -830,7 +833,8 @@ async def get_group_stats(
                 members=members,
                 late_threshold_minutes=late_threshold_minutes,
                 target_date=target_date,
-                class_start_time=class_start_time
+                class_start_time=class_start_time,
+                late_threshold_enabled=late_threshold_enabled
             )
             
             # Optionally, persist the computed sessions to database
@@ -1054,7 +1058,8 @@ def _compute_sessions_from_records(
     members: List[dict],
     late_threshold_minutes: int,
     target_date: str,
-    class_start_time: str = "08:00"
+    class_start_time: str = "08:00",
+    late_threshold_enabled: bool = True
 ) -> List[dict]:
     """Compute attendance sessions from records using configurable late threshold
     
@@ -1118,13 +1123,19 @@ def _compute_sessions_from_records(
         if isinstance(timestamp, str):
             timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
         
-        # Calculate minutes after day start
-        day_start = timestamp.replace(hour=day_start_hour, minute=day_start_minute, second=0, microsecond=0)
-        time_diff_minutes = (timestamp - day_start).total_seconds() / 60
-        
-        # Determine if late
-        is_late = time_diff_minutes > late_threshold_minutes
-        late_minutes = int(time_diff_minutes - late_threshold_minutes) if is_late else 0
+        # Only calculate late status if late threshold is enabled
+        if late_threshold_enabled:
+            # Calculate minutes after day start
+            day_start = timestamp.replace(hour=day_start_hour, minute=day_start_minute, second=0, microsecond=0)
+            time_diff_minutes = (timestamp - day_start).total_seconds() / 60
+            
+            # Determine if late
+            is_late = time_diff_minutes > late_threshold_minutes
+            late_minutes = int(time_diff_minutes - late_threshold_minutes) if is_late else 0
+        else:
+            # When late threshold is disabled, no one is considered late
+            is_late = False
+            late_minutes = 0
         
         # Determine status
         status = "late" if is_late else "present"
