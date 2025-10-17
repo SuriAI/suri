@@ -31,7 +31,7 @@ export function ControlBar({
 }: ControlBarProps) {
   return (
     <div className="px-4 pt-2 pb-2">
-      <div className="glass-card rounded-lg p-4 flex items-center justify-between">
+      <div className="rounded-lg p-4 flex items-center justify-between">
         <div className="flex items-center space-x-6">
           {/* Camera Selection */}
           {cameraDevices.length > 0 && (
@@ -91,18 +91,18 @@ export function ControlBar({
           {/* Tracking Mode Toggle */}
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <span className={`text-xs ${trackingMode === 'auto' ? 'text-white' : 'text-white/40'}`}>Auto</span>
+              <span className={`text-xs transition-colors duration-300 ease-in-out ${trackingMode === 'auto' ? 'text-white' : 'text-white/40'}`}>Auto</span>
               <button
                 onClick={() => setTrackingMode(trackingMode === 'auto' ? 'manual' : 'auto')}
-                className={`relative w-10 h-3 rounded-full focus:outline-none flex items-center ${
+                className={`relative w-10 h-3 rounded-full focus:outline-none flex items-center transition-all duration-300 ease-in-out ${
                   trackingMode === 'auto' ? 'bg-white/20' : 'bg-white/10'
                 }`}
               >
-                <div className={`absolute left-0.5 w-4 h-4 bg-white rounded-full shadow-md ${
+                <div className={`absolute left-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
                   trackingMode === 'auto' ? 'translate-x-0' : 'translate-x-4'
                 }`}></div>
               </button>
-              <span className={`text-xs ${trackingMode === 'manual' ? 'text-white' : 'text-white/40'}`}>Manual</span>
+              <span className={`text-xs transition-colors duration-300 ease-in-out ${trackingMode === 'manual' ? 'text-white' : 'text-white/40'}`}>Manual</span>
             </div>
           </div>
 

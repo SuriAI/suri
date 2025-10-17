@@ -769,14 +769,6 @@ body {
   z-index: -1;
 }
 
-.glass-card:hover {
-  background: var(--gradient-secondary);
-  border-color: var(--card-hover-border);
-  box-shadow: 
-    0 20px 40px -20px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
 .menu-card {
   background: var(--gradient-surface);
   backdrop-filter: blur(var(--card-blur));
