@@ -230,13 +230,6 @@ export function Menu({ onBack, initialSection }: MenuProps) {
               New Group
             </button>
             <button
-              onClick={exportData}
-              disabled={loading}
-              className="btn-secondary text-xs px-2 py-1 disabled:opacity-50"
-            >
-              Export
-            </button>
-            <button
               onClick={onBack}
               className="btn-primary text-xs px-2 py-1"
             >
