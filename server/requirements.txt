@@ -29,6 +29,7 @@ onnxruntime
 # SORT tracker dependencies
 filterpy
 scipy
+lap
 
 # Windows-specific dependencies for PyInstaller builds
 pywin32-ctypes
