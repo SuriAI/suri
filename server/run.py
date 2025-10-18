@@ -22,7 +22,7 @@ def signal_handler(signum, frame):
     global shutdown_flag
     
     signal_name = 'SIGINT' if signum == signal.SIGINT else 'SIGTERM' if signum == signal.SIGTERM else f'Signal {signum}'
-    print(f"\n🛑 Received {signal_name} - shutting down gracefully...")
+    print(f"\nReceived {signal_name} - shutting down gracefully...")
     
     shutdown_flag = True
     sys.exit(0)
@@ -101,26 +101,26 @@ def main():
             access_log=True,
         )
         
-        logger.info("✅ Server stopped gracefully")
+        logger.info("Server stopped gracefully")
         
     except KeyboardInterrupt:
-        logger.info("⚠️ Received KeyboardInterrupt - exiting...")
-        print("\n⚠️ Server interrupted by user")
+        logger.info("Received KeyboardInterrupt - exiting...")
+        print("\nServer interrupted by user")
         sys.exit(0)
     except SystemExit:
         # Allow sys.exit() to propagate cleanly
-        logger.info("✅ Server exiting...")
+        logger.info("Server exiting...")
         raise
     except Exception as e:
-        logger.error(f"❌ Server error: {e}")
-        print(f"\n❌ Server error: {e}")
+        logger.error(f"Server error: {e}")
+        print(f"\nServer error: {e}")
         print("Traceback:")
         traceback.print_exc()
         sys.exit(1)
     finally:
         # Final cleanup
-        logger.info("🧹 Final cleanup...")
-        print("🛑 Backend server stopped")
+        logger.info("Final cleanup...")
+        print("Backend server stopped")
 
 if __name__ == "__main__":
     main()

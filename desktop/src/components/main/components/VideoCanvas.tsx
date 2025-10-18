@@ -59,7 +59,7 @@ export function VideoCanvas({
                 <div className="text-white/60">Face {index + 1}:</div>
                 <div className="text-green-400">Live: {(face.antispoofing.live_score * 100).toFixed(1)}%</div>
                 <div className="text-red-400">Spoof: {(face.antispoofing.spoof_score * 100).toFixed(1)}%</div>
-                <div className="text-white/60">Status: <span className={face.antispoofing.status === 'real' ? 'text-green-400' : 'text-red-400'}>{face.antispoofing.status}</span></div>
+                <div className="text-white/60">Status: <span className={face.antispoofing.status === 'real' ? 'text-green-400' : face.antispoofing.status === 'uncertain' ? 'text-orange-400' : 'text-red-400'}>{face.antispoofing.status}</span></div>
               </div>
             )
           ))}

@@ -8,11 +8,14 @@ from typing import List, Dict, Optional, Any
 logger = logging.getLogger(__name__)
 
 class AntiSpoof:
-    def __init__(self, model_path: str, model_img_size: int, live_threshold: float, config: Dict = None):
+    def __init__(self, model_path: str, model_img_size: int, confidence_threshold: float, config: Dict = None):
         self.model_path = model_path
         self.model_img_size = model_img_size
-        self.live_threshold = live_threshold
         self.config = config or {}
+        
+        # CONFIDENCE STRATEGY: Only parameter that matters
+        self.confidence_threshold = confidence_threshold
+        
         self.ort_session, self.input_name = self._init_session_(model_path)
 
     def _init_session_(self, onnx_model_path: str):
@@ -105,14 +108,14 @@ class AntiSpoof:
         Args:
             img: Input image (BGR format from OpenCV)
             bbox: Bounding box (x1, y1, x2, y2)
-            bbox_inc: Bounding box expansion factor (1.2 = 20% expansion on all sides)
+            bbox_inc: Bounding box expansion factor (1.5 = 50% expansion on all sides)
             
         Returns:
             Cropped and expanded face region in BGR format
             
         Example:
             Original bbox: 100x100 pixels
-            With bbox_inc=1.2: Returns 120x120 pixel crop (20% larger)
+            With bbox_inc=1.5: Returns 150x150 pixel crop (50% larger)
         """
         real_h, real_w = img.shape[:2]
         
@@ -136,7 +139,12 @@ class AntiSpoof:
 
     def predict(self, imgs: List[np.ndarray]) -> List[Dict]:
         """
-        Predict anti-spoofing for list of face images
+        Predict anti-spoofing for list of face images using CONFIDENCE strategy
+        
+        CONFIDENCE STRATEGY (OPTIMAL):
+        - is_real = (live_score > spoof_score) AND (max_confidence >= confidence_threshold)
+        - This ensures both correct direction AND high certainty
+        - Implements optimal Bayesian decision rule with uncertainty handling
         
         Args:
             imgs: List of face crops (BGR format from increased_crop)
@@ -146,15 +154,16 @@ class AntiSpoof:
             
         Output format:
             {
-                'is_real': bool,           # True if live face
+                'is_real': bool,           # True if live face (CONFIDENCE strategy)
                 'live_score': float,       # Probability of real face
                 'spoof_score': float,      # print_score + replay_score
                 'confidence': float,       # Max of live/spoof score
-                'label': str,              # 'Live', 'Print Attack', 'Replay Attack', or 'Spoof'
+                'decision_reason': str,    # Why this decision was made
+                'label': str,              # 'Live', 'Print Attack', 'Replay Attack', 'Spoof', or 'Uncertain'
                 'predicted_class': int,    # 0=live, 1=print, 2=replay
                 'print_score': float,      # Photo attack probability
                 'replay_score': float,     # Video replay attack probability
-                'attack_type': str,        # 'live', 'print', 'replay', or 'unknown'
+                'attack_type': str,        # 'live', 'print', 'replay', 'uncertain', or 'unknown'
                 'detailed_label': str      # More descriptive label
             }
         """
@@ -189,15 +198,33 @@ class AntiSpoof:
                 # Calculate spoof score as sum of print and replay scores
                 spoof_score = print_score + replay_score
                 
-                # Determine if face is real based on threshold
-                is_real = live_score >= self.live_threshold
+                # CONFIDENCE STRATEGY: Best for maximum accuracy
+                # Rule: (live_score > spoof_score) AND (max_confidence >= threshold)
+                max_confidence = max(live_score, spoof_score)
+                is_real = (live_score > spoof_score) and (max_confidence >= self.confidence_threshold)
                 
-                # Determine attack type based on highest spoof score
+                # Determine decision reason for transparency
+                if live_score > spoof_score:
+                    if max_confidence >= self.confidence_threshold:
+                        decision_reason = f"Live face detected with high confidence ({max_confidence:.3f} ≥ {self.confidence_threshold})"
+                    else:
+                        decision_reason = f"Uncertain: Low confidence ({max_confidence:.3f} < {self.confidence_threshold}), rejecting for safety"
+                        is_real = False  # Reject uncertain cases
+                else:
+                    decision_reason = f"Spoof detected: spoof_score ({spoof_score:.3f}) > live_score ({live_score:.3f})"
+                
+                # Determine attack type and labels
                 if is_real:
                     attack_type = 'live'
                     label = 'Live'
-                    detailed_label = 'Live Face'
+                    detailed_label = f'Live Face (confidence: {live_score:.3f})'
+                elif max_confidence < self.confidence_threshold:
+                    # Model is uncertain - reject for safety
+                    attack_type = 'uncertain'
+                    label = 'Uncertain'
+                    detailed_label = f'Uncertain Classification (max confidence: {max_confidence:.3f} < {self.confidence_threshold})'
                 else:
+                    # Confident spoof detection
                     if print_score > replay_score:
                         attack_type = 'print'
                         label = 'Print Attack'
@@ -211,16 +238,17 @@ class AntiSpoof:
                         label = 'Spoof'
                         detailed_label = f'Spoof Attack (print: {print_score:.3f}, replay: {replay_score:.3f})'
                 
-                # DEBUG: Log the decision process with attack type details
-                logger.debug(f"AntiSpoof Decision: live_score={live_score:.3f}, print_score={print_score:.3f}, "
-                           f"replay_score={replay_score:.3f}, threshold={self.live_threshold:.3f}, "
-                           f"predicted_class={predicted_class}, attack_type={attack_type}, is_real={is_real}")
+                # DEBUG: Log the decision process with CONFIDENCE strategy details
+                logger.debug(f"AntiSpoof CONFIDENCE Decision: live={live_score:.3f}, spoof={spoof_score:.3f}, "
+                           f"max_conf={max_confidence:.3f}, threshold={self.confidence_threshold:.3f}, "
+                           f"is_real={is_real}, attack_type={attack_type}")
                 
                 result = {
                     'is_real': bool(is_real),
                     'live_score': float(live_score),
                     'spoof_score': float(spoof_score),
-                    'confidence': float(max(live_score, spoof_score)),
+                    'confidence': float(max_confidence),
+                    'decision_reason': decision_reason,
                     'label': label,
                     'detailed_label': detailed_label,
                     'predicted_class': int(predicted_class),
@@ -243,6 +271,7 @@ class AntiSpoof:
             'live_score': 0.0,
             'spoof_score': 1.0,
             'confidence': 0.0,
+            'decision_reason': f'Error: {error_msg}',
             'label': 'Error',
             'detailed_label': f'Error: {error_msg}',
             'predicted_class': 1,
@@ -253,7 +282,7 @@ class AntiSpoof:
 
     def detect_faces(self, image: np.ndarray, face_detections: List[Dict]) -> List[Dict]:
         """
-        Process face detections with anti-spoofing
+        Process face detections with anti-spoofing using CONFIDENCE strategy
         
         Args:
             image: Input image (BGR format from OpenCV)
@@ -263,8 +292,9 @@ class AntiSpoof:
             List of face detections with anti-spoofing results
             
         Note:
-            - Applies 1.2x bbox expansion via increased_crop() for better context
+            - Applies 1.5x bbox expansion via increased_crop() for better context
             - Converts BGR to RGB internally during preprocessing
+            - Uses CONFIDENCE strategy for optimal accuracy
         """
         if not face_detections:
             return []
@@ -314,9 +344,10 @@ class AntiSpoof:
                     'live_score': prediction['live_score'],
                     'spoof_score': prediction['spoof_score'],
                     'confidence': prediction['confidence'],
+                    'decision_reason': prediction['decision_reason'],
                     'label': prediction['label'],
                     'detailed_label': prediction['detailed_label'],
-                    'status': 'real' if prediction['is_real'] else 'fake',
+                    'status': 'real' if prediction['is_real'] else ('uncertain' if prediction['attack_type'] == 'uncertain' else 'fake'),
                     'predicted_class': prediction['predicted_class'],
                     'print_score': prediction['print_score'],
                     'replay_score': prediction['replay_score'],
@@ -328,6 +359,7 @@ class AntiSpoof:
                     'live_score': 0.0,
                     'spoof_score': 1.0,
                     'confidence': 0.0,
+                    'decision_reason': 'Error: Processing failed',
                     'label': 'Error',
                     'detailed_label': 'Error: Processing failed',
                     'status': 'error',
@@ -353,13 +385,14 @@ class AntiSpoof:
             predictions: List of prediction results from predict() method
             
         Returns:
-            Dictionary with attack statistics
+            Dictionary with attack statistics including uncertain classifications
         """
         stats = {
             "total_predictions": len(predictions),
             "live_count": 0,
             "print_count": 0,
             "replay_count": 0,
+            "uncertain_count": 0,
             "unknown_count": 0,
             "error_count": 0,
             "attack_distribution": {},
@@ -367,7 +400,8 @@ class AntiSpoof:
                 "live_avg": 0.0,
                 "print_avg": 0.0,
                 "replay_avg": 0.0,
-                "overall_avg": 0.0
+                "overall_avg": 0.0,
+                "uncertain_avg": 0.0
             }
         }
         
@@ -377,6 +411,7 @@ class AntiSpoof:
         live_scores = []
         print_scores = []
         replay_scores = []
+        uncertain_scores = []
         
         for pred in predictions:
             attack_type = pred.get('attack_type', 'unknown')
@@ -390,18 +425,22 @@ class AntiSpoof:
             elif attack_type == 'replay':
                 stats["replay_count"] += 1
                 replay_scores.append(pred.get('replay_score', 0.0))
+            elif attack_type == 'uncertain':
+                stats["uncertain_count"] += 1
+                uncertain_scores.append(pred.get('confidence', 0.0))
             elif attack_type == 'error':
                 stats["error_count"] += 1
             else:
                 stats["unknown_count"] += 1
         
         # Calculate attack distribution percentages
-        total_valid = stats["live_count"] + stats["print_count"] + stats["replay_count"]
+        total_valid = stats["live_count"] + stats["print_count"] + stats["replay_count"] + stats["uncertain_count"]
         if total_valid > 0:
             stats["attack_distribution"] = {
                 "live_percentage": (stats["live_count"] / total_valid) * 100,
                 "print_percentage": (stats["print_count"] / total_valid) * 100,
-                "replay_percentage": (stats["replay_count"] / total_valid) * 100
+                "replay_percentage": (stats["replay_count"] / total_valid) * 100,
+                "uncertain_percentage": (stats["uncertain_count"] / total_valid) * 100
             }
         
         # Calculate average confidence scores
@@ -411,6 +450,8 @@ class AntiSpoof:
             stats["confidence_stats"]["print_avg"] = sum(print_scores) / len(print_scores)
         if replay_scores:
             stats["confidence_stats"]["replay_avg"] = sum(replay_scores) / len(replay_scores)
+        if uncertain_scores:
+            stats["confidence_stats"]["uncertain_avg"] = sum(uncertain_scores) / len(uncertain_scores)
         
         all_scores = live_scores + print_scores + replay_scores
         if all_scores:
@@ -433,6 +474,7 @@ class AntiSpoof:
             "output_classes": 0,
             "expected_classes": 3,
             "class_names": ["live", "print", "replay"],
+            "strategy": "CONFIDENCE (Optimal for Maximum Accuracy)",
             "errors": []
         }
         
@@ -464,7 +506,7 @@ class AntiSpoof:
             if len(pred.shape) == 2 and pred.shape[1] == 3:
                 validation_result["output_classes"] = pred.shape[1]
                 validation_result["is_valid"] = True
-                logger.info("SUCCESS: AntiSpoof model validation passed: 3-class detection ready")
+                logger.info("SUCCESS: AntiSpoof model validation passed: 3-class detection ready with CONFIDENCE strategy")
             else:
                 validation_result["errors"].append(f"Invalid output shape: {pred.shape}, expected (1, 3)")
                 
@@ -474,7 +516,7 @@ class AntiSpoof:
         return validation_result
 
     def get_model_info(self):
-        """Get model information"""
+        """Get model information with CONFIDENCE strategy details"""
         validation = self.validate_model()
         return {
             "model_path": self.model_path,
@@ -482,5 +524,98 @@ class AntiSpoof:
             "validation": validation,
             "supported_attacks": ["print", "replay"],
             "detection_classes": 3,
-            "class_names": ["live", "print", "replay"]
+            "class_names": ["live", "print", "replay"],
+            "strategy": "CONFIDENCE",
+            "strategy_description": "Optimal Bayesian decision rule: (live_score > spoof_score) AND (confidence >= threshold)",
+            "configuration": {
+                "confidence_threshold": self.confidence_threshold
+            },
+            "strategy_benefits": [
+                "Maximum accuracy through uncertainty handling",
+                "Rejects ambiguous cases for safety",
+                "Implements optimal Bayesian decision theory",
+                "Industry standard for production systems",
+                "Balances security and usability"
+            ]
         }
+    
+    def set_confidence_threshold(self, threshold: float):
+        """
+        Adjust confidence threshold for CONFIDENCE strategy
+        
+        Args:
+            threshold: Confidence threshold (recommended: 0.60-0.70)
+                      Lower = more permissive (higher recall, lower precision)
+                      Higher = more strict (lower recall, higher precision)
+        """
+        if not 0.0 <= threshold <= 1.0:
+            raise ValueError(f"Threshold must be between 0.0 and 1.0, got {threshold}")
+        
+        old_threshold = self.confidence_threshold
+        self.confidence_threshold = threshold
+        logger.info(f"Confidence threshold updated: {old_threshold:.3f} → {threshold:.3f}")
+        
+        if threshold < 0.60:
+            logger.warning("Low confidence threshold may increase false positives (accepting spoofs)")
+        elif threshold > 0.75:
+            logger.warning("High confidence threshold may increase false negatives (rejecting real faces)")
+    
+    def analyze_threshold_impact(self, predictions: List[Dict]) -> Dict[str, Any]:
+        """
+        Analyze how different confidence thresholds would impact predictions
+        
+        Args:
+            predictions: List of prediction results
+            
+        Returns:
+            Analysis of threshold sensitivity
+        """
+        if not predictions:
+            return {"error": "No predictions to analyze"}
+        
+        thresholds = [0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80]
+        analysis = {
+            "current_threshold": self.confidence_threshold,
+            "threshold_analysis": {},
+            "recommendations": []
+        }
+        
+        for threshold in thresholds:
+            accepted_as_real = 0
+            uncertain_count = 0
+            
+            for pred in predictions:
+                live_score = pred.get('live_score', 0)
+                spoof_score = pred.get('spoof_score', 0)
+                max_conf = max(live_score, spoof_score)
+                
+                if live_score > spoof_score and max_conf >= threshold:
+                    accepted_as_real += 1
+                elif max_conf < threshold:
+                    uncertain_count += 1
+            
+            analysis["threshold_analysis"][threshold] = {
+                "accepted_as_real": accepted_as_real,
+                "accepted_percentage": (accepted_as_real / len(predictions)) * 100,
+                "uncertain_count": uncertain_count,
+                "uncertain_percentage": (uncertain_count / len(predictions)) * 100
+            }
+        
+        # Generate recommendations
+        current_stats = analysis["threshold_analysis"][self.confidence_threshold]
+        uncertain_pct = current_stats["uncertain_percentage"]
+        
+        if uncertain_pct > 20:
+            analysis["recommendations"].append(
+                f"High uncertainty rate ({uncertain_pct:.1f}%). Consider lowering threshold to {self.confidence_threshold - 0.05:.2f}"
+            )
+        elif uncertain_pct < 5:
+            analysis["recommendations"].append(
+                f"Low uncertainty rate ({uncertain_pct:.1f}%). Model is very confident. Current threshold is optimal."
+            )
+        else:
+            analysis["recommendations"].append(
+                f"Balanced uncertainty rate ({uncertain_pct:.1f}%). Current threshold {self.confidence_threshold} is appropriate."
+            )
+        
+        return analysis

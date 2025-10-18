@@ -140,7 +140,7 @@ MODEL_CONFIGS = {
     },
     "antispoofing": {
         "model_path": WEIGHTS_DIR / "AntiSpoofing_print-replay_1.5_128.onnx",
-        "live_threshold": 0.3,  # Minimum live_score to consider face as real
+        "confidence_threshold": 0.58,
         "bbox_inc": 1.5,
         "model_img_size": 128
     },
