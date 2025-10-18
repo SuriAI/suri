@@ -18,7 +18,7 @@ export interface DetectionResult {
       confidence: number;
       live_score?: number;
       spoof_score?: number;
-      status: 'real' | 'fake' | 'error';
+      status: 'real' | 'fake' | 'uncertain' | 'error';
       label?: string;
       message?: string;
     };
@@ -36,7 +36,7 @@ export interface WebSocketFaceData {
     confidence?: number;
     live_score?: number;
     spoof_score?: number;
-    status?: 'real' | 'fake' | 'error';
+    status?: 'real' | 'fake' | 'uncertain' | 'error';
     label?: string;
     message?: string;
   };
@@ -83,7 +83,7 @@ export interface TrackedFace {
   occlusionCount: number;
   angleConsistency: number;
   cooldownRemaining?: number;
-  antispoofingStatus?: 'real' | 'fake' | 'error' | 'too_small' | 'processing_failed' | 'invalid_bbox' | 'out_of_frame' | 'unknown';
+  antispoofingStatus?: 'real' | 'fake' | 'uncertain' | 'error';
 }
 
 export interface CooldownInfo {

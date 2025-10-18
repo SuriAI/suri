@@ -65,11 +65,12 @@ export function DetectionPanel({
                 )}
 
                 {face.antispoofing && (
-                  <div className={`text-xs px-2 py-1 rounded mt-1 ${face.antispoofing.status === 'real' ? 'bg-green-900 text-green-400' : face.antispoofing.status === 'fake' ? 'bg-red-900 text-red-400' : face.antispoofing.status === 'error' ? 'bg-yellow-900 text-yellow-400' : 'bg-gray-900 text-gray-400'}`}>
+                  <div className={`text-xs px-2 py-1 rounded mt-1 ${face.antispoofing.status === 'real' ? 'bg-green-900 text-green-400' : face.antispoofing.status === 'fake' ? 'bg-red-900 text-red-400' : face.antispoofing.status === 'uncertain' ? 'bg-orange-900 text-orange-400' : face.antispoofing.status === 'error' ? 'bg-yellow-900 text-yellow-400' : 'bg-gray-900 text-gray-400'}`}>
                     <div className="flex items-center justify-between">
                       <span>
                         {face.antispoofing.status === 'real' ? '✓ Live' :
                          face.antispoofing.status === 'fake' ? '⚠ Spoof' :
+                         face.antispoofing.status === 'uncertain' ? '? Uncertain' :
                          face.antispoofing.status === 'error' ? '❌ Error' : '? Unknown'}
                       </span>
                       {((face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null) ||

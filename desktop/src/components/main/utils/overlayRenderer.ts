@@ -170,6 +170,9 @@ export const drawOverlays = ({
     } else if (antispoofing?.status === 'fake' && quickSettings.showAntiSpoofStatus) {
       label = "⚠ SPOOF";
       shouldShowLabel = true;
+    } else if (antispoofing?.status === 'uncertain' && quickSettings.showAntiSpoofStatus) {
+      label = "? UNCERTAIN";
+      shouldShowLabel = true;
     }
 
     if (shouldShowLabel) {
