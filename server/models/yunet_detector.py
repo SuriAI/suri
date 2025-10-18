@@ -1,34 +1,19 @@
-"""
-YuNet Face Detector
-Simple, effective face detection using OpenCV's YuNet model
-Based on the Face-AntiSpoofing prototype implementation
-"""
-
 import cv2
 import numpy as np
 import os
 import logging
-from typing import List, Dict, Tuple, Optional
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 class YuNet:
     def __init__(self,
-                 model_path: str = None,
-                 input_size: tuple = (320, 320),
-                 conf_threshold: float = 0.6,
-        nms_threshold: float = 0.3,
-        top_k: int = 5000):
-        """
-        Initialize YuNet face detector
-        
-        Args:
-            model_path: Path to the ONNX model file
-            input_size: Input size (width, height) for the model
-            conf_threshold: Confidence threshold for face detection
-            nms_threshold: Non-maximum suppression threshold
-            top_k: Maximum number of faces to detect
-        """
+                 model_path: str,
+                 input_size: tuple,
+                 conf_threshold: float,
+                 nms_threshold: float,
+                 top_k: int):
+
         self.model_path = model_path
         self.input_size = input_size
         self.conf_threshold = conf_threshold
