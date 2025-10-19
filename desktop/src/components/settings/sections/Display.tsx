@@ -7,30 +7,61 @@ interface DisplayProps {
 
 export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
   const settingItems = [
-    { key: 'showFPS' as keyof QuickSettings, icon: '⚡', label: 'FPS' },
-    { key: 'showBoundingBoxes' as keyof QuickSettings, icon: '▢', label: 'Boxes' },
-    { key: 'showAntiSpoofStatus' as keyof QuickSettings, icon: '🛡️', label: 'Anti-Spoof' },
-    { key: 'showRecognitionNames' as keyof QuickSettings, icon: '👤', label: 'Names' },
-    { key: 'showDebugInfo' as keyof QuickSettings, icon: '🔧', label: 'Debug' },
+    { 
+      key: 'showFPS' as keyof QuickSettings, 
+      label: 'Show FPS Counter',
+      description: 'Display frames per second on the video feed'
+    },
+    { 
+      key: 'showBoundingBoxes' as keyof QuickSettings, 
+      label: 'Show Bounding Boxes',
+      description: 'Draw detection boxes around detected faces'
+    },
+    { 
+      key: 'showAntiSpoofStatus' as keyof QuickSettings, 
+      label: 'Show Anti-Spoof Status',
+      description: 'Display anti-spoofing detection indicators'
+    },
+    { 
+      key: 'showRecognitionNames' as keyof QuickSettings, 
+      label: 'Show Recognition Names',
+      description: 'Display recognized person names on detection boxes'
+    },
+    { 
+      key: 'showDebugInfo' as keyof QuickSettings, 
+      label: 'Show Debug Information',
+      description: 'Display technical debugging information'
+    },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2 px-1">
-      {settingItems.map(({ key, icon, label }) => (
-        <button
-          key={key}
-          onClick={() => toggleQuickSetting(key)}
-          className={`p-3 rounded-xl border transition-all ${
-            quickSettings[key]
-              ? 'bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border-emerald-500/20'
-              : 'bg-white/5 border-white/10 hover:bg-white/10'
-          }`}
-        >
-          <div className="text-2xl mb-1">{icon}</div>
-          <div className={`text-xs ${quickSettings[key] ? 'text-emerald-100' : 'text-white/60'}`}>{label}</div>
-          <div className={`w-full h-1 rounded-full mt-2 ${quickSettings[key] ? 'bg-emerald-500/60' : 'bg-white/10'}`}/>
-        </button>
-      ))}
+    <div className="space-y-6 max-w-2xl">
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold text-white/90">Video Overlay Settings</h3>
+        <p className="text-sm text-white/50">Configure what information is displayed on the camera feed</p>
+      </div>
+
+      <div className="space-y-4">
+        {settingItems.map(({ key, label, description }) => (
+          <div key={key} className="flex items-center justify-between py-3 border-b border-white/5">
+            <div className="flex-1">
+              <div className="text-sm font-medium text-white/90">{label}</div>
+              <div className="text-xs text-white/50 mt-0.5">{description}</div>
+            </div>
+            
+            <button
+              onClick={() => toggleQuickSetting(key)}
+              className={`relative w-11 h-6 rounded-full focus:outline-none flex items-center transition-all duration-300 ease-in-out flex-shrink-0 ml-4 ${
+                quickSettings[key] ? 'bg-emerald-500/30' : 'bg-white/10'
+              }`}
+            >
+              <div className={`absolute w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
+                quickSettings[key] ? 'translate-x-5' : 'translate-x-0.5'
+              }`}></div>
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export function EditMember({ member, onClose, onSuccess }: EditMemberProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
       <div className="bg-[#0f0f0f] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
         <h3 className="text-xl font-semibold mb-4">Edit member</h3>
         

@@ -296,7 +296,7 @@ export function AssistedCameraRegistration({ group, members, onRefresh, onClose 
   useEffect(() => () => stopCamera(), [stopCamera]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
@@ -463,7 +463,7 @@ export function AssistedCameraRegistration({ group, members, onRefresh, onClose 
                   )}
                   {currentMember && cameraReady && (
                     <div className="absolute top-4 left-4 right-4">
-                      <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="bg-black/80 rounded-lg p-3 border border-white/20">
                         <div className="text-lg font-semibold text-white">{currentMember.name}</div>
                         <div className="text-sm text-white/60 mt-1">
                           Capture: {currentAngle} ({currentAngleIndex + 1}/{requiredAngles.length})
