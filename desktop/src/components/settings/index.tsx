@@ -185,7 +185,6 @@ export const Settings: React.FC<SettingsProps> = ({
             <Database 
               systemData={systemData} 
               isLoading={isLoading}
-              onRefresh={loadSystemData}
               onClearDatabase={handleClearDatabase}
             />
           )}
