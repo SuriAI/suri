@@ -90,29 +90,43 @@ export function AttendancePanel({
       {/* Fixed Header Section - Active Group Selection */}
       {attendanceGroups.length > 0 && (
         <div className="p-4 pb-2 flex-shrink-0">
-          <select
-            value={currentGroup?.id || ''}
-            onChange={(e) => {
-              if (e.target.value === 'create-new') {
-                setShowGroupManagement(true);
-                return;
-              }
-              const group = attendanceGroups.find(g => g.id === e.target.value);
-              if (group) handleSelectGroup(group);
-            }}
-            className="w-full bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-3 py-2 focus:border-blue-500 focus:outline-none"
-          >
-            <option value="create-new" className="bg-black text-white">
-              ➕ Create New Group
-            </option>
-            <option disabled className="bg-black text-gray-500">
-            </option>
-            {attendanceGroups.map(group => (
-              <option key={group.id} value={group.id} className="bg-black text-white">
-                {getGroupTypeIcon(group.type)} {group.name}
+          <div className="relative">
+            <select
+              value={currentGroup?.id || ''}
+              onChange={(e) => {
+                if (e.target.value === 'create-new') {
+                  setShowGroupManagement(true);
+                  return;
+                }
+                const group = attendanceGroups.find(g => g.id === e.target.value);
+                if (group) handleSelectGroup(group);
+              }}
+              className="w-full bg-white/[0.05] text-white text-sm border border-white/[0.1] rounded px-3 py-2 pr-8 focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+              style={{ colorScheme: 'dark' }}
+            >
+              <option value="create-new" className="bg-black text-white">
+                Create New Group
               </option>
-            ))}
-          </select>
+
+              {attendanceGroups.map(group => (
+                <option key={group.id} value={group.id} className="bg-black text-white">
+                  {getGroupTypeIcon(group.type)} {group.name}
+                </option>
+              ))}
+            </select>
+            {/* Custom dropdown arrow */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg
+                className="w-3 h-3 text-white/50 transition-colors duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </div>
       )}
 
