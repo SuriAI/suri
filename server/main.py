@@ -129,7 +129,8 @@ async def startup_event():
             input_size=tuple(YUNET_CONFIG["input_size"]),
             conf_threshold=YUNET_CONFIG["score_threshold"],
             nms_threshold=YUNET_CONFIG["nms_threshold"],
-            top_k=YUNET_CONFIG["top_k"]
+            top_k=YUNET_CONFIG["top_k"],
+            min_face_size=YUNET_CONFIG.get("min_face_size", 80)
         )
         
         optimized_antispoofing_detector = AntiSpoof(
@@ -363,6 +364,28 @@ async def configure_antispoofing_optimization(request: OptimizationRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update settings: {e}")
+
+@app.post("/optimize/yunet")
+async def configure_yunet_optimization(request: dict):
+    """Configure YuNet optimization settings including minimum face size"""
+    try:
+        if yunet_detector:
+            if "min_face_size" in request:
+                min_size = int(request["min_face_size"])
+                yunet_detector.set_min_face_size(min_size)
+                return {
+                    "success": True,
+                    "message": "YuNet settings updated successfully",
+                    "new_settings": {
+                        "min_face_size": min_size
+                    }
+                }
+            else:
+                return {"success": False, "message": "min_face_size parameter required"}
+        else:
+            return {"success": False, "message": "YuNet detector not available"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update YuNet settings: {e}")
 
 @app.post("/detect", response_model=DetectionResponse)
 async def detect_faces(request: DetectionRequest):

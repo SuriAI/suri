@@ -12,13 +12,15 @@ class YuNet:
                  input_size: tuple,
                  conf_threshold: float,
                  nms_threshold: float,
-                 top_k: int):
+                 top_k: int,
+                 min_face_size: int = 80):
 
         self.model_path = model_path
         self.input_size = input_size
         self.conf_threshold = conf_threshold
         self.nms_threshold = nms_threshold
         self.top_k = top_k
+        self.min_face_size = min_face_size  # Minimum face size for AntiSpoof compatibility
         self.detector = None
         
         if model_path and os.path.isfile(model_path):
@@ -88,6 +90,13 @@ class YuNet:
                 face_width_orig = x2_orig - x1_orig
                 face_height_orig = y2_orig - y1_orig
                 
+                # 🎯 ANTI-SPOOF SIZE FILTER: Ensure face meets minimum size for AntiSpoof model
+                # AntiSpoof model (1.5_128.onnx) was trained with 1.5x expanded bboxes resized to 128x128
+                # Minimum face size of 80px ensures adequate texture density after 1.5x expansion
+                if face_width_orig < self.min_face_size or face_height_orig < self.min_face_size:
+                    logger.debug(f"Face too small for AntiSpoof: {face_width_orig}x{face_height_orig} < {self.min_face_size}px, skipping")
+                    continue
+                
                 # 🚀 OPTIMIZATION: Remove bbox expansion here
                 # Anti-spoofing already handles bbox expansion with its bbox_inc parameter (1.2)
                 # This eliminates redundant expansion that was applied TWICE (30% perf loss)
@@ -146,6 +155,16 @@ class YuNet:
         """Update confidence threshold (alias for set_score_threshold)"""
         self.set_score_threshold(threshold)
 
+    def set_min_face_size(self, min_size: int):
+        """Set minimum face size for AntiSpoof compatibility"""
+        if min_size < 32:
+            logger.warning(f"Very small minimum face size ({min_size}px) may impact AntiSpoof accuracy")
+        elif min_size > 200:
+            logger.warning(f"Large minimum face size ({min_size}px) may reject too many valid faces")
+        
+        self.min_face_size = min_size
+        logger.info(f"Minimum face size updated to {min_size}px for AntiSpoof compatibility")
+
     def get_model_info(self):
         """Get model information"""
         return {
@@ -153,5 +172,8 @@ class YuNet:
             "input_size": self.input_size,
             "conf_threshold": self.conf_threshold,
             "nms_threshold": self.nms_threshold,
-            "top_k": self.top_k
+            "top_k": self.top_k,
+            "min_face_size": self.min_face_size,
+            "antispoof_compatible": True,
+            "size_filter_description": f"Faces smaller than {self.min_face_size}px are filtered for AntiSpoof model compatibility"
         }

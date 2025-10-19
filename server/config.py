@@ -133,6 +133,7 @@ MODEL_CONFIGS = {
         "score_threshold": 0.6,
         "nms_threshold": 0.3,
         "top_k": 100,
+        "min_face_size": 80,  # Minimum face size for AntiSpoof compatibility (1.5_128.onnx model)
         "backend_id": 0,
         "target_id": 0,
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
