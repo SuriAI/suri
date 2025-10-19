@@ -18,7 +18,7 @@ export interface AttendanceSettings {
 
 export interface SettingsOverview {
   totalPersons: number;
-  totalEmbeddings: number;
+  totalMembers: number;
   lastUpdated: string;
 }
 

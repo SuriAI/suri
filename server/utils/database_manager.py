@@ -395,23 +395,6 @@ class FaceDatabaseManager:
             logger.error(f"Failed to get persons with details: {e}")
             return []
     
-    def get_total_embeddings(self) -> int:
-        """
-        Get total number of embeddings in the database
-        
-        Returns:
-            int: Total number of embeddings
-        """
-        try:
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) as total FROM faces")
-                result = cursor.fetchone()
-                return result['total'] if result else 0
-                
-        except Exception as e:
-            logger.error(f"Failed to get total embeddings: {e}")
-            return 0
     
     def update_person_id(self, old_person_id: str, new_person_id: str) -> int:
         """

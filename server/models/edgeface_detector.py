@@ -768,7 +768,6 @@ class EdgeFaceDetector:
     def get_stats(self) -> Dict:
         """Get database statistics"""
         total_persons = 0
-        total_embeddings = 0
         persons = []
         
         if self.db_manager:
@@ -776,15 +775,11 @@ class EdgeFaceDetector:
             stats = self.db_manager.get_stats()
             total_persons = stats.get("total_persons", 0)
             
-            # Get total embeddings
-            total_embeddings = self.db_manager.get_total_embeddings()
-            
             # Get detailed person information
             persons = self.db_manager.get_all_persons_with_details()
             
         return {
             "total_persons": total_persons,
-            "total_embeddings": total_embeddings,
             "persons": persons
         }
     

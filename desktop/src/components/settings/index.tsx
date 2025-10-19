@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { backendService } from '../../services/BackendService';
+import { attendanceManager } from '../../services/AttendanceManager';
 import { Display } from './sections/Display';
 import { Database } from './sections/Database';
 import { Attendance } from './sections/Attendance';
 import type { QuickSettings, AttendanceSettings, SettingsOverview } from './types';
+import type { AttendanceGroup } from '../../types/recognition';
 
 // Re-export types for backward compatibility
 export type { QuickSettings, AttendanceSettings };
@@ -30,9 +32,10 @@ export const Settings: React.FC<SettingsProps> = ({
   const [activeSection, setActiveSection] = useState<string>('display');
   const [systemData, setSystemData] = useState<SettingsOverview>({
     totalPersons: 0,
-    totalEmbeddings: 0,
+    totalMembers: 0,
     lastUpdated: new Date().toISOString()
   });
+  const [groups, setGroups] = useState<AttendanceGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [internalQuickSettings, setInternalQuickSettings] = useState<QuickSettings>({
@@ -78,12 +81,17 @@ export const Settings: React.FC<SettingsProps> = ({
   const loadSystemData = async () => {
     setIsLoading(true);
     try {
-      const stats = await backendService.getDatabaseStats();
+      const [faceStats, attendanceStats, groupsData] = await Promise.all([
+        backendService.getDatabaseStats(),
+        attendanceManager.getAttendanceStats(),
+        attendanceManager.getGroups()
+      ]);
       setSystemData({
-        totalPersons: stats.total_persons,
-        totalEmbeddings: stats.total_embeddings,
+        totalPersons: faceStats.total_persons,
+        totalMembers: attendanceStats.total_members,
         lastUpdated: new Date().toISOString()
       });
+      setGroups(groupsData);
     } catch (error) {
       console.error('Failed to load system data:', error);
     } finally {
@@ -109,7 +117,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const sections = [
     { id: 'display', label: 'Display' },
     { id: 'attendance', label: 'Attendance' },
-    { id: 'database', label: 'Face Database' },
+    { id: 'database', label: 'Database' },
   ];
 
   const mainContent = (
@@ -176,6 +184,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {activeSection === 'database' && (
             <Database 
               systemData={systemData} 
+              groups={groups}
               isLoading={isLoading}
               onClearDatabase={handleClearDatabase}
             />

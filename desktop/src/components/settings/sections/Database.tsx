@@ -1,25 +1,32 @@
 import type { SettingsOverview } from '../types';
+import type { AttendanceGroup, GroupType } from '../../../types/recognition';
 
 interface DatabaseProps {
   systemData: SettingsOverview;
+  groups: AttendanceGroup[];
   isLoading: boolean;
   onClearDatabase: () => void;
 }
 
-export function Database({ systemData, isLoading, onClearDatabase }: DatabaseProps) {
-  const averageEmbeddings = systemData.totalPersons > 0 
-    ? (systemData.totalEmbeddings / systemData.totalPersons).toFixed(1)
-    : '0';
+const getGroupTypeLabel = (type: GroupType): string => {
+  switch (type) {
+    case 'employee':
+      return 'Employee';
+    case 'student':
+      return 'Student';
+    case 'visitor':
+      return 'Visitor';
+    case 'general':
+    default:
+      return 'General';
+  }
+};
+
+export function Database({ systemData, groups, isLoading, onClearDatabase }: DatabaseProps) {
 
   return (
-    <div className="flex flex-col h-full max-w-2xl">
-      {/* Statistics Section */}
+    <div className="space-y-8 max-w-2xl">
       <div className="space-y-4">
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-white/90">Database Statistics</h3>
-          <p className="text-sm text-white/50">Current face recognition database status</p>
-        </div>
-
         <div className="space-y-3">
           <div className="flex items-center justify-between py-3 border-b border-white/5">
             <div className="text-sm text-white/70">Registered Faces</div>
@@ -27,22 +34,63 @@ export function Database({ systemData, isLoading, onClearDatabase }: DatabasePro
           </div>
           
           <div className="flex items-center justify-between py-3 border-b border-white/5">
-            <div className="text-sm text-white/70">Total Embeddings</div>
-            <div className="text-sm font-semibold text-white">{systemData.totalEmbeddings}</div>
+            <div className="text-sm text-white/70">Total Members</div>
+            <div className="text-sm font-semibold text-white">{systemData.totalMembers}</div>
           </div>
           
           <div className="flex items-center justify-between py-3 border-b border-white/5">
-            <div className="flex-1">
-              <div className="text-sm text-white/70">Average Embeddings per Face</div>
-              <div className="text-xs text-white/40 mt-0.5">Recommended: 3-5 for best accuracy</div>
-            </div>
-            <div className="text-sm font-semibold text-white">{averageEmbeddings}</div>
+            <div className="text-sm text-white/70">Total Groups</div>
+            <div className="text-sm font-semibold text-white">{groups.length}</div>
           </div>
         </div>
       </div>
 
-      {/* Clear Database Button at Bottom */}
-      <div className="mt-auto pt-8">
+      {/* All Groups Section */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold text-white/90">All Groups</h3>
+          <p className="text-sm text-white/50">Manage attendance groups</p>
+        </div>
+
+        <div className="max-h-80 overflow-y-auto custom-scroll">
+          {groups.length === 0 ? (
+            <div className="text-center py-8 text-white/50">
+              <div className="text-sm">No groups found</div>
+              <div className="text-xs mt-1">Create groups in the Menu to get started</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 pr-2">
+              {groups.map(group => (
+                <div
+                  key={group.id}
+                  className="rounded-lg p-3 border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate text-white/90">{group.name}</div>
+                      <div className="text-xs text-white/50">{getGroupTypeLabel(group.type)}</div>
+                      {group.description && (
+                        <div className="text-xs text-white/40 mt-0.5 truncate">{group.description}</div>
+                      )}
+                    </div>
+                    <div className="text-right ml-4 flex-shrink-0">
+                      <div className="text-xs text-white/40">
+                        {group.created_at ? new Date(group.created_at).toLocaleDateString() : '—'}
+                      </div>
+                      <div className="text-xs text-white/30 mt-0.5">
+                        ID: {group.id.slice(0, 8)}...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Clear Database Button */}
+      <div className="pt-4">
         <button
           onClick={onClearDatabase} 
           disabled={isLoading}

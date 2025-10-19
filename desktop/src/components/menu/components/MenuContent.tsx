@@ -10,7 +10,6 @@ import { EmptyState } from '../shared/EmptyState';
 
 interface MenuContentProps {
   selectedGroup: AttendanceGroup | null;
-  groups: AttendanceGroup[];
   members: AttendanceMember[];
   activeSection: MenuSection;
   onMembersChange: () => void;
@@ -18,14 +17,12 @@ interface MenuContentProps {
   onAddMember: () => void;
   onEditGroup: () => void;
   onDeleteGroup: () => void;
-  onGroupSelect: (group: AttendanceGroup | null) => void;
   onExportData: () => void;
   onCreateGroup: () => void;
 }
 
 export function MenuContent({
   selectedGroup,
-  groups,
   members,
   activeSection,
   onMembersChange,
@@ -33,7 +30,6 @@ export function MenuContent({
   onAddMember,
   onEditGroup,
   onDeleteGroup,
-  onGroupSelect,
   onExportData,
   onCreateGroup,
 }: MenuContentProps) {
@@ -74,11 +70,9 @@ export function MenuContent({
       {activeSection === 'settings' && (
         <GroupSettings
           group={selectedGroup}
-          groups={groups}
           memberCount={members.length}
           onEdit={onEditGroup}
           onDelete={onDeleteGroup}
-          onGroupSelect={onGroupSelect}
           onExportData={onExportData}
           onRefresh={onMembersChange}
         />
