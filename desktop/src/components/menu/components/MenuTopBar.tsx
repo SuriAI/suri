@@ -1,4 +1,4 @@
-import type { AttendanceGroup, GroupType } from '../../../types/recognition';
+import type { AttendanceGroup } from '../../../types/recognition';
 
 interface MenuTopBarProps {
   selectedGroup: AttendanceGroup | null;
@@ -11,20 +11,6 @@ interface MenuTopBarProps {
   isSidebarCollapsed?: boolean;
 }
 
-const getGroupTypeIcon = (type: GroupType): string => {
-  switch (type) {
-    case 'employee':
-      return '';
-    case 'student':
-      return '';
-    case 'visitor':
-      return '';
-    case 'general':
-    default:
-      return '';
-  }
-};
-
 export function MenuTopBar({
   selectedGroup,
   groups,
@@ -32,8 +18,7 @@ export function MenuTopBar({
   onGroupChange,
   onCreateGroup,
   onBack,
-  onToggleSidebar,
-  isSidebarCollapsed,
+  onToggleSidebar
 }: MenuTopBarProps) {
   return (
     <div className="h-16 border-b border-white/10 bg-black flex items-center justify-between px-6 flex-shrink-0">
@@ -118,7 +103,6 @@ export function MenuTopBar({
           onClick={onBack}
           className="bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-sm px-4 py-2 flex items-center gap-2 transition-colors"
         >
-          <span>✕</span>
           <span className="hidden sm:inline">Close</span>
         </button>
       </div>
