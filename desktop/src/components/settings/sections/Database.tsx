@@ -27,22 +27,22 @@ export function Database({ systemData, groups, isLoading, onClearDatabase }: Dat
   return (
     <div className="space-y-8 max-w-2xl">
       <div className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-3 border-b border-white/5">
-            <div className="text-sm text-white/70">Registered Faces</div>
-            <div className="text-sm font-semibold text-white">{systemData.totalPersons}</div>
-          </div>
-          
-          <div className="flex items-center justify-between py-3 border-b border-white/5">
-            <div className="text-sm text-white/70">Total Members</div>
-            <div className="text-sm font-semibold text-white">{systemData.totalMembers}</div>
-          </div>
-          
-          <div className="flex items-center justify-between py-3 border-b border-white/5">
-            <div className="text-sm text-white/70">Total Groups</div>
-            <div className="text-sm font-semibold text-white">{groups.length}</div>
-          </div>
-        </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-3 border-b border-white/5">
+                    <div className="text-sm text-white/70">Total Groups</div>
+                    <div className="text-sm font-semibold text-white">{groups.length}</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-3 border-b border-white/5">
+                    <div className="text-sm text-white/70">Total Members</div>
+                    <div className="text-sm font-semibold text-white">{systemData.totalMembers}</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-3 border-b border-white/5">
+                    <div className="text-sm text-white/70">Registered Faces</div>
+                    <div className="text-sm font-semibold text-white">{systemData.totalPersons}</div>
+                  </div>
+                </div>
       </div>
 
       {/* All Groups Section */}
