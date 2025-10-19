@@ -55,6 +55,11 @@ class YuNet:
         """
         if not self.detector:
             return []
+        
+        # Early exit for invalid images
+        if image is None or image.size == 0:
+            logger.warning("Invalid image provided to YuNet detector")
+            return []
     
         orig_height, orig_width = image.shape[:2]
         
