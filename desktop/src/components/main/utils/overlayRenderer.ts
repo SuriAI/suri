@@ -194,24 +194,11 @@ export const drawOverlays = ({
           const centerX = (x1 + x2) / 2;
           const centerY = (y1 + y2) / 2;
 
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-          ctx.lineWidth = 1;
-
-          const pillWidth = 80;
-          const pillHeight = 28;
-          const pillRadius = 14;
-
-          ctx.beginPath();
-          ctx.roundRect(centerX - pillWidth / 2, centerY - pillHeight / 2, pillWidth, pillHeight, pillRadius);
-          ctx.fill();
-          ctx.stroke();
-
           ctx.fillStyle = '#FFFFFF';
-          ctx.font = '500 14px system-ui, -apple-system, sans-serif';
+          ctx.font = '500 40px system-ui, -apple-system, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('Logged', centerX, centerY);
+          ctx.fillText('Done', centerX, centerY);
 
           ctx.restore();
         }
