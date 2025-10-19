@@ -66,7 +66,6 @@ export function MenuSidebar({
   onSectionChange,
   selectedGroup,
   groups,
-  loading,
   onGroupChange,
   onCreateGroup,
   onBack,
@@ -240,11 +239,10 @@ export function MenuSidebar({
       <div className="px-4 py-3 border-t border-white/10 mt-auto">
         <button
           onClick={onBack}
-          className="w-full p-2 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full px-3 py-2 rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center"
           aria-label="Close"
           title="Close"
         >
-          <span className="text-lg">✕</span>
           {!isCollapsed && <span className="text-sm">Close</span>}
         </button>
       </div>
