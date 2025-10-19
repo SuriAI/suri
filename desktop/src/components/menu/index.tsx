@@ -133,7 +133,6 @@ export function Menu({ onBack, initialSection }: MenuProps) {
       <main className="flex-1 overflow-hidden bg-black">
         <MenuContent
           selectedGroup={selectedGroup}
-                  groups={groups}
           members={members}
           activeSection={activeSection}
           onMembersChange={() => selectedGroup && fetchGroupDetails(selectedGroup.id)}
@@ -141,10 +140,9 @@ export function Menu({ onBack, initialSection }: MenuProps) {
           onAddMember={openAddMember}
           onEditGroup={openEditGroup}
           onDeleteGroup={handleDeleteGroup}
-                  onGroupSelect={setSelectedGroup}
-                  onExportData={exportData}
+          onExportData={exportData}
           onCreateGroup={openCreateGroup}
-                />
+        />
       </main>
 
       {/* Modals */}

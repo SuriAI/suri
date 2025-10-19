@@ -645,6 +645,24 @@ export class AttendanceManager {
        };
      }
    }
+
+   async getAttendanceStats(): Promise<any> {
+     try {
+       const response = await this.httpClient.get('/attendance/stats');
+       return response;
+     } catch (error) {
+       console.error('Error getting attendance stats:', error);
+       return {
+         total_groups: 0,
+         total_members: 0,
+         total_records: 0,
+         total_sessions: 0,
+         database_path: '',
+         database_size_bytes: 0,
+         database_size_mb: 0
+       };
+     }
+   }
 }
 
 // Singleton instance

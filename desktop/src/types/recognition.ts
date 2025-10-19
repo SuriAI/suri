@@ -63,7 +63,6 @@ export interface PersonInfo {
 
 export interface DatabaseStatsResponse {
   total_persons: number;
-  total_embeddings: number;
   persons: PersonInfo[];
 }
 
