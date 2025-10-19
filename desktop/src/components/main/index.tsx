@@ -1877,67 +1877,8 @@ export default function Main() {
             selectedCamera={selectedCamera}
             setSelectedCamera={setSelectedCamera}
             isStreaming={isStreaming}
-            trackingMode={trackingMode}
-            setTrackingMode={setTrackingMode}
             startCamera={startCamera}
             stopCamera={stopCamera}
-            lateThresholdMinutes={currentGroup?.settings?.late_threshold_minutes ?? 15}
-            onLateThresholdChange={async (minutes: number) => {
-              if (currentGroup) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  late_threshold_minutes: minutes,
-                };
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
-                  // Update local state
-                  setCurrentGroup({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  });
-                } catch (error) {
-                  console.error('Failed to update late threshold:', error);
-                }
-              }
-            }}
-            lateThresholdEnabled={(currentGroup?.settings as any)?.late_threshold_enabled ?? true}
-            onLateThresholdToggle={async (enabled: boolean) => {
-              if (currentGroup) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  late_threshold_enabled: enabled,
-                };
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
-                  // Update local state
-                  setCurrentGroup({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  });
-                } catch (error) {
-                  console.error('Failed to update late threshold toggle:', error);
-                }
-              }
-            }}
-            classStartTime={currentGroup?.settings?.class_start_time ?? '08:00'}
-            onClassStartTimeChange={async (time: string) => {
-              if (currentGroup) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  class_start_time: time,
-                };
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
-                  // Update local state
-                  setCurrentGroup({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  });
-                } catch (error) {
-                  console.error('Failed to update class start time:', error);
-                }
-              }
-            }}
           />
         </div>
 
@@ -2000,6 +1941,38 @@ export default function Main() {
               isModal={true}
               quickSettings={quickSettings}
               onQuickSettingsChange={setQuickSettings}
+              attendanceSettings={{
+                trackingMode: trackingMode,
+                lateThresholdEnabled: (currentGroup?.settings as any)?.late_threshold_enabled ?? true,
+                lateThresholdMinutes: currentGroup?.settings?.late_threshold_minutes ?? 15,
+                classStartTime: currentGroup?.settings?.class_start_time ?? '08:00',
+              }}
+              onAttendanceSettingsChange={async (updates) => {
+                // Handle tracking mode change
+                if (updates.trackingMode !== undefined) {
+                  setTrackingMode(updates.trackingMode);
+                }
+                
+                // Handle group settings changes
+                if (currentGroup && (updates.lateThresholdEnabled !== undefined || updates.lateThresholdMinutes !== undefined || updates.classStartTime !== undefined)) {
+                  const updatedSettings = {
+                    ...currentGroup.settings,
+                    ...(updates.lateThresholdEnabled !== undefined && { late_threshold_enabled: updates.lateThresholdEnabled }),
+                    ...(updates.lateThresholdMinutes !== undefined && { late_threshold_minutes: updates.lateThresholdMinutes }),
+                    ...(updates.classStartTime !== undefined && { class_start_time: updates.classStartTime }),
+                  };
+                  try {
+                    await attendanceManager.updateGroup(currentGroup.id, { settings: updatedSettings });
+                    setCurrentGroup({
+                      ...currentGroup,
+                      settings: updatedSettings,
+                    });
+                  } catch (error) {
+                    console.error('Failed to update attendance settings:', error);
+                  }
+                }
+              }}
+              isStreaming={isStreaming}
             />
           )}
   

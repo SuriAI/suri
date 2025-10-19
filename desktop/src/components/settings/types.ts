@@ -9,6 +9,13 @@ export interface QuickSettings {
   showDebugInfo: boolean;
 }
 
+export interface AttendanceSettings {
+  trackingMode: 'auto' | 'manual';
+  lateThresholdEnabled: boolean;
+  lateThresholdMinutes: number;
+  classStartTime: string;
+}
+
 export interface SettingsOverview {
   totalPersons: number;
   totalEmbeddings: number;
