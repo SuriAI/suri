@@ -42,7 +42,7 @@ export default function WindowBar() {
 
   return (
     <div 
-      className="z-60 absolute top-0 w-full h-auto bg-gradient-surface backdrop-blur-xl flex items-center justify-between select-none flex-shrink-0 border-b border-white/[0.08]"
+      className="z-60 absolute top-0 w-full h-auto bg-gradient-surface flex items-center justify-between select-none flex-shrink-0 border-b border-white/[0.08]"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center ml-3 space-x-2 flex-1">

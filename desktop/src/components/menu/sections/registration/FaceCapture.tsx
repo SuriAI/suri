@@ -420,7 +420,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Alerts */}
       {globalError && (
-        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/5 backdrop-blur-xl px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
           <span className="flex-1">{globalError}</span>
           <button onClick={() => setGlobalError(null)} className="text-red-200/50 hover:text-red-100 transition-colors">
@@ -432,7 +432,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
       )}
 
       {successMessage && (
-        <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl px-4 py-3 text-sm text-emerald-200 flex items-center gap-3 flex-shrink-0">
+        <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
           <span className="flex-1">{successMessage}</span>
           <button onClick={() => setSuccessMessage(null)} className="text-emerald-200/50 hover:text-emerald-100 transition-colors">
@@ -717,7 +717,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                                 </div>
                               )}
                               {frame.status === 'error' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 backdrop-blur-sm p-3 text-center">
+                                <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 p-3 text-center">
                                   <div className="space-y-1">
                                     <div className="text-xl">⚠️</div>
                                     <div className="text-xs text-red-200">{frame.error || 'Failed'}</div>

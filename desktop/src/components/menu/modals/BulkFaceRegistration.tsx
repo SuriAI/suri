@@ -296,7 +296,7 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
   const failedCount = registrationResults?.filter(r => !r.success).length || 0;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
       <div className="bg-gradient-to-br from-[#0a0a0a] to-black border border-white/10 rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between flex-shrink-0">
@@ -321,7 +321,7 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
 
         {/* Error Alert */}
         {error && (
-          <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/5 backdrop-blur-xl px-4 py-3 text-sm text-red-200 flex items-center gap-3">
+          <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-200 flex items-center gap-3">
             <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
             <span className="flex-1">{error}</span>
             <button onClick={() => setError(null)} className="text-red-200/50 hover:text-red-100 transition">
@@ -420,7 +420,7 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
                           alt="Detected face"
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/80 backdrop-blur-sm">
+                        <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/80">
                           <div className={`h-1 w-1 rounded-full ${face.confidence > 0.8 ? 'bg-emerald-400' : 'bg-yellow-400'}`} />
                           <span className="text-xs text-white">{Math.round(face.confidence * 100)}%</span>
                         </div>

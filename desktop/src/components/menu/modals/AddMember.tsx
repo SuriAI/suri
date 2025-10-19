@@ -110,7 +110,7 @@ export function AddMember({ group, onClose, onSuccess }: AddMemberProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 px-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
       <div className="bg-[#0f0f0f] border border-white/10 rounded-3xl p-6 w-full max-w-2xl shadow-[0_40px_80px_rgba(0,0,0,0.6)] max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-semibold mb-2">Add Members</h3>
         <p className="text-sm text-white/60 mb-4">Add one or multiple members to the group</p>
