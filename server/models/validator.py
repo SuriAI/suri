@@ -7,7 +7,7 @@ from typing import List, Dict, Optional, Any
 
 logger = logging.getLogger(__name__)
 
-class AntiSpoof:
+class LivenessValidator:
     def __init__(self, model_path: str, model_img_size: int, confidence_threshold: float, config: Dict = None):
         self.model_path = model_path
         self.model_img_size = model_img_size
@@ -28,20 +28,20 @@ class AntiSpoof:
                 # Try CUDA first, fallback to CPU
                 ort_session = ort.InferenceSession(onnx_model_path, 
                                                    providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
-                logger.info(f"AntiSpoof model loaded with providers: {ort_session.get_providers()}")
+                logger.info(f"Liveness detection model loaded with providers: {ort_session.get_providers()}")
             except Exception as e:
-                logger.error(f"Error loading AntiSpoof model: {e}")
+                logger.error(f"Error loading liveness detection model: {e}")
                 try:
                     ort_session = ort.InferenceSession(onnx_model_path, 
                                                        providers=['CPUExecutionProvider'])
-                    logger.info("AntiSpoof model loaded with CPU provider")
+                    logger.info("Liveness detection model loaded with CPU provider")
                 except Exception as e2:
-                    logger.error(f"Failed to load AntiSpoof model with CPU: {e2}")
+                    logger.error(f"Failed to load liveness detection model with CPU: {e2}")
                     return None, None
             
             if ort_session:
                 input_name = ort_session.get_inputs()[0].name
-                logger.info(f"AntiSpoof model input name: {input_name}")
+                logger.info(f"Liveness detection model input name: {input_name}")
         
         return ort_session, input_name
 
@@ -102,8 +102,8 @@ class AntiSpoof:
 
     def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float = 1.5) -> np.ndarray:
         """
-        Crop face with increased bounding box for better anti-spoofing accuracy
-        Matches Face-AntiSpoofing prototype implementation exactly
+        Crop face with increased bounding box for better liveness detection accuracy
+        Matches liveness detection prototype implementation exactly
         
         Args:
             img: Input image (BGR format from OpenCV)
@@ -193,7 +193,7 @@ class AntiSpoof:
                 # VALIDATION: Ensure scores are properly normalized (sum ≈ 1.0)
                 score_sum = live_score + print_score + replay_score
                 if abs(score_sum - 1.0) > 1e-6:
-                    logger.warning(f"AntiSpoof scores not properly normalized: sum={score_sum:.6f}")
+                    logger.warning(f"Liveness detection scores not properly normalized: sum={score_sum:.6f}")
                 
                 # Calculate spoof score as sum of print and replay scores
                 spoof_score = print_score + replay_score
@@ -334,7 +334,7 @@ class AntiSpoof:
                 valid_idx = valid_detections.index(detection)
                 prediction = predictions[valid_idx]
                 
-                detection['antispoofing'] = {
+                detection['liveness'] = {
                     'is_real': prediction['is_real'],
                     'live_score': prediction['live_score'],
                     'spoof_score': prediction['spoof_score'],
@@ -349,7 +349,7 @@ class AntiSpoof:
                     'attack_type': prediction['attack_type']
                 }
             else:
-                detection['antispoofing'] = {
+                detection['liveness'] = {
                     'is_real': False,
                     'live_score': 0.0,
                     'spoof_score': 1.0,
@@ -501,7 +501,7 @@ class AntiSpoof:
             if len(pred.shape) == 2 and pred.shape[1] == 3:
                 validation_result["output_classes"] = pred.shape[1]
                 validation_result["is_valid"] = True
-                # AntiSpoof model validation passed: 3-class detection ready with CONFIDENCE strategy
+                # Liveness detection model validation passed: 3-class detection ready with CONFIDENCE strategy
             else:
                 validation_result["errors"].append(f"Invalid output shape: {pred.shape}, expected (1, 3)")
                 

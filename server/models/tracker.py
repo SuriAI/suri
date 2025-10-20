@@ -151,7 +151,7 @@ class Track:
         Args:
             bbox: Initial bounding box [x1, y1, x2, y2]
             track_id: Unique track ID
-            feature: Initial appearance feature vector (512-dim for EdgeFace)
+            feature: Initial appearance feature vector (512-dim for face recognizer)
         """
         # Kalman filter setup (same as SORT)
         self.kf = KalmanFilter(dim_x=7, dim_z=4)
@@ -570,7 +570,7 @@ class DeepSort:
         
         Args:
             detections: Detections [[x1, y1, x2, y2, score], ...]
-            features: Appearance features (N, 512) for EdgeFace
+            features: Appearance features (N, 512) for face recognizer
             
         Returns:
             Array of active tracks [[x1, y1, x2, y2, track_id], ...]
@@ -641,10 +641,10 @@ class DeepSort:
         return len(self.tracks)
 
 
-class DeepSortFaceTracker:
+class FaceTracker:
     """
     Wrapper around Deep SORT for face tracking with appearance features
-    Provides integration with EdgeFace detector
+    Provides integration with face recognizer
     """
     
     def __init__(
@@ -684,7 +684,7 @@ class DeepSortFaceTracker:
         
         Args:
             face_detections: List of face detection dicts with 'bbox' key
-            embeddings: List of appearance embeddings (512-dim for EdgeFace)
+            embeddings: List of appearance embeddings (512-dim for face recognizer)
             
         Returns:
             List of face detections with added 'track_id' field

@@ -17,7 +17,7 @@ from utils.database_manager import FaceDatabaseManager
 
 logger = logging.getLogger(__name__)
 
-class face recognizerDetector:
+class FaceRecognizer:
     """
     Face recognition model wrapper with async support and database management
     """

@@ -6,7 +6,7 @@ from typing import List
 
 logger = logging.getLogger(__name__)
 
-class YuNet:
+class FaceDetector:
     def __init__(self,
                  model_path: str,
                  input_size: tuple,
