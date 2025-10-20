@@ -278,10 +278,31 @@ export class AttendanceManager {
 
   async getGroupMembers(groupId: string): Promise<AttendanceMember[]> {
     try {
-      const members = await this.httpClient.get<AttendanceMember[]>(`${API_ENDPOINTS.groups}/${groupId}/members`);
+      // Use the persons endpoint which includes face data status
+      const members = await this.httpClient.get<Array<{
+        person_id: string;
+        name: string;
+        role?: string;
+        employee_id?: string;
+        student_id?: string;
+        email?: string;
+        has_face_data: boolean;
+        joined_at: string;
+        is_active: boolean;
+        group_id: string;
+      }>>(`${API_ENDPOINTS.groups}/${groupId}/persons`);
+      
       return members.map(member => ({
-        ...member,
-        joined_at: new Date(member.joined_at)
+        person_id: member.person_id,
+        group_id: member.group_id,
+        name: member.name,
+        role: member.role,
+        employee_id: member.employee_id,
+        student_id: member.student_id,
+        email: member.email,
+        joined_at: new Date(member.joined_at),
+        is_active: member.is_active,
+        has_face_data: member.has_face_data
       }));
     } catch (error) {
       console.error('Error getting group members:', error);
