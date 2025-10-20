@@ -145,19 +145,6 @@ MODEL_CONFIGS = {
         "bbox_inc": 1.5,
         "model_img_size": 128
     },
-    "facemesh": {
-        "model_path": WEIGHTS_DIR / "face_mesh_Nx3x192x192_post.onnx",
-        "input_size": (192, 192),  # FaceMesh standard input size
-        "score_threshold": 0.5,    # Confidence threshold for landmark detection
-        "margin_ratio": 0.25,      # 25% margin for face cropping as recommended by MediaPipe
-        "providers": OPTIMIZED_PROVIDERS,  # Use optimized providers
-        "session_options": OPTIMIZED_SESSION_OPTIONS,
-        "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
-        "landmark_count": 468,     # Full 468-point facial mesh
-        "enable_dense_mesh": True, # Enable full 468-point mesh output
-        "batch_size": 1,           # Single face processing for accuracy
-        "alignment_method": "facemesh_dense",  # Dense mesh alignment method
-    },
     "edgeface": {
         "model_path": WEIGHTS_DIR / "edgeface-recognition-xs.onnx",
         "input_size": (112, 112),  # EdgeFace standard input size
@@ -167,16 +154,13 @@ MODEL_CONFIGS = {
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
         "embedding_dimension": 512,  # Face embedding dimension
         "database_path": DATA_DIR / "face_database.db",  # SQLite database storage (auto-handles dev/prod)
-        "requires_landmarks": False,  # Uses FaceMesh alignment instead of external landmarks
+        "requires_landmarks": True,
         "batch_size": 4,  # Enable small batch processing
         "enable_face_alignment": True,
-        "alignment_method": "facemesh_dense",  # Use FaceMesh for high-quality alignment
         "enable_temporal_smoothing": True,  # Enable temporal smoothing for recognition
         "recognition_smoothing_factor": 0.3,  # Reduced for faster response and better stability
         "recognition_hysteresis_margin": 0.05,  # Reduced for less strict switching
         "min_consecutive_recognitions": 1,  # Reduced to 1 for immediate recognition
-        "facemesh_alignment": True,  # Enable FaceMesh-based alignment
-        "facemesh_model": "facemesh",  # Reference to FaceMesh model config
     },
     "deep_sort": {
         "max_age": 30,  # Maximum frames to keep track alive without detection

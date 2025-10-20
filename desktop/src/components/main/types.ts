@@ -13,6 +13,7 @@ export interface DetectionResult {
     };
     confidence: number;
     track_id?: number;
+    landmarks_5?: number[][]; // YuNet 5-point landmarks [[x,y], [x,y], ...]
     antispoofing?: {
       is_real: boolean | null;
       confidence: number;
@@ -31,6 +32,7 @@ export interface WebSocketFaceData {
   bbox?: number[];
   confidence?: number;
   track_id?: number;
+  landmarks_5?: number[][]; // YuNet 5-point landmarks [[x,y], [x,y], ...]
   antispoofing?: {
     is_real?: boolean | null;
     confidence?: number;
