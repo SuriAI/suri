@@ -63,28 +63,44 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
     );
   }
 
-  // Mode Selection View - Note: has_face_data check removed as it's not available here
-  // You may want to fetch registration status separately if needed
+  // Mode Selection View - Calculate actual registration status
   const total = members.length;
-  const registered = 0; // Placeholder - implement if status tracking needed
+  const registered = members.filter(member => member.has_face_data).length;
   const progress = total > 0 ? (registered / total) * 100 : 0;
 
   return (
     <div className="h-full flex flex-col overflow-hidden space-y-6">
-      {/* Stats */}
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div>
-          <div className="text-2xl font-light text-white">{registered}<span className="text-white/40">/{total}</span></div>
-          <div className="text-xs text-white/40 mt-1">Registered</div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-[#00ff88] to-[#00ff88]/80 transition-all duration-500"
-              style={{ width: `${progress}%` }}
+      {/* Registration Status - Minimalist Progress Ring */}
+      <div className="flex items-center justify-center flex-shrink-0">
+        <div className="relative">
+          {/* Progress Ring */}
+          <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+            {/* Background circle */}
+            <path
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="2"
             />
+            {/* Progress circle */}
+            <path
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              fill="none"
+              stroke={progress === 100 ? "#00ff88" : progress > 0 ? "#fbbf24" : "rgba(255,255,255,0.3)"}
+              strokeWidth="2"
+              strokeDasharray={`${progress}, 100`}
+              className="transition-all duration-500 ease-out"
+            />
+          </svg>
+          
+          {/* Count in center */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className={`text-lg font-medium ${progress === 100 ? 'text-[#00ff88]' : progress > 0 ? 'text-[#fbbf24]' : 'text-white/60'}`}>
+                {registered}/{total}
+              </div>
+            </div>
           </div>
-          <div className="text-xs text-white/60">{Math.round(progress)}%</div>
         </div>
       </div>
 

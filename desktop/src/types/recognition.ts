@@ -152,6 +152,7 @@ export interface AttendanceMember {
   email?: string;
   joined_at: Date;
   is_active: boolean;
+  has_face_data?: boolean; // Face registration status
 }
 
 export interface AttendanceRecord {
