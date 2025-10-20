@@ -29,6 +29,89 @@ export const drawBoundingBox = (ctx: CanvasRenderingContext2D, x1: number, y1: n
   ctx.stroke();
 };
 
+export const drawLandmarks = (
+  ctx: CanvasRenderingContext2D, 
+  landmarks: number[][], 
+  scaleX: number, 
+  scaleY: number, 
+  offsetX: number, 
+  offsetY: number,
+  color: string,
+  bbox?: { x: number; y: number; width: number; height: number }
+) => {
+  
+  landmarks.forEach((point) => {
+    if (point && point.length >= 2) {
+      const x = point[0] * scaleX + offsetX;
+      const y = point[1] * scaleY + offsetY;
+      
+      if (!isFinite(x) || !isFinite(y)) return;
+      
+      // Sanity check: skip obviously wrong landmarks
+      if (bbox) {
+        const bboxX = bbox.x * scaleX + offsetX;
+        const bboxY = bbox.y * scaleY + offsetY;
+        const bboxW = bbox.width * scaleX;
+        const bboxH = bbox.height * scaleY;
+        
+        const margin = Math.max(bboxW, bboxH) * 0.5;
+        
+        if (x < bboxX - margin || x > bboxX + bboxW + margin ||
+            y < bboxY - margin || y > bboxY + bboxH + margin) {
+          return;
+        }
+      }
+      
+      // FUTURISTIC MINIMALIST DESIGN
+      ctx.save();
+      
+      // Outer glow (subtle)
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      
+      // Sharp geometric ring (minimalist)
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'square';
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.stroke();
+      
+      // Remove shadow for inner elements
+      ctx.shadowBlur = 0;
+      
+      // Center dot (sharp, minimal)
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Crosshair indicator (futuristic targeting aesthetic)
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.6;
+      
+      // Horizontal line
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y);
+      ctx.lineTo(x - 2, y);
+      ctx.moveTo(x + 2, y);
+      ctx.lineTo(x + 5, y);
+      ctx.stroke();
+      
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(x, y - 5);
+      ctx.lineTo(x, y - 2);
+      ctx.moveTo(x, y + 2);
+      ctx.lineTo(x, y + 5);
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+  });
+};
+
 export const setupCanvasContext = (ctx: CanvasRenderingContext2D, color: string) => {
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
@@ -108,7 +191,7 @@ export const drawOverlays = ({
   if (!isFinite(scaleX) || !isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
 
   currentDetections.faces.forEach((face) => {
-    const { bbox, antispoofing } = face;
+    const { bbox, antispoofing, landmarks_5 } = face;
 
     if (!bbox || !isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
 
@@ -126,6 +209,11 @@ export const drawOverlays = ({
     setupCanvasContext(ctx, color);
     if (quickSettings.showBoundingBoxes) {
       drawBoundingBox(ctx, x1, y1, x2, y2);
+    }
+
+    // Draw YuNet 5-point landmarks if available and enabled
+    if (quickSettings.showLandmarks && landmarks_5 && Array.isArray(landmarks_5) && landmarks_5.length === 5) {
+      drawLandmarks(ctx, landmarks_5, scaleX, scaleY, offsetX, offsetY, color, bbox);
     }
 
     const isRecognized = recognitionEnabled && recognitionResult?.person_id;

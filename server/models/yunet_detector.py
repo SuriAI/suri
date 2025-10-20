@@ -74,9 +74,20 @@ class YuNet:
         # Convert detections to our format
         detections = []
         for face in faces:
-            if face[4] >= self.conf_threshold:  # confidence check
-                # YuNet returns [x, y, w, h, confidence]
-                x, y, w, h, conf = face[:5]
+            # YuNet official format: [x, y, w, h, landmarks..., confidence]
+            # Extract bbox
+            x, y, w, h = face[:4]
+            
+            # Extract landmarks (indices 4:14)
+            landmarks_5 = None
+            if len(face) >= 15:
+                landmarks_resized = face[4:14].reshape(5, 2)  # Official format!
+                
+            # Extract confidence (last element)
+            conf = face[14] if len(face) >= 15 else 0.0
+            
+            # Confidence check
+            if conf >= self.conf_threshold:
                 
                 # Scale coordinates from resized image back to original image
                 scale_x = orig_width / self.input_size[0]
@@ -95,6 +106,12 @@ class YuNet:
                 face_width_orig = x2_orig - x1_orig
                 face_height_orig = y2_orig - y1_orig
                 
+                # Scale landmarks to original image coordinates
+                if len(face) >= 15:
+                    landmarks_5 = landmarks_resized.copy()
+                    landmarks_5[:, 0] *= scale_x  # Scale X coordinates
+                    landmarks_5[:, 1] *= scale_y  # Scale Y coordinates
+                
                 # 🎯 ANTI-SPOOF SIZE FILTER: Ensure face meets minimum size for AntiSpoof model
                 # AntiSpoof model (1.5_128.onnx) was trained with 1.5x expanded bboxes resized to 128x128
                 # Minimum face size of 80px ensures adequate texture density after 1.5x expansion
@@ -107,9 +124,8 @@ class YuNet:
                 # This eliminates redundant expansion that was applied TWICE (30% perf loss)
                 
                 
+                # Confidence is already normalized (0.0 - 1.0)
                 normalized_conf = float(conf)
-                if normalized_conf > 1.0:
-                    normalized_conf = min(1.0, normalized_conf / 3.0)
                 
                 # 🚀 OPTIMIZATION: Use original bbox as primary (no expansion)
                 # This removes redundant bbox expansion that was causing 30% performance loss
@@ -128,6 +144,11 @@ class YuNet:
                     },
                     'confidence': normalized_conf
                 }
+                
+                # Add landmarks if available
+                if landmarks_5 is not None:
+                    detection['landmarks_5'] = landmarks_5.tolist()
+                
                 detections.append(detection)
         
         return detections

@@ -157,6 +157,7 @@ export default function Main() {
     showAntiSpoofStatus: true,
     showRecognitionNames: true,
     showDebugInfo: false,
+    showLandmarks: true,
   });
 
   // Attendance system state
@@ -867,6 +868,7 @@ export default function Main() {
                 },
                 confidence: face.confidence || 0,
                 track_id: face.track_id,
+                landmarks_5: face.landmarks_5, // Pass YuNet 5-point landmarks through
                 antispoofing: face.antispoofing ? {
                   is_real: face.antispoofing.is_real ?? null,
                   confidence: face.antispoofing.confidence || 0,

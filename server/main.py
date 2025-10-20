@@ -89,11 +89,13 @@ class StreamingRequest(BaseModel):
 class FaceRecognitionRequest(BaseModel):
     image: str  # Base64 encoded image
     bbox: List[float]  # Face bounding box [x, y, width, height]
+    landmarks_5: Optional[List[List[float]]] = None  # Optional 5-point landmarks from YuNet (FAST!)
 
 class FaceRegistrationRequest(BaseModel):
     person_id: str
     image: str  # Base64 encoded image
     bbox: List[float]  # Face bounding box [x, y, width, height]
+    landmarks_5: Optional[List[List[float]]] = None  # Optional 5-point landmarks from YuNet (FAST!)
 
 class FaceRecognitionResponse(BaseModel):
     success: bool
@@ -140,18 +142,14 @@ async def startup_event():
             config=ANTISPOOFING_CONFIG
         )
         
-        # Initialize EdgeFace detector (uses FaceMesh for high-precision alignment)
+        # Initialize EdgeFace detector (uses YuNet landmarks for alignment)
         edgeface_detector = EdgeFaceDetector(
             model_path=str(EDGEFACE_MODEL_PATH),
             input_size=EDGEFACE_CONFIG["input_size"],
             similarity_threshold=EDGEFACE_CONFIG["similarity_threshold"],
             providers=EDGEFACE_CONFIG["providers"],
             database_path=str(EDGEFACE_CONFIG["database_path"]),
-            session_options=EDGEFACE_CONFIG.get("session_options"),
-            # Enable FaceMesh alignment for better precision
-            facemesh_alignment=EDGEFACE_CONFIG.get("facemesh_alignment", True),
-            facemesh_model_path=str(MODEL_CONFIGS["facemesh"]["model_path"]),
-            facemesh_config=MODEL_CONFIGS["facemesh"]
+            session_options=EDGEFACE_CONFIG.get("session_options")
         )
         
         # Initialize Deep SORT face tracker (appearance + motion features)
@@ -573,10 +571,11 @@ async def recognize_face(request: FaceRecognitionRequest):
                         error=f"Recognition blocked: face status {status}"
                     )
         
-        # Use FaceMesh for high-precision face alignment
+        # Use YuNet landmarks for recognition (FAST!)
         result = await edgeface_detector.recognize_face_async(
             image, 
-            request.bbox
+            request.bbox,
+            request.landmarks_5  # Pass YuNet landmarks if available
         )
         
         processing_time = time.time() - start_time
@@ -661,7 +660,8 @@ async def register_person(request: FaceRegistrationRequest):
         result = await edgeface_detector.register_person_async(
             request.person_id, 
             image, 
-            request.bbox
+            request.bbox,
+            request.landmarks_5  # Pass YuNet landmarks if available
         )
         
         processing_time = time.time() - start_time

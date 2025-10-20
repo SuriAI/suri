@@ -18,6 +18,11 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
       description: 'Face detection outlines'
     },
     { 
+      key: 'showLandmarks' as keyof QuickSettings, 
+      label: 'Facial Landmarks',
+      description: '5-point landmarks (eyes, nose, mouth)'
+    },
+    { 
       key: 'showAntiSpoofStatus' as keyof QuickSettings, 
       label: 'Anti-Spoof',
       description: 'Liveness detection status'

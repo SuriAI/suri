@@ -42,6 +42,7 @@ export const Settings: React.FC<SettingsProps> = ({
     showFPS: true,
     showPreprocessing: false,
     showBoundingBoxes: true,
+    showLandmarks: true,
     showAntiSpoofStatus: true,
     showRecognitionNames: true,
     showDebugInfo: false,
