@@ -55,7 +55,7 @@ interface IPCMessage {
   faces?: Array<{
     bbox?: number[];
     confidence?: number;
-    antispoofing?: {
+    liveness?: {
       is_real?: boolean | null;
       live_score?: number;
       spoof_score?: number;
@@ -481,7 +481,8 @@ export class BackendService {
   async recognizeFace(
     imageData: ImageData | string | ArrayBuffer,
     bbox?: number[],
-    groupId?: string
+    groupId?: string,
+    landmarks_5?: number[][]
   ): Promise<FaceRecognitionResponse> {
     try {
       let base64Image: string;
@@ -500,7 +501,7 @@ export class BackendService {
         base64Image = await this.imageDataToBase64(imageData);
       }
 
-      return await window.electronAPI.backend.recognizeFace(base64Image, bbox || [], groupId);
+      return await window.electronAPI.backend.recognizeFace(base64Image, bbox || [], groupId, landmarks_5);
     } catch (error) {
       console.error('Face recognition failed:', error);
       throw error;
@@ -590,7 +591,7 @@ export class BackendService {
   }
 
   /**
-   * Clear backend cache (antispoofing cache)
+   * Clear backend cache (liveness cache)
    */
   async clearCache(): Promise<{ success: boolean; message: string }> {
     try {

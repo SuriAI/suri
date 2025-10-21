@@ -67,6 +67,14 @@ export interface DetectionOptions {
   nms_threshold?: number;
 }
 
+export interface FaceRecognitionResponse {
+  success: boolean;
+  person_id?: string;
+  similarity?: number;
+  processing_time?: number;
+  error?: string;
+}
+
 export interface DetectionResponse {
   faces: Array<{
     bbox: [number, number, number, number];
@@ -787,6 +795,32 @@ export class BackendService {
   /**
    * Clean up on app exit
    */
+  /**
+   * Recognize a face using backend API
+   */
+  async recognizeFace(imageBase64: string, bbox: number[], groupId?: string, landmarks_5?: number[][]): Promise<FaceRecognitionResponse> {
+    const request = {
+      image: imageBase64,
+      bbox: bbox,
+      landmarks_5: landmarks_5
+    };
+
+    const response = await fetch(`${this.getUrl()}/face/recognize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(30000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
   async dispose(): Promise<void> {
     await this.stop();
   }

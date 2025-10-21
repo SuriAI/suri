@@ -102,7 +102,7 @@ export interface FaceWithRecognition {
   };
   confidence: number;
   track_id?: number; // SORT tracker ID for consistent face tracking across frames
-  antispoofing?: {
+  liveness?: {
     is_real: boolean | null;
     live_score?: number;
     spoof_score?: number;
