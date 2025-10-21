@@ -78,14 +78,13 @@ def generate_person_id(name: str, group_type: str, db: AttendanceDatabaseManager
     Returns:
         str: Generated ULID that's unique, secure, and sortable
     """
-    from ulid import ULID
+    import ulid
     
     # Generate ULID - automatically handles uniqueness and security
     # ULID format: 01ARZ3NDEKTSV4RRFFQ69G5FAV (26 characters)
     # First 10 chars: timestamp (sortable)
     # Last 16 chars: cryptographically secure randomness
-    ulid = ULID()
-    person_id = str(ulid)
+    person_id = ulid.ulid()
     
     # ULID collision probability is extremely low (similar to UUID v4)
     # But we'll add a safety check for absolute certainty
@@ -98,8 +97,7 @@ def generate_person_id(name: str, group_type: str, db: AttendanceDatabaseManager
             break
         
         # Generate new ULID if collision occurs (extremely unlikely)
-        ulid = ULID()
-        person_id = str(ulid)
+        person_id = ulid.ulid()
         attempt += 1
     
     # If collision still exists (practically impossible), fallback to UUID
