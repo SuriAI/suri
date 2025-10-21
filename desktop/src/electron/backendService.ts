@@ -55,10 +55,9 @@ export interface ModelEntry {
 
 export interface ModelsResponse {
   models: {
-    yunet?: ModelEntry;
-    antispoofing?: ModelEntry;
-    optimized_antispoofing?: ModelEntry;
-    edgeface?: ModelEntry;
+    face_detector?: ModelEntry;
+    liveness_detector?: ModelEntry;
+    face_recognizer?: ModelEntry;
   };
 }
 
@@ -66,6 +65,14 @@ export interface DetectionOptions {
   model_type?: string;
   confidence_threshold?: number;
   nms_threshold?: number;
+}
+
+export interface FaceRecognitionResponse {
+  success: boolean;
+  person_id?: string;
+  similarity?: number;
+  processing_time?: number;
+  error?: string;
 }
 
 export interface DetectionResponse {
@@ -723,10 +730,10 @@ export class BackendService {
       const modelsData: ModelsResponse = await modelsResponse.json();
       
       // Check if critical models for face recognition are available
-      const yunetAvailable = modelsData.models.yunet?.available || false;
-      const edgefaceAvailable = modelsData.models.edgeface?.available || false;
+      const faceDetectorAvailable = modelsData.models.face_detector?.available || false;
+      const faceRecognizerAvailable = modelsData.models.face_recognizer?.available || false;
       
-      const modelsLoaded = yunetAvailable && edgefaceAvailable;
+      const modelsLoaded = faceDetectorAvailable && faceRecognizerAvailable;
       
       return { 
         ready: modelsLoaded, 
@@ -762,11 +769,11 @@ export class BackendService {
    * Detect faces using backend API
    */
   async detectFaces(imageBase64: string, options: DetectionOptions = {}): Promise<DetectionResponse> {
-    const request = {
-      image: imageBase64,
-      model_type: options.model_type || 'yunet',
-      confidence_threshold: options.confidence_threshold || 0.5,
-      nms_threshold: options.nms_threshold || 0.3
+      const request = {
+        image: imageBase64,
+        model_type: options.model_type || 'face_detector',
+        confidence_threshold: options.confidence_threshold || 0.5,
+        nms_threshold: options.nms_threshold || 0.3
     };
 
     const response = await fetch(`${this.getUrl()}/detect`, {
@@ -788,6 +795,32 @@ export class BackendService {
   /**
    * Clean up on app exit
    */
+  /**
+   * Recognize a face using backend API
+   */
+  async recognizeFace(imageBase64: string, bbox: number[], groupId?: string, landmarks_5?: number[][]): Promise<FaceRecognitionResponse> {
+    const request = {
+      image: imageBase64,
+      bbox: bbox,
+      landmarks_5: landmarks_5
+    };
+
+    const response = await fetch(`${this.getUrl()}/face/recognize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(30000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
   async dispose(): Promise<void> {
     await this.stop();
   }

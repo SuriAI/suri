@@ -430,8 +430,8 @@ export default function Main() {
             return null;
           }
           
-          // CRITICAL: Anti-spoofing validation FIRST - Skip recognition for spoofed faces but still display them
-          if (face.antispoofing?.status === 'fake') {
+          // CRITICAL: Liveness validation FIRST - Skip recognition for spoofed faces but still display them
+          if (face.liveness?.status === 'fake') {
             // Don't return null - we want to show spoofed faces in the sidebar
             // Just skip the recognition processing
             return {
@@ -443,8 +443,8 @@ export default function Main() {
           
           // Note: Simplified anti-spoofing status handling - only 'real', 'fake', 'error' are supported
           
-          // Also reject faces with anti-spoofing errors for safety
-          if (face.antispoofing?.status === 'error') {
+          // Also reject faces with liveness errors for safety
+          if (face.liveness?.status === 'error') {
             return null; // Filter out faces with anti-spoofing errors
           }
           
@@ -459,7 +459,8 @@ export default function Main() {
           const response = await backendServiceRef.current.recognizeFace(
             frameData,
             bbox,
-            currentGroupValue?.id
+            currentGroupValue?.id,
+            face.landmarks_5
           );
 
           if (response.success && response.person_id) {
@@ -503,7 +504,7 @@ export default function Main() {
             // Update tracking data
             setTrackedFaces(prev => {
               const newTracked = new Map(prev);
-              const currentAntispoofingStatus = face.antispoofing?.status;
+              const currentLivenessStatus = face.liveness?.status;
               
               // Find existing track using track_id (from SORT) for consistent identity
               const existingTrack = newTracked.get(trackedFaceId);
@@ -520,9 +521,9 @@ export default function Main() {
                 existingTrack.occlusionCount = 0; // Reset occlusion count
                 existingTrack.angleConsistency = calculateAngleConsistency(existingTrack.trackingHistory);
                 
-                // CRITICAL FIX: Always use CURRENT frame's anti-spoofing status
+                // CRITICAL FIX: Always use CURRENT frame's liveness status
                 // Remove "once real, stay real" logic to prevent spoofed faces from staying "live"
-                existingTrack.antispoofingStatus = currentAntispoofingStatus;
+                existingTrack.livenessStatus = currentLivenessStatus;
                 
                 newTracked.set(existingTrack.id, existingTrack);
               } else {
@@ -537,7 +538,7 @@ export default function Main() {
                   personId: response.person_id,
                   occlusionCount: 0,
                   angleConsistency: 1.0,
-                  antispoofingStatus: currentAntispoofingStatus
+                  livenessStatus: currentLivenessStatus
                 });
               }
               
@@ -546,16 +547,16 @@ export default function Main() {
             
             // Enhanced Attendance Processing with comprehensive error handling
             if (attendanceEnabled && currentGroupValue && response.person_id) {
-              const antispoofStatus = face.antispoofing?.status ?? null;
+              const livenessStatus = face.liveness?.status ?? null;
               
-              // CRITICAL SECURITY FIX: Double-check antispoofing status before attendance processing
-              const shouldSkipAttendanceLogging = !!face.antispoofing && (
-                face.antispoofing.is_real !== true ||
-                (antispoofStatus !== null && NON_LOGGING_ANTISPOOF_STATUSES.has(antispoofStatus))
+              // CRITICAL SECURITY FIX: Double-check liveness status before attendance processing
+              const shouldSkipAttendanceLogging = !!face.liveness && (
+                face.liveness.is_real !== true ||
+                (livenessStatus !== null && NON_LOGGING_ANTISPOOF_STATUSES.has(livenessStatus))
               );
 
               // Additional safety check: explicitly block spoofed faces
-              if (face.antispoofing?.status && NON_LOGGING_ANTISPOOF_STATUSES.has(face.antispoofing.status)) {
+              if (face.liveness?.status && NON_LOGGING_ANTISPOOF_STATUSES.has(face.liveness.status)) {
                 return null; // Skip attendance processing for spoofed/problematic faces
               }
 
@@ -641,8 +642,8 @@ export default function Main() {
                         response.person_id,
                         actualConfidence,
                         'LiveVideo Camera', // location
-                        face.antispoofing?.status,
-                        face.antispoofing?.confidence
+                        face.liveness?.status,
+                        face.liveness?.confidence
                       );
 
                       if (attendanceEvent) {
@@ -691,7 +692,7 @@ export default function Main() {
                 personId: undefined,
                 occlusionCount: 0,
                 angleConsistency: 1.0,
-                antispoofingStatus: face.antispoofing?.status
+                livenessStatus: face.liveness?.status
               });
               return newTracked;
             });
@@ -752,7 +753,7 @@ export default function Main() {
               personId: undefined,
               occlusionCount: 0,
               angleConsistency: 1.0,
-              antispoofingStatus: face.antispoofing?.status
+              livenessStatus: face.liveness?.status
             });
             return newTracked;
           });
@@ -869,12 +870,12 @@ export default function Main() {
                 confidence: face.confidence || 0,
                 track_id: face.track_id,
                 landmarks_5: face.landmarks_5, // Pass YuNet 5-point landmarks through
-                antispoofing: face.antispoofing ? {
-                  is_real: face.antispoofing.is_real ?? null,
-                  confidence: face.antispoofing.confidence || 0,
-                  live_score: face.antispoofing.live_score,
-                  spoof_score: face.antispoofing.spoof_score,
-                  status: face.antispoofing.status || 'error'
+                liveness: face.liveness ? {
+                  is_real: face.liveness.is_real ?? null,
+                  confidence: face.liveness.confidence || 0,
+                  live_score: face.liveness.live_score,
+                  spoof_score: face.liveness.spoof_score,
+                  status: face.liveness.status || 'error'
                 } : undefined
               };
             }),

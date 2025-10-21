@@ -55,7 +55,7 @@ interface IPCMessage {
   faces?: Array<{
     bbox?: number[];
     confidence?: number;
-    antispoofing?: {
+    liveness?: {
       is_real?: boolean | null;
       live_score?: number;
       spoof_score?: number;
@@ -121,7 +121,7 @@ export class BackendService {
 
       // Check if critical models are loaded
       const models = await this.getAvailableModels();
-      const requiredModels = ['yunet', 'edgeface'];
+      const requiredModels = ['face_detector', 'face_recognizer'];
       const loadedModels = Object.keys(models).filter(key => 
         requiredModels.some(required => key.toLowerCase().includes(required.toLowerCase()))
       );
@@ -186,7 +186,7 @@ export class BackendService {
 
       const request: DetectionRequest = {
         image: imageBase64,
-        model_type: options.model_type || 'yunet',
+        model_type: options.model_type || 'face_detector',
         confidence_threshold: options.confidence_threshold || 0.5,
         nms_threshold: options.nms_threshold || 0.3
       };
@@ -225,7 +225,7 @@ export class BackendService {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('model_type', options.model_type || 'yunet');
+      formData.append('model_type', options.model_type || 'face_detector');
       formData.append('confidence_threshold', (options.confidence_threshold || 0.5).toString());
       formData.append('nms_threshold', (options.nms_threshold || 0.3).toString());
 
@@ -481,7 +481,8 @@ export class BackendService {
   async recognizeFace(
     imageData: ImageData | string | ArrayBuffer,
     bbox?: number[],
-    groupId?: string
+    groupId?: string,
+    landmarks_5?: number[][]
   ): Promise<FaceRecognitionResponse> {
     try {
       let base64Image: string;
@@ -500,7 +501,7 @@ export class BackendService {
         base64Image = await this.imageDataToBase64(imageData);
       }
 
-      return await window.electronAPI.backend.recognizeFace(base64Image, bbox || [], groupId);
+      return await window.electronAPI.backend.recognizeFace(base64Image, bbox || [], groupId, landmarks_5);
     } catch (error) {
       console.error('Face recognition failed:', error);
       throw error;
@@ -590,7 +591,7 @@ export class BackendService {
   }
 
   /**
-   * Clear backend cache (antispoofing cache)
+   * Clear backend cache (liveness cache)
    */
   async clearCache(): Promise<{ success: boolean; message: string }> {
     try {
