@@ -151,6 +151,7 @@ export default function Main() {
   // Settings view state
   const [showSettings, setShowSettings] = useState(false);
   const [quickSettings, setQuickSettings] = useState<QuickSettings>({
+    cameraMirrored: true,
     showFPS: true,
     showPreprocessing: false,
     showBoundingBoxes: true,
