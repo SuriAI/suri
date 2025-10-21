@@ -61,28 +61,28 @@ export function DetectionPanel({
               </div>
               <div className="text-right space-y-1">
 
-                {face.antispoofing && (
+                {face.liveness && (
                   <div className={`text-xs px-2 py-1 rounded border mt-1 ${
-                    face.antispoofing.status === 'real' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 
-                    face.antispoofing.status === 'fake' ? 'bg-red-500/10 border-red-500/30 text-red-400' : 
-                    face.antispoofing.status === 'uncertain' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 
-                    face.antispoofing.status === 'error' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 
+                    face.liveness.status === 'real' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 
+                    face.liveness.status === 'fake' ? 'bg-red-500/10 border-red-500/30 text-red-400' : 
+                    face.liveness.status === 'uncertain' ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 
+                    face.liveness.status === 'error' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 
                     'bg-white/5 border-white/10 text-white/60'
                   }`}>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {face.antispoofing.status === 'real' ? 'LIVE' :
-                         face.antispoofing.status === 'fake' ? 'SPOOF' :
-                         face.antispoofing.status === 'uncertain' ? 'UNCERTAIN' :
-                         face.antispoofing.status === 'error' ? 'ERROR' : 'UNKNOWN'}
+                        {face.liveness.status === 'real' ? 'LIVE' :
+                         face.liveness.status === 'fake' ? 'SPOOF' :
+                         face.liveness.status === 'uncertain' ? 'UNCERTAIN' :
+                         face.liveness.status === 'error' ? 'ERROR' : 'UNKNOWN'}
                       </span>
-                      {((face.antispoofing.live_score !== undefined && face.antispoofing.live_score !== null) ||
-                        (face.antispoofing.spoof_score !== undefined && face.antispoofing.spoof_score !== null)) && (
+                      {((face.liveness.live_score !== undefined && face.liveness.live_score !== null) ||
+                        (face.liveness.spoof_score !== undefined && face.liveness.spoof_score !== null)) && (
                         <span className="font-mono text-xs">
-                          {face.antispoofing.status === 'real' && face.antispoofing.live_score !== null
-                            ? `${((face.antispoofing.live_score || 0) * 100).toFixed(0)}%`
-                            : face.antispoofing.spoof_score !== null
-                            ? `${((face.antispoofing.spoof_score || 0) * 100).toFixed(0)}%`
+                          {face.liveness.status === 'real' && face.liveness.live_score !== null
+                            ? `${((face.liveness.live_score || 0) * 100).toFixed(0)}%`
+                            : face.liveness.spoof_score !== null
+                            ? `${((face.liveness.spoof_score || 0) * 100).toFixed(0)}%`
                             : ''}
                         </span>
                       )}
