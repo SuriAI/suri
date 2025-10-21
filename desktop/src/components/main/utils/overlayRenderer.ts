@@ -12,7 +12,7 @@ export const getFaceColor = (
 
   if (isRecognized) return "#00ff41"; // Green for recognized faces
 
-  // All unknown/unrecognized faces should be red, regardless of antispoofing status
+  // All unknown/unrecognized faces should be red, regardless of liveness status
   return "#ff0000"; // Red for all unknown faces
 };
 
@@ -191,7 +191,7 @@ export const drawOverlays = ({
   if (!isFinite(scaleX) || !isFinite(scaleY) || scaleX <= 0 || scaleY <= 0) return;
 
   currentDetections.faces.forEach((face) => {
-    const { bbox, antispoofing, landmarks_5 } = face;
+    const { bbox, liveness, landmarks_5 } = face;
 
     if (!bbox || !isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
 
@@ -223,10 +223,10 @@ export const drawOverlays = ({
     if (isRecognized && recognitionResult && quickSettings.showRecognitionNames) {
       label = recognitionResult.name || recognitionResult.person_id || "Unknown";
       shouldShowLabel = true;
-    } else if (antispoofing?.status === 'fake' && quickSettings.showAntiSpoofStatus) {
+    } else if (liveness?.status === 'fake' && quickSettings.showAntiSpoofStatus) {
       label = "SPOOF";
       shouldShowLabel = true;
-    } else if (antispoofing?.status === 'uncertain' && quickSettings.showAntiSpoofStatus) {
+    } else if (liveness?.status === 'uncertain' && quickSettings.showAntiSpoofStatus) {
       label = "UNCERTAIN";
       shouldShowLabel = true;
     }

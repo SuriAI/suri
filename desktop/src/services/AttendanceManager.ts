@@ -335,16 +335,16 @@ export class AttendanceManager {
     personId: string, 
     confidence: number, 
     location?: string,
-    antispoofingStatus?: string,
-    antispoofingConfidence?: number
+    livenessStatus?: string,
+    livenessConfidence?: number
   ): Promise<AttendanceEvent | null> {
     try {
       const eventData = {
         person_id: personId,
         confidence,
         location,
-        antispoofing_status: antispoofingStatus,
-        antispoofing_confidence: antispoofingConfidence
+        liveness_status: livenessStatus,
+        liveness_confidence: livenessConfidence
       };
 
       const event = await this.httpClient.post<AttendanceEvent>(API_ENDPOINTS.events, eventData);

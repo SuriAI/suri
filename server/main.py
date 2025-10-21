@@ -199,7 +199,7 @@ async def shutdown_event():
     except Exception as e:
         logger.error(f"❌ Error during shutdown cleanup: {e}")
 
-# Helper function to eliminate code duplication
+
 async def process_liveness_detection(faces: List[Dict], image: np.ndarray, enable: bool) -> List[Dict]:
     """Helper to process liveness detection across all endpoints"""
     if not (enable and faces and liveness_detector):
@@ -563,11 +563,15 @@ async def recognize_face(request: FaceRecognitionRequest):
                         error=f"Recognition blocked: face status {status}"
                     )
         
-        # Use face detector landmarks for recognition (FAST!)
+        # Use landmarks from frontend (YuNet detection)
+        landmarks_5 = request.landmarks_5
+        if landmarks_5 is None:
+            raise HTTPException(status_code=400, detail="Landmarks required from frontend YuNet detection")
+        
         result = await face_recognizer.recognize_face_async(
             image, 
             request.bbox,
-            request.landmarks_5  # Pass face detector landmarks if available
+            landmarks_5
         )
         
         processing_time = time.time() - start_time
@@ -649,11 +653,16 @@ async def register_person(request: FaceRegistrationRequest):
                         error=f"Registration blocked: face status {status}"
                     )
         
+        # Use landmarks from frontend (YuNet detection)
+        landmarks_5 = request.landmarks_5
+        if landmarks_5 is None:
+            raise HTTPException(status_code=400, detail="Landmarks required from frontend YuNet detection")
+        
         result = await face_recognizer.register_person_async(
             request.person_id, 
             image, 
             request.bbox,
-            request.landmarks_5  # Pass face detector landmarks if available
+            landmarks_5
         )
         
         processing_time = time.time() - start_time

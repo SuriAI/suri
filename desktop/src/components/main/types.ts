@@ -14,7 +14,7 @@ export interface DetectionResult {
     confidence: number;
     track_id?: number;
     landmarks_5?: number[][]; // YuNet 5-point landmarks [[x,y], [x,y], ...]
-    antispoofing?: {
+    liveness?: {
       is_real: boolean | null;
       confidence: number;
       live_score?: number;
@@ -33,7 +33,7 @@ export interface WebSocketFaceData {
   confidence?: number;
   track_id?: number;
   landmarks_5?: number[][]; // YuNet 5-point landmarks [[x,y], [x,y], ...]
-  antispoofing?: {
+  liveness?: {
     is_real?: boolean | null;
     confidence?: number;
     live_score?: number;
@@ -85,7 +85,7 @@ export interface TrackedFace {
   occlusionCount: number;
   angleConsistency: number;
   cooldownRemaining?: number;
-  antispoofingStatus?: 'real' | 'fake' | 'uncertain' | 'error';
+  livenessStatus?: 'real' | 'fake' | 'uncertain' | 'error';
 }
 
 export interface CooldownInfo {
