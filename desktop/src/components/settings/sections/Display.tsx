@@ -8,6 +8,11 @@ interface DisplayProps {
 export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
   const settingItems = [
     { 
+      key: 'cameraMirrored' as keyof QuickSettings, 
+      label: 'Camera Mirroring',
+      description: 'Mirror camera display like a mirror (default: on)'
+    },
+    { 
       key: 'showFPS' as keyof QuickSettings, 
       label: 'FPS Counter',
       description: 'Frame rate indicator'

@@ -39,6 +39,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const [internalQuickSettings, setInternalQuickSettings] = useState<QuickSettings>({
+    cameraMirrored: true,
     showFPS: true,
     showPreprocessing: false,
     showBoundingBoxes: true,

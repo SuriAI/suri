@@ -27,7 +27,7 @@ export function VideoCanvas({
     <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg glass-card">
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-contain"
+        className={`absolute inset-0 w-full h-full object-contain ${quickSettings.cameraMirrored ? 'scale-x-[-1]' : ''}`}
         playsInline
         muted
       />

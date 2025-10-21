@@ -8,6 +8,7 @@ export interface QuickSettings {
   showAntiSpoofStatus: boolean;
   showRecognitionNames: boolean;
   showDebugInfo: boolean;
+  cameraMirrored: boolean;
 }
 
 export interface AttendanceSettings {

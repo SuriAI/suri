@@ -37,19 +37,24 @@ export const drawLandmarks = (
   offsetX: number, 
   offsetY: number,
   color: string,
-  bbox?: { x: number; y: number; width: number; height: number }
+  bbox?: { x: number; y: number; width: number; height: number },
+  displayWidth?: number
 ) => {
   
   landmarks.forEach((point) => {
     if (point && point.length >= 2) {
-      const x = point[0] * scaleX + offsetX;
+      // Mirror X coordinate to match mirrored video display
+      const x = displayWidth ? displayWidth - (point[0] * scaleX + offsetX) : point[0] * scaleX + offsetX;
       const y = point[1] * scaleY + offsetY;
       
       if (!isFinite(x) || !isFinite(y)) return;
       
       // Sanity check: skip obviously wrong landmarks
       if (bbox) {
-        const bboxX = bbox.x * scaleX + offsetX;
+        // Calculate mirrored bbox coordinates if display is mirrored
+        const bboxX = displayWidth 
+          ? displayWidth - (bbox.x * scaleX + offsetX) - (bbox.width * scaleX)
+          : bbox.x * scaleX + offsetX;
         const bboxY = bbox.y * scaleY + offsetY;
         const bboxW = bbox.width * scaleX;
         const bboxH = bbox.height * scaleY;
@@ -195,9 +200,14 @@ export const drawOverlays = ({
 
     if (!bbox || !isFinite(bbox.x) || !isFinite(bbox.y) || !isFinite(bbox.width) || !isFinite(bbox.height)) return;
 
-    const x1 = bbox.x * scaleX + offsetX;
+    // Mirror X coordinates only if camera mirroring is enabled
+    const x1 = quickSettings.cameraMirrored 
+      ? displayWidth - (bbox.x * scaleX + offsetX) - (bbox.width * scaleX)
+      : bbox.x * scaleX + offsetX;
     const y1 = bbox.y * scaleY + offsetY;
-    const x2 = (bbox.x + bbox.width) * scaleX + offsetX;
+    const x2 = quickSettings.cameraMirrored 
+      ? displayWidth - (bbox.x * scaleX + offsetX)
+      : (bbox.x + bbox.width) * scaleX + offsetX;
     const y2 = (bbox.y + bbox.height) * scaleY + offsetY;
 
     if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) return;
@@ -213,7 +223,7 @@ export const drawOverlays = ({
 
     // Draw YuNet 5-point landmarks if available and enabled
     if (quickSettings.showLandmarks && landmarks_5 && Array.isArray(landmarks_5) && landmarks_5.length === 5) {
-      drawLandmarks(ctx, landmarks_5, scaleX, scaleY, offsetX, offsetY, color, bbox);
+      drawLandmarks(ctx, landmarks_5, scaleX, scaleY, offsetX, offsetY, color, bbox, quickSettings.cameraMirrored ? displayWidth : undefined);
     }
 
     const isRecognized = recognitionEnabled && recognitionResult?.person_id;
