@@ -413,7 +413,7 @@ export function AssistedCameraRegistration({ group, members, onRefresh, onClose 
                 </div>
 
                 <div className="relative overflow-hidden rounded-lg border border-white/10 bg-black aspect-video">
-                  <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+                  <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" playsInline muted />
                   {!cameraReady && !cameraError && (
                     <div className="absolute inset-0 flex items-center justify-center text-white/60 text-sm">
                       Initializing camera...

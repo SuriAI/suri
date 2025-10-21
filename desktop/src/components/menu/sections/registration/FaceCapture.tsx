@@ -572,7 +572,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                       </div>
                     </div>
                     <div className="relative overflow-hidden rounded-xl border border-white/20 bg-black aspect-video">
-                      <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+                      <video ref={videoRef} className="w-full h-full object-cover scale-x-[-1]" playsInline muted />
                       {!cameraReady && !cameraError && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="flex flex-col items-center gap-2">
