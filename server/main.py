@@ -242,44 +242,29 @@ async def process_liveness_detection(faces: List[Dict], image: np.ndarray, enabl
 
 async def process_face_tracking(faces: List[Dict], image: np.ndarray) -> List[Dict]:
     """
-    🚀 OPTIMIZED: Process face tracking with Deep SORT
-    - Extracts embeddings only every 5th frame (PERFORMANCE BOOST)
-    - Uses motion-only tracking on other frames (FAST!)
-    - Maintains accuracy while achieving 5x speed improvement
+    Process face tracking with Deep SORT
+    - Extracts embeddings for all frames for consistent tracking
+    - Frontend controls frame rate, so no need for backend frame skipping
     """
     if not (faces and face_tracker and face_recognizer):
         return faces
     
     try:
-        # 🚀 PERFORMANCE: Track frame count for selective embedding extraction
-        if not hasattr(process_face_tracking, 'frame_counter'):
-            process_face_tracking.frame_counter = 0
-        
-        process_face_tracking.frame_counter += 1
-        
         # Extract embeddings for all faces (batch processing for efficiency)
         loop = asyncio.get_event_loop()
-        
-        # Extract embeddings only every 5th frame for appearance matching
-        # Other frames use motion-only tracking (Kalman filter) which is MUCH faster
-        if process_face_tracking.frame_counter % 5 == 0:
-            # Full appearance + motion matching (slower but accurate)
-            embeddings = await loop.run_in_executor(
-                None,
-                face_recognizer.extract_embeddings_for_tracking,
-                image,
-                faces
-            )
-        else:
-            # Motion-only tracking (5x faster!)
-            embeddings = None
+        embeddings = await loop.run_in_executor(
+            None,
+            face_recognizer.extract_embeddings_for_tracking,
+            image,
+            faces
+        )
         
         # Update Deep SORT tracker with faces and embeddings
         tracked_faces = await loop.run_in_executor(
             None,
             face_tracker.update,
             faces,
-            embeddings if embeddings and len(embeddings) == len(faces) else None
+            embeddings
         )
         
         return tracked_faces
