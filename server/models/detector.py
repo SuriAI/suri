@@ -192,11 +192,6 @@ class FaceDetector:
 
     def set_min_face_size(self, min_size: int):
         """Set minimum face size for liveness detection compatibility"""
-        if min_size < 32:
-            logger.warning(f"Very small minimum face size ({min_size}px) may impact liveness detection accuracy")
-        elif min_size > 200:
-            logger.warning(f"Large minimum face size ({min_size}px) may reject too many valid faces")
-        
         self.min_face_size = min_size
         # Minimum face size updated for liveness detection compatibility
 
