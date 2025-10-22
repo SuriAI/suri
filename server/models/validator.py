@@ -125,17 +125,28 @@ class LivenessValidator:
         
         xc, yc = x + w/2, y + h/2
         x, y = int(xc - l*bbox_inc/2), int(yc - l*bbox_inc/2)
-        x1 = 0 if x < 0 else x 
-        y1 = 0 if y < 0 else y
-        x2 = real_w if x + l*bbox_inc > real_w else x + int(l*bbox_inc)
-        y2 = real_h if y + l*bbox_inc > real_h else y + int(l*bbox_inc)
         
-        img = img[y1:y2, x1:x2, :]
-        img = cv2.copyMakeBorder(img, 
-                                 y1-y, int(l*bbox_inc-y2+y), 
-                                 x1-x, int(l*bbox_inc)-x2+x, 
-                                 cv2.BORDER_CONSTANT, value=[0, 0, 0])
-        return img
+        # Clamp to image boundaries to minimize padding
+        x1 = max(0, x)
+        y1 = max(0, y)
+        x2 = min(real_w, x + int(l*bbox_inc))
+        y2 = min(real_h, y + int(l*bbox_inc))
+        
+        # Crop the actual image region (no padding needed if within bounds)
+        crop = img[y1:y2, x1:x2, :]
+        
+        # Only add padding if the expanded bbox goes outside image boundaries
+        if x < 0 or y < 0 or x + int(l*bbox_inc) > real_w or y + int(l*bbox_inc) > real_h:
+            # Calculate padding needed
+            top = max(0, y1 - y)
+            bottom = max(0, y + int(l*bbox_inc) - y2)
+            left = max(0, x1 - x)
+            right = max(0, x + int(l*bbox_inc) - x2)
+            
+            # Add minimal padding with edge replication (better than black)
+            crop = cv2.copyMakeBorder(crop, top, bottom, left, right, cv2.BORDER_REPLICATE)
+        
+        return crop
 
     def predict(self, imgs: List[np.ndarray]) -> List[Dict]:
         """
