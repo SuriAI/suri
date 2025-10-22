@@ -302,11 +302,11 @@ class DeepSort:
     
     def __init__(
         self,
-        max_age: int = 30,
-        n_init: int = 3,
-        max_iou_distance: float = 0.7,
-        max_cosine_distance: float = 0.3,
-        nn_budget: int = 100,
+        max_age: int,
+        n_init: int,
+        max_iou_distance: float,
+        max_cosine_distance: float,
+        nn_budget: int,
         matching_weights: Dict[str, float] = None
     ):
         """
@@ -657,11 +657,11 @@ class FaceTracker:
     
     def __init__(
         self,
-        max_age: int = 30,
-        n_init: int = 3,
-        max_iou_distance: float = 0.7,
-        max_cosine_distance: float = 0.3,
-        nn_budget: int = 100,
+        max_age: int,
+        n_init: int,
+        max_iou_distance: float,
+        max_cosine_distance: float,
+        nn_budget: int,
         matching_weights: Dict[str, float] = None
     ):
         """

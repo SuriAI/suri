@@ -132,7 +132,7 @@ async def startup_event():
             conf_threshold=FACE_DETECTOR_CONFIG["score_threshold"],
             nms_threshold=FACE_DETECTOR_CONFIG["nms_threshold"],
             top_k=FACE_DETECTOR_CONFIG["top_k"],
-            min_face_size=FACE_DETECTOR_CONFIG.get("min_face_size", 80)
+            min_face_size=FACE_DETECTOR_CONFIG["min_face_size"]
         )
         
         liveness_detector = LivenessValidator(
@@ -149,18 +149,18 @@ async def startup_event():
             similarity_threshold=FACE_RECOGNIZER_CONFIG["similarity_threshold"],
             providers=FACE_RECOGNIZER_CONFIG["providers"],
             database_path=str(FACE_RECOGNIZER_CONFIG["database_path"]),
-            session_options=FACE_RECOGNIZER_CONFIG.get("session_options")
+            session_options=FACE_RECOGNIZER_CONFIG["session_options"]
         )
         
         # Initialize face tracker (appearance + motion features)
         # Initializing face tracker with appearance features
-        matching_weights = FACE_TRACKER_CONFIG.get("matching_weights", {"appearance": 0.7, "motion": 0.3})
+        matching_weights = FACE_TRACKER_CONFIG["matching_weights"]
         face_tracker = FaceTracker(
-            max_age=FACE_TRACKER_CONFIG.get("max_age", 30),
-            n_init=FACE_TRACKER_CONFIG.get("n_init", 3),
-            max_iou_distance=FACE_TRACKER_CONFIG.get("max_iou_distance", 0.7),
-            max_cosine_distance=FACE_TRACKER_CONFIG.get("max_cosine_distance", 0.3),
-            nn_budget=FACE_TRACKER_CONFIG.get("nn_budget", 100),
+            max_age=FACE_TRACKER_CONFIG["max_age"],
+            n_init=FACE_TRACKER_CONFIG["n_init"],
+            max_iou_distance=FACE_TRACKER_CONFIG["max_iou_distance"],
+            max_cosine_distance=FACE_TRACKER_CONFIG["max_cosine_distance"],
+            nn_budget=FACE_TRACKER_CONFIG["nn_budget"],
             matching_weights=matching_weights
         )
         # Deep SORT tracker initialized successfully
