@@ -314,7 +314,6 @@ IMAGE_PROCESSING_CONFIG = {
 # Frame Processing Optimizations
 FRAME_PROCESSING_CONFIG = {
     "target_fps": 30,
-    "skip_frame_threshold": 2,  # Process every 2nd frame for 15 FPS effective
     "enable_frame_buffering": True,
     "buffer_size": 3,
     "enable_async_processing": True,
