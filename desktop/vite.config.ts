@@ -14,12 +14,20 @@ export default defineConfig({
     target: 'esnext',  // Enable modern features
     minify: 'terser',   // Better minification
     sourcemap: false,   // Disable sourcemaps for smaller bundles
+    assetsInlineLimit: 0, // Don't inline fonts
     rollupOptions: {
       output: {
         manualChunks: {
           // Split large dependencies into separate chunks for better caching
           vendor: ['react', 'react-dom'],
           ui: ['@fortawesome/fontawesome-free']
+        },
+        assetFileNames: (assetInfo) => {
+          // Keep fonts in their original structure
+          if (assetInfo.name && assetInfo.name.endsWith('.ttf')) {
+            return 'fonts/inter/[name][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
         }
       }
     }
