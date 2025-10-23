@@ -17,7 +17,7 @@ export function ControlBar({
 }: ControlBarProps) {
   return (
     <div>
-      <div className="rounded-lg p-6 pt-5 flex items-center justify-between min-h-[4rem]">
+      <div className="rounded-lg p-5 pt-4.5 flex items-center justify-between min-h-[4rem]">
         <div className="flex items-center space-x-6">
           {/* Camera Selection */}
           {cameraDevices.length > 0 && (

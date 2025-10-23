@@ -1829,7 +1829,7 @@ export default function Main() {
   // Removed delayed recognition useEffect for real-time performance
 
   return (
-    <div className="pt-11 pb-7 h-screen bg-black text-white flex flex-col overflow-hidden">
+    <div className="pt-9 pb-5 h-screen bg-black text-white flex flex-col overflow-hidden">
 
       {/* Error Display */}
       {error && (
