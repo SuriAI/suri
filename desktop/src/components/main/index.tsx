@@ -7,8 +7,7 @@ import type {
   FaceRecognitionResponse,
   AttendanceGroup,
   AttendanceMember,
-  AttendanceRecord,
-  GroupType
+  AttendanceRecord
 } from '../../types/recognition';
 import { drawOverlays } from './utils/overlayRenderer';
 import type { DetectionResult, DashboardTab, WebSocketFaceData, WebSocketDetectionResponse, WebSocketConnectionMessage, WebSocketErrorMessage, CooldownInfo, TrackedFace } from './types';
@@ -197,7 +196,6 @@ export default function Main() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<AttendanceGroup | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupType, setNewGroupType] = useState<GroupType>('general');
   
   // Attendance cooldown tracking
   const [attendanceCooldowns, setAttendanceCooldowns] = useState<Map<string, number>>(new Map());
@@ -1580,9 +1578,8 @@ export default function Main() {
     if (!newGroupName.trim()) return;
     
     try {
-      const group = await attendanceManager.createGroup(newGroupName.trim(), newGroupType);
+      const group = await attendanceManager.createGroup(newGroupName.trim());
       setNewGroupName('');
-      setNewGroupType('general');
       setShowGroupManagement(false);
       await loadAttendanceData();
       
@@ -1596,7 +1593,7 @@ export default function Main() {
       setError('Failed to create group');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newGroupName, newGroupType, currentGroup, loadAttendanceData]);
+  }, [newGroupName, currentGroup, loadAttendanceData]);
 
   const handleSelectGroup = useCallback(async (group: AttendanceGroup) => {
     setCurrentGroup(group);
@@ -1658,10 +1655,6 @@ export default function Main() {
     setShowDeleteConfirmation(false);
     setGroupToDelete(null);
   }, []);
-
-
-
-  // getGroupTypeIcon moved to utils/overlayRenderer.ts
 
   // Initialize
   useEffect(() => {
@@ -1895,8 +1888,6 @@ export default function Main() {
         currentGroup={currentGroup}
         newGroupName={newGroupName}
         setNewGroupName={setNewGroupName}
-        newGroupType={newGroupType}
-        setNewGroupType={setNewGroupType}
         handleCreateGroup={handleCreateGroup}
         handleSelectGroup={handleSelectGroup}
         handleDeleteGroup={handleDeleteGroup}

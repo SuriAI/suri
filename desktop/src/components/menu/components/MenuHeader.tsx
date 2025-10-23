@@ -1,5 +1,4 @@
 import type { AttendanceGroup } from '../../../types/recognition';
-import type { GroupType } from '../../../types/recognition';
 
 interface MenuHeaderProps {
   selectedGroup: AttendanceGroup | null;
@@ -9,20 +8,6 @@ interface MenuHeaderProps {
   onCreateGroup: () => void;
   onBack: () => void;
 }
-
-const getGroupTypeIcon = (type: GroupType): string => {
-  switch (type) {
-    case 'employee':
-      return '👔';
-    case 'student':
-      return '🎓';
-    case 'visitor':
-      return '👤';
-    case 'general':
-    default:
-      return '';
-  }
-};
 
 export function MenuHeader({
   selectedGroup,
@@ -53,7 +38,7 @@ export function MenuHeader({
               </option>
               {groups.map((group) => (
                 <option key={group.id} value={group.id} className="bg-black text-white">
-                  {getGroupTypeIcon(group.type)} {group.name}
+                  {group.name}
                 </option>
               ))}
             </select>

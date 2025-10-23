@@ -6,8 +6,7 @@ import type {
   AttendanceStats,
   AttendanceReport,
   AttendanceSettings,
-  AttendanceEvent,
-  GroupType
+  AttendanceEvent
 } from '../types/recognition.js';
 
 // API Configuration
@@ -95,7 +94,6 @@ export class AttendanceManager {
 
   private getDefaultSettings(): AttendanceSettings {
     return {
-      default_group_type: 'general',
       auto_checkout_enabled: true,
       auto_checkout_hours: 8,
       late_threshold_minutes: 15,
@@ -149,11 +147,10 @@ export class AttendanceManager {
   }
 
   // Group Management
-  async createGroup(name: string, type: GroupType, description?: string): Promise<AttendanceGroup> {
+  async createGroup(name: string, description?: string): Promise<AttendanceGroup> {
     try {
       const groupData = {
         name,
-        type,
         description,
         settings: {
           auto_checkout_hours: this.settings.auto_checkout_hours,
@@ -224,8 +221,6 @@ export class AttendanceManager {
   async addMember(groupId: string, name: string, options?: {
     personId?: string;
     role?: string;
-    employee_id?: string;
-    student_id?: string;
     email?: string;
   }): Promise<AttendanceMember> {
     try {
@@ -233,16 +228,12 @@ export class AttendanceManager {
         group_id: string;
         name: string;
         role?: string;
-        employee_id?: string;
-        student_id?: string;
         email?: string;
         person_id?: string;
       } = {
         group_id: groupId,
         name,
         role: options?.role,
-        employee_id: options?.employee_id,
-        student_id: options?.student_id,
         email: options?.email
       };
 
@@ -283,8 +274,6 @@ export class AttendanceManager {
         person_id: string;
         name: string;
         role?: string;
-        employee_id?: string;
-        student_id?: string;
         email?: string;
         has_face_data: boolean;
         joined_at: string;
@@ -297,8 +286,6 @@ export class AttendanceManager {
         group_id: member.group_id,
         name: member.name,
         role: member.role,
-        employee_id: member.employee_id,
-        student_id: member.student_id,
         email: member.email,
         joined_at: new Date(member.joined_at),
         is_active: member.is_active,
@@ -598,8 +585,6 @@ export class AttendanceManager {
     person_id: string;
     name: string;
     role?: string;
-    employee_id?: string;
-    student_id?: string;
     email?: string;
     has_face_data: boolean;
     joined_at: Date;
@@ -609,8 +594,6 @@ export class AttendanceManager {
         person_id: string;
         name: string;
         role?: string;
-        employee_id?: string;
-        student_id?: string;
         email?: string;
         has_face_data: boolean;
         joined_at: string;

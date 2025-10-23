@@ -40,7 +40,6 @@ class AttendanceDatabaseManager:
                     CREATE TABLE IF NOT EXISTS attendance_groups (
                         id TEXT PRIMARY KEY,
                         name TEXT NOT NULL,
-                        type TEXT NOT NULL,
                         description TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         is_active BOOLEAN DEFAULT 1,
@@ -58,8 +57,6 @@ class AttendanceDatabaseManager:
                         group_id TEXT NOT NULL,
                         name TEXT NOT NULL,
                         role TEXT,
-                        employee_id TEXT,
-                        student_id TEXT,
                         email TEXT,
                         joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         is_active BOOLEAN DEFAULT 1,
@@ -105,7 +102,6 @@ class AttendanceDatabaseManager:
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS attendance_settings (
                         id INTEGER PRIMARY KEY CHECK (id = 1),
-                        default_group_type TEXT DEFAULT 'general',
                         auto_checkout_enabled BOOLEAN DEFAULT 1,
                         auto_checkout_hours INTEGER DEFAULT 8,
                         late_threshold_minutes INTEGER DEFAULT 15,
@@ -180,13 +176,12 @@ class AttendanceDatabaseManager:
                     
                     cursor.execute("""
                         INSERT INTO attendance_groups 
-                        (id, name, type, description, auto_checkout_hours, 
+                        (id, name, description, auto_checkout_hours, 
                          late_threshold_minutes, require_checkout)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?)
                     """, (
                         group_data['id'],
                         group_data['name'],
-                        group_data['type'],
                         group_data.get('description'),
                         group_data.get('settings', {}).get('auto_checkout_hours'),
                         group_data.get('settings', {}).get('late_threshold_minutes'),
@@ -318,15 +313,13 @@ class AttendanceDatabaseManager:
                     
                     cursor.execute("""
                         INSERT OR REPLACE INTO attendance_members 
-                        (person_id, group_id, name, role, employee_id, student_id, email)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        (person_id, group_id, name, role, email)
+                        VALUES (?, ?, ?, ?, ?)
                     """, (
                         member_data['person_id'],
                         member_data['group_id'],
                         member_data['name'],
                         member_data.get('role'),
-                        member_data.get('employee_id'),
-                        member_data.get('student_id'),
                         member_data.get('email')
                     ))
                     
@@ -596,7 +589,6 @@ class AttendanceDatabaseManager:
                 
                 # Return default settings if none found
                 return {
-                    'default_group_type': 'general',
                     'auto_checkout_enabled': True,
                     'auto_checkout_hours': 8,
                     'late_threshold_minutes': 15,
