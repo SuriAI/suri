@@ -5,7 +5,7 @@
     ],
     "appId": "com.suri.app",
     "productName": "Suri",
-    "icon": "./picture.png",
+    "icon": "./suri_icon.png",
     "beforePack": "scripts/before-pack.cjs",
     "win": {
         "target": ["portable", "msi"],
