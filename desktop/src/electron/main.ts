@@ -339,6 +339,8 @@ function createWindow(): void {
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
             webgl: true,
+            // Disable zooming
+            zoomFactor: 1.0,
         },
         titleBarStyle: 'hidden',
         transparent: true
@@ -408,6 +410,10 @@ function createWindow(): void {
 
     // Set rounded window shape after window is ready
     mainWindow.once('ready-to-show', () => {
+        // Disable zooming
+        mainWindow.webContents.setZoomLevel(0)
+        mainWindow.webContents.setZoomFactor(1.0)
+        
         mainWindow.show()
         if (process.platform === 'win32') {
             try {
@@ -444,6 +450,18 @@ function createWindow(): void {
     mainWindow.on('resize', () => {
         if (!mainWindow.isMaximized()) {
             updateWindowShape()
+        }
+    })
+
+    // Disable zooming via keyboard shortcuts
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        // Disable Ctrl+Plus, Ctrl+Minus, Ctrl+0 (zoom shortcuts)
+        if (input.control && (input.key === '=' || input.key === '-' || input.key === '0')) {
+            event.preventDefault()
+        }
+        // Disable Ctrl+Mouse wheel zoom
+        if (input.control && input.type === 'mouseWheel') {
+            event.preventDefault()
         }
     })
 
