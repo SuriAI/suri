@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import type { AttendanceGroup, GroupType } from '../types';
-import { getGroupTypeIcon } from '../utils/overlayRenderer';
+import type { AttendanceGroup } from '../types';
 
 interface GroupManagementProps {
   attendanceGroups: AttendanceGroup[];
@@ -8,7 +7,7 @@ interface GroupManagementProps {
   handleSelectGroup: (group: AttendanceGroup) => void;
   handleDeleteGroup: (group: AttendanceGroup) => void;
   onClose: () => void;
-  onCreateGroup: (name: string, type: GroupType) => Promise<void>;
+  onCreateGroup: (name: string) => Promise<void>;
 }
 
 export function GroupManagement({
@@ -20,13 +19,11 @@ export function GroupManagement({
   onCreateGroup,
 }: GroupManagementProps) {
   const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupType, setNewGroupType] = useState<GroupType>('general');
 
   const handleCreate = async () => {
     if (!newGroupName.trim()) return;
-    await onCreateGroup(newGroupName, newGroupType);
+    await onCreateGroup(newGroupName);
     setNewGroupName('');
-    setNewGroupType('general');
   };
 
   return (
@@ -48,19 +45,6 @@ export function GroupManagement({
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Group Type:</label>
-              <select
-                value={newGroupType}
-                onChange={(e) => setNewGroupType(e.target.value as GroupType)}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:border-blue-500"
-              >
-                <option value="general">General</option>
-                <option value="employee">👔 Employee</option>
-                <option value="student">🎓 Student</option>
-                <option value="visitor">👤 Visitor</option>
-              </select>
-            </div>
             <button
               onClick={handleCreate}
               disabled={!newGroupName.trim()}
@@ -79,10 +63,12 @@ export function GroupManagement({
               {attendanceGroups.map(group => (
                 <div key={group.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
                   <div>
-                    <span className="font-medium">{getGroupTypeIcon(group.type)} {group.name}</span>
-                    <div className="text-sm text-gray-400">
-                      {group.type} • Members
-                    </div>
+                    <span className="font-medium">{group.name}</span>
+                    {group.description && (
+                      <div className="text-sm text-gray-400">
+                        {group.description}
+                      </div>
+                    )}
                   </div>
                   <div className="flex space-x-2">
                     <button

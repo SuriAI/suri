@@ -120,13 +120,11 @@ export interface DetectionWithRecognitionResult {
  * Attendance System Types and Interfaces
  */
 
-export type GroupType = 'employee' | 'student' | 'visitor' | 'general';
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'checked_out';
 
 export interface AttendanceGroup {
   id: string;
   name: string;
-  type: GroupType;
   description?: string;
   created_at: Date;
   is_active: boolean;
@@ -144,8 +142,6 @@ export interface AttendanceMember {
   group_id: string;
   name: string;
   role?: string;
-  employee_id?: string;
-  student_id?: string;
   email?: string;
   joined_at: Date;
   is_active: boolean;
@@ -212,7 +208,6 @@ export interface AttendanceReport {
 }
 
 export interface AttendanceSettings {
-  default_group_type: GroupType;
   auto_checkout_enabled: boolean;
   auto_checkout_hours: number;
   late_threshold_minutes: number;

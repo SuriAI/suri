@@ -26,7 +26,7 @@ from models.attendance_models import (
     SuccessResponse, ErrorResponse, DatabaseStatsResponse,
     ExportDataResponse, ImportDataRequest, CleanupRequest,
     # Enums
-    GroupType, AttendanceStatus
+    AttendanceStatus
 )
 from utils.attendance_database import AttendanceDatabaseManager
 from utils.websocket_manager import manager as ws_manager
@@ -57,7 +57,7 @@ def generate_id() -> str:
     return ulid.ulid()
 
 
-def generate_person_id(name: str, group_type: str, db: AttendanceDatabaseManager, group_id: str = None) -> str:
+def generate_person_id(name: str, db: AttendanceDatabaseManager, group_id: str = None) -> str:
     # Generate ULID - automatically handles uniqueness and security
     # ULID format: 01ARZ3NDEKTSV4RRFFQ69G5FAV (26 characters)
     # First 10 chars: timestamp (sortable)
@@ -95,7 +95,6 @@ async def create_group(
         db_group_data = {
             "id": group_id,
             "name": group_data.name,
-            "type": group_data.type.value,
             "description": group_data.description,
             "settings": group_data.settings.dict() if group_data.settings else {}
         }
@@ -169,9 +168,7 @@ async def update_group(
         # Prepare updates
         update_data = {}
         for field, value in updates.dict(exclude_unset=True).items():
-            if field == "type" and value:
-                update_data[field] = value.value
-            elif field == "settings" and value:
+            if field == "settings" and value:
                 update_data[field] = value
             elif value is not None:
                 update_data[field] = value
@@ -234,7 +231,6 @@ async def add_member(
         if not member_data.person_id:
             generated_person_id = generate_person_id(
                 name=member_data.name,
-                group_type=group['type'],
                 db=db,
                 group_id=member_data.group_id
             )
@@ -728,9 +724,7 @@ async def update_settings(
         # Prepare updates
         update_data = {}
         for field, value in updates.dict(exclude_unset=True).items():
-            if field == "default_group_type" and value:
-                update_data[field] = value.value
-            elif value is not None:
+            if value is not None:
                 update_data[field] = value
         
         if not update_data:
@@ -851,8 +845,6 @@ async def get_group_persons(
                 "person_id": member["person_id"],
                 "name": member["name"],
                 "role": member.get("role"),
-                "employee_id": member.get("employee_id"),
-                "student_id": member.get("student_id"),
                 "email": member.get("email"),
                 "has_face_data": has_face_data,
                 "joined_at": member["joined_at"]

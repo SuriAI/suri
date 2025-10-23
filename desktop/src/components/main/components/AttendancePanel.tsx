@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import type { AttendanceGroup, AttendanceMember, AttendanceRecord } from '../types';
-import { getGroupTypeIcon } from '../utils/overlayRenderer';
 
 interface AttendancePanelProps {
   attendanceEnabled: boolean;
@@ -110,7 +109,7 @@ export function AttendancePanel({
 
               {attendanceGroups.map(group => (
                 <option key={group.id} value={group.id} className="bg-black text-white">
-                  {getGroupTypeIcon(group.type)} {group.name}
+                  {group.name}
                 </option>
               ))}
             </select>

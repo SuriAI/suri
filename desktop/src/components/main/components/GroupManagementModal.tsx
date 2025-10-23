@@ -1,6 +1,5 @@
-import type { AttendanceGroup, GroupType } from '../types';
+import type { AttendanceGroup } from '../types';
 import { FormInput } from '../../common/FormInput';
-import { getGroupTypeIcon } from '../utils/overlayRenderer';
 
 interface GroupManagementModalProps {
   showGroupManagement: boolean;
@@ -9,8 +8,6 @@ interface GroupManagementModalProps {
   currentGroup: AttendanceGroup | null;
   newGroupName: string;
   setNewGroupName: (name: string) => void;
-  newGroupType: GroupType;
-  setNewGroupType: (type: GroupType) => void;
   handleCreateGroup: () => void;
   handleSelectGroup: (group: AttendanceGroup) => void;
   handleDeleteGroup: (group: AttendanceGroup) => void;
@@ -23,8 +20,6 @@ export function GroupManagementModal({
   currentGroup,
   newGroupName,
   setNewGroupName,
-  newGroupType,
-  setNewGroupType,
   handleCreateGroup,
   handleSelectGroup,
   handleDeleteGroup,
@@ -50,20 +45,6 @@ export function GroupManagementModal({
                 focusColor="border-emerald-500/60"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-white/60">Group Type:</label>
-              <select
-                value={newGroupType}
-                onChange={(e) => setNewGroupType(e.target.value as GroupType)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500/60 text-white"
-                style={{ colorScheme: 'dark' }}
-              >
-                <option value="general" className="bg-black text-white">General</option>
-                <option value="employee" className="bg-black text-white">👔 Employee</option>
-                <option value="student" className="bg-black text-white">🎓 Student</option>
-                <option value="visitor" className="bg-black text-white">👤 Visitor</option>
-              </select>
-            </div>
             <button
               onClick={handleCreateGroup}
               disabled={!newGroupName.trim()}
@@ -82,10 +63,12 @@ export function GroupManagementModal({
               {attendanceGroups.map(group => (
                 <div key={group.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
                   <div>
-                    <span className="font-medium text-white">{getGroupTypeIcon(group.type)} {group.name}</span>
-                    <div className="text-sm text-white/60">
-                      {group.type} • Members
-                    </div>
+                    <span className="font-medium text-white">{group.name}</span>
+                    {group.description && (
+                      <div className="text-sm text-white/60">
+                        {group.description}
+                      </div>
+                    )}
                   </div>
                   <div className="flex space-x-2">
                     <button

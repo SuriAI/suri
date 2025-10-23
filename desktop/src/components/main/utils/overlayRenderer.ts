@@ -277,13 +277,3 @@ export const drawOverlays = ({
     ctx.shadowBlur = 0;
   });
 };
-
-export const getGroupTypeIcon = (type: string): string => {
-  switch (type) {
-    case 'employee': return '👔';
-    case 'student': return '🎓';
-    case 'visitor': return '👤';
-    case 'general': return '';
-    default: return '';
-  }
-};

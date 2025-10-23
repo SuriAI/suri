@@ -4,13 +4,6 @@ from pydantic import BaseModel, Field, validator
 from enum import Enum
 
 
-class GroupType(str, Enum):
-    EMPLOYEE = "employee"
-    STUDENT = "student"
-    VISITOR = "visitor"
-    GENERAL = "general"
-
-
 class AttendanceStatus(str, Enum):
     PRESENT = "present"
     ABSENT = "absent"
@@ -28,14 +21,12 @@ class GroupSettings(BaseModel):
 
 class AttendanceGroupCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    type: GroupType
     description: Optional[str] = Field(None, max_length=500)
     settings: Optional[GroupSettings] = None
 
 
 class AttendanceGroupUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    type: Optional[GroupType] = None
     description: Optional[str] = Field(None, max_length=500)
     settings: Optional[GroupSettings] = None
     is_active: Optional[bool] = None
@@ -44,7 +35,6 @@ class AttendanceGroupUpdate(BaseModel):
 class AttendanceGroupResponse(BaseModel):
     id: str
     name: str
-    type: GroupType
     description: Optional[str]
     created_at: datetime
     is_active: bool
@@ -57,8 +47,6 @@ class AttendanceMemberCreate(BaseModel):
     group_id: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1, max_length=100)
     role: Optional[str] = Field(None, max_length=100)
-    employee_id: Optional[str] = Field(None, max_length=50)
-    student_id: Optional[str] = Field(None, max_length=50)
     email: Optional[str] = Field(None, max_length=255)
 
 
@@ -66,8 +54,6 @@ class AttendanceMemberUpdate(BaseModel):
     group_id: Optional[str] = None
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     role: Optional[str] = Field(None, max_length=100)
-    employee_id: Optional[str] = Field(None, max_length=50)
-    student_id: Optional[str] = Field(None, max_length=50)
     email: Optional[str] = Field(None, max_length=255)
     is_active: Optional[bool] = None
 
@@ -77,8 +63,6 @@ class AttendanceMemberResponse(BaseModel):
     group_id: str
     name: str
     role: Optional[str]
-    employee_id: Optional[str]
-    student_id: Optional[str]
     email: Optional[str]
     joined_at: datetime
     is_active: bool
@@ -140,7 +124,6 @@ class AttendanceEventResponse(BaseModel):
 
 # Settings Models
 class AttendanceSettingsUpdate(BaseModel):
-    default_group_type: Optional[GroupType] = None
     auto_checkout_enabled: Optional[bool] = None
     auto_checkout_hours: Optional[int] = Field(None, ge=1, le=24)
     late_threshold_minutes: Optional[int] = Field(None, ge=0, le=120)
@@ -151,7 +134,6 @@ class AttendanceSettingsUpdate(BaseModel):
 
 
 class AttendanceSettingsResponse(BaseModel):
-    default_group_type: GroupType
     auto_checkout_enabled: bool
     auto_checkout_hours: int
     late_threshold_minutes: int

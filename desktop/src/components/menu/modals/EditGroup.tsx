@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager.js';
-import type { GroupType, AttendanceGroup } from '../../../types/recognition.js';
+import type { AttendanceGroup } from '../../../types/recognition.js';
 import { ErrorMessage } from '../../common/ErrorMessage';
 import { FormInput } from '../../common/FormInput';
 
@@ -12,7 +12,6 @@ interface EditGroupProps {
 
 export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
   const [name, setName] = useState(group.name);
-  const [type, setType] = useState<GroupType>(group.type);
   const [description, setDescription] = useState(group.description || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +25,6 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
     try {
       await attendanceManager.updateGroup(group.id, {
         name: name.trim(),
-        type,
         description: description.trim() || undefined
       });
       onSuccess();
@@ -58,21 +56,6 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
               placeholder="e.g. CS101 Section A, Engineering Team"
               focusColor="border-blue-500/60"
             />
-          </label>
-
-          <label className="text-sm">
-            <span className="text-white/60 block mb-2">Group type *</span>
-            <select
-              value={type}
-              onChange={event => setType(event.target.value as GroupType)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-500/60 text-white"
-              style={{ colorScheme: 'dark' }}
-            >
-              <option value="general" className="bg-black text-white">General</option>
-              <option value="student" className="bg-black text-white">🎓 Student</option>
-              <option value="employee" className="bg-black text-white">👔 Employee</option>
-              <option value="visitor" className="bg-black text-white">👤 Visitor</option>
-            </select>
           </label>
 
           <label className="text-sm">

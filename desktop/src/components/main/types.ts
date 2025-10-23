@@ -1,6 +1,6 @@
 // Shared types for Main component
 
-import type { AttendanceGroup, AttendanceMember, AttendanceRecord, GroupType } from '../../types/recognition';
+import type { AttendanceGroup, AttendanceMember, AttendanceRecord } from '../../types/recognition';
 import type { MenuSection } from '../menu';
 
 export interface DetectionResult {
@@ -93,5 +93,5 @@ export interface CooldownInfo {
 }
 
 // Re-export needed types
-export type { AttendanceGroup, AttendanceMember, AttendanceRecord, GroupType, MenuSection };
+export type { AttendanceGroup, AttendanceMember, AttendanceRecord, MenuSection };
 

@@ -1,7 +1,6 @@
 import { attendanceManager } from '../../../services/AttendanceManager.js';
 import type {
-  AttendanceGroup,
-  GroupType
+  AttendanceGroup
 } from '../../../types/recognition.js';
 
 interface GroupSettingsProps {
@@ -12,20 +11,6 @@ interface GroupSettingsProps {
   onExportData: () => void;
   onRefresh: () => void;
 }
-
-const getGroupTypeLabel = (type: GroupType): string => {
-  switch (type) {
-    case 'employee':
-      return 'Employee';
-    case 'student':
-      return 'Student';
-    case 'visitor':
-      return 'Visitor';
-    case 'general':
-    default:
-      return 'General';
-  }
-};
 
 const formatDate = (value: Date | string): string => {
   const date = value instanceof Date ? value : new Date(value);
@@ -74,7 +59,6 @@ export function GroupSettings({
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold">{group.name}</h3>
-            <p className="text-xs text-white/50">{getGroupTypeLabel(group.type)}</p>
           </div>
           <button
             onClick={onEdit}
