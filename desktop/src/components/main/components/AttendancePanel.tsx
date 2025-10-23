@@ -134,7 +134,7 @@ export function AttendancePanel({
       {recentAttendance.length > 0 && (
         <div className="px-4 pb-2 flex-shrink-0">
           {/* Search and Sort Controls - Side by Side */}
-          <div className="flex items-center gap-3 text-[10px]">
+          <div className="flex items-center gap-3 text-[8px]">
             {/* Search - Left Side */}
             <input
               type="text"
@@ -159,7 +159,7 @@ export function AttendancePanel({
                       setSortOrder('asc'); // A-Z
                     }
                   }}
-                  className="bg-white/[0.05] text-white text-[10px] border border-white/[0.1] rounded px-2 focus:border-blue-500 focus:outline-none"
+                  className="bg-white/[0.05] text-white text-[8px] border border-white/[0.1] rounded px-2 focus:border-blue-500 focus:outline-none"
                 >
                   <option value="time" className="bg-black text-white">Time (Newest)</option>
                   <option value="name" className="bg-black text-white">Name (A-Z)</option>

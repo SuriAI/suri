@@ -43,7 +43,7 @@ export default function WindowBar() {
   return (
     <div 
       className="z-60 absolute top-0 w-full h-auto bg-gradient-surface flex items-center justify-between select-none flex-shrink-0 border-b border-white/[0.08]"
-      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+      style={{ WebkitAppRegion: isMaximized ? 'no-drag' : 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center ml-3 space-x-2 flex-1">
         <div className="text-white text-sm font-medium">SURI <span className="text-white/70 text-xs">- AI Vision</span></div>
@@ -55,27 +55,27 @@ export default function WindowBar() {
       >
         <button
           onClick={handleMinimize}
-          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
+          className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
         >
-          <i className="fas fa-window-minimize text-[12px] pb-1.5"></i>
+          <i className="fas fa-window-minimize text-[10px] pb-1.5"></i>
         </button>
 
         <button
           onClick={handleMaximize}
-          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
+          className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
         >
             {isMaximized ? (
-              <i className="far fa-window-restore text-[13px]"></i>
+              <i className="far fa-window-restore text-[11px]"></i>
             ) : (
-              <i className="far fa-square text-[13px]"></i>
+              <i className="far fa-square text-[11px]"></i>
             )}
         </button>
 
         <button
           onClick={handleClose}
-          className="w-15 h-11 flex items-center justify-center text-white/40 hover:bg-red-500/90 hover:text-white bg-transparent transition-all duration-200 border-none p-0 rounded"
+          className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-red-500/90 hover:text-white bg-transparent transition-all duration-200 border-none p-0 rounded"
         >
-          <i className="fa fa-times text-[16px]"></i>
+          <i className="fa fa-times text-[14px]"></i>
         </button>
       </div>
     </div>
