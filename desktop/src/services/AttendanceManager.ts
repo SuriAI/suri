@@ -395,6 +395,10 @@ export class AttendanceManager {
         throw new Error('Group not found');
       }
 
+      // Calculate the total number of days in the selected range (inclusive)
+      const timeDiff = Math.abs(endDate.getTime() - startDate.getTime());
+      const totalDaysInRange = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end
+      
       // Get unique dates where attendance was actually taken (any member has a session)
       const uniqueSessionDates = new Set(sessions.map(s => s.date));
       const actualAttendanceDays = uniqueSessionDates.size;
@@ -403,16 +407,16 @@ export class AttendanceManager {
         const memberSessions = sessions.filter(s => s.person_id === member.person_id);
         
         const presentDays = memberSessions.filter(s => s.status !== 'absent').length;
-        const absentDays = actualAttendanceDays - presentDays;
+        const absentDays = totalDaysInRange - presentDays; // Use total days in range, not just days with attendance
         const lateDays = memberSessions.filter(s => s.is_late).length;
         const totalHours = memberSessions.reduce((sum, s) => sum + (s.total_hours || 0), 0);
         const averageHours = presentDays > 0 ? totalHours / presentDays : 0;
-        const attendanceRate = actualAttendanceDays > 0 ? (presentDays / actualAttendanceDays) * 100 : 0;
+        const attendanceRate = totalDaysInRange > 0 ? (presentDays / totalDaysInRange) * 100 : 0;
 
         return {
           person_id: member.person_id,
           name: member.name,
-          total_days: actualAttendanceDays,
+          total_days: totalDaysInRange,
           present_days: presentDays,
           absent_days: absentDays,
           late_days: lateDays,
@@ -437,7 +441,7 @@ export class AttendanceManager {
         date_range: { start: startDate, end: endDate },
         members: memberReports,
         summary: {
-          total_working_days: actualAttendanceDays,
+          total_working_days: totalDaysInRange, // Use the total days in the selected range
           average_attendance_rate: Math.round(averageAttendanceRate * 100) / 100,
           total_hours_logged: Math.round(totalHoursLogged * 100) / 100,
           most_punctual: mostPunctual,
@@ -491,7 +495,12 @@ export class AttendanceManager {
       if (filters?.end_date) params.end_date = filters.end_date;
 
       const sessions = await this.httpClient.get<AttendanceSession[]>(API_ENDPOINTS.sessions, params);
-      return sessions;
+      
+      // Convert check_in_time strings to Date objects
+      return sessions.map(session => ({
+        ...session,
+        check_in_time: session.check_in_time ? new Date(session.check_in_time) : undefined
+      }));
     } catch (error) {
       console.error('Error getting sessions:', error);
       return [];

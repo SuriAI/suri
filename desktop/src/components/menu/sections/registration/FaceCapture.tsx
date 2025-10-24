@@ -349,6 +349,10 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
         throw new Error('Missing processed frame. Please capture a face image first.');
       }
 
+      if (!Array.isArray(frame.bbox) || frame.bbox.length !== 4) {
+        throw new Error('Invalid bbox format - expected array [x, y, width, height]');
+      }
+
       const payload = toBase64Payload(frame.dataUrl);
       const result = await attendanceManager.registerFaceForGroupPerson(
         group.id,

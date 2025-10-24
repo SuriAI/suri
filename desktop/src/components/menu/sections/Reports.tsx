@@ -21,11 +21,12 @@ export function Reports({ group }: ReportsProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Advanced, offline-first editable reports (field picker, filters, grouping, saved views)
-  type ColumnKey = 'name' | 'person_id' | 'date' | 'status' | 'is_late' | 'late_minutes' | 'total_hours' | 'notes';
+  type ColumnKey = 'name' | 'person_id' | 'date' | 'check_in_time' | 'status' | 'is_late' | 'late_minutes' | 'total_hours' | 'notes';
   const allColumns: Array<{ key: ColumnKey; label: string; align?: 'left' | 'center' }> = [
     { key: 'name', label: 'Name', align: 'left' },
     { key: 'person_id', label: 'Person ID', align: 'left' },
     { key: 'date', label: 'Date', align: 'left' },
+    { key: 'check_in_time', label: 'Check-in Time', align: 'center' },
     { key: 'status', label: 'Status', align: 'center' },
     { key: 'is_late', label: 'Late', align: 'center' },
     { key: 'late_minutes', label: 'Late (min)', align: 'center' },
@@ -43,7 +44,7 @@ export function Reports({ group }: ReportsProps) {
     search: string;
   }
 
-  const defaultColumns: ColumnKey[] = ['name', 'date', 'status', 'total_hours', 'is_late'];
+  const defaultColumns: ColumnKey[] = ['name', 'date', 'check_in_time', 'status', 'is_late'];
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(defaultColumns);
   const [groupBy, setGroupBy] = useState<GroupByKey>('none');
   const [statusFilter, setStatusFilter] = useState<Array<'present' | 'absent' | 'late' | 'checked_out'>>([]);
@@ -236,6 +237,7 @@ export function Reports({ group }: ReportsProps) {
       person_id: s.person_id,
       name: personMap.get(s.person_id)?.name || s.person_id,
       date: s.date,
+      check_in_time: s.check_in_time,
       status: s.status,
       is_late: s.is_late,
       late_minutes: s.late_minutes ?? 0,
@@ -243,12 +245,13 @@ export function Reports({ group }: ReportsProps) {
       notes: s.notes || ''
     }));
 
-    const start = new Date(reportStartDate);
-    const end = new Date(reportEndDate);
+    // Parse dates as strings to avoid timezone issues
+    const start = reportStartDate;
+    const end = reportEndDate;
 
     return rows.filter(r => {
-      const d = new Date(r.date + 'T00:00:00');
-      if (d < start || d > end) return false;
+      // Compare date strings directly (YYYY-MM-DD format)
+      if (r.date < start || r.date > end) return false;
       if (statusFilter.length && !statusFilter.includes(r.status)) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -270,14 +273,18 @@ export function Reports({ group }: ReportsProps) {
     return groups;
   }, [filteredRows, groupBy]);
 
-  // Days tracked (unique session dates in the range); falls back to report summary when available
+  // Days tracked - calculate from date range (inclusive)
   const daysTracked = useMemo(() => {
     if (report?.summary?.total_working_days !== undefined) {
       return report.summary.total_working_days;
     }
-    const uniqueDates = new Set(filteredRows.map(r => r.date));
-    return uniqueDates.size;
-  }, [report, filteredRows]);
+    // Calculate days in range (inclusive)
+    const start = new Date(reportStartDate);
+    const end = new Date(reportEndDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
+    return diffDays;
+  }, [report, reportStartDate, reportEndDate]);
 
   return (
     <section className="h-full flex flex-col overflow-hidden space-y-4">
@@ -505,6 +512,11 @@ export function Reports({ group }: ReportsProps) {
                           )}
                           {visibleColumns.includes('date') && (
                             <td className="px-4 py-3 text-sm text-white/80">{r.date}</td>
+                          )}
+                          {visibleColumns.includes('check_in_time') && (
+                            <td className="px-4 py-3 text-sm text-white/80 text-center">
+                              {r.check_in_time ? new Date(r.check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            </td>
                           )}
                           {visibleColumns.includes('status') && (
                             <td className="px-4 py-3 text-sm text-center">

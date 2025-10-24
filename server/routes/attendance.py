@@ -505,8 +505,19 @@ async def get_sessions(
             end_date=end_date
         )
         
-        # If no sessions exist but we have a group_id and date range, compute them from records
+        # Check if we need to recompute sessions (if they don't exist OR if they're missing check_in_time)
+        needs_recompute = False
         if not sessions and group_id and start_date:
+            needs_recompute = True
+        elif sessions and group_id and start_date:
+            # Check if any session is missing check_in_time (indicates old data)
+            for session in sessions:
+                if session.get('status') in ['present', 'late'] and not session.get('check_in_time'):
+                    needs_recompute = True
+                    break
+        
+        # If no sessions exist OR they need recomputation, compute them from records
+        if needs_recompute:
             group = db.get_group(group_id)
             if not group:
                 raise HTTPException(status_code=404, detail="Group not found")
@@ -662,6 +673,55 @@ async def process_attendance_event(
         if not success:
             raise HTTPException(status_code=500, detail="Failed to add attendance record")
         
+        # Create or update session for today
+        today_str = timestamp.strftime('%Y-%m-%d')
+        
+        # Get group settings for late threshold calculation
+        group = db.get_group(member["group_id"])
+        late_threshold_minutes = group.get("late_threshold_minutes", 15) if group else 15
+        class_start_time = group.get("class_start_time", "08:00") if group else "08:00"
+        
+        # Check if session already exists for this person today
+        existing_session = db.get_session(event_data.person_id, today_str)
+        
+        # Only create session if it doesn't exist OR if it exists but has no check_in_time
+        # (This handles cases where stats/reports created a session without actual attendance)
+        should_create_session = (
+            not existing_session or 
+            not existing_session.get('check_in_time')
+        )
+        
+        if should_create_session:
+            # Parse class start time
+            try:
+                time_parts = class_start_time.split(":")
+                day_start_hour = int(time_parts[0])
+                day_start_minute = int(time_parts[1])
+            except (ValueError, IndexError):
+                day_start_hour = 8
+                day_start_minute = 0
+            
+            # Calculate if late
+            day_start = timestamp.replace(hour=day_start_hour, minute=day_start_minute, second=0, microsecond=0)
+            time_diff_minutes = (timestamp - day_start).total_seconds() / 60
+            is_late = time_diff_minutes > late_threshold_minutes
+            late_minutes = int(time_diff_minutes - late_threshold_minutes) if is_late else 0
+            
+            session_data = {
+                "id": existing_session['id'] if existing_session else generate_id(),  # Reuse existing ID if updating
+                "person_id": event_data.person_id,
+                "group_id": member["group_id"],
+                "date": today_str,
+                "check_in_time": timestamp.isoformat(),  # Convert to string for SQLite
+                "total_hours": None,
+                "status": "present",  # Status is always "present" if they checked in, "late" is tracked separately
+                "is_late": is_late,
+                "late_minutes": late_minutes if is_late else None,
+                "notes": None
+            }
+            
+            db.upsert_session(session_data)
+        
         # Broadcast attendance event to all connected WebSocket clients
         broadcast_message = {
             "type": "attendance_event",
@@ -777,8 +837,17 @@ async def get_group_stats(
             end_date=target_date
         )
         
-        # If no sessions exist, compute them from records
-        if not sessions:
+        # Check if we need to recompute sessions (missing or outdated)
+        needs_recompute = not sessions
+        if sessions:
+            # Check if any session is missing check_in_time (indicates old data)
+            for session in sessions:
+                if session.get('status') in ['present', 'late'] and not session.get('check_in_time'):
+                    needs_recompute = True
+                    break
+        
+        # If no sessions exist OR they need recomputation, compute them from records
+        if needs_recompute:
             # Get attendance records for the target date
             target_datetime = datetime.strptime(target_date, '%Y-%m-%d')
             start_of_day = target_datetime.replace(hour=0, minute=0, second=0)
@@ -909,7 +978,9 @@ async def register_face_for_group_person(
         if landmarks_5 is None:
             raise HTTPException(status_code=400, detail="Landmarks required from frontend face detection")
         
-        # Register the face with enhanced validation
+        # Register the face
+        logger.info(f"Registering face for {person_id} in group {group_id}")
+        
         result = await face_recognizer.register_person_async(
             person_id,
             image,
@@ -918,6 +989,7 @@ async def register_face_for_group_person(
         )
         
         if result["success"]:
+            logger.info(f"Face registered successfully for {person_id}. Total persons: {result.get('total_persons', 0)}")
             return {
                 "success": True,
                 "message": f"Face registered successfully for {person_id} in group {group['name']}",
@@ -926,6 +998,7 @@ async def register_face_for_group_person(
                 "total_persons": result.get("total_persons", 0)
             }
         else:
+            logger.error(f"Face registration failed for {person_id}: {result.get('error', 'Unknown error')}")
             raise HTTPException(status_code=400, detail=result.get("error", "Face registration failed"))
             
     except HTTPException:
@@ -1101,16 +1174,14 @@ def _compute_sessions_from_records(
             is_late = False
             late_minutes = 0
         
-        # Determine status
-        status = "late" if is_late else "present"
-        
         sessions.append({
             "id": generate_id(),
             "person_id": person_id,
             "group_id": member["group_id"],
             "date": target_date,
+            "check_in_time": timestamp,  # Store the actual check-in timestamp
             "total_hours": None,  # Could be calculated if we track check-out
-            "status": status,
+            "status": "present",  # Status is always "present" if they checked in, "late" is tracked separately
             "is_late": is_late,
             "late_minutes": late_minutes if is_late else None,
             "notes": None

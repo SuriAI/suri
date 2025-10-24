@@ -97,6 +97,7 @@ class AttendanceSessionResponse(BaseModel):
     person_id: str
     group_id: str
     date: str  # YYYY-MM-DD format
+    check_in_time: Optional[datetime]
     total_hours: Optional[float]
     status: AttendanceStatus
     is_late: bool

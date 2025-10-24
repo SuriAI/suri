@@ -165,6 +165,7 @@ export interface AttendanceSession {
   person_id: string;
   group_id: string;
   date: string; // YYYY-MM-DD format
+  check_in_time?: Date;
   total_hours?: number;
   status: AttendanceStatus;
   is_late: boolean;
