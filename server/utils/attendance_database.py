@@ -88,6 +88,7 @@ class AttendanceDatabaseManager:
                         person_id TEXT NOT NULL,
                         group_id TEXT NOT NULL,
                         date TEXT NOT NULL,
+                        check_in_time TIMESTAMP,
                         total_hours REAL,
                         status TEXT NOT NULL DEFAULT 'absent',
                         is_late BOOLEAN DEFAULT 0,
@@ -123,6 +124,13 @@ class AttendanceDatabaseManager:
                 # Migration: Add class_start_time column if it doesn't exist
                 try:
                     cursor.execute("ALTER TABLE attendance_groups ADD COLUMN class_start_time TEXT DEFAULT '08:00'")
+                except sqlite3.OperationalError:
+                    # Column already exists, ignore the error
+                    pass
+                
+                # Migration: Add check_in_time column to attendance_sessions if it doesn't exist
+                try:
+                    cursor.execute("ALTER TABLE attendance_sessions ADD COLUMN check_in_time TIMESTAMP")
                 except sqlite3.OperationalError:
                     # Column already exists, ignore the error
                     pass
@@ -365,6 +373,23 @@ class AttendanceDatabaseManager:
             logger.error(f"Failed to get group members for {group_id}: {e}")
             return []
     
+    def get_group_person_ids(self, group_id: str) -> List[str]:
+        """Get all person_ids for a specific group (for recognition filtering)"""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                
+                cursor.execute(
+                    "SELECT person_id FROM attendance_members WHERE group_id = ? AND is_active = 1",
+                    (group_id,)
+                )
+                
+                return [row['person_id'] for row in cursor.fetchall()]
+                
+        except Exception as e:
+            logger.error(f"Failed to get person_ids for group {group_id}: {e}")
+            return []
+    
     def update_member(self, person_id: str, updates: Dict[str, Any]) -> bool:
         """Update an attendance member"""
         try:
@@ -496,14 +521,15 @@ class AttendanceDatabaseManager:
                     
                     cursor.execute("""
                         INSERT OR REPLACE INTO attendance_sessions 
-                        (id, person_id, group_id, date, total_hours,
+                        (id, person_id, group_id, date, check_in_time, total_hours,
                          status, is_late, late_minutes, notes)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         session_data['id'],
                         session_data['person_id'],
                         session_data['group_id'],
                         session_data['date'],
+                        session_data.get('check_in_time'),
                         session_data.get('total_hours'),
                         session_data['status'],
                         session_data.get('is_late', False),

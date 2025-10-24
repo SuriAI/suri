@@ -15,7 +15,7 @@ import { ErrorBanner } from './components/ErrorBanner';
 import { MenuContent } from './components/MenuContent';
 import { MenuModals } from './components/MenuModals';
 
-export function Menu({ onBack, initialSection }: MenuProps) {
+export function Menu({ onBack, initialSection, onGroupsChanged }: MenuProps) {
   const [activeSection, setActiveSection] = useState(initialSection ?? 'overview');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -59,6 +59,11 @@ export function Menu({ onBack, initialSection }: MenuProps) {
     }
 
     await deleteGroup(selectedGroup.id);
+    
+    // Notify parent component that groups have changed
+    if (onGroupsChanged) {
+      onGroupsChanged();
+    }
   };
 
   const handleMemberSuccess = () => {
@@ -71,6 +76,10 @@ export function Menu({ onBack, initialSection }: MenuProps) {
     fetchGroups();
     if (newGroup) {
       setSelectedGroup(newGroup);
+    }
+    // Notify parent component that groups have changed
+    if (onGroupsChanged) {
+      onGroupsChanged();
     }
   };
 

@@ -1904,6 +1904,7 @@ export default function Main() {
               <Menu
                 onBack={() => setShowMenuPanel(false)}
                 initialSection={menuInitialSection}
+                onGroupsChanged={loadAttendanceData}
               />
             </div>
           )}

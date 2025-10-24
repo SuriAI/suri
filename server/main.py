@@ -90,6 +90,7 @@ class FaceRecognitionRequest(BaseModel):
     image: str  # Base64 encoded image
     bbox: List[float]  # Face bounding box [x, y, width, height]
     landmarks_5: Optional[List[List[float]]] = None  # Optional 5-point landmarks from face detector (FAST!)
+    group_id: Optional[str] = None  # Optional group ID to filter recognition to specific group members
 
 class FaceRegistrationRequest(BaseModel):
     person_id: str
@@ -552,10 +553,17 @@ async def recognize_face(request: FaceRecognitionRequest):
         if landmarks_5 is None:
             raise HTTPException(status_code=400, detail="Landmarks required from frontend face detection")
         
+        # Get person_ids for group filtering (if group_id provided)
+        allowed_person_ids = None
+        if request.group_id and attendance_database:
+            allowed_person_ids = attendance_database.get_group_person_ids(request.group_id)
+            logger.debug(f"Group filter active: {len(allowed_person_ids)} members in group {request.group_id}")
+        
         result = await face_recognizer.recognize_face_async(
             image, 
             request.bbox,
-            landmarks_5
+            landmarks_5,
+            allowed_person_ids
         )
         
         processing_time = time.time() - start_time

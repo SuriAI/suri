@@ -339,12 +339,13 @@ class FaceRecognizer:
             logger.error(f"Similarity calculation failed: {e}")
             return 0.0
     
-    def _find_best_match(self, embedding: np.ndarray) -> Tuple[Optional[str], float]:
+    def _find_best_match(self, embedding: np.ndarray, allowed_person_ids: Optional[List[str]] = None) -> Tuple[Optional[str], float]:
         """
         Find best matching person in database using fixed similarity threshold
         
         Args:
             embedding: Query embedding
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             Tuple of (person_id, similarity_score)
@@ -352,11 +353,22 @@ class FaceRecognizer:
         if not self.db_manager:
             return None, 0.0
         
-        # Get all persons from SQLite database
+        # Get all persons from SQLite database (queries fresh each time)
         all_persons = self.db_manager.get_all_persons()
         
         if not all_persons:
+            logger.debug("No persons in database for matching")
             return None, 0.0
+        
+        # Apply group filter if provided
+        if allowed_person_ids is not None:
+            all_persons = {pid: emb for pid, emb in all_persons.items() if pid in allowed_person_ids}
+            if not all_persons:
+                logger.debug(f"No persons in filtered group (filter size: {len(allowed_person_ids)})")
+                return None, 0.0
+            logger.debug(f"Matching against {len(all_persons)} persons in group")
+        else:
+            logger.debug(f"Matching against {len(all_persons)} registered persons")
         
         best_person_id = None
         best_similarity = 0.0
@@ -368,13 +380,15 @@ class FaceRecognizer:
                 best_similarity = similarity
                 best_person_id = person_id
         
-        # Use fixed threshold - no pose-based adjustments
+        # Use fixed threshold
         if best_similarity >= self.similarity_threshold:
+            logger.info(f"Recognized: {best_person_id} (similarity: {best_similarity:.3f})")
             return best_person_id, best_similarity
         else:
+            logger.debug(f"No match found (best similarity: {best_similarity:.3f}, threshold: {self.similarity_threshold})")
             return None, best_similarity
     
-    def recognize_face(self, image: np.ndarray, bbox: List[float], landmarks_5: List) -> Dict:
+    def recognize_face(self, image: np.ndarray, bbox: List[float], landmarks_5: List, allowed_person_ids: Optional[List[str]] = None) -> Dict:
         """
         Recognize face in image using face detector landmarks
         
@@ -382,6 +396,7 @@ class FaceRecognizer:
             image: Input image as numpy array (BGR format)
             bbox: Bounding box [x, y, width, height] from face detection
             landmarks_5: 5-point landmarks from face detector (REQUIRED)
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             Recognition result with person_id and similarity
@@ -390,8 +405,8 @@ class FaceRecognizer:
             # Extract embedding
             embedding = self._extract_embedding(image, bbox, landmarks_5)
             
-            # Find best match
-            person_id, similarity = self._find_best_match(embedding)
+            # Find best match with optional group filtering
+            person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
             
             return {
                 "person_id": person_id,
@@ -410,7 +425,7 @@ class FaceRecognizer:
                 "error": str(e)
             }
     
-    async def recognize_face_async(self, image: np.ndarray, bbox: List[float], landmarks_5: List) -> Dict:
+    async def recognize_face_async(self, image: np.ndarray, bbox: List[float], landmarks_5: List, allowed_person_ids: Optional[List[str]] = None) -> Dict:
         """
         Recognize face in image using face detector landmarks (asynchronous)
         
@@ -418,27 +433,29 @@ class FaceRecognizer:
             image: Input image as numpy array (BGR format)
             bbox: Bounding box [x, y, width, height] from face detection
             landmarks_5: 5-point landmarks from face detector (REQUIRED)
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             Recognition result with person_id and similarity
         """
         # Run recognition in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.recognize_face, image, bbox, landmarks_5)
+        return await loop.run_in_executor(None, self.recognize_face, image, bbox, landmarks_5, allowed_person_ids)
     
-    def recognize_from_embedding(self, embedding: np.ndarray) -> Dict:
+    def recognize_from_embedding(self, embedding: np.ndarray, allowed_person_ids: Optional[List[str]] = None) -> Dict:
         """
         Recognize face from pre-extracted embedding (for Deep SORT reuse)
         
         Args:
             embedding: Pre-extracted face embedding (512-dim, normalized)
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             Recognition result with person_id and similarity
         """
         try:
-            # Find best match using existing embedding
-            person_id, similarity = self._find_best_match(embedding)
+            # Find best match using existing embedding with optional group filtering
+            person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
             
             return {
                 "person_id": person_id,
@@ -522,13 +539,14 @@ class FaceRecognizer:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.extract_embeddings_for_tracking, image, face_detections)
     
-    def recognize_faces_batch(self, image: np.ndarray, face_data_list: List[Dict]) -> List[Dict]:
+    def recognize_faces_batch(self, image: np.ndarray, face_data_list: List[Dict], allowed_person_ids: Optional[List[str]] = None) -> List[Dict]:
         """
         BATCH PROCESSING: Recognize multiple faces in a single inference call
         
         Args:
             image: Input image
             face_data_list: List of dicts with 'bbox' key
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             List of recognition results with person_id and similarity for each face
@@ -540,11 +558,11 @@ class FaceRecognizer:
             # Extract all embeddings in batch
             embeddings = self._extract_embeddings_batch(image, face_data_list)
             
-            # Find best matches for all embeddings
+            # Find best matches for all embeddings with optional group filtering
             results = []
             for i, embedding in enumerate(embeddings):
                 try:
-                    person_id, similarity = self._find_best_match(embedding)
+                    person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
                     results.append({
                         "person_id": person_id,
                         "similarity": similarity,
@@ -571,24 +589,25 @@ class FaceRecognizer:
             results = []
             for i, face_data in enumerate(face_data_list):
                 bbox = face_data.get('bbox')
-                result = self.recognize_face(image, bbox)
+                result = self.recognize_face(image, bbox, allowed_person_ids=allowed_person_ids)
                 result['face_index'] = i
                 results.append(result)
             return results
     
-    async def recognize_faces_batch_async(self, image: np.ndarray, face_data_list: List[Dict]) -> List[Dict]:
+    async def recognize_faces_batch_async(self, image: np.ndarray, face_data_list: List[Dict], allowed_person_ids: Optional[List[str]] = None) -> List[Dict]:
         """
         BATCH PROCESSING: Recognize multiple faces asynchronously
         
         Args:
             image: Input image
             face_data_list: List of dicts with 'bbox' keys
+            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
             
         Returns:
             List of recognition results
         """
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self.recognize_faces_batch, image, face_data_list)
+        return await loop.run_in_executor(None, self.recognize_faces_batch, image, face_data_list, allowed_person_ids)
     
     def register_person(self, person_id: str, image: np.ndarray, bbox: List[float], landmarks_5: List) -> Dict:
         """
