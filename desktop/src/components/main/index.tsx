@@ -388,7 +388,7 @@ export default function Main() {
         // Draw current video frame
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Convert to Binary ArrayBuffer (30% faster than Base64, SaaS-ready!)
+        // Convert to Binary ArrayBuffer
         canvas.toBlob((blob) => {
           if (!blob) {
             resolve(null);
@@ -397,7 +397,7 @@ export default function Main() {
           blob.arrayBuffer().then(resolve).catch(() => {
             resolve(null);
           });
-        }, 'image/jpeg', 0.95);
+        }, 'image/jpeg', 1.0);
       } catch (error) {
         resolve(null);
       }
