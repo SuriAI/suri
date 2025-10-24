@@ -1,5 +1,7 @@
 export { MenuHeader } from './MenuHeader';
 export { MenuNav } from './MenuNav';
+export { MobileHeader } from './MobileHeader';
+export { MobileNav } from './MobileNav';
 export { ErrorBanner } from './ErrorBanner';
 export { MenuContent } from './MenuContent';
 export { MenuModals } from './MenuModals';
