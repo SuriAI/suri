@@ -181,7 +181,7 @@ export function AttendancePanel({
       )}
 
       {/* Scrollable Content Section */}
-      <div className="flex-1 overflow-y-auto min-h-0 rounded-md custom-scroll">
+      <div className="flex-1 overflow-y-auto min-h-0 custom-scroll">
         {/* Recent Attendance */}
         {visibleRecords.length > 0 ? (
           <>
