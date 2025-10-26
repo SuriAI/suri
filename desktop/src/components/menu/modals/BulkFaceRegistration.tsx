@@ -65,29 +65,10 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
     return members.filter(m => !assignedIds.has(m.person_id));
   }, [members, detectedFaces]);
 
-  const handleFilesSelected = useCallback(async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  const handleDetectFaces = useCallback(async (filesToProcess?: File[]) => {
+    const files = filesToProcess || uploadedFiles;
     
-    if (imageFiles.length === 0) {
-      setError('No valid image files selected');
-      return;
-    }
-
-    if (imageFiles.length > 50) {
-      setError('Maximum 50 images allowed');
-      return;
-    }
-
-    setUploadedFiles(imageFiles);
-    setDetectedFaces([]);
-    setRegistrationResults(null);
-    setError(null);
-  }, []);
-
-  const handleDetectFaces = useCallback(async () => {
-    if (uploadedFiles.length === 0) {
+    if (files.length === 0) {
       setError('Please upload images first');
       return;
     }
@@ -98,7 +79,7 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
     try {
       // Read all files as base64
       const imagesData = await Promise.all(
-        uploadedFiles.map(async (file, idx) => {
+        files.map(async (file, idx) => {
           const dataUrl = await readFileAsDataUrl(file);
           return {
             id: `image_${idx}`,
@@ -135,7 +116,7 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
         }
 
         const imageIdx = parseInt(imageResult.image_id.replace('image_', ''));
-        const file = uploadedFiles[imageIdx];
+        const file = files[imageIdx];
         const dataUrl = await readFileAsDataUrl(file);
 
         for (const face of imageResult.faces) {
@@ -170,6 +151,30 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
       setIsDetecting(false);
     }
   }, [uploadedFiles, group.id]);
+
+  const handleFilesSelected = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+      setError('No valid image files selected');
+      return;
+    }
+
+    if (imageFiles.length > 50) {
+      setError('Maximum 50 images allowed');
+      return;
+    }
+
+    setUploadedFiles(imageFiles);
+    setDetectedFaces([]);
+    setRegistrationResults(null);
+    setError(null);
+
+    // Automatically start face detection
+    await handleDetectFaces(imageFiles);
+  }, [handleDetectFaces]);
 
   const createFacePreview = async (imageDataUrl: string, bbox: {x: number, y: number, width: number, height: number} | [number, number, number, number]): Promise<string> => {
     return new Promise((resolve) => {
@@ -354,24 +359,12 @@ export function BulkFaceRegistration({ group, members, onRefresh, onClose }: Bul
                 />
               </label>
 
-              {uploadedFiles.length > 0 && (
-                <button
-                  onClick={() => void handleDetectFaces()}
-                  disabled={isDetecting}
-                  className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-white/10 to-white/5 border border-white/20 px-4 py-4 text-sm font-medium text-white hover:from-white/15 hover:to-white/10 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-white/5"
-                >
-                  {isDetecting ? (
-                    <>
-                      <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                      <span>Analyzing {uploadedFiles.length} images...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg">🔍</span>
-                      <span>Detect Faces</span>
-                    </>
-                  )}
-                </button>
+              {/* Show detection progress when analyzing */}
+              {isDetecting && uploadedFiles.length > 0 && (
+                <div className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-white/10 to-white/5 border border-white/20 px-4 py-4 text-sm font-medium text-white">
+                  <div className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  <span>Analyzing {uploadedFiles.length} images...</span>
+                </div>
               )}
             </div>
           )}
