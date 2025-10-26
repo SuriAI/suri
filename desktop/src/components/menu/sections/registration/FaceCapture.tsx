@@ -140,15 +140,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
     loadMemberStatus();
   }, [loadMemberStatus]);
 
-  // Auto-select first member without embeddings if none selected
-  useEffect(() => {
-    if (!selectedMemberId && members.length > 0 && memberStatus.size > 0) {
-      const unregisteredMember = members.find(m => !memberStatus.get(m.person_id));
-      if (unregisteredMember) {
-        setSelectedMemberId(unregisteredMember.person_id);
-      }
-    }
-  }, [selectedMemberId, members, memberStatus]);
+  // Auto-selection removed - user must manually select a member
 
   useEffect(() => {
     if (group) {
@@ -436,16 +428,17 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[260px,1fr] flex-1 overflow-hidden min-h-0">
-        {/* Members List */}
-        <div className="space-y-3 flex flex-col overflow-hidden min-h-0">
-          <div className="flex items-center gap-2 text-white/60 flex-shrink-0">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span className="text-xs uppercase tracking-wide">Select Member</span>
-          </div>
-          <div className="relative flex-shrink-0">
+      <div className="flex-1 overflow-hidden min-h-0">
+        {/* Show member list only when no member selected */}
+        {!selectedMemberId && (
+          <div className="space-y-3 flex flex-col overflow-hidden min-h-0 h-full">
+            <div className="flex items-center gap-2 text-white/60 flex-shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span className="text-xs uppercase tracking-wide">Select Member</span>
+            </div>
+            <div className="relative flex-shrink-0">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -523,51 +516,52 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                 </button>
               );
             })}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Registration Panel */}
-        <div className="space-y-4 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2">
-          {/* Header */}
-          {selectedMemberId ? (
-            <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-4">
+        {/* Registration Panel - Show only when member selected */}
+        {selectedMemberId && (
+          <div className="space-y-4 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2 h-full">
+            {/* Header with Change Member button */}
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="text-lg font-medium text-white">
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-medium text-white truncate">
                     {members.find(m => m.person_id === selectedMemberId)?.name}
                   </div>
                   <div className="text-xs text-white/40">{group?.name}</div>
                 </div>
+                <button
+                  onClick={() => {
+                    setSelectedMemberId('');
+                    resetFrames();
+                  }}
+                  className="rounded-lg px-3 py-1.5 text-xs text-white/60 border border-white/10 bg-white/5 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  Change
+                </button>
               </div>
             </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
-              <div className="text-3xl mb-2 opacity-40">←</div>
-              <div className="text-sm text-white/40">Select a member to start</div>
+
+            <div className="flex gap-2">
+              {(['upload', 'live'] as CaptureSource[]).map(option => (
+                <button
+                  key={option}
+                  onClick={() => setSource(option)}
+                  className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+                    source === option 
+                      ? 'bg-white/10 text-white border border-white/20' 
+                      : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white/60'
+                  }`}
+                >
+                  {option === 'upload' ? 'Upload' : 'Camera'}
+                </button>
+              ))}
             </div>
-          )}
 
-          {selectedMemberId && (
-            <>
-
-              <div className="flex gap-2">
-                {(['upload', 'live'] as CaptureSource[]).map(option => (
-                  <button
-                    key={option}
-                    onClick={() => setSource(option)}
-                    className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                      source === option 
-                        ? 'bg-gradient-to-br from-white/10 to-white/5 text-white border border-white/20 shadow-lg shadow-white/5' 
-                        : 'bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white/60'
-                    }`}
-                  >
-                    {option === 'upload' ? 'Upload' : 'Camera'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Capture Area */}
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-black/60 to-black/40 overflow-hidden">
+            {/* Capture Area */}
+            <div className="rounded-2xl border border-white/10 bg-black/40 overflow-hidden">
                 {source === 'live' ? (
                   <div className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
@@ -599,7 +593,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                     <button
                       onClick={() => void captureFromCamera(REQUIRED_ANGLE)}
                       disabled={!cameraReady || !!cameraError}
-                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-white/10 to-white/5 border border-white/20 py-4 text-sm font-medium text-white hover:from-white/15 hover:to-white/10 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all"
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-white/10 border border-white/20 py-4 text-sm font-medium text-white hover:bg-white/15 disabled:bg-white/5 disabled:border-white/10 disabled:text-white/30 transition-all"
                     >
                       Capture Face
                     </button>
@@ -710,7 +704,7 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                 <button
                   onClick={() => void handleRegister()}
                   disabled={!framesReady || !selectedMemberId || isRegistering}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-400/40 px-4 py-3 text-sm font-medium text-emerald-100 hover:from-emerald-500/30 hover:to-emerald-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-emerald-500/10 disabled:shadow-none"
+                  className="flex-1 rounded-xl bg-emerald-500/20 border border-emerald-400/40 px-4 py-3 text-sm font-medium text-emerald-100 hover:bg-emerald-500/30 disabled:bg-white/5 disabled:border-white/10 disabled:text-white/30 transition-all"
                 >
                   {isRegistering ? (
                     <div className="flex items-center justify-center gap-2">
@@ -722,9 +716,8 @@ export function FaceCapture({ group, members, onRefresh }: FaceCaptureProps) {
                   )}
                 </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+        )}
       </div>
     </div>
   );
