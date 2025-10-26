@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager';
+import { getLocalDateString } from '../../../utils/dateUtils';
 import type { AttendanceGroup, AttendanceMember } from '../../../types/recognition';
 
 interface UseMenuDataReturn {
@@ -16,14 +17,14 @@ interface UseMenuDataReturn {
   exportData: () => Promise<void>;
 }
 
-export function useMenuData(): UseMenuDataReturn {
-  const [selectedGroup, setSelectedGroup] = useState<AttendanceGroup | null>(null);
+export function useMenuData(initialGroup?: AttendanceGroup | null): UseMenuDataReturn {
+  const [selectedGroup, setSelectedGroup] = useState<AttendanceGroup | null>(initialGroup ?? null);
   const [groups, setGroups] = useState<AttendanceGroup[]>([]);
   const [members, setMembers] = useState<AttendanceMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const selectedGroupRef = useRef<AttendanceGroup | null>(null);
+  const selectedGroupRef = useRef<AttendanceGroup | null>(initialGroup ?? null);
 
   // Fetch all groups
   const fetchGroups = useCallback(async () => {
@@ -97,7 +98,7 @@ export function useMenuData(): UseMenuDataReturn {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `attendance-data-${new Date().toISOString().split('T')[0]}.json`;
+      anchor.download = `attendance-data-${getLocalDateString()}.json`;
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);

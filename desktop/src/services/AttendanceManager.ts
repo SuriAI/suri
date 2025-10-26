@@ -8,6 +8,7 @@ import type {
   AttendanceSettings,
   AttendanceEvent
 } from '../types/recognition.js';
+import { getLocalDateString } from '../utils/dateUtils.js';
 
 // API Configuration
 const API_BASE_URL = 'http://127.0.0.1:8700';
@@ -355,7 +356,7 @@ export class AttendanceManager {
     try {
       const params: Record<string, string> = {};
       if (date) {
-        params.date = date.toISOString().split('T')[0];
+        params.date = getLocalDateString(date);
       }
 
       return await this.httpClient.get<AttendanceStats>(`${API_ENDPOINTS.groups}/${groupId}/stats`, params);
@@ -386,8 +387,8 @@ export class AttendanceManager {
         }),
         this.getSessions({ 
           group_id: groupId, 
-          start_date: startDate.toISOString().split('T')[0], 
-          end_date: endDate.toISOString().split('T')[0] 
+          start_date: getLocalDateString(startDate), 
+          end_date: getLocalDateString(endDate) 
         })
       ]);
 

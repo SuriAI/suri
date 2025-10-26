@@ -15,6 +15,7 @@ export interface AttendanceSettings {
   lateThresholdEnabled: boolean;
   lateThresholdMinutes: number;
   classStartTime: string;
+  attendanceCooldownSeconds: number;
 }
 
 export interface SettingsOverview {

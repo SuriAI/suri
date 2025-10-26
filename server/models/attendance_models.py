@@ -15,6 +15,7 @@ class AttendanceStatus(str, Enum):
 class GroupSettings(BaseModel):
     auto_checkout_hours: Optional[int] = 8
     late_threshold_minutes: Optional[int] = 15
+    late_threshold_enabled: bool = False  # OFF by default
     require_checkout: bool = False
     class_start_time: Optional[str] = "08:00"  # HH:MM format
 

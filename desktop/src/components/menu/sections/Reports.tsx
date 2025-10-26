@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager.js';
+import { getLocalDateString } from '../../../utils/dateUtils.js';
 import type {
   AttendanceGroup,
   AttendanceReport,
@@ -14,9 +15,9 @@ interface ReportsProps {
 export function Reports({ group }: ReportsProps) {
   const [report, setReport] = useState<AttendanceReport | null>(null);
   const [reportStartDate, setReportStartDate] = useState<string>(
-    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    getLocalDateString()
   );
-  const [reportEndDate, setReportEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [reportEndDate, setReportEndDate] = useState<string>(getLocalDateString());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,8 +84,8 @@ export function Reports({ group }: ReportsProps) {
       const [loadedSessions, loadedMembers] = await Promise.all([
         attendanceManager.getSessions({
           group_id: group.id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0]
+          start_date: getLocalDateString(startDate),
+          end_date: getLocalDateString(endDate)
         }),
         attendanceManager.getGroupMembers(group.id)
       ]);
@@ -384,10 +385,9 @@ export function Reports({ group }: ReportsProps) {
           <div className="rounded-xl border border-white/10 bg-white/5 h-full flex flex-col">
             {/* Controls */}
             <div className="p-3 border-b border-white/10 grid grid-cols-1 lg:grid-cols-3 gap-3 flex-shrink-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-white/50">Saved view</span>
+              <div className="flex items-start gap-2 flex-wrap">
                 <select
-                  className="bg-transparent text-xs border border-white/20 rounded px-2 py-1"
+                  className="bg-transparent text-xs border border-white/20 rounded px-4 py-1"
                   style={{ colorScheme: 'dark' }}
                   value={activeViewIndex ?? ''}
                   onChange={e => {
@@ -411,21 +411,34 @@ export function Reports({ group }: ReportsProps) {
                     }
                   }}
                 >
-                  <option className="bg-black text-white" value="">(unsaved)</option>
+                  <option className="bg-black text-white" value="">(Default View)</option>
                   {views.map((v, i) => (
                     <option className="bg-black text-white" key={v.name + i} value={i}>{defaultViewName === v.name ? '★ ' : ''}{v.name}</option>
                   ))}
                 </select>
-                <button
-                  className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10 disabled:opacity-50"
-                  onClick={handleSave}
-                  disabled={activeViewIndex === null}
-                >
-                  Save
-                </button>
-                <button className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10" onClick={handleSaveAs}>Save as new</button>
-                <button className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10 disabled:opacity-50" onClick={handleDeleteView} disabled={activeViewIndex === null}>Delete</button>
-                {isDirty && (
+                {activeViewIndex === null ? (
+                  // When "(default view)" is selected, only show "Save"
+                  <button className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10" onClick={handleSaveAs}>
+                    Save
+                  </button>
+                ) : (
+                  // When a saved view is selected, show Save, Save as new, and Delete
+                  <>
+                    <button
+                      className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10"
+                      onClick={handleSave}
+                    >
+                      Save
+                    </button>
+                    <button className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10" onClick={handleSaveAs}>
+                      Save as new
+                    </button>
+                    <button className="text-xs px-2 py-1 border border-white/20 rounded hover:bg-white/10" onClick={handleDeleteView}>
+                      Delete
+                    </button>
+                  </>
+                )}
+                {isDirty && activeViewIndex !== null && (
                   <span className="text-[10px] text-amber-300 ml-1">Unsaved changes</span>
                 )}
             </div>

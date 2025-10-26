@@ -15,7 +15,7 @@ import { ErrorBanner } from './components/ErrorBanner';
 import { MenuContent } from './components/MenuContent';
 import { MenuModals } from './components/MenuModals';
 
-export function Menu({ onBack, initialSection, onGroupsChanged }: MenuProps) {
+export function Menu({ onBack, initialSection, initialGroup, onGroupsChanged }: MenuProps) {
   const [activeSection, setActiveSection] = useState(initialSection ?? 'overview');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -32,7 +32,7 @@ export function Menu({ onBack, initialSection, onGroupsChanged }: MenuProps) {
     fetchGroupDetails,
     deleteGroup,
     exportData,
-  } = useMenuData();
+  } = useMenuData(initialGroup);
 
   const {
     showAddMemberModal,

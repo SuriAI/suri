@@ -6,6 +6,7 @@ interface AttendanceProps {
   onLateThresholdChange: (minutes: number) => void;
   onLateThresholdToggle: (enabled: boolean) => void;
   onClassStartTimeChange: (time: string) => void;
+  onCooldownChange: (seconds: number) => void;
   isStreaming?: boolean;
 }
 
@@ -15,6 +16,7 @@ export function Attendance({
   onLateThresholdChange,
   onLateThresholdToggle,
   onClassStartTimeChange,
+  onCooldownChange,
   isStreaming = false,
 }: AttendanceProps) {
   return (
@@ -50,13 +52,39 @@ export function Attendance({
         </div>
       </div>
 
+      {/* Attendance Cooldown Section */}
+      <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-white/90">Attendance Cooldown</div>
+          <div className="text-xs text-white/50 mt-0.5">
+            Prevent duplicate logs: {attendanceSettings.attendanceCooldownSeconds}s
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <input
+            type="range"
+            min="3"
+            max="60"
+            step="1"
+            value={attendanceSettings.attendanceCooldownSeconds}
+            onChange={(e) => onCooldownChange(parseInt(e.target.value))}
+            disabled={isStreaming}
+            className="w-24 accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+          <span className="text-cyan-400 font-semibold text-sm min-w-[2.5rem] text-right whitespace-nowrap">
+            {attendanceSettings.attendanceCooldownSeconds}s
+          </span>
+        </div>
+      </div>
+
       {/* Late Tracking Section */}
       <div className="space-y-4">
           {/* Enable/Disable Toggle */}
           <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white/90">Late Threshold</div>
-              <div className="text-xs text-white/50 mt-0.5">Automatic late marking</div>
+              <div className="text-sm font-medium text-white/90">Late</div>
+              <div className="text-xs text-white/50 mt-0.5">Track late arrivals</div>
             </div>
             
             <button
@@ -93,9 +121,9 @@ export function Attendance({
               {/* Late Threshold */}
               <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-white/90">Threshold</div>
+                  <div className="text-sm font-medium text-white/90">Late After</div>
                   <div className="text-xs text-white/50 mt-0.5">
-                    Grace period: {attendanceSettings.lateThresholdMinutes} min
+                    {attendanceSettings.lateThresholdMinutes} minutes after start time
                   </div>
                 </div>
                 

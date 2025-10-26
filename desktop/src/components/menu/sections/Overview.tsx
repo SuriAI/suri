@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager.js';
+import { getLocalDateString } from '../../../utils/dateUtils.js';
 import { StatsCard } from '../shared/StatsCard.js';
 import type {
   AttendanceGroup,
@@ -42,7 +43,7 @@ export function Overview({ group, members }: OverviewProps) {
 
   const loadOverviewData = useCallback(async () => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateString();
       const [groupStats, records, sessions] = await Promise.all([
         attendanceManager.getGroupStats(group.id, new Date()),
         attendanceManager.getRecords({

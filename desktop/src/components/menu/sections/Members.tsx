@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { attendanceManager } from '../../../services/AttendanceManager.js';
+import { getLocalDateString } from '../../../utils/dateUtils.js';
 import type {
   AttendanceGroup,
   AttendanceMember,
@@ -19,7 +20,7 @@ export function Members({ group, members, onMembersChange, onEdit, onAdd }: Memb
 
   const loadSessions = useCallback(async () => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalDateString();
       const sessions = await attendanceManager.getSessions({
         group_id: group.id,
         start_date: todayStr,

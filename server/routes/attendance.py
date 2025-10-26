@@ -505,18 +505,13 @@ async def get_sessions(
             end_date=end_date
         )
         
-        # Check if we need to recompute sessions (if they don't exist OR if they're missing check_in_time)
+        # Always recompute sessions from records to ensure they're up-to-date
+        # This ensures that multiple check-ins per day are reflected with the latest time
         needs_recompute = False
-        if not sessions and group_id and start_date:
+        if group_id and start_date:
             needs_recompute = True
-        elif sessions and group_id and start_date:
-            # Check if any session is missing check_in_time (indicates old data)
-            for session in sessions:
-                if session.get('status') in ['present', 'late'] and not session.get('check_in_time'):
-                    needs_recompute = True
-                    break
         
-        # If no sessions exist OR they need recomputation, compute them from records
+        # If we need to compute sessions, do it from records
         if needs_recompute:
             group = db.get_group(group_id)
             if not group:
@@ -525,7 +520,7 @@ async def get_sessions(
             # Get settings from group
             late_threshold_minutes = group.get("settings", {}).get("late_threshold_minutes", 15)
             class_start_time = group.get("settings", {}).get("class_start_time", "08:00")
-            late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", True)
+            late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", False)
             
             # Get members
             members = db.get_group_members(group_id)
@@ -553,6 +548,9 @@ async def get_sessions(
                     end_date=day_end
                 )
                 
+                # Get existing sessions for this day to reuse IDs
+                existing_day_sessions = [s for s in sessions if s.get('date') == date_str]
+                
                 # Compute sessions for this day
                 day_sessions = _compute_sessions_from_records(
                     records=records,
@@ -560,7 +558,8 @@ async def get_sessions(
                     late_threshold_minutes=late_threshold_minutes,
                     target_date=date_str,
                     class_start_time=class_start_time,
-                    late_threshold_enabled=late_threshold_enabled
+                    late_threshold_enabled=late_threshold_enabled,
+                    existing_sessions=existing_day_sessions
                 )
                 
                 # Persist sessions to database
@@ -680,18 +679,15 @@ async def process_attendance_event(
         group = db.get_group(member["group_id"])
         late_threshold_minutes = group.get("late_threshold_minutes", 15) if group else 15
         class_start_time = group.get("class_start_time", "08:00") if group else "08:00"
+        late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", False) if group else False
         
-        # Check if session already exists for this person today
+        # Always create/update session for each attendance event
+        # The cooldown logic (above) prevents spam, but we allow multiple check-ins per day
         existing_session = db.get_session(event_data.person_id, today_str)
         
-        # Only create session if it doesn't exist OR if it exists but has no check_in_time
-        # (This handles cases where stats/reports created a session without actual attendance)
-        should_create_session = (
-            not existing_session or 
-            not existing_session.get('check_in_time')
-        )
-        
-        if should_create_session:
+        # Always update the session with the latest check-in time
+        # Only calculate late status if late threshold is enabled
+        if late_threshold_enabled:
             # Parse class start time
             try:
                 time_parts = class_start_time.split(":")
@@ -706,21 +702,25 @@ async def process_attendance_event(
             time_diff_minutes = (timestamp - day_start).total_seconds() / 60
             is_late = time_diff_minutes > late_threshold_minutes
             late_minutes = int(time_diff_minutes - late_threshold_minutes) if is_late else 0
-            
-            session_data = {
-                "id": existing_session['id'] if existing_session else generate_id(),  # Reuse existing ID if updating
-                "person_id": event_data.person_id,
-                "group_id": member["group_id"],
-                "date": today_str,
-                "check_in_time": timestamp.isoformat(),  # Convert to string for SQLite
-                "total_hours": None,
-                "status": "present",  # Status is always "present" if they checked in, "late" is tracked separately
-                "is_late": is_late,
-                "late_minutes": late_minutes if is_late else None,
-                "notes": None
-            }
-            
-            db.upsert_session(session_data)
+        else:
+            # When late threshold is disabled, no one is considered late
+            is_late = False
+            late_minutes = 0
+        
+        session_data = {
+            "id": existing_session['id'] if existing_session else generate_id(),  # Reuse existing ID if updating
+            "person_id": event_data.person_id,
+            "group_id": member["group_id"],
+            "date": today_str,
+            "check_in_time": timestamp.isoformat(),  # Convert to string for SQLite
+            "total_hours": None,
+            "status": "present",  # Status is always "present" if they checked in, "late" is tracked separately
+            "is_late": is_late,
+            "late_minutes": late_minutes if is_late else None,
+            "notes": None
+        }
+        
+        db.upsert_session(session_data)
         
         # Broadcast attendance event to all connected WebSocket clients
         broadcast_message = {
@@ -828,7 +828,7 @@ async def get_group_stats(
         # Get the group's late threshold and class start time settings
         late_threshold_minutes = group.get("settings", {}).get("late_threshold_minutes", 15)
         class_start_time = group.get("settings", {}).get("class_start_time", "08:00")
-        late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", True)
+        late_threshold_enabled = group.get("settings", {}).get("late_threshold_enabled", False)
         
         # Get existing sessions for the target date
         sessions = db.get_sessions(
@@ -866,7 +866,8 @@ async def get_group_stats(
                 late_threshold_minutes=late_threshold_minutes,
                 target_date=target_date,
                 class_start_time=class_start_time,
-                late_threshold_enabled=late_threshold_enabled
+                late_threshold_enabled=late_threshold_enabled,
+                existing_sessions=sessions  # Pass existing sessions to reuse IDs
             )
             
             # Optionally, persist the computed sessions to database
@@ -1096,7 +1097,8 @@ def _compute_sessions_from_records(
     late_threshold_minutes: int,
     target_date: str,
     class_start_time: str = "08:00",
-    late_threshold_enabled: bool = True
+    late_threshold_enabled: bool = False,
+    existing_sessions: Optional[List[dict]] = None
 ) -> List[dict]:
     """Compute attendance sessions from records using configurable late threshold
     
@@ -1106,6 +1108,7 @@ def _compute_sessions_from_records(
         late_threshold_minutes: Minutes after class start to consider as late
         target_date: Date string in YYYY-MM-DD format
         class_start_time: Class start time in HH:MM format (e.g., "08:00")
+        existing_sessions: Optional list of existing sessions to reuse IDs from
     
     Returns:
         List of session dictionaries with status and late information
@@ -1113,6 +1116,12 @@ def _compute_sessions_from_records(
     from datetime import time as dt_time
     
     sessions = []
+    
+    # Create a map of existing sessions by person_id for quick lookup
+    existing_sessions_map = {}
+    if existing_sessions:
+        for session in existing_sessions:
+            existing_sessions_map[session["person_id"]] = session
     
     # Group records by person_id
     records_by_person = {}
@@ -1138,8 +1147,10 @@ def _compute_sessions_from_records(
         
         if not person_records:
             # No records = absent
+            # Reuse existing session ID if it exists
+            existing_session = existing_sessions_map.get(person_id)
             sessions.append({
-                "id": generate_id(),
+                "id": existing_session["id"] if existing_session else generate_id(),
                 "person_id": person_id,
                 "group_id": member["group_id"],
                 "date": target_date,
@@ -1151,12 +1162,15 @@ def _compute_sessions_from_records(
             })
             continue
         
-        # Sort records by timestamp
+        # Sort records by timestamp (ascending)
         person_records.sort(key=lambda r: r["timestamp"])
-        first_record = person_records[0]
         
-        # Get timestamp of first attendance
-        timestamp = first_record["timestamp"]
+        # Use the LAST (most recent) record for check-in time
+        # This ensures reports show the latest check-in after multiple entries
+        last_record = person_records[-1]
+        
+        # Get timestamp of most recent attendance
+        timestamp = last_record["timestamp"]
         if isinstance(timestamp, str):
             timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
         
@@ -1174,8 +1188,10 @@ def _compute_sessions_from_records(
             is_late = False
             late_minutes = 0
         
+        # Reuse existing session ID if it exists
+        existing_session = existing_sessions_map.get(person_id)
         sessions.append({
-            "id": generate_id(),
+            "id": existing_session["id"] if existing_session else generate_id(),
             "person_id": person_id,
             "group_id": member["group_id"],
             "date": target_date,
