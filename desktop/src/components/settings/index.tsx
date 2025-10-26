@@ -50,9 +50,10 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const [internalAttendanceSettings, setInternalAttendanceSettings] = useState<AttendanceSettings>({
     trackingMode: 'auto',
-    lateThresholdEnabled: true,
+    lateThresholdEnabled: false,
     lateThresholdMinutes: 15,
     classStartTime: '08:00',
+    attendanceCooldownSeconds: 10,
   });
 
   const quickSettings = externalQuickSettings || internalQuickSettings;
@@ -179,6 +180,7 @@ export const Settings: React.FC<SettingsProps> = ({
               onLateThresholdChange={(minutes) => updateAttendanceSetting({ lateThresholdMinutes: minutes })}
               onLateThresholdToggle={(enabled) => updateAttendanceSetting({ lateThresholdEnabled: enabled })}
               onClassStartTimeChange={(time) => updateAttendanceSetting({ classStartTime: time })}
+              onCooldownChange={(seconds) => updateAttendanceSetting({ attendanceCooldownSeconds: seconds })}
               isStreaming={isStreaming}
             />
           )}

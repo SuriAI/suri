@@ -187,6 +187,7 @@ export default function Main() {
   
   // Elite Tracking System States
   const [trackingMode, setTrackingMode] = useState<'auto' | 'manual'>('auto');
+  const [attendanceCooldownSeconds, setAttendanceCooldownSeconds] = useState<number>(10);
   const [trackedFaces, setTrackedFaces] = useState<Map<string, TrackedFace>>(new Map());
   // Attendance states
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>([]);
@@ -199,7 +200,6 @@ export default function Main() {
   
   // Attendance cooldown tracking
   const [attendanceCooldowns, setAttendanceCooldowns] = useState<Map<string, number>>(new Map());
-  const [attendanceCooldownSeconds] = useState(10); // 10 seconds cooldown
   
   // CRITICAL: Synchronous cooldown ref to prevent race conditions from async setState
   const cooldownTimestampsRef = useRef<Map<string, number>>(new Map());
@@ -1463,6 +1463,16 @@ export default function Main() {
 
   // Face recognition utility functions
 
+  // Load global settings
+  const loadSettings = useCallback(async () => {
+    try {
+      const settings = await attendanceManager.getSettings();
+      setAttendanceCooldownSeconds(settings.attendance_cooldown_seconds ?? 10);
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  }, []);
+
   // Attendance Management Functions
   const loadAttendanceData = useCallback(async () => {
     try {
@@ -1783,7 +1793,10 @@ export default function Main() {
   useEffect(() => {
     const initializeAttendance = async () => {
       try {
-        // Load existing groups first
+        // Load global settings first
+        await loadSettings();
+        
+        // Load existing groups
         const groups = await attendanceManager.getGroups();
         setAttendanceGroups(groups);
         
@@ -1817,7 +1830,7 @@ export default function Main() {
       console.error('Error in initializeAttendance:', error);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleSelectGroup]); // Include handleSelectGroup dependency
+  }, [handleSelectGroup, loadSettings]); // Include handleSelectGroup and loadSettings dependencies
 
   // Removed delayed recognition useEffect for real-time performance
 
@@ -1904,6 +1917,7 @@ export default function Main() {
               <Menu
                 onBack={() => setShowMenuPanel(false)}
                 initialSection={menuInitialSection}
+                initialGroup={currentGroup}
                 onGroupsChanged={loadAttendanceData}
               />
             </div>
@@ -1918,14 +1932,25 @@ export default function Main() {
               onQuickSettingsChange={setQuickSettings}
               attendanceSettings={{
                 trackingMode: trackingMode,
-                lateThresholdEnabled: (currentGroup?.settings as any)?.late_threshold_enabled ?? true,
+                lateThresholdEnabled: (currentGroup?.settings as any)?.late_threshold_enabled ?? false,
                 lateThresholdMinutes: currentGroup?.settings?.late_threshold_minutes ?? 15,
                 classStartTime: currentGroup?.settings?.class_start_time ?? '08:00',
+                attendanceCooldownSeconds: attendanceCooldownSeconds,
               }}
               onAttendanceSettingsChange={async (updates) => {
                 // Handle tracking mode change
                 if (updates.trackingMode !== undefined) {
                   setTrackingMode(updates.trackingMode);
+                }
+                
+                // Handle cooldown change (global setting)
+                if (updates.attendanceCooldownSeconds !== undefined) {
+                  setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds);
+                  try {
+                    await attendanceManager.updateSettings({ attendance_cooldown_seconds: updates.attendanceCooldownSeconds });
+                  } catch (error) {
+                    console.error('Failed to update cooldown setting:', error);
+                  }
                 }
                 
                 // Handle group settings changes
