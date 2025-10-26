@@ -41,14 +41,14 @@ export function Reports({ group }: ReportsProps) {
     name: string;
     columns: ColumnKey[];
     groupBy: GroupByKey;
-    statusFilter: Array<'present' | 'absent'>;
+    statusFilter: 'all' | 'present' | 'absent';
     search: string;
   }
 
   const defaultColumns: ColumnKey[] = ['name', 'date', 'check_in_time', 'status', 'is_late'];
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(defaultColumns);
   const [groupBy, setGroupBy] = useState<GroupByKey>('none');
-  const [statusFilter, setStatusFilter] = useState<Array<'present' | 'absent'>>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'present' | 'absent'>('all');
   const [search, setSearch] = useState<string>('');
 
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
@@ -131,13 +131,17 @@ export function Reports({ group }: ReportsProps) {
         const v = parsed[indexToUse];
         setVisibleColumns(v.columns);
         setGroupBy(v.groupBy);
-        setStatusFilter(v.statusFilter);
+        // Handle legacy array format for statusFilter
+        const filterValue = Array.isArray(v.statusFilter) 
+          ? (v.statusFilter.length === 0 ? 'all' : v.statusFilter[0] as 'present' | 'absent')
+          : v.statusFilter;
+        setStatusFilter(filterValue);
         setSearch(v.search);
       } else {
         setActiveViewIndex(null);
         setVisibleColumns(defaultColumns);
         setGroupBy('none');
-        setStatusFilter([]);
+        setStatusFilter('all');
         setSearch('');
       }
     } catch {
@@ -173,7 +177,7 @@ export function Reports({ group }: ReportsProps) {
       return (
         !arraysEqualUnordered(current.columns, v.columns) ||
         current.groupBy !== v.groupBy ||
-        !arraysEqualUnordered(current.statusFilter, v.statusFilter) ||
+        current.statusFilter !== v.statusFilter ||
         current.search !== v.search
       );
     }
@@ -181,7 +185,7 @@ export function Reports({ group }: ReportsProps) {
     return (
       !arraysEqualUnordered(current.columns, defaultColumns) ||
       current.groupBy !== 'none' ||
-      current.statusFilter.length !== 0 ||
+      current.statusFilter !== 'all' ||
       current.search !== ''
     );
   }, [visibleColumns, groupBy, statusFilter, search, activeViewIndex, views]);
@@ -251,7 +255,7 @@ export function Reports({ group }: ReportsProps) {
 
     // Backend already filters by date range, so we only filter by status and search
     return rows.filter(r => {
-      if (statusFilter.length && !statusFilter.includes(r.status)) return false;
+      if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (search) {
         const q = search.toLowerCase();
         const hay = `${r.name} ${r.status} ${r.notes}`.toLowerCase();
@@ -457,18 +461,18 @@ export function Reports({ group }: ReportsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-white/50">Status</span>
-                  {(['present','absent'] as const).map(st => {
-                    const active = statusFilter.includes(st);
+                  {(['all', 'present', 'absent'] as const).map(st => {
+                    const active = statusFilter === st;
                     return (
-                      <label key={st} className="text-[11px] flex items-center gap-1">
+                      <label key={st} className="text-[11px] flex items-center gap-1 cursor-pointer">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="statusFilter"
                           checked={active}
-                          onChange={() => {
-                            setStatusFilter(prev => prev.includes(st) ? prev.filter(x => x !== st) : [...prev, st]);
-                          }}
+                          onChange={() => setStatusFilter(st)}
+                          className="cursor-pointer"
                         />
-                        <span>{st}</span>
+                        <span className="capitalize">{st}</span>
                       </label>
                     );
                   })}
