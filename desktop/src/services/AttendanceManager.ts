@@ -83,25 +83,13 @@ class HttpClient {
 
 export class AttendanceManager {
   private httpClient: HttpClient;
-  private settings: AttendanceSettings;
+  private settings: AttendanceSettings | null = null;
   private eventQueue: AttendanceEvent[] = [];
 
   constructor() {
     this.httpClient = new HttpClient(API_BASE_URL);
-    this.settings = this.getDefaultSettings();
-    // Defer settings loading to avoid startup errors
+    // Load settings from backend on startup
     this.loadSettingsWhenReady();
-  }
-
-  private getDefaultSettings(): AttendanceSettings {
-    return {
-      auto_checkout_enabled: true,
-      auto_checkout_hours: 8,
-      late_threshold_minutes: 15,
-      require_manual_checkout: false,
-      enable_location_tracking: false,
-      attendance_cooldown_seconds: 3
-    };
   }
 
   /**
@@ -154,10 +142,10 @@ export class AttendanceManager {
         name,
         description,
         settings: {
-          auto_checkout_hours: this.settings.auto_checkout_hours,
-          late_threshold_minutes: this.settings.late_threshold_minutes,
-          late_threshold_enabled: true,
-          require_checkout: !this.settings.auto_checkout_enabled
+          auto_checkout_hours: this.settings?.auto_checkout_hours ?? 8,
+          late_threshold_minutes: this.settings?.late_threshold_minutes ?? 15,
+          late_threshold_enabled: false,
+          require_checkout: !(this.settings?.auto_checkout_enabled ?? true)
         }
       };
 
@@ -400,10 +388,6 @@ export class AttendanceManager {
       const timeDiff = Math.abs(endDate.getTime() - startDate.getTime());
       const totalDaysInRange = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end
       
-      // Get unique dates where attendance was actually taken (any member has a session)
-      const uniqueSessionDates = new Set(sessions.map(s => s.date));
-      const actualAttendanceDays = uniqueSessionDates.size;
-      
       const memberReports = members.map(member => {
         const memberSessions = sessions.filter(s => s.person_id === member.person_id);
         
@@ -509,8 +493,12 @@ export class AttendanceManager {
   }
 
   // Settings
-  getSettings(): AttendanceSettings {
-    return { ...this.settings };
+  async getSettings(): Promise<AttendanceSettings> {
+    // If settings not loaded yet, load them now
+    if (!this.settings) {
+      await this.loadSettings();
+    }
+    return { ...this.settings! };
   }
 
   async updateSettings(newSettings: Partial<AttendanceSettings>): Promise<void> {
@@ -532,7 +520,7 @@ export class AttendanceManager {
         this.httpClient.get<AttendanceMember[]>(API_ENDPOINTS.members),
         this.getRecords(),
         this.getSessions(),
-        Promise.resolve(this.settings)
+        this.getSettings()
       ]);
 
       return JSON.stringify({
