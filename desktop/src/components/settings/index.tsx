@@ -13,19 +13,19 @@ export type { QuickSettings, AttendanceSettings };
 interface SettingsProps {
   onBack: () => void;
   isModal?: boolean;
-  quickSettings?: QuickSettings;
-  onQuickSettingsChange?: (settings: QuickSettings) => void;
-  attendanceSettings?: AttendanceSettings;
-  onAttendanceSettingsChange?: (settings: Partial<AttendanceSettings>) => void;
+  quickSettings: QuickSettings;
+  onQuickSettingsChange: (settings: QuickSettings) => void;
+  attendanceSettings: AttendanceSettings;
+  onAttendanceSettingsChange: (settings: Partial<AttendanceSettings>) => void;
   isStreaming?: boolean;
 }
 
 export const Settings: React.FC<SettingsProps> = ({ 
   onBack, 
   isModal = false, 
-  quickSettings: externalQuickSettings, 
+  quickSettings, 
   onQuickSettingsChange,
-  attendanceSettings: externalAttendanceSettings,
+  attendanceSettings,
   onAttendanceSettingsChange,
   isStreaming = false,
 }) => {
@@ -38,42 +38,13 @@ export const Settings: React.FC<SettingsProps> = ({
   const [groups, setGroups] = useState<AttendanceGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [internalQuickSettings, setInternalQuickSettings] = useState<QuickSettings>({
-    cameraMirrored: true,
-    showFPS: true,
-    showPreprocessing: false,
-    showBoundingBoxes: true,
-    showLandmarks: true,
-    showAntiSpoofStatus: true,
-    showRecognitionNames: true,
-  });
-
-  const [internalAttendanceSettings, setInternalAttendanceSettings] = useState<AttendanceSettings>({
-    trackingMode: 'auto',
-    lateThresholdEnabled: false,
-    lateThresholdMinutes: 15,
-    classStartTime: '08:00',
-    attendanceCooldownSeconds: 10,
-  });
-
-  const quickSettings = externalQuickSettings || internalQuickSettings;
-  const attendanceSettings = externalAttendanceSettings || internalAttendanceSettings;
-
   const toggleQuickSetting = (key: keyof QuickSettings) => {
     const newSettings = { ...quickSettings, [key]: !quickSettings[key] };
-    if (onQuickSettingsChange) {
-      onQuickSettingsChange(newSettings);
-    } else {
-      setInternalQuickSettings(newSettings);
-    }
+    onQuickSettingsChange(newSettings);
   };
 
   const updateAttendanceSetting = (updates: Partial<AttendanceSettings>) => {
-    if (onAttendanceSettingsChange) {
-      onAttendanceSettingsChange(updates);
-    } else {
-      setInternalAttendanceSettings(prev => ({ ...prev, ...updates }));
-    }
+    onAttendanceSettingsChange(updates);
   };
 
   useEffect(() => {
