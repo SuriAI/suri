@@ -46,7 +46,7 @@ export default function WindowBar() {
       style={{ WebkitAppRegion: isMaximized ? 'no-drag' : 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center ml-3 space-x-2 flex-1">
-        <div className="text-white text-sm font-medium">SURI <span className="text-white/70 text-xs">- AI Vision</span></div>
+        <div className="text-white text-sm font-medium">SURI</div>
       </div>
 
       <div 

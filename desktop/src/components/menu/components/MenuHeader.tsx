@@ -20,7 +20,7 @@ export function MenuHeader({ isCollapsed, onToggleCollapse }: MenuHeaderProps) {
         aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <i className={`fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-white/70 group-hover:text-white transition-all duration-200`}></i>
+        <i className={`fa-solid text-sm ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'} text-white/50 group-hover:text-white transition-all duration-200`}></i>
       </button>
     </div>
   );

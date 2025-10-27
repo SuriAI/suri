@@ -1583,27 +1583,6 @@ export default function Main() {
     return () => clearInterval(cleanupInterval);
   }, [handleOcclusion]);
 
-  const handleCreateGroup = useCallback(async () => {
-    if (!newGroupName.trim()) return;
-    
-    try {
-      const group = await attendanceManager.createGroup(newGroupName.trim());
-      setNewGroupName('');
-      setShowGroupManagement(false);
-      await loadAttendanceData();
-      
-      // Auto-select the new group if no group is currently selected
-      if (!currentGroup) {
-        setCurrentGroup(group);
-      }
-      
-    } catch (error) {
-      console.error('❌ Failed to create group:', error);
-      setError('Failed to create group');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newGroupName, currentGroup, loadAttendanceData]);
-
   const handleSelectGroup = useCallback(async (group: AttendanceGroup) => {
     setCurrentGroup(group);
     
@@ -1625,6 +1604,25 @@ export default function Main() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleCreateGroup = useCallback(async () => {
+    if (!newGroupName.trim()) return;
+    
+    try {
+      const group = await attendanceManager.createGroup(newGroupName.trim());
+      setNewGroupName('');
+      setShowGroupManagement(false);
+      await loadAttendanceData();
+      
+      // Auto-select the newly created group and load its (empty) members
+      await handleSelectGroup(group);
+      
+    } catch (error) {
+      console.error('❌ Failed to create group:', error);
+      setError('Failed to create group');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newGroupName, loadAttendanceData, handleSelectGroup]);
 
 
 
@@ -1914,7 +1912,10 @@ export default function Main() {
           {showMenuPanel && (
             <div className="fixed inset-0 z-50">
               <Menu
-                onBack={() => setShowMenuPanel(false)}
+                onBack={() => {
+                  setShowMenuPanel(false);
+                  loadAttendanceData(); // Refresh data when menu closes
+                }}
                 initialSection={menuInitialSection}
                 initialGroup={currentGroup}
                 onGroupsChanged={loadAttendanceData}
