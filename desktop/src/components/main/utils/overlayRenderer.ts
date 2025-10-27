@@ -233,15 +233,6 @@ export const drawOverlays = ({
     if (isRecognized && recognitionResult && quickSettings.showRecognitionNames) {
       label = recognitionResult.name || recognitionResult.person_id || "Unknown";
       shouldShowLabel = true;
-    } else if (liveness?.status === 'fake' && quickSettings.showAntiSpoofStatus) {
-      label = "SPOOF";
-      shouldShowLabel = true;
-    } else if (liveness?.status === 'uncertain' && quickSettings.showAntiSpoofStatus) {
-      label = "UNCERTAIN";
-      shouldShowLabel = true;
-    } else if (liveness?.status === 'insufficient_quality' && quickSettings.showAntiSpoofStatus) {
-      label = "TOO SMALL";
-      shouldShowLabel = true;
     }
 
     if (shouldShowLabel) {
