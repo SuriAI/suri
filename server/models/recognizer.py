@@ -20,7 +20,7 @@ class FaceRecognizer:
         self,
         model_path: str,
         input_size: Tuple[int, int] = (112, 112),
-        similarity_threshold: float = 0.45,  # Lowered from 0.6 to match config
+        similarity_threshold: float = 0.6,
         providers: Optional[List[str]] = None,
         database_path: Optional[str] = None,
         session_options: Optional[Dict[str, Any]] = None
