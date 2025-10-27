@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { createDisplayNameMap } from '../../../utils/displayNameUtils.js';
 import type { AttendanceGroup, AttendanceMember, AttendanceRecord } from '../types';
 
@@ -29,6 +29,7 @@ export function AttendancePanel({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('time');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [displayLimit, setDisplayLimit] = useState(20);
   
   // Create display name map for members
   const displayNameMap = useMemo(() => {
@@ -70,10 +71,17 @@ export function AttendancePanel({
     return filtered;
   }, [recentAttendance, displayNameMap, searchQuery, sortField, sortOrder]);
 
-  // Visible records (show all processed records)
+  // Visible records with pagination for performance
   const visibleRecords = useMemo(() => {
-    return processedRecords;
-  }, [processedRecords]);
+    return processedRecords.slice(0, displayLimit);
+  }, [processedRecords, displayLimit]);
+
+  const hasMore = processedRecords.length > displayLimit;
+
+  // Reset display limit when search query or sort changes
+  useEffect(() => {
+    setDisplayLimit(20);
+  }, [searchQuery, sortField, sortOrder]);
 
   if (!attendanceEnabled) {
     return (
@@ -210,6 +218,17 @@ export function AttendancePanel({
               );
             })}
 
+            {/* Load More Button */}
+            {hasMore && (
+              <div className="px-2 py-2">
+                <button
+                  onClick={() => setDisplayLimit(prev => prev + 20)}
+                  className="w-full py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 transition-colors"
+                >
+                  Load More ({processedRecords.length - displayLimit} remaining)
+                </button>
+              </div>
+            )}
             
           </>
         ) : searchQuery ? (
