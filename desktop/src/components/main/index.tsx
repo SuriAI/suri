@@ -157,7 +157,6 @@ export default function Main() {
     showFPS: false,
     showPreprocessing: false,
     showBoundingBoxes: true,
-    showAntiSpoofStatus: true,
     showRecognitionNames: true,
     showLandmarks: true,
   });

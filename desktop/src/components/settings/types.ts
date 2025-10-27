@@ -5,7 +5,6 @@ export interface QuickSettings {
   showPreprocessing: boolean;
   showBoundingBoxes: boolean;
   showLandmarks: boolean;
-  showAntiSpoofStatus: boolean;
   showRecognitionNames: boolean;
   cameraMirrored: boolean;
 }

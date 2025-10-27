@@ -97,10 +97,10 @@ export function MenuSidebar({
       />
 
       {/* Close Button at Bottom */}
-      <div className="px-4 py-3 border-t border-white/[0.08] mt-auto">
+      <div className={`py-3 border-t border-white/[0.08] mt-auto ${isCollapsed ? 'px-2' : 'px-4'}`}>
         <button
           onClick={onBack}
-          className="w-full px-3 py-2 rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center"
+          className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isCollapsed ? 'px-2 py-2' : 'px-3 py-2'}`}
           aria-label="Close"
           title="Close"
         >

@@ -28,11 +28,6 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
       description: '5-point landmarks (eyes, nose, mouth)'
     },
     { 
-      key: 'showAntiSpoofStatus' as keyof QuickSettings, 
-      label: 'Anti-Spoof',
-      description: 'Liveness detection status'
-    },
-    { 
       key: 'showRecognitionNames' as keyof QuickSettings, 
       label: 'Recognition Labels',
       description: 'Identity name tags'
