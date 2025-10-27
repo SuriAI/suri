@@ -405,7 +405,11 @@ export function Reports({ group }: ReportsProps) {
                         localStorage.setItem(defaultViewNameKey, v.name);
                       }
                     } else {
-                      // Unsaved view selected, clear default mark
+                      // Reset to default values when "(Default View)" is selected
+                      setVisibleColumns(defaultColumns);
+                      setGroupBy('none');
+                      setStatusFilter('all');
+                      setSearch('');
                       setDefaultViewName(null);
                       localStorage.removeItem(defaultViewNameKey);
                     }
