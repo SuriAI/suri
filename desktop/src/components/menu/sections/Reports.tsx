@@ -19,7 +19,7 @@ export function Reports({ group }: ReportsProps) {
     getLocalDateString()
   );
   const [reportEndDate, setReportEndDate] = useState<string>(getLocalDateString());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Advanced, offline-first editable reports (field picker, filters, grouping, saved views)
@@ -109,7 +109,14 @@ export function Reports({ group }: ReportsProps) {
     return () => clearTimeout(timer);
   }, [generateReport]);
 
-  
+  // Reset state when group changes
+  useEffect(() => {
+    setLoading(true);
+    setReport(null);
+    setSessions([]);
+    setMembers([]);
+    setError(null);
+  }, [group.id]);
 
   // Load saved views on mount or group change
   useEffect(() => {

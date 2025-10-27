@@ -556,10 +556,10 @@ export function FaceCapture({ group, members, onRefresh, onBack }: FaceCapturePr
         {selectedMemberId && (
           <div className="space-y-4 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2 h-full">
              {/* Header with Change Member button */}
-             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+             <div className="rounded-xl border border-white/10 bg-white/5 p-1.5">
                <div className="flex items-center gap-3">
                  <div className="flex-1 min-w-0">
-                   <div className="text-lg font-medium text-white truncate">
+                   <div className="text-sm font-medium text-white truncate">
                      {membersWithDisplayNames.find(m => m.person_id === selectedMemberId)?.displayName}
                    </div>
                  </div>

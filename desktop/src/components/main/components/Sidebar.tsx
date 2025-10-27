@@ -106,6 +106,7 @@ export function Sidebar({
           groupMembers={groupMembers}
           handleSelectGroup={handleSelectGroup}
           setShowGroupManagement={setShowGroupManagement}
+          openMenuPanel={openMenuPanel}
         />
       </div>
     </div>
