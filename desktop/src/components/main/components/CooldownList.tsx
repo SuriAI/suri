@@ -52,7 +52,7 @@ export const CooldownList = memo(function CooldownList({
       const cooldownMsForThisCooldown = cooldownSecondsForThisCooldown * 1000;
       const expirationThreshold = cooldownMsForThisCooldown + 500;
       
-      if (timeSinceStart >= 0 && timeSinceStart < expirationThreshold) {
+      if (timeSinceStart < expirationThreshold) {
         const remainingMs = cooldownMsForThisCooldown - timeSinceStart;
         
         let remainingCooldown: number;

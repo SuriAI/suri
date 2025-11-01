@@ -137,7 +137,7 @@ interface DrawOverlaysParams {
   isStreaming: boolean;
   currentRecognitionResults: Map<number, ExtendedFaceRecognitionResponse>;
   recognitionEnabled: boolean;
-  persistentCooldowns: Map<string, { personId: string; memberName?: string; startTime: number; lastKnownBbox?: { x: number; y: number; width: number; height: number } }>;
+  persistentCooldowns: Map<string, { personId: string; memberName?: string; startTime: number; lastKnownBbox?: { x: number; y: number; width: number; height: number }; cooldownDurationSeconds: number }>;
   attendanceCooldownSeconds: number;
   quickSettings: QuickSettings;
   getVideoRect: () => DOMRect | null;
@@ -252,7 +252,8 @@ export const drawOverlays = ({
       if (cooldownInfo) {
         const currentTime = Date.now();
         const timeSinceStart = currentTime - cooldownInfo.startTime;
-        const cooldownMs = attendanceCooldownSeconds * 1000;
+        const cooldownSeconds = cooldownInfo.cooldownDurationSeconds ?? attendanceCooldownSeconds;
+        const cooldownMs = cooldownSeconds * 1000;
 
         if (timeSinceStart < cooldownMs) {
           ctx.save();
