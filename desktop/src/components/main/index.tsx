@@ -655,8 +655,10 @@ export default function Main() {
                     // Create new cooldown when person logs attendance after cooldown expires
                     const logTime = Date.now();
                     const existingInState = persistentCooldownsRef.current.get(cooldownKey);
+                    const existingCooldownSeconds = existingInState?.cooldownDurationSeconds ?? attendanceCooldownSeconds;
+                    const existingCooldownMs = existingCooldownSeconds * 1000;
                     const existingInStateStillActive = existingInState && 
-                      (logTime - existingInState.startTime < cooldownMs);
+                      (logTime - existingInState.startTime < existingCooldownMs);
                     
                     if (!existingInStateStillActive) {
                       startTransition(() => {
