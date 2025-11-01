@@ -81,7 +81,6 @@ export interface TrackedFace {
   personId?: string;
   occlusionCount: number;
   angleConsistency: number;
-  cooldownRemaining?: number;
   livenessStatus?: 'real' | 'fake' | 'uncertain' | 'error' | 'insufficient_quality';
 }
 

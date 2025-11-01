@@ -24,7 +24,6 @@ const TRACKING_HISTORY_LIMIT = 20;
 // Extended recognition response with additional UI properties
 export interface ExtendedFaceRecognitionResponse extends FaceRecognitionResponse {
   memberName?: string;
-  cooldownRemaining?: number;
 }
 
 const trimTrackingHistory = <T,>(history: T[]): T[] => {
@@ -47,8 +46,7 @@ const isRecognitionResponseEqual = (
     a.name === b.name &&
     a.similarity === b.similarity &&
     a.error === b.error &&
-    a.memberName === b.memberName &&
-    a.cooldownRemaining === b.cooldownRemaining
+    a.memberName === b.memberName
   );
 };
 
@@ -254,10 +252,6 @@ export default function Main() {
   const [groupToDelete, setGroupToDelete] = useState<AttendanceGroup | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   
-  // CRITICAL: Synchronous cooldown ref to prevent race conditions from async setState
-  // This is the source of truth for cooldown timestamps (faster than state)
-  const cooldownTimestampsRef = useRef<Map<string, number>>(new Map());
-  
   // Persistent cooldown tracking (for recognized faces)
   const [persistentCooldowns, setPersistentCooldowns] = useState<Map<string, CooldownInfo>>(new Map());
   // Ref to always access latest persistentCooldowns in callbacks (avoids stale closure)
@@ -346,43 +340,6 @@ export default function Main() {
       
       // Batch all updates in a single transition to prevent blocking
       startTransition(() => {
-        // Update tracked faces with current cooldown remaining
-        // Use ref for cooldown timestamps to avoid dependency on state
-        setTrackedFaces(prev => {
-          const newTracked = new Map(prev);
-          let hasChanges = false;
-          
-          for (const [trackId, track] of newTracked) {
-            if (track.personId) {
-              // Use ref instead of state to avoid effect restarts
-              const lastAttendanceTime = cooldownTimestampsRef.current.get(track.personId);
-              if (lastAttendanceTime) {
-                const timeSinceLastAttendance = now - lastAttendanceTime;
-                const cooldownMs = attendanceCooldownSeconds * 1000;
-                
-                if (timeSinceLastAttendance < cooldownMs) {
-                  const remainingCooldown = Math.ceil((cooldownMs - timeSinceLastAttendance) / 1000);
-                  if (track.cooldownRemaining !== remainingCooldown) {
-                    newTracked.set(trackId, {
-                      ...track,
-                      cooldownRemaining: remainingCooldown
-                    });
-                    hasChanges = true;
-                  }
-                } else if (track.cooldownRemaining !== undefined) {
-                  // Cooldown expired, remove it
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  const { cooldownRemaining: _, ...trackWithoutCooldown } = track;
-                  newTracked.set(trackId, trackWithoutCooldown);
-                  hasChanges = true;
-                }
-              }
-            }
-          }
-          
-          return hasChanges ? newTracked : prev;
-        });
-        
         // Update persistent cooldowns - only remove truly expired ones
         setPersistentCooldowns(prev => {
           const newPersistent = new Map(prev);
@@ -404,17 +361,6 @@ export default function Main() {
           persistentCooldownsRef.current = hasChanges ? newPersistent : prev;
           return hasChanges ? newPersistent : prev;
         });
-        
-        // Clean up expired cooldowns from ref
-        // Note: We only clean the ref since persistentCooldowns are cleaned separately above
-        for (const [personId, timestamp] of cooldownTimestampsRef.current) {
-          const timeSinceLastAttendance = now - timestamp;
-          const cooldownMs = attendanceCooldownSeconds * 1000;
-          
-          if (timeSinceLastAttendance >= cooldownMs) {
-            cooldownTimestampsRef.current.delete(personId);
-          }
-        }
       });
     };
     
@@ -680,20 +626,12 @@ export default function Main() {
                     const cooldownKey = response.person_id;
                     const cooldownMs = attendanceCooldownSeconds * 1000;
 
-                    // CRITICAL: Check BOTH ref AND state for cooldown - use ref to get latest state
-                    // Use the earliest (oldest) timestamp to ensure we don't miss an active cooldown
-                    const refTimestamp = cooldownTimestampsRef.current.get(cooldownKey);
-                    // Use ref to access latest state (avoids stale closure issue)
-                    const stateCooldown = persistentCooldownsRef.current.get(cooldownKey);
-                    const stateTimestamp = stateCooldown?.startTime;
-                    
-                    // Use state timestamp if available (source of truth), otherwise fall back to ref
-                    const authoritativeTimestamp = stateTimestamp || refTimestamp || 0;
+                    // Check cooldown from persistentCooldowns (source of truth)
+                    const cooldownInfo = persistentCooldownsRef.current.get(cooldownKey);
+                    const authoritativeTimestamp = cooldownInfo?.startTime || 0;
                     const timeSinceLastAttendance = currentTime - authoritativeTimestamp;
 
                     if (timeSinceLastAttendance < cooldownMs) {
-                      const remainingCooldown = Math.ceil((cooldownMs - timeSinceLastAttendance) / 1000);
-
                       // Update lastKnownBbox in persistentCooldowns for display even when face disappears
                       startTransition(() => {
                         setPersistentCooldowns(prev => {
@@ -704,51 +642,23 @@ export default function Main() {
                               ...existing,
                               lastKnownBbox: face.bbox
                             });
-                            // Sync ref with latest state
                             persistentCooldownsRef.current = newPersistent;
                             return newPersistent;
                           }
                           return prev;
                         });
-
-                      // Update the tracked face with cooldown info for overlay display using track_id
-                      setTrackedFaces(prev => {
-                        const newTracked = new Map(prev);
-                        const trackKey = `track_${face.track_id}`;
-                        if (newTracked.has(trackKey)) {
-                          newTracked.set(trackKey, {
-                            ...newTracked.get(trackKey)!,
-                            cooldownRemaining: remainingCooldown
-                          });
-                        }
-                        return newTracked;
                       });
-                    });
 
-                      // Use trackId instead of index for stable mapping
-                      return { trackId, result: { ...response, name: memberName, memberName, cooldownRemaining: remainingCooldown } };
+                      return { trackId, result: { ...response, name: memberName, memberName } };
                     }
 
-                    // CRITICAL FIX: Only create NEW cooldown when person logs attendance after cooldown expires
-                    // This code path only runs when timeSinceLastAttendance >= cooldownMs (cooldown expired)
+                    // Create new cooldown when person logs attendance after cooldown expires
                     const logTime = Date.now();
-                    
-                    // CRITICAL: Use ref to get latest state (avoids stale closure issue)
-                    // The ref might be out of sync, but persistentCooldownsRef.current is always latest
                     const existingInState = persistentCooldownsRef.current.get(cooldownKey);
                     const existingInStateStillActive = existingInState && 
                       (logTime - existingInState.startTime < cooldownMs);
                     
-                    // Only create new cooldown if:
-                    // 1. No ref timestamp exists (first time), OR
-                    // 2. Ref shows expired AND state also shows expired (double verification)
-                    const existingRefTimestamp = cooldownTimestampsRef.current.get(cooldownKey);
-                    const refShowsExpired = !existingRefTimestamp || (logTime - existingRefTimestamp >= cooldownMs);
-                    
-                    // Only proceed if BOTH ref and state confirm cooldown is expired (or doesn't exist)
-                    if (!existingInStateStillActive && refShowsExpired) {
-                      cooldownTimestampsRef.current.set(cooldownKey, logTime);
-
+                    if (!existingInStateStillActive) {
                       startTransition(() => {
                         setPersistentCooldowns(prev => {
                           const newPersistent = new Map(prev);
@@ -763,13 +673,7 @@ export default function Main() {
                           return newPersistent;
                         });
                       });
-                    } else if (existingInStateStillActive) {
-                      // Edge case: State shows active cooldown but ref doesn't - sync them
-                      // This can happen due to race conditions - preserve state as source of truth
-                      if (!existingRefTimestamp || existingRefTimestamp !== existingInState.startTime) {
-                        cooldownTimestampsRef.current.set(cooldownKey, existingInState.startTime);
-                      }
-                      
+                    } else {
                       // Update metadata only, preserve startTime
                       startTransition(() => {
                         setPersistentCooldowns(prev => {
@@ -1485,9 +1389,6 @@ export default function Main() {
     
     // PRESERVE cooldowns - don't clear them so they persist across stop/start cycles
     // This prevents duplicate detections when restarting quickly
-    
-    // Note: We keep persistentCooldowns and cooldownTimestampsRef
-    // so that recently detected people can't be detected again immediately after restart
     
     // Reset ACCURATE FPS tracking
     setDetectionFps(0);
