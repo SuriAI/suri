@@ -56,6 +56,7 @@ export default function WindowBar() {
         <button
           onClick={handleMinimize}
           className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
+          title="Minimize"
         >
           <i className="fas fa-window-minimize text-[10px] pb-1.5"></i>
         </button>
@@ -63,6 +64,7 @@ export default function WindowBar() {
         <button
           onClick={handleMaximize}
           className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-white/10 transition-all duration-200 border-none bg-transparent p-0 rounded"
+          title={isMaximized ? 'Restore' : 'Maximize'}
         >
             {isMaximized ? (
               <i className="far fa-window-restore text-[11px]"></i>
@@ -74,6 +76,7 @@ export default function WindowBar() {
         <button
           onClick={handleClose}
           className="w-11.5 h-9 flex items-center justify-center text-white/40 hover:bg-red-500/90 hover:text-white bg-transparent transition-all duration-200 border-none p-0 rounded"
+          title="Close"
         >
           <i className="fa fa-times text-[14px]"></i>
         </button>
