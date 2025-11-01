@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import type { GroupSection } from '../types';
 import type { AttendanceGroup } from '../../../types/recognition';
-// import { MobileHeader } from './MobileHeader';
 import { MobileNav } from './MobileNav';
 
 interface MobileDrawerProps {
