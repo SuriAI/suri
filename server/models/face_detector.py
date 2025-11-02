@@ -47,16 +47,7 @@ class FaceDetector:
             self.detector = None
 
     def detect_faces(self, image: np.ndarray) -> List[dict]:
-        """
-        Detect faces in image
-        OPTIMIZED: Processes BGR image (OpenCV native format)
-
-        Args:
-            image: Input image (BGR format - OpenCV native)
-
-        Returns:
-            List of face detection dictionaries with bbox and confidence
-        """
+        # Detect faces in the given image
         if not self.detector:
             return []
 
@@ -65,12 +56,14 @@ class FaceDetector:
             logger.warning("Invalid image provided to face detector")
             return []
 
+        # Get original image dimensions
         orig_height, orig_width = image.shape[:2]
 
-        # OPTIMIZATION: No color conversion - face detector expects BGR natively
+        # Resize image for face detection
         resized_img = cv2.resize(image, self.input_size)
 
-        _, faces = self.detector.detect(resized_img)
+        # Perform face detection
+        faces = self.detector.detect(resized_img)[1]
 
         if faces is None or len(faces) == 0:
             return []
@@ -103,7 +96,8 @@ class FaceDetector:
                 landmarks_5[:, 0] *= scale_x
                 landmarks_5[:, 1] *= scale_y
 
-                # Only check face size if min_face_size > 0 (when spoof detection is enabled)
+                # Only check face size if min_face_size > 0 
+                # (when spoof detection is enabled)
                 is_face_too_small = self.min_face_size > 0 and (
                     face_width_orig < self.min_face_size
                     or face_height_orig < self.min_face_size

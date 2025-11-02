@@ -23,7 +23,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from models.detector import FaceDetector
+from models.face_detector import FaceDetector
 from models.validator import LivenessValidator
 from models.recognizer import FaceRecognizer
 from models.tracker import FaceTracker
