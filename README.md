@@ -65,7 +65,7 @@ Attendance Recording (with cooldown + deduplication)
 
 ### System Components
 
-#### 1. **Face Detection Module** (`server/models/detector.py`)
+#### 1. **Face Detection Module** (`server/models/face_detector.py`)
 - Lightweight CNN-based architecture optimized for real-time performance
 - Configurable input size (640×640 default for distant face detection)
 - NMS (Non-Maximum Suppression) for overlapping face elimination
@@ -604,7 +604,7 @@ Suri/
 │
 ├── server/                     # Python FastAPI backend
 │   ├── models/
-│   │   ├── detector.py        # Face detection
+│   │   ├── face_detector.py   # Face detection
 │   │   ├── recognizer.py      # Face recognition
 │   │   ├── validator.py       # Liveness detection
 │   │   ├── tracker.py         # Deep SORT tracking
