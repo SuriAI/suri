@@ -76,10 +76,12 @@ def clean_build_dirs():
 def install_pyinstaller():
     """Install PyInstaller if not available"""
     try:
-        import PyInstaller
+        import importlib.util
 
-        print("[SUCCESS] PyInstaller is already installed")
-        return True
+        if importlib.util.find_spec("PyInstaller") is not None:
+            print("[SUCCESS] PyInstaller is already installed")
+            return True
+        raise ImportError
     except ImportError:
         print("📦 Installing PyInstaller...")
         try:

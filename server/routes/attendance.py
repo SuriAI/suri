@@ -628,7 +628,6 @@ async def process_attendance_event(
 
         # Get current settings to check confidence threshold and cooldown
         settings = db.get_settings()
-        confidence_threshold = settings.get("confidence_threshold", 0.6)
         cooldown_seconds = settings.get("attendance_cooldown_seconds", 10)
 
         # Check for recent attendance records to enforce cooldown
@@ -1007,9 +1006,6 @@ async def register_face_for_group_person(group_id: str, person_id: str, request:
             image = decode_base64_image(image_data)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid image data: {str(e)}")
-
-        # Anti-duplicate check: verify this person isn't already registered
-        existing_persons = face_recognizer.get_all_persons()
 
         # Use landmarks from frontend (face detection)
         landmarks_5 = request.get("landmarks_5")
@@ -1549,8 +1545,6 @@ async def bulk_register_faces(group_id: str, request: dict):
                     )
                     continue
 
-                # Simple quality check - just ensure face is detected
-                quality_result = {"is_acceptable": True, "quality_score": 0.8}
                 quality_warning = None
 
                 # Use landmarks from frontend (face detection)
