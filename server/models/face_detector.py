@@ -59,15 +59,18 @@ class FaceDetector:
         if faces is None or len(faces) == 0:
             return []
 
-        # Convert to face detection dict
+        # Convert detections to face detection dict
         detections = []
         for face in faces:
             x, y, w, h = face[:4]
             landmarks_5 = face[4:14].reshape(5, 2)
             conf = face[14]
 
+
+            # Check if face is detected with confidence threshold
             if conf >= self.conf_threshold:
 
+                # Scale face coordinates to original image size
                 scale_x = orig_width / self.input_size[0]
                 scale_y = orig_height / self.input_size[1]
 
@@ -76,24 +79,27 @@ class FaceDetector:
                 x2_orig = int((x + w) * scale_x)
                 y2_orig = int((y + h) * scale_y)
 
+                # Ensure face coordinates are within image bounds
                 x1_orig = max(0, x1_orig)
                 y1_orig = max(0, y1_orig)
                 x2_orig = min(orig_width, x2_orig)
                 y2_orig = min(orig_height, y2_orig)
 
+                # Calculate face width and height in original image size
                 face_width_orig = x2_orig - x1_orig
                 face_height_orig = y2_orig - y1_orig
 
+                # Scale landmarks to original image size
                 landmarks_5[:, 0] *= scale_x
                 landmarks_5[:, 1] *= scale_y
 
-                # Only check face size if min_face_size > 0 
-                # (when spoof detection is enabled)
+                # Check if face is too small for anti-spoof
                 is_face_too_small = self.min_face_size > 0 and (
                     face_width_orig < self.min_face_size
                     or face_height_orig < self.min_face_size
                 )
 
+                # Create face detection dict
                 detection = {
                     "bbox": {
                         "x": x1_orig,
@@ -102,9 +108,10 @@ class FaceDetector:
                         "height": face_height_orig,
                     },
                     "confidence": float(conf),
+                    "landmarks_5": landmarks_5.tolist(),
                 }
 
-                # Add liveness status for small faces (only if min_face_size > 0)
+                # Add liveness status for small faces
                 if is_face_too_small:
                     detection["liveness"] = {
                         "is_real": False,
@@ -116,8 +123,7 @@ class FaceDetector:
                         "confidence": 0.0,
                     }
 
-                detection["landmarks_5"] = landmarks_5.tolist()
-
+                # Add face detection dict to list
                 detections.append(detection)
 
         return detections
