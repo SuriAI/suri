@@ -410,8 +410,6 @@ async def detect_faces(request: DetectionRequest):
     """
     Detect faces in a single image
     """
-    import time
-
     start_time = time.time()
 
     try:
@@ -466,8 +464,6 @@ async def detect_faces(request: DetectionRequest):
                 ]
 
             if "track_id" in face:
-                import numpy as np
-
                 track_id_value = face["track_id"]
                 if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
                     face["track_id"] = int(track_id_value)
@@ -504,8 +500,6 @@ async def detect_faces_upload(
     """
     Detect faces in an uploaded image file
     """
-    import time
-
     start_time = time.time()
 
     try:
@@ -568,8 +562,6 @@ async def detect_faces_upload(
                 ]
 
             if "track_id" in face:
-                import numpy as np
-
                 track_id_value = face["track_id"]
                 if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
                     face["track_id"] = int(track_id_value)

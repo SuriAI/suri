@@ -81,10 +81,6 @@ class FaceRecognizer:
                 self.model_path, sess_options=session_options, providers=self.providers
             )
 
-            # Get model info
-            input_info = self.session.get_inputs()[0]
-            output_info = self.session.get_outputs()[0]
-
         except Exception as e:
             logger.error(f"Failed to initialize face recognizer model: {e}")
             raise
@@ -338,7 +334,7 @@ class FaceRecognizer:
                     )  # Get face detector landmarks if available
                     emb = self._extract_embedding(image, bbox, landmarks_5)
                     embeddings.append(emb)
-                except:
+                except Exception:
                     continue
             return embeddings
 

@@ -8,11 +8,11 @@ from pathlib import Path
 
 import uvicorn
 
+from config import config, validate_model_paths, validate_directories
+
 # Add the backend directory to Python path
 backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
-
-from config import config, validate_model_paths, validate_directories
 
 # Global flag for graceful shutdown
 shutdown_flag = False
