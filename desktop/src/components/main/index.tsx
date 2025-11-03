@@ -458,7 +458,7 @@ export default function Main() {
             return null;
           }
           
-          // CRITICAL: Liveness validation FIRST - Skip recognition for spoofed faces but still display them
+          // CRITICAL: Liveness validation FIRST - Skip recognition for problematic faces but still display them
           if (face.liveness?.status === 'fake') {
             // Don't return null - we want to show spoofed faces in the sidebar
             // Just skip the recognition processing
@@ -469,7 +469,16 @@ export default function Main() {
             };
           }
           
-          // Note: Simplified anti-spoofing status handling - only 'real', 'fake', 'error' are supported
+          // OPTIMIZATION: Skip recognition for uncertain edge cases (prevents wasted API calls)
+          // Backend will block these anyway, so skip early for efficiency
+          // Still show faces in UI for user feedback
+          if (face.liveness?.status === 'uncertain') {
+            return {
+              face: face,
+              skipRecognition: true,
+              reason: 'uncertain_edge_case'
+            };
+          }
           
           // Also reject faces with liveness errors for safety
           if (face.liveness?.status === 'error') {

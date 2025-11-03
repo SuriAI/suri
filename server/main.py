@@ -646,9 +646,13 @@ async def recognize_face(request: FaceRecognitionRequest):
                     )
 
                 # Also block other problematic statuses
+                # CRITICAL: Block "uncertain" status to prevent false positive matches on unreliable edge cases
+                # Security & Efficiency: Block at recognition stage (first) rather than logging (later)
+                # This prevents wasted API calls and potential misidentification of partial/edge faces
                 if status in [
                     "too_small",
                     "error",
+                    "uncertain",
                 ]:
                     processing_time = time.time() - start_time
                     logger.warning(
@@ -759,9 +763,12 @@ async def register_person(request: FaceRegistrationRequest):
                     )
 
                 # Also block other problematic statuses
+                # CRITICAL: Block "uncertain" status to prevent registration of unreliable edge cases
+                # Edge cases have insufficient quality for reliable face registration
                 if status in [
                     "too_small",
                     "error",
+                    "uncertain",
                 ]:
                     processing_time = time.time() - start_time
                     logger.warning(
