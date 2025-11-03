@@ -127,6 +127,12 @@ class FaceDetector:
             landmarks_5[:, 0] *= scale_x
             landmarks_5[:, 1] *= scale_y
 
+            # CRITICAL: Clamp landmarks to image bounds to ensure accuracy at edges
+            # This prevents invalid coordinates that could cause rendering issues
+            for landmark in landmarks_5:
+                landmark[0] = max(0, min(orig_width - 1, landmark[0]))
+                landmark[1] = max(0, min(orig_height - 1, landmark[1]))
+
             # Check if landmarks are too close to edges
             landmarks_near_edge = False
             for landmark in landmarks_5:

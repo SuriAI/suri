@@ -38,7 +38,8 @@ export const drawLandmarks = (
   offsetY: number,
   color: string,
   bbox?: { x: number; y: number; width: number; height: number },
-  displayWidth?: number
+  displayWidth?: number,
+  displayHeight?: number
 ) => {
   
   landmarks.forEach((point) => {
@@ -48,8 +49,8 @@ export const drawLandmarks = (
       const y = point[1] * scaleY + offsetY;
       
       if (!isFinite(x) || !isFinite(y)) return;
-      
-      // Sanity check: skip obviously wrong landmarks
+
+      // Sanity check: skip obviously wrong landmarks (check before clamping)
       if (bbox) {
         // Calculate mirrored bbox coordinates if display is mirrored
         const bboxX = displayWidth 
@@ -66,53 +67,133 @@ export const drawLandmarks = (
           return;
         }
       }
+
+      // CRITICAL: Clamp landmark coordinates to canvas bounds for edge case accuracy
+      // This ensures landmarks at video edges are still visible and accurate
+      let finalX: number;
+      let finalY: number;
       
-      // FUTURISTIC MINIMALIST DESIGN
-      ctx.save();
-      
-      // Outer glow (subtle)
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 8;
-      
-      // Sharp geometric ring (minimalist)
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = 'square';
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
-      ctx.stroke();
-      
-      // Remove shadow for inner elements
-      ctx.shadowBlur = 0;
-      
-      // Center dot (sharp, minimal)
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, 1, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Crosshair indicator (futuristic targeting aesthetic)
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.6;
-      
-      // Horizontal line
-      ctx.beginPath();
-      ctx.moveTo(x - 5, y);
-      ctx.lineTo(x - 2, y);
-      ctx.moveTo(x + 2, y);
-      ctx.lineTo(x + 5, y);
-      ctx.stroke();
-      
-      // Vertical line
-      ctx.beginPath();
-      ctx.moveTo(x, y - 5);
-      ctx.lineTo(x, y - 2);
-      ctx.moveTo(x, y + 2);
-      ctx.lineTo(x, y + 5);
-      ctx.stroke();
-      
-      ctx.restore();
+      if (displayWidth !== undefined && displayHeight !== undefined) {
+        const clampedX = Math.max(0, Math.min(displayWidth, x));
+        const clampedY = Math.max(0, Math.min(displayHeight, y));
+        
+        // Skip landmark if it's significantly outside bounds (more than small margin)
+        // Small margin allows slight out-of-bounds for visual accuracy at edges
+        const margin = 5;
+        if (Math.abs(x - clampedX) > margin || Math.abs(y - clampedY) > margin) {
+          return;
+        }
+        
+        // Use clamped coordinates for rendering
+        finalX = clampedX;
+        finalY = clampedY;
+        
+        // FUTURISTIC MINIMALIST DESIGN
+        ctx.save();
+        
+        // Outer glow (subtle)
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        
+        // Sharp geometric ring (minimalist)
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.lineCap = 'square';
+        ctx.beginPath();
+        ctx.arc(finalX, finalY, 3, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Remove shadow for inner elements
+        ctx.shadowBlur = 0;
+        
+        // Center dot (sharp, minimal)
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(finalX, finalY, 1, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Crosshair indicator (futuristic targeting aesthetic)
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.6;
+        
+        // Horizontal line (clamped to canvas bounds)
+        ctx.beginPath();
+        const hStart = Math.max(0, finalX - 5);
+        const hMid1 = Math.max(0, finalX - 2);
+        const hMid2 = Math.min(displayWidth!, finalX + 2);
+        const hEnd = Math.min(displayWidth!, finalX + 5);
+        ctx.moveTo(hStart, finalY);
+        ctx.lineTo(hMid1, finalY);
+        ctx.moveTo(hMid2, finalY);
+        ctx.lineTo(hEnd, finalY);
+        ctx.stroke();
+        
+        // Vertical line (clamped to canvas bounds)
+        ctx.beginPath();
+        const vStart = Math.max(0, finalY - 5);
+        const vMid1 = Math.max(0, finalY - 2);
+        const vMid2 = Math.min(displayHeight!, finalY + 2);
+        const vEnd = Math.min(displayHeight!, finalY + 5);
+        ctx.moveTo(finalX, vStart);
+        ctx.lineTo(finalX, vMid1);
+        ctx.moveTo(finalX, vMid2);
+        ctx.lineTo(finalX, vEnd);
+        ctx.stroke();
+        
+        ctx.restore();
+      } else {
+        // Fallback for when display bounds are not provided (shouldn't happen)
+        const finalX = x;
+        const finalY = y;
+        
+        // FUTURISTIC MINIMALIST DESIGN
+        ctx.save();
+        
+        // Outer glow (subtle)
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        
+        // Sharp geometric ring (minimalist)
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.lineCap = 'square';
+        ctx.beginPath();
+        ctx.arc(finalX, finalY, 3, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Remove shadow for inner elements
+        ctx.shadowBlur = 0;
+        
+        // Center dot (sharp, minimal)
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(finalX, finalY, 1, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Crosshair indicator (futuristic targeting aesthetic)
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.6;
+        
+        // Horizontal line
+        ctx.beginPath();
+        ctx.moveTo(finalX - 5, finalY);
+        ctx.lineTo(finalX - 2, finalY);
+        ctx.moveTo(finalX + 2, finalY);
+        ctx.lineTo(finalX + 5, finalY);
+        ctx.stroke();
+        
+        // Vertical line
+        ctx.beginPath();
+        ctx.moveTo(finalX, finalY - 5);
+        ctx.lineTo(finalX, finalY - 2);
+        ctx.moveTo(finalX, finalY + 2);
+        ctx.lineTo(finalX, finalY + 5);
+        ctx.stroke();
+        
+        ctx.restore();
+      }
     }
   });
 };
@@ -218,18 +299,30 @@ export const drawOverlays = ({
 
     if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2)) return;
 
+    // CRITICAL: Clamp coordinates to canvas bounds to prevent rendering outside visible area
+    // This ensures accuracy even when faces are at video edges
+    const clampedX1 = Math.max(0, Math.min(displayWidth, x1));
+    const clampedY1 = Math.max(0, Math.min(displayHeight, y1));
+    const clampedX2 = Math.max(0, Math.min(displayWidth, x2));
+    const clampedY2 = Math.max(0, Math.min(displayHeight, y2));
+
+    // Skip if bbox is completely outside canvas (edge case handling)
+    if (clampedX2 <= clampedX1 || clampedY2 <= clampedY1) return;
+
     const trackId = face.track_id!;
     const recognitionResult = currentRecognitionResults.get(trackId);
     const color = getFaceColor(recognitionResult || null, recognitionEnabled);
 
     setupCanvasContext(ctx, color);
     if (quickSettings.showBoundingBoxes) {
-      drawBoundingBox(ctx, x1, y1, x2, y2);
+      // Use clamped coordinates to ensure accurate rendering at edges
+      drawBoundingBox(ctx, clampedX1, clampedY1, clampedX2, clampedY2);
     }
 
     // Draw YuNet 5-point landmarks if available and enabled
+    // Pass displayHeight for accurate edge case handling
     if (quickSettings.showLandmarks && landmarks_5 && Array.isArray(landmarks_5) && landmarks_5.length === 5) {
-      drawLandmarks(ctx, landmarks_5, scaleX, scaleY, offsetX, offsetY, color, bbox, quickSettings.cameraMirrored ? displayWidth : undefined);
+      drawLandmarks(ctx, landmarks_5, scaleX, scaleY, offsetX, offsetY, color, bbox, quickSettings.cameraMirrored ? displayWidth : undefined, displayHeight);
     }
 
     const isRecognized = recognitionEnabled && recognitionResult?.person_id;
@@ -242,8 +335,11 @@ export const drawOverlays = ({
     }
 
     if (shouldShowLabel) {
+      // Clamp label position to canvas bounds to ensure visibility at edges
+      const labelX = Math.max(4, Math.min(displayWidth - 100, clampedX1 + 4));
+      const labelY = Math.max(13, Math.min(displayHeight - 4, clampedY1 - 6));
       ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-      ctx.fillText(label, x1 + 4, y1 - 6);
+      ctx.fillText(label, labelX, labelY);
     }
 
     if (isRecognized && recognitionResult?.person_id) {
@@ -261,8 +357,9 @@ export const drawOverlays = ({
         if (timeSinceStart < cooldownMs && remainingCooldownSeconds > 0) {
           ctx.save();
 
-          const centerX = (x1 + x2) / 2;
-          const centerY = (y1 + y2) / 2;
+          // Use clamped coordinates for center calculation to ensure accurate positioning at edges
+          const centerX = (clampedX1 + clampedX2) / 2;
+          const centerY = (clampedY1 + clampedY2) / 2;
 
           ctx.fillStyle = '#FFFFFF';
           ctx.font = '500 40px system-ui, -apple-system, sans-serif';
