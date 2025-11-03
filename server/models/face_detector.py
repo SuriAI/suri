@@ -89,30 +89,70 @@ class FaceDetector:
             conf = float(face[14])
 
             # Scale bounding box coordinates to original image size
-            x1_orig = int(x * scale_x)
-            y1_orig = int(y * scale_y)
-            x2_orig = int((x + w) * scale_x)
-            y2_orig = int((y + h) * scale_y)
+            x1_unclipped = int(x * scale_x)
+            y1_unclipped = int(y * scale_y)
+            x2_unclipped = int((x + w) * scale_x)
+            y2_unclipped = int((y + h) * scale_y)
+
+            # Calculate original (unclipped) bounding box size
+            original_width = x2_unclipped - x1_unclipped
+            original_height = y2_unclipped - y1_unclipped
+            original_area = original_width * original_height
 
             # Ensure bounding box coordinates are within image bounds
-            x1_orig = max(0, x1_orig)
-            y1_orig = max(0, y1_orig)
-            x2_orig = min(orig_width, x2_orig)
-            y2_orig = min(orig_height, y2_orig)
+            x1_orig = max(0, x1_unclipped)
+            y1_orig = max(0, y1_unclipped)
+            x2_orig = min(orig_width, x2_unclipped)
+            y2_orig = min(orig_height, y2_unclipped)
 
-            # Calculate bounding box width and height in original image size
+            # Calculate clipped bounding box width and height
             face_width_orig = x2_orig - x1_orig
             face_height_orig = y2_orig - y1_orig
+            clipped_area = face_width_orig * face_height_orig
+
+            # Calculate visibility ratio (how much of the face is actually visible)
+            visibility_ratio = clipped_area / original_area if original_area > 0 else 1.0
+
+            # Check if face is too close to image edges (within 5% of image dimension)
+            edge_threshold_x = orig_width * 0.05
+            edge_threshold_y = orig_height * 0.05
+            is_near_edge = (
+                x1_orig < edge_threshold_x
+                or y1_orig < edge_threshold_y
+                or x2_orig > (orig_width - edge_threshold_x)
+                or y2_orig > (orig_height - edge_threshold_y)
+            )
 
             # Scale 5-point landmarks to original image size
             landmarks_5[:, 0] *= scale_x
             landmarks_5[:, 1] *= scale_y
+
+            # Check if landmarks are too close to edges
+            landmarks_near_edge = False
+            for landmark in landmarks_5:
+                lx, ly = landmark[0], landmark[1]
+                if (
+                    lx < edge_threshold_x
+                    or ly < edge_threshold_y
+                    or lx > (orig_width - edge_threshold_x)
+                    or ly > (orig_height - edge_threshold_y)
+                ):
+                    landmarks_near_edge = True
+                    break
 
             # Check if bounding box is too small for anti-spoof
             is_bounding_box_too_small = self.min_face_size > 0 and (
                 face_width_orig < self.min_face_size
                 or face_height_orig < self.min_face_size
             )
+
+            # Check if face has low visibility or is at edges
+            # For edge cases, mark as uncertain immediately without attempting liveness detection
+            # This prevents misclassification of spoof/real faces when partially visible
+            is_critically_low_visibility = visibility_ratio < 0.50
+            is_edge_case_for_uncertain = (
+                is_near_edge and visibility_ratio < 0.85
+            ) or landmarks_near_edge
 
             # Create detection dict
             detection = {
@@ -126,13 +166,29 @@ class FaceDetector:
                 "landmarks_5": landmarks_5.astype(int).tolist(),
             }
 
-            # Add liveness status for small faces
+            # Add liveness status for small faces, edge cases, or low visibility faces
+            # Mark as uncertain immediately - don't attempt liveness detection for unreliable cases
             if is_bounding_box_too_small:
                 detection["liveness"] = {
                     "is_real": False,
                     "status": "too_small",
                     "decision_reason": f"Face too small ({face_width_orig}x{face_height_orig}px) for reliable liveness detection (minimum: {self.min_face_size}px)",
                 }
+            elif is_edge_case_for_uncertain or is_critically_low_visibility:
+                # Mark as uncertain for edge cases or low visibility - don't attempt classification
+                # This ensures we don't misclassify spoof/real faces when face is partially visible
+                if is_edge_case_for_uncertain:
+                    detection["liveness"] = {
+                        "is_real": False,
+                        "status": "uncertain",
+                        "decision_reason": f"Face at edge with partial visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
+                    }
+                else:
+                    detection["liveness"] = {
+                        "is_real": False,
+                        "status": "uncertain",
+                        "decision_reason": f"Face critically low visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
+                    }
 
             # Add face detection dict to list
             detections.append(detection)

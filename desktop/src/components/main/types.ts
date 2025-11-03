@@ -22,6 +22,7 @@ export interface DetectionResult {
       status: 'real' | 'fake' | 'uncertain' | 'error' | 'too_small';
       label?: string;
       message?: string;
+      decision_reason?: string;
     };
   }>;
   model_used: string;
