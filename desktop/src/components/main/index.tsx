@@ -960,7 +960,8 @@ export default function Main() {
                   spoof_score: face.liveness.spoof_score,
                   status: face.liveness.status || 'error',
                   label: face.liveness.label,
-                  message: face.liveness.message || (face.liveness as any).decision_reason
+                  message: face.liveness.message || face.liveness.decision_reason,
+                  decision_reason: face.liveness.decision_reason || face.liveness.message
                 } : undefined
               };
             }),

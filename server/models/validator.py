@@ -394,12 +394,12 @@ class LivenessValidator:
 
         results = []
         for i, detection in enumerate(face_detections):
-            # Skip liveness processing if face already has liveness status (e.g., from size filter)
+            # Skip liveness processing if face already has liveness status (e.g., from size filter or edge cases)
             if (
                 "liveness" in detection
-                and detection["liveness"].get("status") == "too_small"
+                and detection["liveness"].get("status") in ["too_small", "uncertain"]
             ):
-                # Keep existing liveness status from detector (small face filter)
+                # Keep existing liveness status from detector (small face filter or edge case)
                 results.append(detection)
                 continue
 
@@ -407,6 +407,8 @@ class LivenessValidator:
                 valid_idx = valid_detections.index(detection)
                 prediction = predictions[valid_idx]
 
+                # Use prediction results directly - edge cases are already handled in face_detector
+                # No need for additional edge case logic here since edge cases are marked uncertain upfront
                 detection["liveness"] = {
                     "is_real": prediction["is_real"],
                     "live_score": prediction["live_score"],
