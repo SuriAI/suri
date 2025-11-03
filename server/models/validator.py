@@ -152,34 +152,40 @@ class LivenessValidator:
         """
         real_h, real_w = img.shape[:2]
 
-        x, y, w, h = bbox
-        w, h = w - x, h - y
+        # Unpack bbox coordinates (x1, y1, x2, y2)
+        x1_input, y1_input, x2_input, y2_input = bbox
+        w = x2_input - x1_input
+        h = y2_input - y1_input
         max_dim = max(w, h)
 
-        xc, yc = x + w / 2, y + h / 2
-        x, y = int(xc - max_dim * bbox_inc / 2), int(yc - max_dim * bbox_inc / 2)
+        # Calculate center of original bbox
+        xc, yc = x1_input + w / 2, y1_input + h / 2
+        
+        # Calculate expanded bbox top-left corner (may be outside image bounds)
+        x_expanded = int(xc - max_dim * bbox_inc / 2)
+        y_expanded = int(yc - max_dim * bbox_inc / 2)
 
-        # Clamp to image boundaries to minimize padding
-        x1 = max(0, x)
-        y1 = max(0, y)
-        x2 = min(real_w, x + int(max_dim * bbox_inc))
-        y2 = min(real_h, y + int(max_dim * bbox_inc))
+        # Clamp expanded bbox to image boundaries
+        x1_clamped = max(0, x_expanded)
+        y1_clamped = max(0, y_expanded)
+        x2_clamped = min(real_w, x_expanded + int(max_dim * bbox_inc))
+        y2_clamped = min(real_h, y_expanded + int(max_dim * bbox_inc))
 
         # Crop the actual image region (no padding needed if within bounds)
-        crop = img[y1:y2, x1:x2, :]
+        crop = img[y1_clamped:y2_clamped, x1_clamped:x2_clamped, :]
 
         # Only add padding if the expanded bbox goes outside image boundaries
         if (
-            x < 0
-            or y < 0
-            or x + int(max_dim * bbox_inc) > real_w
-            or y + int(max_dim * bbox_inc) > real_h
+            x_expanded < 0
+            or y_expanded < 0
+            or x_expanded + int(max_dim * bbox_inc) > real_w
+            or y_expanded + int(max_dim * bbox_inc) > real_h
         ):
             # Calculate padding needed
-            top = max(0, y1 - y)
-            bottom = max(0, y + int(max_dim * bbox_inc) - y2)
-            left = max(0, x1 - x)
-            right = max(0, x + int(max_dim * bbox_inc) - x2)
+            top = max(0, y1_clamped - y_expanded)
+            bottom = max(0, y_expanded + int(max_dim * bbox_inc) - y2_clamped)
+            left = max(0, x1_clamped - x_expanded)
+            right = max(0, x_expanded + int(max_dim * bbox_inc) - x2_clamped)
 
             # Add minimal padding with edge replication (better than black)
             crop = cv2.copyMakeBorder(
