@@ -385,18 +385,8 @@ class LivenessValidator:
                 if face_crop is None or face_crop.size == 0:
                     continue
             except Exception as e:
-                logger.warning(f"increased_crop failed, using simple crop: {e}")
-                # Fallback: use simple crop with bounds checking
-                # Ensure coordinates are within image bounds
-                img_h, img_w = image.shape[:2]
-                x1_safe = max(0, min(x, img_w - 1))
-                y1_safe = max(0, min(y, img_h - 1))
-                x2_safe = max(x1_safe + 1, min(x + w, img_w))
-                y2_safe = max(y1_safe + 1, min(y + h, img_h))
-                
-                face_crop = image[y1_safe:y2_safe, x1_safe:x2_safe]
-                if face_crop.size == 0:
-                    continue
+                logger.warning(f"increased_crop failed, skipping liveness for this face: {e}")
+                continue
 
             face_crops.append(face_crop)
             valid_detections.append(detection)
@@ -417,7 +407,8 @@ class LivenessValidator:
                 results.append(detection)
                 continue
 
-            if i < len(valid_detections):
+            # Check if detection was successfully processed (is in valid_detections)
+            if detection in valid_detections:
                 valid_idx = valid_detections.index(detection)
                 prediction = predictions[valid_idx]
 
