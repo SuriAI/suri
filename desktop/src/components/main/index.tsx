@@ -80,6 +80,7 @@ export default function Main() {
   const backendServiceRef = useRef<BackendService | null>(null);
   const isProcessingRef = useRef<boolean>(false);
   const isStreamingRef = useRef<boolean>(false);
+  const lastDetectionFrameRef = useRef<ArrayBuffer | null>(null);
   
   // Debounce refs to prevent rapid clicking issues
   const lastStartTimeRef = useRef<number>(0);
@@ -432,7 +433,7 @@ export default function Main() {
   }, []);
 
   // Face recognition function
-  const performFaceRecognition = useCallback(async (detectionResult: DetectionResult) => {
+  const performFaceRecognition = useCallback(async (detectionResult: DetectionResult, frameData?: ArrayBuffer | null) => {
     try {
       // Only perform recognition when a group is selected
       const currentGroupValue = currentGroupRef.current;
@@ -441,9 +442,10 @@ export default function Main() {
         return;
       }
 
-      const frameData = await captureFrame();
-      if (!frameData) {
-        return;
+      // Use provided frame data or fallback to stored frame data
+      const frameDataToUse = frameData || lastDetectionFrameRef.current;
+      if (!frameDataToUse) {
+        return; // Skip if no frame data available
       }
 
       // Capture current group at start of processing to validate later
@@ -451,14 +453,20 @@ export default function Main() {
       
 
       // Process each detected face for recognition
-      const recognitionPromises = detectionResult.faces.map(async (face, index) => {
+      const recognitionPromises = detectionResult.faces.map(async (face) => {
         try {
           if (!backendServiceRef.current) {
             console.error('Backend service not initialized');
             return null;
           }
           
-          // CRITICAL: Liveness validation FIRST - Skip recognition for problematic faces but still display them
+          // Use track_id as stable identifier (from SORT tracker) - Check FIRST before any processing
+          if (face.track_id === undefined) {
+            return null; // Skip faces without track_id
+          }
+          const trackId = face.track_id;
+          
+          // CRITICAL: Liveness validation - Skip recognition for problematic faces but still display them
           if (face.liveness?.status === 'fake') {
             // Don't return null - we want to show spoofed faces in the sidebar
             // Just skip the recognition processing
@@ -485,16 +493,11 @@ export default function Main() {
             return null; // Filter out faces with anti-spoofing errors
           }
           
-          // Use track_id as stable identifier (from SORT tracker)
-          // Backend should always provide track_id after restart
-          // Temporary fallback to index until backend is restarted with track_id support
-          const trackId = face.track_id ?? index;
-          
           // Convert bbox to array format [x, y, width, height]
           const bbox = [face.bbox.x, face.bbox.y, face.bbox.width, face.bbox.height];
           
           const response = await backendServiceRef.current.recognizeFace(
-            frameData,
+            frameDataToUse,
             bbox,
             currentGroupValue?.id,
             face.landmarks_5
@@ -800,13 +803,15 @@ export default function Main() {
           if (result.skipRecognition) {
             // For spoofed faces, we still want to show them in the sidebar
             // but with no recognition result
-            newRecognitionResults.set(result.face.track_id ?? -1, {
-              success: false,
-              person_id: undefined,
-              similarity: 0,
-              error: 'Spoofed face - recognition skipped'
-            });
-          } else if (result.result) {
+            if (result.face.track_id !== undefined) {
+              newRecognitionResults.set(result.face.track_id, {
+                success: false,
+                person_id: undefined,
+                similarity: 0,
+                error: 'Spoofed face - recognition skipped'
+              });
+            }
+          } else if (result.result && result.trackId !== undefined) {
             newRecognitionResults.set(result.trackId, result.result);
           }
         }
@@ -984,8 +989,10 @@ export default function Main() {
           // Batch recognition processing in transition to prevent blocking
           if (recognitionEnabled && backendServiceReadyRef.current && detectionResult.faces.length > 0) {
             startTransition(() => {
+              // Capture frame data at response time to ensure it matches the detection result
+              const frameDataForRecognition = lastDetectionFrameRef.current;
               // Perform face recognition asynchronously without blocking next frame processing
-              performFaceRecognition(detectionResult).catch(error => {
+              performFaceRecognition(detectionResult, frameDataForRecognition).catch(error => {
                 console.error('Face recognition failed:', error);
               });
             });
@@ -1070,6 +1077,9 @@ export default function Main() {
       if (!frameData || !backendServiceRef.current) {
         return;
       }
+      
+      // Store frame data for recognition to avoid frame mismatch
+      lastDetectionFrameRef.current = frameData;
       
       backendServiceRef.current.sendDetectionRequest(frameData).catch(error => {
         console.error('❌ WebSocket detection request failed:', error);
@@ -1383,6 +1393,7 @@ export default function Main() {
     // Reset all processing refs to ensure clean state
     lastFrameTimestampRef.current = 0;
     lastDetectionHashRef.current = '';
+    lastDetectionFrameRef.current = null;
     
     // Clear all intervals and animation frames
     if (animationFrameRef.current) {
