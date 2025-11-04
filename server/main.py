@@ -1,8 +1,3 @@
-"""
-FastAPI Backend for Face Detection Pipeline
-Supports face detection, liveness detection, and face recognition models
-"""
-
 import asyncio
 import json
 import logging
@@ -42,8 +37,10 @@ from config import (
     DATA_DIR,
 )
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging - use config from config.py (set up in run.py)
+# If logging hasn't been configured yet, use basic config
+if not logging.getLogger().handlers:
+    logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
@@ -680,9 +677,6 @@ async def recognize_face(request: FaceRecognitionRequest):
             allowed_person_ids = attendance_database.get_group_person_ids(
                 request.group_id
             )
-            logger.debug(
-                f"Group filter active: {len(allowed_person_ids)} members in group {request.group_id}"
-            )
 
         result = await face_recognizer.recognize_face_async(
             image, request.bbox, landmarks_5, allowed_person_ids
@@ -1134,22 +1128,33 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         )
                     )
 
+            except WebSocketDisconnect:
+                # Connection closed by client, exit gracefully
+                break
             except Exception as e:
-                logger.error(f"Detection processing error: {e}")
-                await websocket.send_text(
-                    json.dumps(
-                        {
-                            "type": "error",
-                            "message": f"Detection failed: {str(e)}",
-                            "timestamp": time.time(),
-                        }
-                    )
-                )
+                # Only log if it's not a connection-related error
+                if "disconnect" not in str(e).lower() and "close" not in str(e).lower():
+                    logger.error(f"Detection processing error: {e}")
+                    try:
+                        await websocket.send_text(
+                            json.dumps(
+                                {
+                                    "type": "error",
+                                    "message": f"Detection failed: {str(e)}",
+                                    "timestamp": time.time(),
+                                }
+                            )
+                        )
+                    except (WebSocketDisconnect, RuntimeError):
+                        # Connection already closed, ignore
+                        break
 
     except WebSocketDisconnect:
         pass  # WebSocket detection disconnected
     except Exception as e:
-        logger.error(f"WebSocket detection error: {e}")
+        # Only log if it's not a connection-related error
+        if "disconnect" not in str(e).lower() and "close" not in str(e).lower() and "send" not in str(e).lower():
+            logger.error(f"WebSocket detection error: {e}")
 
 
 @app.websocket("/ws/notifications/{client_id}")

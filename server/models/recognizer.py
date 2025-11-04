@@ -378,15 +378,11 @@ class FaceRecognizer:
         ):
             self._persons_cache = self.db_manager.get_all_persons()
             self._cache_timestamp = current_time
-            logger.debug(
-                f"Database cache refreshed: {len(self._persons_cache)} persons loaded"
-            )
 
         # Use cached data instead of querying database
         all_persons = self._persons_cache
 
         if not all_persons:
-            logger.debug("No persons in database for matching")
             return None, 0.0
 
         # Apply group filter if provided
@@ -397,13 +393,7 @@ class FaceRecognizer:
                 if pid in allowed_person_ids
             }
             if not all_persons:
-                logger.debug(
-                    f"No persons in filtered group (filter size: {len(allowed_person_ids)})"
-                )
                 return None, 0.0
-            logger.debug(f"Matching against {len(all_persons)} persons in group")
-        else:
-            logger.debug(f"Matching against {len(all_persons)} registered persons")
 
         best_person_id = None
         best_similarity = 0.0
@@ -422,9 +412,6 @@ class FaceRecognizer:
             )
             return best_person_id, best_similarity
         else:
-            logger.debug(
-                f"No match found (best similarity: {best_similarity:.3f}, threshold: {self.similarity_threshold})"
-            )
             return None, best_similarity
 
     def recognize_face(
@@ -866,7 +853,6 @@ class FaceRecognizer:
         """
         self._persons_cache = None
         self._cache_timestamp = 0
-        logger.debug("Database cache invalidated")
 
     def get_model_info(self) -> Dict:
         """Get model information"""

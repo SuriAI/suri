@@ -236,7 +236,7 @@ LOGGING_CONFIG = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "INFO",
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },
@@ -250,7 +250,7 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "": {
-            "level": "DEBUG",
+            "level": "INFO",
             "handlers": ["console", "file"],
         },
         "uvicorn": {
@@ -293,7 +293,9 @@ def get_config() -> Dict[str, Any]:
         config["server"]["reload"] = False
         config["server"]["workers"] = 4
         config["logging"]["handlers"]["console"]["level"] = "WARNING"
-
+    elif env == "development":
+        # Development mode: show INFO level logs
+        config["server"]["log_level"] = "info"
     elif env == "testing":
         config["server"]["port"] = 8700
         config["models"]["face_detector"]["score_threshold"] = 0.5
