@@ -270,12 +270,12 @@ export class BackendService {
 
       // Spawn the process
       this.process = spawn(command, args, {
-        stdio: ["pipe", "pipe", "pipe"],
+        stdio: "inherit", // logs go directly to terminal
         detached: false,
         windowsHide: false,
       });
 
-      // Set up process event handlers
+      // Set up process event handlers (for error and exit events only)
       this.setupProcessHandlers();
 
       // Wait for the backend to be ready
@@ -305,28 +305,16 @@ export class BackendService {
   private setupProcessHandlers(): void {
     if (!this.process) return;
 
-    // Pipe stdout for important startup logs
-    this.process.stdout?.on("data", (data) => {
-      const output = data.toString().trim();
-      // Only log important startup messages
-      if (
-        output.includes("Starting server") ||
-        output.includes("Uvicorn running")
-      ) {
-        console.log("[Backend]", output);
-      }
-    });
-
-    this.process.stderr?.on("data", (data) => {
-      console.error("[Backend Error]", data.toString().trim());
-    });
-
+    // With stdio: "inherit", logs go directly to terminal automatically
+    // We only need to handle process lifecycle events
     this.process.on("error", (error) => {
+      console.error(`[BackendService] Process error: ${error.message}`);
       this.status.error = error.message;
       this.status.isRunning = false;
     });
 
-    this.process.on("exit", () => {
+    this.process.on("exit", (code, signal) => {
+      console.log(`[BackendService] Process exited with code ${code}${signal ? ` and signal ${signal}` : ""}`);
       this.status.isRunning = false;
       this.cleanup();
     });
