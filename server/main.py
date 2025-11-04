@@ -34,10 +34,10 @@ from hooks import (
     set_model_references,
 )
 from models import (
+    AntiSpoof,
     FaceDetector,
     FaceRecognizer,
     FaceTracker,
-    LivenessValidator,
 )
 from routes import attendance_api as attendance
 from schemas import (
@@ -82,7 +82,7 @@ async def lifespan(app: FastAPI):
             min_face_size=FACE_DETECTOR_CONFIG["min_face_size"],
         )
 
-        liveness_detector = LivenessValidator(
+        liveness_detector = AntiSpoof(
             model_path=str(LIVENESS_DETECTOR_CONFIG["model_path"]),
             model_img_size=LIVENESS_DETECTOR_CONFIG["model_img_size"],
             confidence_threshold=LIVENESS_DETECTOR_CONFIG["confidence_threshold"],

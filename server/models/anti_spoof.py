@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 logger = logging.getLogger(__name__)
 
 
-class LivenessValidator:
+class AntiSpoof:
     def __init__(
         self,
         model_path: str,
