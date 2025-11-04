@@ -82,25 +82,18 @@ class FaceRecognizer:
             raise
 
     def _align_face(
-        self, image: np.ndarray, bbox: List[float], landmarks_5: List
+        self, image: np.ndarray, landmarks_5: List
     ) -> np.ndarray:
         """
         Align face using face detector 5-point landmarks
 
         Args:
             image: Input image
-            bbox: Face bounding box [x, y, width, height]
             landmarks_5: 5-point landmarks from face detector [[x1,y1], [x2,y2], ...]
 
         Returns:
             Aligned face crop (112x112)
-
-        Raises:
-            RuntimeError: If landmarks not provided or alignment fails
         """
-        if landmarks_5 is None or len(landmarks_5) != 5:
-            raise RuntimeError("face detector landmarks required (5 points)")
-
         landmarks = np.array(landmarks_5, dtype=np.float32)
         aligned_face = self._create_aligned_face(image, landmarks)
         return aligned_face
@@ -210,14 +203,13 @@ class FaceRecognizer:
             raise
 
     def _extract_embedding(
-        self, image: np.ndarray, bbox: List[float], landmarks_5: List
+        self, image: np.ndarray, landmarks_5: List
     ) -> np.ndarray:
         """
         Extract face embedding from image using face detector landmarks
 
         Args:
             image: Input image
-            bbox: Bounding box [x, y, width, height] from face detection
             landmarks_5: 5-point landmarks from face detector (REQUIRED)
 
         Returns:
@@ -225,7 +217,7 @@ class FaceRecognizer:
         """
         try:
             # Align face using face detector landmarks
-            aligned_face = self._align_face(image, bbox, landmarks_5)
+            aligned_face = self._align_face(image, landmarks_5)
 
             # Preprocess for model
             input_tensor = self._preprocess_image(aligned_face)
@@ -267,19 +259,16 @@ class FaceRecognizer:
 
             # Align all faces and collect tensors
             aligned_faces = []
-            valid_indices = []
 
             for i, face_data in enumerate(face_data_list):
                 try:
-                    bbox = face_data.get("bbox")
                     landmarks_5 = face_data.get(
                         "landmarks_5"
                     )  # Get face detector landmarks if available
 
                     # Align face (face detector landmarks preferred)
-                    aligned_face = self._align_face(image, bbox, landmarks_5)
+                    aligned_face = self._align_face(image, landmarks_5)
                     aligned_faces.append(aligned_face)
-                    valid_indices.append(i)
                 except Exception as e:
                     logger.warning(f"Failed to align face {i}: {e}")
                     continue
@@ -324,11 +313,10 @@ class FaceRecognizer:
             embeddings = []
             for face_data in face_data_list:
                 try:
-                    bbox = face_data.get("bbox")
                     landmarks_5 = face_data.get(
                         "landmarks_5"
                     )  # Get face detector landmarks if available
-                    emb = self._extract_embedding(image, bbox, landmarks_5)
+                    emb = self._extract_embedding(image, landmarks_5)
                     embeddings.append(emb)
                 except Exception:
                     continue
@@ -431,7 +419,7 @@ class FaceRecognizer:
         """
         try:
             # Extract embedding
-            embedding = self._extract_embedding(image, bbox, landmarks_5)
+            embedding = self._extract_embedding(image, landmarks_5)
 
             # Find best match with optional group filtering
             person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
@@ -439,7 +427,6 @@ class FaceRecognizer:
             return {
                 "person_id": person_id,
                 "similarity": similarity,
-                "embedding": embedding.tolist(),  # For potential storage
                 "success": True,
             }
 
@@ -448,7 +435,6 @@ class FaceRecognizer:
             return {
                 "person_id": None,
                 "similarity": 0.0,
-                "embedding": None,
                 "success": False,
                 "error": str(e),
             }
@@ -477,34 +463,6 @@ class FaceRecognizer:
         return await loop.run_in_executor(
             None, self.recognize_face, image, bbox, landmarks_5, allowed_person_ids
         )
-
-    def recognize_from_embedding(
-        self, embedding: np.ndarray, allowed_person_ids: Optional[List[str]] = None
-    ) -> Dict:
-        """
-        Recognize face from pre-extracted embedding (for Deep SORT reuse)
-
-        Args:
-            embedding: Pre-extracted face embedding (512-dim, normalized)
-            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
-
-        Returns:
-            Recognition result with person_id and similarity
-        """
-        try:
-            # Find best match using existing embedding with optional group filtering
-            person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
-
-            return {"person_id": person_id, "similarity": similarity, "success": True}
-
-        except Exception as e:
-            logger.error(f"Recognition from embedding error: {e}")
-            return {
-                "person_id": None,
-                "similarity": 0.0,
-                "success": False,
-                "error": str(e),
-            }
 
     def extract_embeddings_for_tracking(
         self, image: np.ndarray, face_detections: List[Dict]
@@ -559,114 +517,6 @@ class FaceRecognizer:
             logger.error(f"Embedding extraction for tracking failed: {e}")
             return []
 
-    async def extract_embeddings_for_tracking_async(
-        self, image: np.ndarray, face_detections: List[Dict]
-    ) -> List[np.ndarray]:
-        """
-        Extract embeddings for Deep SORT tracking (asynchronous)
-
-        Args:
-            image: Input image as numpy array (BGR format)
-            face_detections: List of face detection dicts with 'bbox' key
-
-        Returns:
-            List of normalized face embeddings
-        """
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, self.extract_embeddings_for_tracking, image, face_detections
-        )
-
-    def recognize_faces_batch(
-        self,
-        image: np.ndarray,
-        face_data_list: List[Dict],
-        allowed_person_ids: Optional[List[str]] = None,
-    ) -> List[Dict]:
-        """
-        BATCH PROCESSING: Recognize multiple faces in a single inference call
-
-        Args:
-            image: Input image
-            face_data_list: List of dicts with 'bbox' key
-            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
-
-        Returns:
-            List of recognition results with person_id and similarity for each face
-        """
-        try:
-            if not face_data_list:
-                return []
-
-            # Extract all embeddings in batch
-            embeddings = self._extract_embeddings_batch(image, face_data_list)
-
-            # Find best matches for all embeddings with optional group filtering
-            results = []
-            for i, embedding in enumerate(embeddings):
-                try:
-                    person_id, similarity = self._find_best_match(
-                        embedding, allowed_person_ids
-                    )
-                    results.append(
-                        {
-                            "person_id": person_id,
-                            "similarity": similarity,
-                            "embedding": embedding.tolist(),
-                            "success": True,
-                            "face_index": i,
-                        }
-                    )
-                except Exception as e:
-                    logger.error(f"Face {i} matching failed: {e}")
-                    results.append(
-                        {
-                            "person_id": None,
-                            "similarity": 0.0,
-                            "embedding": None,
-                            "success": False,
-                            "error": str(e),
-                            "face_index": i,
-                        }
-                    )
-
-            return results
-
-        except Exception as e:
-            logger.error(f"Batch face recognition error: {e}")
-            # Fallback to sequential processing
-            results = []
-            for i, face_data in enumerate(face_data_list):
-                bbox = face_data.get("bbox")
-                result = self.recognize_face(
-                    image, bbox, allowed_person_ids=allowed_person_ids
-                )
-                result["face_index"] = i
-                results.append(result)
-            return results
-
-    async def recognize_faces_batch_async(
-        self,
-        image: np.ndarray,
-        face_data_list: List[Dict],
-        allowed_person_ids: Optional[List[str]] = None,
-    ) -> List[Dict]:
-        """
-        BATCH PROCESSING: Recognize multiple faces asynchronously
-
-        Args:
-            image: Input image
-            face_data_list: List of dicts with 'bbox' keys
-            allowed_person_ids: Optional list of person_ids to restrict matching (for group filtering)
-
-        Returns:
-            List of recognition results
-        """
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, self.recognize_faces_batch, image, face_data_list, allowed_person_ids
-        )
-
     def register_person(
         self, person_id: str, image: np.ndarray, bbox: List[float], landmarks_5: List
     ) -> Dict:
@@ -684,7 +534,7 @@ class FaceRecognizer:
         """
         try:
             # Extract embedding
-            embedding = self._extract_embedding(image, bbox, landmarks_5)
+            embedding = self._extract_embedding(image, landmarks_5)
 
             # Store in SQLite database
             if self.db_manager:
