@@ -51,161 +51,184 @@ export const drawLandmarks = (
   displayWidth?: number,
   displayHeight?: number,
 ) => {
-  landmarks.forEach((point) => {
+  if (!bbox || landmarks.length < 4) {
+    landmarks.forEach((point) => {
+      if (point && point.length >= 2) {
+        const x = displayWidth
+          ? displayWidth - (point[0] * scaleX + offsetX)
+          : point[0] * scaleX + offsetX;
+        const y = point[1] * scaleY + offsetY;
+
+        if (!isFinite(x) || !isFinite(y)) return;
+
+        if (displayWidth !== undefined && displayHeight !== undefined) {
+          const largeMargin = Math.max(
+            20,
+            Math.min(100, Math.max(displayWidth, displayHeight) * 0.05)
+          );
+          if (
+            x < -largeMargin ||
+            x > displayWidth + largeMargin ||
+            y < -largeMargin ||
+            y > displayHeight + largeMargin
+          ) {
+            return;
+          }
+
+          ctx.save();
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 8;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5;
+          ctx.lineCap = "square";
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, 2 * Math.PI);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(x, y, 1, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.6;
+          ctx.beginPath();
+          const hStart = Math.max(0, x - 5);
+          const hMid1 = Math.max(0, x - 2);
+          const hMid2 = Math.min(displayWidth, x + 2);
+          const hEnd = Math.min(displayWidth, x + 5);
+          ctx.moveTo(hStart, y);
+          ctx.lineTo(hMid1, y);
+          ctx.moveTo(hMid2, y);
+          ctx.lineTo(hEnd, y);
+          ctx.stroke();
+          ctx.beginPath();
+          const vStart = Math.max(0, y - 5);
+          const vMid1 = Math.max(0, y - 2);
+          const vMid2 = Math.min(displayHeight, y + 2);
+          const vEnd = Math.min(displayHeight, y + 5);
+          ctx.moveTo(x, vStart);
+          ctx.lineTo(x, vMid1);
+          ctx.moveTo(x, vMid2);
+          ctx.lineTo(x, vEnd);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    });
+    return;
+  }
+
+  const bboxX = displayWidth
+    ? displayWidth - (bbox.x * scaleX + offsetX) - bbox.width * scaleX
+    : bbox.x * scaleX + offsetX;
+  const bboxY = bbox.y * scaleY + offsetY;
+  const bboxW = bbox.width * scaleX;
+  const bboxH = bbox.height * scaleY;
+  const bboxCenterX = bboxX + bboxW / 2;
+  const bboxCenterY = bboxY + bboxH / 2;
+
+  const transformedLandmarks: Array<{ x: number; y: number; original: number[] }> = [];
+  for (const point of landmarks) {
     if (point && point.length >= 2) {
-      // Mirror X coordinate to match mirrored video display
       const x = displayWidth
         ? displayWidth - (point[0] * scaleX + offsetX)
         : point[0] * scaleX + offsetX;
       const y = point[1] * scaleY + offsetY;
 
-      if (!isFinite(x) || !isFinite(y)) return;
+      if (isFinite(x) && isFinite(y)) {
+        transformedLandmarks.push({ x, y, original: point });
+      }
+    }
+  }
 
-      // Sanity check: skip obviously wrong landmarks (check before clamping)
-      if (bbox) {
-        // Calculate mirrored bbox coordinates if display is mirrored
-        const bboxX = displayWidth
-          ? displayWidth - (bbox.x * scaleX + offsetX) - bbox.width * scaleX
-          : bbox.x * scaleX + offsetX;
-        const bboxY = bbox.y * scaleY + offsetY;
-        const bboxW = bbox.width * scaleX;
-        const bboxH = bbox.height * scaleY;
+  if (transformedLandmarks.length < 4) {
+    return;
+  }
 
-        const margin = Math.max(bboxW, bboxH) * 0.5;
+  const distances = transformedLandmarks.map((lm) =>
+    Math.hypot(lm.x - bboxCenterX, lm.y - bboxCenterY)
+  );
 
-        if (
-          x < bboxX - margin ||
-          x > bboxX + bboxW + margin ||
-          y < bboxY - margin ||
-          y > bboxY + bboxH + margin
-        ) {
-          return;
-        }
+  const sorted = [...distances].sort((a, b) => a - b);
+  const q1Idx = Math.floor(sorted.length * 0.25);
+  const q3Idx = Math.floor(sorted.length * 0.75);
+  const q1 = sorted[q1Idx];
+  const q3 = sorted[q3Idx];
+  const iqr = q3 - q1;
+  const outlierThreshold = q3 + 1.5 * iqr;
+
+  const margin = Math.max(bboxW, bboxH) * 0.5;
+  const largeMargin =
+    displayWidth !== undefined && displayHeight !== undefined
+      ? Math.max(20, Math.min(100, Math.max(displayWidth, displayHeight) * 0.05))
+      : 50;
+
+  transformedLandmarks.forEach((lm, idx) => {
+    const { x, y } = lm;
+    const distance = distances[idx];
+
+    if (
+      x < bboxX - margin ||
+      x > bboxX + bboxW + margin ||
+      y < bboxY - margin ||
+      y > bboxY + bboxH + margin
+    ) {
+      return;
+    }
+
+    if (distance > outlierThreshold) {
+      return;
+    }
+
+    if (displayWidth !== undefined && displayHeight !== undefined) {
+      if (
+        x < -largeMargin ||
+        x > displayWidth + largeMargin ||
+        y < -largeMargin ||
+        y > displayHeight + largeMargin
+      ) {
+        return;
       }
 
-      let finalX: number;
-      let finalY: number;
-
-      if (displayWidth !== undefined && displayHeight !== undefined) {
-        finalX = x;
-        finalY = y;
-
-        const largeMargin = 50;
-        if (
-          x < -largeMargin ||
-          x > displayWidth + largeMargin ||
-          y < -largeMargin ||
-          y > displayHeight + largeMargin
-        ) {
-          return;
-        }
-
-        // FUTURISTIC MINIMALIST DESIGN
-        ctx.save();
-
-        // Outer glow (subtle)
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
-
-        // Sharp geometric ring (minimalist)
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.lineCap = "square";
-        ctx.beginPath();
-        ctx.arc(finalX, finalY, 3, 0, 2 * Math.PI);
-        ctx.stroke();
-
-        // Remove shadow for inner elements
-        ctx.shadowBlur = 0;
-
-        // Center dot (sharp, minimal)
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(finalX, finalY, 1, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Crosshair indicator (futuristic targeting aesthetic)
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = 0.6;
-
-        // Horizontal line (clamped to canvas bounds)
-        ctx.beginPath();
-        const hStart = Math.max(0, finalX - 5);
-        const hMid1 = Math.max(0, finalX - 2);
-        const hMid2 = Math.min(displayWidth!, finalX + 2);
-        const hEnd = Math.min(displayWidth!, finalX + 5);
-        ctx.moveTo(hStart, finalY);
-        ctx.lineTo(hMid1, finalY);
-        ctx.moveTo(hMid2, finalY);
-        ctx.lineTo(hEnd, finalY);
-        ctx.stroke();
-
-        // Vertical line (clamped to canvas bounds)
-        ctx.beginPath();
-        const vStart = Math.max(0, finalY - 5);
-        const vMid1 = Math.max(0, finalY - 2);
-        const vMid2 = Math.min(displayHeight!, finalY + 2);
-        const vEnd = Math.min(displayHeight!, finalY + 5);
-        ctx.moveTo(finalX, vStart);
-        ctx.lineTo(finalX, vMid1);
-        ctx.moveTo(finalX, vMid2);
-        ctx.lineTo(finalX, vEnd);
-        ctx.stroke();
-
-        ctx.restore();
-      } else {
-        // Fallback for when display bounds are not provided (shouldn't happen)
-        const finalX = x;
-        const finalY = y;
-
-        // FUTURISTIC MINIMALIST DESIGN
-        ctx.save();
-
-        // Outer glow (subtle)
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
-
-        // Sharp geometric ring (minimalist)
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.lineCap = "square";
-        ctx.beginPath();
-        ctx.arc(finalX, finalY, 3, 0, 2 * Math.PI);
-        ctx.stroke();
-
-        // Remove shadow for inner elements
-        ctx.shadowBlur = 0;
-
-        // Center dot (sharp, minimal)
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(finalX, finalY, 1, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Crosshair indicator (futuristic targeting aesthetic)
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
-        ctx.globalAlpha = 0.6;
-
-        // Horizontal line
-        ctx.beginPath();
-        ctx.moveTo(finalX - 5, finalY);
-        ctx.lineTo(finalX - 2, finalY);
-        ctx.moveTo(finalX + 2, finalY);
-        ctx.lineTo(finalX + 5, finalY);
-        ctx.stroke();
-
-        // Vertical line
-        ctx.beginPath();
-        ctx.moveTo(finalX, finalY - 5);
-        ctx.lineTo(finalX, finalY - 2);
-        ctx.moveTo(finalX, finalY + 2);
-        ctx.lineTo(finalX, finalY + 5);
-        ctx.stroke();
-
-        ctx.restore();
-      }
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = "square";
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      const hStart = Math.max(0, x - 5);
+      const hMid1 = Math.max(0, x - 2);
+      const hMid2 = Math.min(displayWidth, x + 2);
+      const hEnd = Math.min(displayWidth, x + 5);
+      ctx.moveTo(hStart, y);
+      ctx.lineTo(hMid1, y);
+      ctx.moveTo(hMid2, y);
+      ctx.lineTo(hEnd, y);
+      ctx.stroke();
+      ctx.beginPath();
+      const vStart = Math.max(0, y - 5);
+      const vMid1 = Math.max(0, y - 2);
+      const vMid2 = Math.min(displayHeight, y + 2);
+      const vEnd = Math.min(displayHeight, y + 5);
+      ctx.moveTo(x, vStart);
+      ctx.lineTo(x, vMid1);
+      ctx.moveTo(x, vMid2);
+      ctx.lineTo(x, vEnd);
+      ctx.stroke();
+      ctx.restore();
     }
   });
 };
