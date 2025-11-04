@@ -1,6 +1,6 @@
 from .face_detector import FaceDetector
-from .validator import LivenessValidator
+from .anti_spoof import AntiSpoof
 from .recognizer import FaceRecognizer
 from .tracker import FaceTracker
 
-__all__ = ["FaceDetector", "LivenessValidator", "FaceRecognizer", "FaceTracker"]
+__all__ = ["FaceDetector", "AntiSpoof", "FaceRecognizer", "FaceTracker"]
