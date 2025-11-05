@@ -68,12 +68,16 @@ class AntiSpoof:
 
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
         """Apply softmax to prediction"""
+
         def softmax(x):
             return np.exp(x) / np.sum(np.exp(x))
+
         pred = softmax(prediction)
         return pred
 
-    def _align_face_crop(self, crop: np.ndarray, landmarks_5: List, bbox: tuple, crop_offset: tuple) -> np.ndarray:
+    def _align_face_crop(
+        self, crop: np.ndarray, landmarks_5: List, bbox: tuple, crop_offset: tuple
+    ) -> np.ndarray:
         """Simple rotation-only alignment to preserve spoof detection cues"""
         try:
             landmarks = np.array(landmarks_5, dtype=np.float32)
@@ -88,18 +92,21 @@ class AntiSpoof:
 
             # Calculate rotation angle using all landmarks
             crop_h, crop_w = crop.shape[:2]
-            
+
             # Scale reference points to match crop size
             scale_x = crop_w / 112.0
             scale_y = crop_h / 112.0
-            reference_points = np.array([
-                [38.2946 * scale_x, 51.6963 * scale_y],  # left eye
-                [73.5318 * scale_x, 51.5014 * scale_y],  # right eye
-                [56.0252 * scale_x, 71.7366 * scale_y],  # nose tip
-                [41.5493 * scale_x, 92.3655 * scale_y],  # left mouth corner
-                [70.7299 * scale_x, 92.2041 * scale_y],  # right mouth corner
-            ], dtype=np.float32)
-            
+            reference_points = np.array(
+                [
+                    [38.2946 * scale_x, 51.6963 * scale_y],  # left eye
+                    [73.5318 * scale_x, 51.5014 * scale_y],  # right eye
+                    [56.0252 * scale_x, 71.7366 * scale_y],  # nose tip
+                    [41.5493 * scale_x, 92.3655 * scale_y],  # left mouth corner
+                    [70.7299 * scale_x, 92.2041 * scale_y],  # right mouth corner
+                ],
+                dtype=np.float32,
+            )
+
             # Use similarity transform to get rotation angle from all landmarks
             tform, _ = cv2.estimateAffinePartial2D(
                 crop_landmarks,
@@ -108,26 +115,28 @@ class AntiSpoof:
                 maxIters=1,
                 refineIters=0,
             )
-            
+
             if tform is None:
                 return crop
-            
+
             # Extract rotation angle from transformation matrix
             # Affine matrix: [a b tx; c d ty] where rotation is atan2(c, a)
             angle = np.degrees(np.arctan2(tform[1, 0], tform[0, 0]))
-            
+
             # Normalize to smallest rotation
             angle = ((angle + 90) % 180) - 90
-            
+
             # Apply rotation-only transform (preserves spoof detection cues)
             center = (crop_w / 2, crop_h / 2)
             rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
             aligned = cv2.warpAffine(
-                crop, rotation_matrix, (crop_w, crop_h),
+                crop,
+                rotation_matrix,
+                (crop_w, crop_h),
                 flags=cv2.INTER_LINEAR,
-                borderMode=cv2.BORDER_REPLICATE
+                borderMode=cv2.BORDER_REPLICATE,
             )
-            
+
             return aligned
         except Exception as e:
             logger.warning(f"Face alignment failed: {e}")
@@ -237,7 +246,9 @@ class AntiSpoof:
                     elif replay_score > print_score:
                         attack_type = "replay"
                         label = "Replay Attack"
-                        detailed_label = f"Replay Attack (confidence: {replay_score:.3f})"
+                        detailed_label = (
+                            f"Replay Attack (confidence: {replay_score:.3f})"
+                        )
                     else:
                         attack_type = "unknown"
                         label = "Spoof"
@@ -306,9 +317,11 @@ class AntiSpoof:
             try:
                 landmarks_5 = detection.get("landmarks_5")
                 if not landmarks_5:
-                    logger.warning("Missing landmarks_5 in detection, skipping liveness check")
+                    logger.warning(
+                        "Missing landmarks_5 in detection, skipping liveness check"
+                    )
                     continue
-                
+
                 face_crop = self.increased_crop(
                     image, (x, y, x + w, y + h), landmarks_5, bbox_inc=1.5
                 )
@@ -449,4 +462,3 @@ class AntiSpoof:
             "strategy_description": "(live_score > spoof_score) AND (confidence >= threshold)",
             "configuration": {"confidence_threshold": self.confidence_threshold},
         }
-

@@ -81,9 +81,7 @@ class FaceRecognizer:
             logger.error(f"Failed to initialize face recognizer model: {e}")
             raise
 
-    def _align_face(
-        self, image: np.ndarray, landmarks_5: List
-    ) -> np.ndarray:
+    def _align_face(self, image: np.ndarray, landmarks_5: List) -> np.ndarray:
         """
         Align face using face detector 5-point landmarks
 
@@ -143,7 +141,7 @@ class FaceRecognizer:
                 maxIters=1,  # Fastest for reliable landmarks (all points are inliers)
                 refineIters=0,  # No refinement needed
             )
-            
+
             if tform is None:
                 raise ValueError("Failed to compute similarity transformation matrix")
 
@@ -205,9 +203,7 @@ class FaceRecognizer:
             logger.error(f"Image preprocessing failed: {e}")
             raise
 
-    def _extract_embedding(
-        self, image: np.ndarray, landmarks_5: List
-    ) -> np.ndarray:
+    def _extract_embedding(self, image: np.ndarray, landmarks_5: List) -> np.ndarray:
         """
         Extract face embedding from image using face detector landmarks
 

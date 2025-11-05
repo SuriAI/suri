@@ -148,9 +148,9 @@ MODEL_CONFIGS = {
     "face_detector": {
         "model_path": WEIGHTS_DIR / "detector_fast.onnx",
         "input_size": (640, 640),  # Optimized for better distant face detection
-        "score_threshold": 0.7,
+        "score_threshold": 0.9,
         "nms_threshold": 0.3,
-        "top_k": 100,
+        "top_k": 5000,
         "min_face_size": 80,  # (IMPORTANT! DO NOT CHANGE) Minimum face size for anti-spoofing compatibility
         "backend_id": 0,
         "target_id": 0,
