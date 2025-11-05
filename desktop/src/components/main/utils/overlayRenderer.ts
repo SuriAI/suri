@@ -146,17 +146,21 @@ export const drawLandmarks = (
     return;
   }
 
-  const distances = transformedLandmarks.map((lm) =>
-    Math.hypot(lm.x - bboxCenterX, lm.y - bboxCenterY)
-  );
-
-  const sorted = [...distances].sort((a, b) => a - b);
-  const q1Idx = Math.floor(sorted.length * 0.25);
-  const q3Idx = Math.floor(sorted.length * 0.75);
-  const q1 = sorted[q1Idx];
-  const q3 = sorted[q3Idx];
-  const iqr = q3 - q1;
-  const outlierThreshold = q3 + 1.5 * iqr;
+  const is5PointLandmarks = landmarks.length === 5;
+  
+  let outlierThreshold = Infinity;
+  if (!is5PointLandmarks && transformedLandmarks.length > 5) {
+    const distances = transformedLandmarks.map((lm) =>
+      Math.hypot(lm.x - bboxCenterX, lm.y - bboxCenterY)
+    );
+    const sorted = [...distances].sort((a, b) => a - b);
+    const q1Idx = Math.floor(sorted.length * 0.25);
+    const q3Idx = Math.floor(sorted.length * 0.75);
+    const q1 = sorted[q1Idx];
+    const q3 = sorted[q3Idx];
+    const iqr = q3 - q1;
+    outlierThreshold = q3 + 1.5 * iqr;
+  }
 
   const margin = Math.max(bboxW, bboxH) * 0.5;
   const largeMargin =
@@ -164,9 +168,8 @@ export const drawLandmarks = (
       ? Math.max(20, Math.min(100, Math.max(displayWidth, displayHeight) * 0.05))
       : 50;
 
-  transformedLandmarks.forEach((lm, idx) => {
+  transformedLandmarks.forEach((lm) => {
     const { x, y } = lm;
-    const distance = distances[idx];
 
     if (
       x < bboxX - margin ||
@@ -177,8 +180,11 @@ export const drawLandmarks = (
       return;
     }
 
-    if (distance > outlierThreshold) {
-      return;
+    if (!is5PointLandmarks && outlierThreshold !== Infinity) {
+      const distance = Math.hypot(x - bboxCenterX, y - bboxCenterY);
+      if (distance > outlierThreshold) {
+        return;
+      }
     }
 
     if (displayWidth !== undefined && displayHeight !== undefined) {
