@@ -60,23 +60,8 @@ class AntiSpoof:
         return ort_session, input_name
 
     def preprocessing(self, img: np.ndarray) -> np.ndarray:
-        """
-        Preprocess image for anti-spoofing model
-        Matches reference implementation: https://github.com/hairymax/Face-AntiSpoofing/
-
-        Args:
-            img: Input image (BGR format from OpenCV, already square crop from increased_crop)
-
-        Returns:
-            Preprocessed image tensor (RGB format for ONNX model)
-            Shape: (1, 3, 128, 128), dtype: float32, range: [0, 1]
-
-        Process:
-            1. Resize directly to 128x128 (crop is already square from increased_crop)
-            2. Convert BGR → RGB (models expect RGB)
-            3. Normalize to [0, 1] range (in-place)
-            4. Transpose to CHW format and add batch dimension
-        """
+ 
+        # Preprocess image
         new_size = self.model_img_size
 
         # Direct resize to square (crop from increased_crop is already square)
