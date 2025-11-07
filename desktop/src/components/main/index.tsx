@@ -33,8 +33,8 @@ import { GroupManagementModal } from "./components/GroupManagementModal";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 
 const NON_LOGGING_ANTISPOOF_STATUSES = new Set<
-  "real" | "fake" | "uncertain" | "error" | "too_small"
->(["fake", "uncertain", "error", "too_small"]);
+  "real" | "fake" | "error" | "too_small"
+>(["fake", "error", "too_small"]);
 
 const TRACKING_HISTORY_LIMIT = 20;
 
@@ -491,14 +491,6 @@ export default function Main() {
                 face: face,
                 skipRecognition: true,
                 reason: "spoofed",
-              };
-            }
-
-            if (face.liveness?.status === "uncertain") {
-              return {
-                face: face,
-                skipRecognition: true,
-                reason: "uncertain_edge_case",
               };
             }
 

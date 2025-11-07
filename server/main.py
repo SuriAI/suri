@@ -452,6 +452,14 @@ async def recognize_face(request: FaceRecognitionRequest):
 
         # Only perform liveness detection if enabled
         if liveness_detector and request.enable_liveness_detection:
+            # Use landmarks from frontend (face detection) - required for liveness detection
+            landmarks_5 = request.landmarks_5
+            if landmarks_5 is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Landmarks required for liveness detection",
+                )
+            
             temp_face = {
                 "bbox": {
                     "x": request.bbox[0],
@@ -461,6 +469,7 @@ async def recognize_face(request: FaceRecognitionRequest):
                 },
                 "confidence": 1.0,
                 "track_id": -1,
+                "landmarks_5": landmarks_5,
             }
 
             liveness_results = await liveness_detector.detect_faces_async(
@@ -487,13 +496,11 @@ async def recognize_face(request: FaceRecognitionRequest):
                     )
 
                 # Also block other problematic statuses
-                # CRITICAL: Block "uncertain" status to prevent false positive matches on unreliable edge cases
                 # Security & Efficiency: Block at recognition stage (first) rather than logging (later)
                 # This prevents wasted API calls and potential misidentification of partial/edge faces
                 if status in [
                     "too_small",
                     "error",
-                    "uncertain",
                 ]:
                     processing_time = time.time() - start_time
                     logger.warning(
@@ -507,13 +514,14 @@ async def recognize_face(request: FaceRecognitionRequest):
                         error=f"Recognition blocked: face status {status}",
                     )
 
-        # Use landmarks from frontend (face detection)
-        landmarks_5 = request.landmarks_5
-        if landmarks_5 is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Landmarks required from frontend face detection",
-            )
+        # Use landmarks from frontend (face detection) - already retrieved above if liveness enabled
+        if not liveness_detector or not request.enable_liveness_detection:
+            landmarks_5 = request.landmarks_5
+            if landmarks_5 is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Landmarks required from frontend face detection",
+                )
 
         # Get person_ids for group filtering (if group_id provided)
         allowed_person_ids = None
@@ -564,6 +572,14 @@ async def register_person(request: FaceRegistrationRequest):
 
         # Only perform liveness detection if enabled
         if liveness_detector and request.enable_liveness_detection:
+            # Use landmarks from frontend (face detection) - required for liveness detection
+            landmarks_5 = request.landmarks_5
+            if landmarks_5 is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Landmarks required for liveness detection",
+                )
+            
             temp_face = {
                 "bbox": {
                     "x": request.bbox[0],
@@ -573,6 +589,7 @@ async def register_person(request: FaceRegistrationRequest):
                 },
                 "confidence": 1.0,
                 "track_id": -1,
+                "landmarks_5": landmarks_5,
             }
 
             liveness_results = await liveness_detector.detect_faces_async(
@@ -599,12 +616,11 @@ async def register_person(request: FaceRegistrationRequest):
                     )
 
                 # Also block other problematic statuses
-                # CRITICAL: Block "uncertain" status to prevent registration of unreliable edge cases
+                # Block problematic statuses to prevent registration of unreliable edge cases
                 # Edge cases have insufficient quality for reliable face registration
                 if status in [
                     "too_small",
                     "error",
-                    "uncertain",
                 ]:
                     processing_time = time.time() - start_time
                     logger.warning(
@@ -618,13 +634,14 @@ async def register_person(request: FaceRegistrationRequest):
                         error=f"Registration blocked: face status {status}",
                     )
 
-        # Use landmarks from frontend (face detection)
-        landmarks_5 = request.landmarks_5
-        if landmarks_5 is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Landmarks required from frontend face detection",
-            )
+        # Use landmarks from frontend (face detection) - already retrieved above if liveness enabled
+        if not liveness_detector or not request.enable_liveness_detection:
+            landmarks_5 = request.landmarks_5
+            if landmarks_5 is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Landmarks required from frontend face detection",
+                )
 
         result = await face_recognizer.register_person_async(
             request.person_id, image, request.bbox, landmarks_5
