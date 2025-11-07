@@ -161,6 +161,8 @@ MODEL_CONFIGS = {
         "confidence_threshold": 0.97,
         "bbox_inc": 1.5,
         "model_img_size": 128,
+        "enable_temporal_fusion": True,
+        "temporal_window_size": 10,
     },
     "face_recognizer": {
         "model_path": WEIGHTS_DIR / "recognizer_light.onnx",
