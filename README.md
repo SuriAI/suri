@@ -90,7 +90,7 @@ Attendance Recording (with cooldown + deduplication)
   ```
 - **Adaptive Thresholding**: Default 0.50, adjustable per deployment
 - **Attack Analysis**: Detailed statistics on attack types and distributions
-- **Safety-first**: Rejects uncertain cases to prevent spoofing
+- **Safety-first**: Rejects low confidence cases as spoof to prevent false positives
 
 #### 4. **Face Recognition** (`server/models/recognizer.py`)
 - **Embedding Extraction**: 
@@ -395,7 +395,7 @@ is_real = (live_score > spoof_score) AND
 - Industry standard for production systems
 
 **Attack Statistics**
-- Tracks distribution: live, print, replay, uncertain
+- Tracks distribution: live, print, replay
 - Calculates average confidence per attack type
 - Provides threshold sensitivity analysis
 

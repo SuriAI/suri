@@ -68,26 +68,6 @@ const DetectionCard = memo(
                 ? spoofScore
                 : null,
           };
-        case "uncertain": {
-          // Check if this is an edge case uncertain (from decision_reason/message)
-          const message =
-            face.liveness.message || face.liveness.decision_reason || "";
-          const isEdgeCase =
-            message.toLowerCase().includes("edge case") ||
-            message.toLowerCase().includes("visibility") ||
-            message.toLowerCase().includes("partially visible");
-
-          return {
-            borderColor: "border-amber-500/60",
-            bgColor: "",
-            statusText: isEdgeCase ? "EDGE CASE" : "UNCERTAIN",
-            statusColor: "text-amber-400",
-            score:
-              liveScore !== null && liveScore !== undefined
-                ? liveScore
-                : spoofScore,
-          };
-        }
         case "error":
           return {
             borderColor: "border-yellow-500/60",

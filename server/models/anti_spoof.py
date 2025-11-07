@@ -225,7 +225,7 @@ class AntiSpoof:
                     if max_confidence >= self.confidence_threshold:
                         decision_reason = f"Live face detected with high confidence ({max_confidence:.3f} ≥ {self.confidence_threshold})"
                     else:
-                        decision_reason = f"Uncertain: Low confidence ({max_confidence:.3f} < {self.confidence_threshold}), rejecting for safety"
+                        decision_reason = f"Low confidence detection ({max_confidence:.3f} < {self.confidence_threshold}), rejecting as spoof for safety"
                         is_real = False
                 else:
                     decision_reason = f"Spoof detected: spoof_score ({spoof_score:.3f}) > live_score ({live_score:.3f})"
@@ -234,12 +234,15 @@ class AntiSpoof:
                     attack_type = "live"
                     label = "Live"
                     detailed_label = f"Live Face (confidence: {live_score:.3f})"
-                elif max_confidence < self.confidence_threshold:
-                    attack_type = "uncertain"
-                    label = "Uncertain"
-                    detailed_label = f"Uncertain Classification (max confidence: {max_confidence:.3f} < {self.confidence_threshold})"
                 else:
-                    if print_score > replay_score:
+                    # Determine spoof attack type
+                    # If model predicted live but confidence is low, mark as unknown spoof
+                    if live_score > spoof_score:
+                        # Low confidence live prediction - treat as unknown spoof for safety
+                        attack_type = "unknown"
+                        label = "Spoof"
+                        detailed_label = f"Low confidence detection (max confidence: {max_confidence:.3f} < {self.confidence_threshold})"
+                    elif print_score > replay_score:
                         attack_type = "print"
                         label = "Print Attack"
                         detailed_label = f"Print Attack (confidence: {print_score:.3f})"
@@ -343,10 +346,7 @@ class AntiSpoof:
 
         results = []
         for i, detection in enumerate(face_detections):
-            if "liveness" in detection and detection["liveness"].get("status") in [
-                "too_small",
-                "uncertain",
-            ]:
+            if "liveness" in detection and detection["liveness"].get("status") == "too_small":
                 results.append(detection)
                 continue
 
@@ -362,15 +362,7 @@ class AntiSpoof:
                     "decision_reason": prediction["decision_reason"],
                     "label": prediction["label"],
                     "detailed_label": prediction["detailed_label"],
-                    "status": (
-                        "real"
-                        if prediction["is_real"]
-                        else (
-                            "uncertain"
-                            if prediction["attack_type"] == "uncertain"
-                            else "fake"
-                        )
-                    ),
+                    "status": "real" if prediction["is_real"] else "fake",
                     "predicted_class": prediction["predicted_class"],
                     "print_score": prediction["print_score"],
                     "replay_score": prediction["replay_score"],

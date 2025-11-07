@@ -133,13 +133,13 @@ class FaceDetector:
                 if visibility_ratio < 0.50:
                     detection["liveness"] = {
                         "is_real": False,
-                        "status": "uncertain",
+                        "status": "fake",
                         "decision_reason": f"Face critically low visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
                     }
                 elif is_near_edge or landmarks_near_edge:
                     detection["liveness"] = {
                         "is_real": False,
-                        "status": "uncertain",
+                        "status": "fake",
                         "decision_reason": f"Face at edge with partial visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
                     }
 
