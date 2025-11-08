@@ -65,10 +65,6 @@ class FaceDetector:
             x2_unclipped = float(x + w)
             y2_unclipped = float(y + h)
 
-            original_width = x2_unclipped - x1_unclipped
-            original_height = y2_unclipped - y1_unclipped
-            original_area = original_width * original_height
-
             x1_orig = max(0, x1_unclipped)
             y1_orig = max(0, y1_unclipped)
             x2_orig = min(orig_width, x2_unclipped)
@@ -76,39 +72,11 @@ class FaceDetector:
 
             face_width_orig = x2_orig - x1_orig
             face_height_orig = y2_orig - y1_orig
-            clipped_area = face_width_orig * face_height_orig
-
-            # Use epsilon to avoid division by zero
-            visibility_ratio = clipped_area / (original_area + 1e-6)
-
-            # Clamp minimum threshold for very small images (e.g., 160x120 webcam)
-            edge_threshold_x = max(orig_width * 0.05, 10)
-            edge_threshold_y = max(orig_height * 0.05, 10)
-            is_near_edge = (
-                x1_orig < edge_threshold_x
-                or y1_orig < edge_threshold_y
-                or x2_orig > (orig_width - edge_threshold_x)
-                or y2_orig > (orig_height - edge_threshold_y)
-            )
 
             # Vectorized clipping avoids mutating read-only arrays (safer, faster)
             landmarks_5 = np.clip(
                 landmarks_5, [0, 0], [orig_width - 1, orig_height - 1]
             )
-
-            landmarks_near_edge = np.any(
-                (landmarks_5[:, 0] < edge_threshold_x)
-                | (landmarks_5[:, 1] < edge_threshold_y)
-                | (landmarks_5[:, 0] > orig_width - edge_threshold_x)
-                | (landmarks_5[:, 1] > orig_height - edge_threshold_y)
-            )
-
-            is_bounding_box_too_small = self.min_face_size > 0 and (
-                face_width_orig < self.min_face_size
-                or face_height_orig < self.min_face_size
-            )
-
-            liveness_detection_enabled = self.min_face_size > 0
 
             # Convert to int at final step to preserve precision
             detection = {
@@ -122,26 +90,52 @@ class FaceDetector:
                 "landmarks_5": landmarks_5.tolist(),
             }
 
-            # Check visibility first, then edge cases
-            if is_bounding_box_too_small:
-                detection["liveness"] = {
-                    "is_real": False,
-                    "status": "too_small",
-                    "decision_reason": f"Face too small ({face_width_orig}x{face_height_orig}px) for reliable liveness detection (minimum: {self.min_face_size}px)",
-                }
-            elif liveness_detection_enabled:
-                if visibility_ratio < 0.50:
+            # Check liveness detection conditions if enabled
+            if self.min_face_size > 0:
+                is_bounding_box_too_small = (
+                    face_width_orig < self.min_face_size
+                    or face_height_orig < self.min_face_size
+                )
+
+                if is_bounding_box_too_small:
                     detection["liveness"] = {
                         "is_real": False,
-                        "status": "fake",
-                        "decision_reason": f"Face critically low visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
+                        "status": "too_small",
                     }
-                elif is_near_edge or landmarks_near_edge:
-                    detection["liveness"] = {
-                        "is_real": False,
-                        "status": "fake",
-                        "decision_reason": f"Face at edge with partial visibility (visibility: {visibility_ratio:.1%}) - insufficient quality for reliable liveness detection",
-                    }
+                else:
+                    # Calculate visibility and edge detection only when needed
+                    original_width = x2_unclipped - x1_unclipped
+                    original_height = y2_unclipped - y1_unclipped
+                    original_area = original_width * original_height
+                    clipped_area = face_width_orig * face_height_orig
+                    visibility_ratio = clipped_area / (original_area + 1e-6)
+
+                    edge_threshold_x = max(orig_width * 0.05, 10)
+                    edge_threshold_y = max(orig_height * 0.05, 10)
+                    is_near_edge = (
+                        x1_orig < edge_threshold_x
+                        or y1_orig < edge_threshold_y
+                        or x2_orig > (orig_width - edge_threshold_x)
+                        or y2_orig > (orig_height - edge_threshold_y)
+                    )
+
+                    landmarks_near_edge = np.any(
+                        (landmarks_5[:, 0] < edge_threshold_x)
+                        | (landmarks_5[:, 1] < edge_threshold_y)
+                        | (landmarks_5[:, 0] > orig_width - edge_threshold_x)
+                        | (landmarks_5[:, 1] > orig_height - edge_threshold_y)
+                    )
+
+                    if visibility_ratio < 0.50:
+                        detection["liveness"] = {
+                            "is_real": False,
+                            "status": "fake",
+                        }
+                    elif is_near_edge or landmarks_near_edge:
+                        detection["liveness"] = {
+                            "is_real": False,
+                            "status": "fake",
+                        }
 
             detections.append(detection)
 
@@ -179,15 +173,3 @@ class FaceDetector:
         """Set minimum face size for liveness detection compatibility"""
         self.min_face_size = min_size
 
-    def get_model_info(self):
-        """Get model information"""
-        return {
-            "model_path": self.model_path,
-            "input_size": self.input_size,
-            "conf_threshold": self.conf_threshold,
-            "nms_threshold": self.nms_threshold,
-            "top_k": self.top_k,
-            "min_face_size": self.min_face_size,
-            "liveness_detection_compatible": True,
-            "size_filter_description": f"Faces smaller than {self.min_face_size}px are filtered for liveness detection model compatibility",
-        }
