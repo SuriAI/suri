@@ -184,7 +184,6 @@ async def get_available_models():
     if face_detector:
         models_info["face_detector"] = {
             "available": True,
-            "info": face_detector.get_model_info(),
         }
     else:
         models_info["face_detector"] = {"available": False}
