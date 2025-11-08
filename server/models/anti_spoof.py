@@ -2,8 +2,7 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 import os
-from collections import deque, defaultdict
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 
 class AntiSpoof:
@@ -12,28 +11,22 @@ class AntiSpoof:
         model_path: str,
         model_img_size: int,
         confidence_threshold: float,
+        min_face_size: int,
+        bbox_inc: float,
         config: Dict = None,
     ):
-        self.model_path = model_path
         self.model_img_size = model_img_size
-        self.config = config or {}
         self.confidence_threshold = confidence_threshold
-        self.cache_duration = 0  # Cache disabled
-
-        # Temporal fusion configuration
-        # Window size: 10 frames recommended for 30 FPS, scales with frame rate
-        self.temporal_window_size = self.config.get("temporal_window_size", 10)
-        # Enable temporal fusion by default for better stability
-        self.enable_temporal_fusion = self.config.get("enable_temporal_fusion", True)
-        
-        # Per-person temporal windows: track_id -> deque of [live, print, replay] predictions
-        # Use a factory function to create deques with the correct maxlen
-        def make_deque():
-            return deque(maxlen=self.temporal_window_size)
-        
-        self.temporal_windows: Dict[int, deque] = defaultdict(make_deque)
+        self.config = config or {}
+        self.cache_duration = 0
+        self.min_face_size = min_face_size
+        self.bbox_inc = bbox_inc
 
         self.ort_session, self.input_name = self._init_session_(model_path)
+
+        self.result_file_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "result.txt"
+        )
 
     def _init_session_(self, onnx_model_path: str):
         """Initialize ONNX Runtime session"""
@@ -60,172 +53,85 @@ class AntiSpoof:
         return ort_session, input_name
 
     def preprocessing(self, img: np.ndarray) -> np.ndarray:
+        """Preprocess image for model inference"""
         new_size = self.model_img_size
-        # Use INTER_CUBIC for better quality
-        img = cv2.resize(img, (new_size, new_size), interpolation=cv2.INTER_CUBIC)
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img_normalized = img_rgb.astype(np.float32, copy=False)
-        np.multiply(img_normalized, 1.0 / 255.0, out=img_normalized)
-        img_chw = img_normalized.transpose(2, 0, 1)
-        img_batch = np.expand_dims(img_chw, axis=0)
+        old_size = img.shape[:2]
+
+        ratio = float(new_size) / max(old_size)
+        scaled_shape = tuple([int(x * ratio) for x in old_size])
+        img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]))
+
+        delta_w = new_size - scaled_shape[1]
+        delta_h = new_size - scaled_shape[0]
+        top, bottom = delta_h // 2, delta_h - (delta_h // 2)
+        left, right = delta_w // 2, delta_w - (delta_w // 2)
+
+        img = cv2.copyMakeBorder(
+            img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0]
+        )
+
+        img = img.transpose(2, 0, 1).astype(np.float32) / 255.0
+        img_batch = np.expand_dims(img, axis=0)
         return img_batch
 
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
         """Apply softmax to prediction"""
+
         def softmax(x):
             x = x - np.max(x)
             exp_x = np.exp(x)
             return exp_x / np.sum(exp_x)
+
         return softmax(prediction)
 
-    def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarray:
+    def increased_crop(
+        self, img: np.ndarray, bbox: tuple, bbox_inc: float
+    ) -> np.ndarray:
         """Crop face with expanded bounding box"""
         real_h, real_w = img.shape[:2]
-        x1_input, y1_input, x2_input, y2_input = bbox
-        w = x2_input - x1_input
-        h = y2_input - y1_input
-        max_dim = max(w, h)
+        x, y, w, h = bbox
 
-        # Calculate expanded size (ensure minimum size)
-        expanded_size = int(round(max_dim * bbox_inc))
-        if expanded_size < 10:
-            raise ValueError(f"Expanded size too small: {expanded_size}")
+        w = w - x
+        h = h - y
+        max_dimension = max(w, h)
 
-        # Calculate center (use float precision)
-        xc = x1_input + w / 2
-        yc = y1_input + h / 2
+        xc = x + w / 2
+        yc = y + h / 2
 
-        # Calculate expanded bounds (use round for better precision)
-        x_expanded = int(round(xc - expanded_size / 2))
-        y_expanded = int(round(yc - expanded_size / 2))
+        x = int(xc - max_dimension * bbox_inc / 2)
+        y = int(yc - max_dimension * bbox_inc / 2)
 
-        # Calculate actual crop bounds (clamped to image)
-        x1_crop = max(0, x_expanded)
-        y1_crop = max(0, y_expanded)
-        x2_crop = min(real_w, x_expanded + expanded_size)
-        y2_crop = min(real_h, y_expanded + expanded_size)
+        x1 = 0 if x < 0 else x
+        y1 = 0 if y < 0 else y
+        x2 = (
+            real_w
+            if x + max_dimension * bbox_inc > real_w
+            else x + int(max_dimension * bbox_inc)
+        )
+        y2 = (
+            real_h
+            if y + max_dimension * bbox_inc > real_h
+            else y + int(max_dimension * bbox_inc)
+        )
 
-        # Crop the region
-        crop = img[y1_crop:y2_crop, x1_crop:x2_crop, :]
-        crop_h, crop_w = crop.shape[:2]
+        img = img[y1:y2, x1:x2, :]
 
-        # Calculate padding needed to make it exactly expanded_size x expanded_size
-        pad_top = max(0, -y_expanded)
-        pad_bottom = max(0, expanded_size - crop_h - pad_top)
-        pad_left = max(0, -x_expanded)
-        pad_right = max(0, expanded_size - crop_w - pad_left)
+        pad_top = y1 - y
+        pad_bottom = int(max_dimension * bbox_inc - y2 + y)
+        pad_left = x1 - x
+        pad_right = int(max_dimension * bbox_inc - x2 + x)
 
-        # Ensure we pad to exactly expanded_size x expanded_size
-        if pad_top + crop_h + pad_bottom < expanded_size:
-            pad_bottom = expanded_size - crop_h - pad_top
-        if pad_left + crop_w + pad_right < expanded_size:
-            pad_right = expanded_size - crop_w - pad_left
+        img = cv2.copyMakeBorder(
+            img,
+            pad_top,
+            pad_bottom,
+            pad_left,
+            pad_right,
+            cv2.BORDER_CONSTANT,
+            value=[0, 0, 0],
+        )
 
-        # Apply padding if needed
-        if pad_top > 0 or pad_bottom > 0 or pad_left > 0 or pad_right > 0:
-            crop = cv2.copyMakeBorder(
-                crop, pad_top, pad_bottom, pad_left, pad_right,
-                cv2.BORDER_REFLECT_101
-            )
-
-        return crop
-
-    def temporal_fuse(
-        self, track_id: Optional[int], raw_pred: np.ndarray
-    ) -> np.ndarray:
-        if not self.enable_temporal_fusion:
-            return raw_pred
-        
-        # If track_id is None or negative, don't apply temporal fusion
-        if track_id is None or track_id < 0:
-
-            return raw_pred
-        
-        # Get or create temporal window for this track_id
-        window = self.temporal_windows[track_id]
-        
-        # Add current prediction to window
-        window.append(raw_pred.copy())
-        
-        # Convert window to numpy array for averaging
-        preds = np.array(window)
-        
-        # Weight newer frames slightly more (linear weighting from 1.0 to 2.0)
-        # This gives recent frames more influence while still using history
-        if len(preds) == 0:
-            return raw_pred  # Fallback if window is empty
-        elif len(preds) > 1:
-            weights = np.linspace(1.0, 2.0, len(preds))
-            fused = np.average(preds, axis=0, weights=weights)
-        else:
-            # Single prediction, no fusion needed
-            fused = preds[0]
-        
-        return fused
-
-    def cleanup_temporal_windows(self, active_track_ids: List[int]):
-        """Remove temporal windows for tracks that are no longer active"""
-        active_set = set(active_track_ids)
-        # Remove windows for tracks not in active set
-        inactive_ids = [
-            track_id for track_id in self.temporal_windows.keys()
-            if track_id not in active_set
-        ]
-        for track_id in inactive_ids:
-            del self.temporal_windows[track_id]
-
-    def predict(self, imgs: List[np.ndarray]) -> List[Dict]:
-        """Predict anti-spoofing for list of face images"""
-        if not self.ort_session:
-            return [None] * len(imgs)
-
-        results = []
-        for img in imgs:
-            try:
-                onnx_result = self.ort_session.run(
-                    [], {self.input_name: self.preprocessing(img)}
-                )
-                raw_logits = onnx_result[0]  # Raw logits before softmax
-                pred = self.postprocessing(raw_logits)
-
-                if pred.shape[1] != 3:
-                    results.append(None)
-                    continue
-
-                live_score = float(pred[0][0])
-                print_score = float(pred[0][1])
-                replay_score = float(pred[0][2])
-
-                spoof_score = print_score + replay_score
-                max_confidence = max(live_score, spoof_score)
-                margin = live_score - spoof_score
-                is_real = (
-                    (live_score > spoof_score)
-                    and (max_confidence >= self.confidence_threshold)
-                    and (margin >= 0.05)  # safety margin
-                )
-
-                if is_real:
-                    attack_type = "live"
-                    label = "Live"
-                else:
-                    attack_type = "unknown"
-                    label = "Spoof"
-
-                result = {
-                    "is_real": bool(is_real),
-                    "live_score": float(live_score),
-                    "spoof_score": float(spoof_score),
-                    "confidence": float(max_confidence),
-                    "label": label,
-                    "attack_type": attack_type,
-                }
-                results.append(result)
-
-            except Exception:
-                results.append(None)
-
-        return results
+        return img
 
     def detect_faces(
         self, image: np.ndarray, face_detections: List[Dict]
@@ -234,12 +140,51 @@ class AntiSpoof:
         if not face_detections:
             return []
 
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        seen_bboxes = {}
+        deduplicated_detections = []
+
+        for detection in face_detections:
+            bbox = detection.get("bbox", {})
+            if isinstance(bbox, dict):
+                bbox_key = (
+                    bbox.get("x", 0),
+                    bbox.get("y", 0),
+                    bbox.get("width", 0),
+                    bbox.get("height", 0),
+                )
+            elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
+                bbox_key = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+            else:
+                deduplicated_detections.append(detection)
+                continue
+
+            track_id = detection.get("track_id", None)
+            if track_id is not None:
+                if isinstance(track_id, (np.integer, np.int32, np.int64)):
+                    track_id = int(track_id)
+
+            if bbox_key in seen_bboxes:
+                existing_track_id = seen_bboxes[bbox_key].get("track_id", None)
+                if existing_track_id is not None:
+                    if isinstance(existing_track_id, (np.integer, np.int32, np.int64)):
+                        existing_track_id = int(existing_track_id)
+
+                if track_id is not None and track_id >= 0:
+                    if existing_track_id is None or existing_track_id < 0:
+                        idx = deduplicated_detections.index(seen_bboxes[bbox_key])
+                        deduplicated_detections[idx] = detection
+                        seen_bboxes[bbox_key] = detection
+            else:
+                deduplicated_detections.append(detection)
+                seen_bboxes[bbox_key] = detection
+
         face_crops = []
         valid_detections = []
         results = []
 
-        for detection in face_detections:
-            # Skip faces already marked as too_small by face_detector
+        for detection in deduplicated_detections:
             if (
                 "liveness" in detection
                 and detection["liveness"].get("status") == "too_small"
@@ -261,17 +206,27 @@ class AntiSpoof:
                 results.append(detection)
                 continue
 
+            if self.min_face_size > 0:
+                if w < self.min_face_size or h < self.min_face_size:
+                    detection["liveness"] = {
+                        "is_real": False,
+                        "status": "too_small",
+                    }
+                    results.append(detection)
+                    continue
+
             try:
                 face_crop = self.increased_crop(
-                    image, (x, y, x + w, y + h), bbox_inc=1.5
+                    image, (x, y, x + w, y + h), bbox_inc=self.bbox_inc
                 )
-                # Validate crop dimensions
-                if (face_crop is None or 
-                    face_crop.size == 0 or 
-                    len(face_crop.shape) != 3 or 
-                    face_crop.shape[0] < 10 or 
-                    face_crop.shape[1] < 10 or
-                    face_crop.shape[2] != 3):
+                if (
+                    face_crop is None
+                    or face_crop.size == 0
+                    or len(face_crop.shape) != 3
+                    or face_crop.shape[0] < 10
+                    or face_crop.shape[1] < 10
+                    or face_crop.shape[2] != 3
+                ):
                     results.append(detection)
                     continue
             except Exception:
@@ -284,108 +239,111 @@ class AntiSpoof:
         if not face_crops:
             return results if results else face_detections
 
-        # Get raw predictions from model
         raw_predictions = []
         for img in face_crops:
             if not self.ort_session:
                 raw_predictions.append(None)
                 continue
-            
+
             try:
                 onnx_result = self.ort_session.run(
                     [], {self.input_name: self.preprocessing(img)}
                 )
-                raw_logits = onnx_result[0]  # Raw logits before softmax
+                raw_logits = onnx_result[0]
                 pred = self.postprocessing(raw_logits)
-                
+
                 if pred.shape[1] != 3:
                     raw_predictions.append(None)
                     continue
-                
-                # Extract [live, print, replay] scores
-                raw_pred = pred[0]  # Shape: (3,)
+
+                raw_pred = pred[0]
                 raw_predictions.append(raw_pred)
             except Exception:
                 raw_predictions.append(None)
 
-        # Apply temporal fusion and process predictions
         processed_predictions = []
-        active_track_ids = []
-        
+
         for detection, raw_pred in zip(valid_detections, raw_predictions):
             if raw_pred is None:
                 processed_predictions.append(None)
                 continue
-            
-            # Get track_id for temporal fusion
+
             track_id = detection.get("track_id", None)
             if track_id is not None:
-                # Convert numpy integer types to Python int
                 if isinstance(track_id, (np.integer, np.int32, np.int64)):
                     track_id = int(track_id)
-                # Only track positive IDs (negative IDs are temporary/unmatched detections)
-                if track_id >= 0:
-                    active_track_ids.append(track_id)
-            
-            # Apply temporal fusion
-            fused_pred = self.temporal_fuse(track_id, raw_pred)
-            
-            # Extract scores from fused prediction
-            live_score = float(fused_pred[0])
-            print_score = float(fused_pred[1])
-            replay_score = float(fused_pred[2])
-            
+
+            live_score = float(raw_pred[0])
+            print_score = float(raw_pred[1])
+            replay_score = float(raw_pred[2])
+
             spoof_score = print_score + replay_score
             max_confidence = max(live_score, spoof_score)
-            margin = live_score - spoof_score
-            is_real = (
-                (live_score > spoof_score)
-                and (max_confidence >= self.confidence_threshold)
-                and (margin >= 0.05)  # safety margin
-            )
-            
+
+            is_real = live_score >= self.confidence_threshold
+
             if is_real:
-                attack_type = "live"
                 label = "Live"
             else:
-                attack_type = "unknown"
                 label = "Spoof"
-            
+
             result = {
                 "is_real": bool(is_real),
                 "live_score": float(live_score),
-                "spoof_score": float(spoof_score),
                 "confidence": float(max_confidence),
                 "label": label,
-                "attack_type": attack_type,
             }
             processed_predictions.append(result)
-        
-        # Cleanup temporal windows for inactive tracks
-        if active_track_ids:
-            self.cleanup_temporal_windows(active_track_ids)
 
-        # Match processed predictions with valid_detections (maintains 1:1 mapping)
+            track_id_str = str(track_id) if track_id is not None else "None"
+            bbox = detection.get("bbox", {})
+
+            if isinstance(bbox, dict):
+                bbox_x = int(bbox.get("x", 0))
+                bbox_y = int(bbox.get("y", 0))
+                bbox_w = int(bbox.get("width", 0))
+                bbox_h = int(bbox.get("height", 0))
+            elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
+                bbox_x = int(bbox[0])
+                bbox_y = int(bbox[1])
+                bbox_w = int(bbox[2])
+                bbox_h = int(bbox[3])
+            else:
+                bbox_x = bbox_y = bbox_w = bbox_h = 0
+
+            result_line = (
+                f"track_id={track_id_str} "
+                f"bbox=[{bbox_x},{bbox_y},{bbox_w},{bbox_h}] "
+                f"probabilities=[live={live_score:.6f},print={print_score:.6f},replay={replay_score:.6f}] "
+                f"spoof_score={spoof_score:.6f} max_confidence={max_confidence:.6f} "
+                f"live_threshold={self.confidence_threshold:.2f} is_real={is_real} label={label}"
+            )
+            self._write_result_to_file(result_line)
+
         for detection, prediction in zip(valid_detections, processed_predictions):
             if prediction is not None:
                 detection["liveness"] = {
                     "is_real": prediction["is_real"],
                     "live_score": prediction["live_score"],
-                    "spoof_score": prediction["spoof_score"],
                     "confidence": prediction["confidence"],
                     "label": prediction["label"],
                     "status": "real" if prediction["is_real"] else "fake",
-                    "attack_type": prediction["attack_type"],
                 }
-            # If prediction is None, detection is added without liveness data
             results.append(detection)
 
         return results
 
+    def _write_result_to_file(self, result_line: str):
+        try:
+            result_dir = os.path.dirname(self.result_file_path)
+            if result_dir and not os.path.exists(result_dir):
+                os.makedirs(result_dir, exist_ok=True)
+
+            with open(self.result_file_path, "a", encoding="utf-8") as f:
+                f.write(result_line + "\n")
+        except Exception:
+            pass
+
     def clear_cache(self):
         """Clear cache (stub method for API compatibility)"""
         pass
-    
-    def reset_temporal_windows(self):
-        """Reset all temporal windows (useful for testing or full reset)"""
-        self.temporal_windows.clear()

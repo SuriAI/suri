@@ -51,7 +51,6 @@ async def process_liveness_detection(
                 "confidence": 0.0,
                 "status": "error",
                 "label": "Error",
-                "attack_type": "unknown",
                 "message": f"Liveness detection error: {str(e)}",
             }
 

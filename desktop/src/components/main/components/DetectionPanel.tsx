@@ -38,14 +38,11 @@ const DetectionCard = memo(
           bgColor: "",
           statusText: "UNKNOWN",
           statusColor: "text-white/60",
-          score: null,
         };
       }
 
       const status = face.liveness.status;
       const label = face.liveness.label;
-      const liveScore = face.liveness.live_score ?? null;
-      const spoofScore = face.liveness.spoof_score ?? null;
 
       switch (status) {
         case "real":
@@ -54,32 +51,20 @@ const DetectionCard = memo(
             bgColor: "",
             statusText: label?.toUpperCase() || "REAL",
             statusColor: "text-green-400",
-            score:
-              liveScore !== null && liveScore !== undefined ? liveScore : null,
           };
         case "fake":
           return {
             borderColor: "border-red-500/90",
             bgColor: "bg-red-950/30",
-            statusText: label?.toUpperCase(),
+            statusText: `(${label?.toUpperCase()})`,
             statusColor: "text-red-300 font-semibold",
-            score: spoofScore,
-          };
-        case "error":
-          return {
-            borderColor: "border-yellow-500/60",
-            bgColor: "",
-            statusText: "ERROR",
-            statusColor: "text-yellow-400",
-            score: null,
           };
         case "too_small":
           return {
-            borderColor: "border-blue-500/60",
-            bgColor: "",
-            statusText: "TOO SMALL",
-            statusColor: "text-blue-400",
-            score: null,
+            borderColor: "border-red-500/90",
+            bgColor: "bg-red-950/30",
+            statusText: "TOO SMALL (SPOOF)",
+            statusColor: "text-red-300 font-semibold",
           };
         default:
           return {
@@ -87,13 +72,12 @@ const DetectionCard = memo(
             bgColor: "",
             statusText: label?.toUpperCase() || "UNKNOWN",
             statusColor: "text-white/60",
-            score: null,
           };
       }
     };
 
     const statusStyles = getStatusStyles();
-    const isSpoof = face.liveness?.status === "fake";
+    const isSpoof = face.liveness?.status === "fake" || face.liveness?.status === "too_small";
     const hasName = isRecognized && recognitionResult?.person_id && displayName;
 
     return (
@@ -132,7 +116,7 @@ const DetectionCard = memo(
             )}
           </div>
 
-          {/* Right: Status Text + Score (Enhanced for spoofs) */}
+          {/* Right: Status Text Only (No score display) */}
           {face.liveness && (
             <div
               className={`flex items-center gap-1.5 shrink-0 ${statusStyles.statusColor}`}
@@ -144,15 +128,6 @@ const DetectionCard = memo(
               >
                 {statusStyles.statusText}
               </span>
-              {statusStyles.score != null && (
-                <span
-                  className={`text-xs font-mono ${
-                    isSpoof ? "opacity-100 font-semibold" : "opacity-80"
-                  }`}
-                >
-                  {(statusStyles.score * 100).toFixed(0)}%
-                </span>
-              )}
             </div>
           )}
         </div>

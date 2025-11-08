@@ -172,4 +172,3 @@ class FaceDetector:
     def set_min_face_size(self, min_size: int):
         """Set minimum face size for liveness detection compatibility"""
         self.min_face_size = min_size
-
