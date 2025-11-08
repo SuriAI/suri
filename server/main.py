@@ -86,6 +86,8 @@ async def lifespan(app: FastAPI):
             model_path=str(LIVENESS_DETECTOR_CONFIG["model_path"]),
             model_img_size=LIVENESS_DETECTOR_CONFIG["model_img_size"],
             confidence_threshold=LIVENESS_DETECTOR_CONFIG["confidence_threshold"],
+            min_face_size=LIVENESS_DETECTOR_CONFIG["min_face_size"],
+            bbox_inc=LIVENESS_DETECTOR_CONFIG["bbox_inc"],
             config=LIVENESS_DETECTOR_CONFIG,
         )
 
@@ -476,9 +478,6 @@ async def recognize_face(request: FaceRecognitionRequest):
                 # Block recognition for spoofed faces
                 if not is_real or status == "fake":
                     processing_time = time.time() - start_time
-                    logger.warning(
-                        f"Recognition blocked for spoofed face: status={status}, is_real={is_real}"
-                    )
                     return FaceRecognitionResponse(
                         success=False,
                         person_id=None,

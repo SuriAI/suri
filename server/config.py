@@ -151,18 +151,17 @@ MODEL_CONFIGS = {
         "score_threshold": 0.9,
         "nms_threshold": 0.3,
         "top_k": 5000,
-        "min_face_size": 80,  # (IMPORTANT! DO NOT CHANGE) Minimum face size for anti-spoofing compatibility
+        "min_face_size": 80,  # Faces smaller are marked as "too_small" for UI feedback. 
         "backend_id": 0,
         "target_id": 0,
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
     },
     "liveness_detector": {
         "model_path": WEIGHTS_DIR / "antispoof.onnx",
-        "confidence_threshold": 0.97,
-        "bbox_inc": 1.5,
+        "confidence_threshold": 0.95,
+        "bbox_inc": 1.5,  # Bbox expansion factor (matches model training: 1.5_128.onnx)
         "model_img_size": 128,
-        "enable_temporal_fusion": True,
-        "temporal_window_size": 10,
+        "min_face_size": 80,  # Faces smaller than this are skipped from anti-spoof processing.
     },
     "face_recognizer": {
         "model_path": WEIGHTS_DIR / "recognizer_light.onnx",
@@ -177,9 +176,9 @@ MODEL_CONFIGS = {
     },
     "face_tracker": {
         "max_age": 30,  # Maximum frames to keep track alive without detection
-        "n_init": 2,  # OPTIMIZED: Reduced from 3 to 2 (faster track confirmation)
-        "max_iou_distance": 0.6,  # OPTIMIZED: Reduced from 0.7 to 0.6 (stricter motion gating)
-        "max_cosine_distance": 0.25,  # OPTIMIZED: Reduced from 0.3 to 0.25 (stricter appearance gating)
+        "n_init": 3,  # OPTIMIZED: Reduced from 3 to 2 (faster track confirmation)
+        "max_iou_distance": 0.7,  # OPTIMIZED: Reduced from 0.7 to 0.6 (stricter motion gating)
+        "max_cosine_distance": 0.3,  # OPTIMIZED: Reduced from 0.3 to 0.25 (stricter appearance gating)
         "nn_budget": 30,  # OPTIMIZED: Reduced from 100 to 30 (faster matching, less memory)
         "matching_weights": {
             "appearance": 0.7,  # 70% weight on appearance matching

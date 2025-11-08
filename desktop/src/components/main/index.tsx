@@ -1024,7 +1024,6 @@ export default function Main() {
                         is_real: face.liveness.is_real ?? null,
                         confidence: face.liveness.confidence ?? 0,
                         live_score: face.liveness.live_score,
-                        spoof_score: face.liveness.spoof_score,
                         status: face.liveness.status || "error",
                         label: face.liveness.label,
                         attack_type: face.liveness.attack_type,
