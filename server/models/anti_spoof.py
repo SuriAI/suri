@@ -61,7 +61,8 @@ class AntiSpoof:
 
     def preprocessing(self, img: np.ndarray) -> np.ndarray:
         new_size = self.model_img_size
-        img = cv2.resize(img, (new_size, new_size), interpolation=cv2.INTER_LINEAR)
+        # Use INTER_CUBIC for better quality
+        img = cv2.resize(img, (new_size, new_size), interpolation=cv2.INTER_CUBIC)
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_normalized = img_rgb.astype(np.float32, copy=False)
         np.multiply(img_normalized, 1.0 / 255.0, out=img_normalized)
@@ -71,18 +72,13 @@ class AntiSpoof:
 
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
         """Apply softmax to prediction"""
-
         def softmax(x):
             x = x - np.max(x)
             exp_x = np.exp(x)
             return exp_x / np.sum(exp_x)
+        return softmax(prediction)
 
-        pred = softmax(prediction)
-        return pred
-
-    def increased_crop(
-        self, img: np.ndarray, bbox: tuple, bbox_inc: float = 1.5
-    ) -> np.ndarray:
+    def increased_crop(self, img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarray:
         """Crop face with expanded bounding box"""
         real_h, real_w = img.shape[:2]
         x1_input, y1_input, x2_input, y2_input = bbox
@@ -90,30 +86,46 @@ class AntiSpoof:
         h = y2_input - y1_input
         max_dim = max(w, h)
 
-        xc, yc = x1_input + w / 2, y1_input + h / 2
-        x_expanded = int(xc - max_dim * bbox_inc / 2)
-        y_expanded = int(yc - max_dim * bbox_inc / 2)
+        # Calculate expanded size (ensure minimum size)
+        expanded_size = int(round(max_dim * bbox_inc))
+        if expanded_size < 10:
+            raise ValueError(f"Expanded size too small: {expanded_size}")
 
-        x1_clamped = max(0, x_expanded)
-        y1_clamped = max(0, y_expanded)
-        x2_clamped = min(real_w, x_expanded + int(max_dim * bbox_inc))
-        y2_clamped = min(real_h, y_expanded + int(max_dim * bbox_inc))
+        # Calculate center (use float precision)
+        xc = x1_input + w / 2
+        yc = y1_input + h / 2
 
-        crop = img[y1_clamped:y2_clamped, x1_clamped:x2_clamped, :]
+        # Calculate expanded bounds (use round for better precision)
+        x_expanded = int(round(xc - expanded_size / 2))
+        y_expanded = int(round(yc - expanded_size / 2))
 
-        if (
-            x_expanded < 0
-            or y_expanded < 0
-            or x_expanded + int(max_dim * bbox_inc) > real_w
-            or y_expanded + int(max_dim * bbox_inc) > real_h
-        ):
-            top = max(0, y1_clamped - y_expanded)
-            bottom = max(0, y_expanded + int(max_dim * bbox_inc) - y2_clamped)
-            left = max(0, x1_clamped - x_expanded)
-            right = max(0, x_expanded + int(max_dim * bbox_inc) - x2_clamped)
+        # Calculate actual crop bounds (clamped to image)
+        x1_crop = max(0, x_expanded)
+        y1_crop = max(0, y_expanded)
+        x2_crop = min(real_w, x_expanded + expanded_size)
+        y2_crop = min(real_h, y_expanded + expanded_size)
 
+        # Crop the region
+        crop = img[y1_crop:y2_crop, x1_crop:x2_crop, :]
+        crop_h, crop_w = crop.shape[:2]
+
+        # Calculate padding needed to make it exactly expanded_size x expanded_size
+        pad_top = max(0, -y_expanded)
+        pad_bottom = max(0, expanded_size - crop_h - pad_top)
+        pad_left = max(0, -x_expanded)
+        pad_right = max(0, expanded_size - crop_w - pad_left)
+
+        # Ensure we pad to exactly expanded_size x expanded_size
+        if pad_top + crop_h + pad_bottom < expanded_size:
+            pad_bottom = expanded_size - crop_h - pad_top
+        if pad_left + crop_w + pad_right < expanded_size:
+            pad_right = expanded_size - crop_w - pad_left
+
+        # Apply padding if needed
+        if pad_top > 0 or pad_bottom > 0 or pad_left > 0 or pad_right > 0:
             crop = cv2.copyMakeBorder(
-                crop, top, bottom, left, right, cv2.BORDER_REFLECT_101
+                crop, pad_top, pad_bottom, pad_left, pad_right,
+                cv2.BORDER_REFLECT_101
             )
 
         return crop
@@ -140,7 +152,9 @@ class AntiSpoof:
         
         # Weight newer frames slightly more (linear weighting from 1.0 to 2.0)
         # This gives recent frames more influence while still using history
-        if len(preds) > 1:
+        if len(preds) == 0:
+            return raw_pred  # Fallback if window is empty
+        elif len(preds) > 1:
             weights = np.linspace(1.0, 2.0, len(preds))
             fused = np.average(preds, axis=0, weights=weights)
         else:
@@ -251,7 +265,13 @@ class AntiSpoof:
                 face_crop = self.increased_crop(
                     image, (x, y, x + w, y + h), bbox_inc=1.5
                 )
-                if face_crop is None or face_crop.size == 0:
+                # Validate crop dimensions
+                if (face_crop is None or 
+                    face_crop.size == 0 or 
+                    len(face_crop.shape) != 3 or 
+                    face_crop.shape[0] < 10 or 
+                    face_crop.shape[1] < 10 or
+                    face_crop.shape[2] != 3):
                     results.append(detection)
                     continue
             except Exception:
