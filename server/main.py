@@ -3,6 +3,7 @@ import json
 import logging
 import time
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 import cv2
 import numpy as np
@@ -68,9 +69,9 @@ attendance_database = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan event handler for startup and shutdown"""
-    # Startup
     global face_detector, liveness_detector, face_recognizer, face_tracker, attendance_database
+    cleanup_task = None
+    
     try:
         logger.info("Starting up backend server...")
         face_detector = FaceDetector(
@@ -90,7 +91,6 @@ async def lifespan(app: FastAPI):
             bbox_inc=LIVENESS_DETECTOR_CONFIG["bbox_inc"],
         )
 
-        # Initialize face recognizer (uses face detector landmarks for alignment)
         face_recognizer = FaceRecognizer(
             model_path=str(FACE_RECOGNIZER_MODEL_PATH),
             input_size=FACE_RECOGNIZER_CONFIG["input_size"],
@@ -100,8 +100,6 @@ async def lifespan(app: FastAPI):
             session_options=FACE_RECOGNIZER_CONFIG["session_options"],
         )
 
-        # Initialize face tracker (appearance + motion features)
-        # Initializing face tracker with appearance features
         matching_weights = FACE_TRACKER_CONFIG["matching_weights"]
         face_tracker = FaceTracker(
             max_age=FACE_TRACKER_CONFIG["max_age"],
@@ -112,26 +110,43 @@ async def lifespan(app: FastAPI):
             matching_weights=matching_weights,
         )
 
-        # Initialize attendance database (auto-handles dev/prod paths)
         attendance_database = AttendanceDatabaseManager(str(DATA_DIR / "attendance.db"))
 
-        # Set global variables for attendance routes
         attendance.attendance_db = attendance_database
         attendance.face_detector = face_detector
         attendance.face_recognizer = face_recognizer
 
-        # Set model references for face processing utilities
         set_model_references(liveness_detector, face_tracker, face_recognizer)
 
+        async def cleanup_loop():
+            while True:
+                try:
+                    await asyncio.sleep(300)
+                    await manager.cleanup_inactive_connections(timeout_minutes=30)
+                except asyncio.CancelledError:
+                    break
+                except Exception as e:
+                    logger.error(f"Cleanup loop error: {e}")
+
+        cleanup_task = asyncio.create_task(cleanup_loop())
         logger.info("Startup complete")
 
     except Exception as e:
         logger.error(f"Failed to initialize models: {e}")
         raise
 
-    yield  # App runs here
+    yield
 
-    # Shutdown
+    if cleanup_task:
+        try:
+            cleanup_task.cancel()
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error(f"Error stopping cleanup task: {e}")
+
+    logger.info("Shutdown complete")
     logger.info("Shutting down backend server...")
     try:
         # Database connections use context managers - no explicit close needed
@@ -917,6 +932,16 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
     logger.info(f"[WebSocket] Client {client_id} attempting to connect...")
     await websocket.accept()
     logger.info(f"[WebSocket] Client {client_id} connected successfully")
+    
+    if client_id not in manager.active_connections:
+        manager.active_connections[client_id] = websocket
+    if client_id not in manager.connection_metadata:
+        manager.connection_metadata[client_id] = {
+            "connected_at": datetime.now(),
+            "last_activity": datetime.now(),
+            "message_count": 0,
+            "streaming": False,
+        }
 
     # Store enable_liveness_detection per client (default to True)
     enable_liveness_detection = True
@@ -951,6 +976,8 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                     message = json.loads(message_data["text"])
 
                     if message.get("type") == "ping":
+                        if client_id in manager.connection_metadata:
+                            manager.connection_metadata[client_id]["last_activity"] = datetime.now()
                         await websocket.send_text(
                             json.dumps(
                                 {
@@ -961,6 +988,10 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                             )
                         )
                         continue
+
+                    if message.get("type") == "disconnect":
+                        logger.info(f"[WebSocket] Client {client_id} requested disconnect")
+                        break
 
                     elif message.get("type") == "config":
                         # Update enable_liveness_detection from config
@@ -993,6 +1024,8 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         continue
 
                 elif "bytes" in message_data:
+                    if client_id in manager.connection_metadata:
+                        manager.connection_metadata[client_id]["last_activity"] = datetime.now()
                     start_time = time.time()
                     frame_bytes = message_data["bytes"]
 
@@ -1144,7 +1177,6 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
     except WebSocketDisconnect as e:
         logger.info(f"[WebSocket] Client {client_id} disconnected (outer exception - WebSocketDisconnect)")
     except Exception as e:
-        # Only log if it's not a connection-related error
         error_str = str(e).lower()
         if (
             "disconnect" not in error_str
@@ -1155,6 +1187,8 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
         else:
             logger.info(f"[WebSocket] Client {client_id} disconnected due to exception: {e}")
     finally:
+        if client_id in manager.active_connections:
+            await manager.disconnect(client_id)
         logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")
 
 
@@ -1194,10 +1228,10 @@ async def websocket_notifications_endpoint(websocket: WebSocket, client_id: str)
 
     except WebSocketDisconnect:
         # Notification client disconnected
-        manager.disconnect(client_id)
+        await manager.disconnect(client_id)
     except Exception as e:
         logger.error(f"WebSocket notification error: {e}")
-        manager.disconnect(client_id)
+        await manager.disconnect(client_id)
 
 
 if __name__ == "__main__":

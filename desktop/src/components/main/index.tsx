@@ -1251,11 +1251,7 @@ export default function Main() {
       setIsVideoLoading(true);
       setError(null);
 
-      if (!backendServiceRef.current) {
-        backendServiceRef.current = new BackendService();
-      }
-
-      const currentStatus = backendServiceRef.current.getWebSocketStatus();
+      const currentStatus = backendServiceRef.current?.getWebSocketStatus() || "disconnected";
       if (currentStatus !== "connected") {
         try {
           setError("Connecting to detection service...");
@@ -1473,7 +1469,6 @@ export default function Main() {
       lastUpdateTime: Date.now(),
     };
 
-    lastDetectionHashRef.current = "";
     lastVideoSizeRef.current = { width: 0, height: 0 };
     lastCanvasSizeRef.current = { width: 0, height: 0 };
     scaleFactorsRef.current = { scaleX: 1, scaleY: 1, offsetX: 0, offsetY: 0 };
@@ -1912,8 +1907,7 @@ export default function Main() {
       if (wasInitialized || wasInitializing) {
         if (isStreamingRef.current) {
           stopCamera(false);
-        }
-        if (animationFrameRef.current) {
+        } else if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
           animationFrameRef.current = undefined;
         }
