@@ -182,25 +182,32 @@ async def get_available_models():
     """Get information about available models"""
     models_info = {}
 
-    if face_detector:
+    # Check if face_detector exists and is actually functional
+    if face_detector and hasattr(face_detector, "detector") and face_detector.detector is not None:
         models_info["face_detector"] = {
             "available": True,
         }
     else:
         models_info["face_detector"] = {"available": False}
 
-    if liveness_detector:
+    # Check if liveness_detector exists and is actually functional
+    if liveness_detector and hasattr(liveness_detector, "ort_session") and liveness_detector.ort_session is not None:
         models_info["liveness_detector"] = {
             "available": True,
         }
     else:
         models_info["liveness_detector"] = {"available": False}
 
-    if face_recognizer:
-        models_info["face_recognizer"] = {
-            "available": True,
-            "info": face_recognizer.get_model_info(),
-        }
+    # Check if face_recognizer exists and is actually functional
+    if face_recognizer and hasattr(face_recognizer, "session") and face_recognizer.session is not None:
+        try:
+            models_info["face_recognizer"] = {
+                "available": True,
+                "info": face_recognizer.get_model_info(),
+            }
+        except Exception as e:
+            logger.error(f"Error getting face_recognizer info: {e}")
+            models_info["face_recognizer"] = {"available": False}
     else:
         models_info["face_recognizer"] = {"available": False}
 
@@ -291,32 +298,79 @@ async def detect_faces(request: DetectionRequest):
 
         processing_time = time.time() - start_time
 
+        serialized_faces = []
         for face in faces:
-            if "bbox" in face and isinstance(face["bbox"], dict):
-                bbox_orig = face.get("bbox_original", face["bbox"])
-                face["bbox"] = [
-                    bbox_orig.get("x", 0),
-                    bbox_orig.get("y", 0),
-                    bbox_orig.get("width", 0),
-                    bbox_orig.get("height", 0),
-                ]
+            # Validate required fields - no fallbacks
+            if "bbox" not in face or not isinstance(face["bbox"], dict):
+                logger.warning(f"Face missing bbox in /detect endpoint: {face}")
+                continue
 
-            if "track_id" in face:
+            # Use bbox_original if present, otherwise use bbox
+            if "bbox_original" in face:
+                bbox_orig = face["bbox_original"]
+                if not isinstance(bbox_orig, dict):
+                    logger.warning(f"Face bbox_original is not a dict: {face}")
+                    continue
+            else:
+                bbox_orig = face["bbox"]
+            
+            # Validate bbox has all required fields
+            required_bbox_fields = ["x", "y", "width", "height"]
+            if not all(field in bbox_orig for field in required_bbox_fields):
+                logger.warning(f"Face bbox missing required fields: {bbox_orig}")
+                continue
+
+            # Validate confidence is present
+            if "confidence" not in face or face["confidence"] is None:
+                logger.warning(f"Face missing confidence: {face}")
+                continue
+
+            # Serialize bbox as array [x, y, width, height]
+            face["bbox"] = [
+                bbox_orig["x"],
+                bbox_orig["y"],
+                bbox_orig["width"],
+                bbox_orig["height"],
+            ]
+
+            # Convert track_id to int if present
+            if "track_id" in face and face["track_id"] is not None:
                 track_id_value = face["track_id"]
                 if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
                     face["track_id"] = int(track_id_value)
 
+            # Validate liveness data if present
+            if "liveness" in face:
+                liveness = face["liveness"]
+                if not isinstance(liveness, dict):
+                    logger.warning(f"Face liveness is not a dict: {face}")
+                    del face["liveness"]
+                else:
+                    # Validate required liveness fields
+                    if "status" not in liveness:
+                        logger.warning(f"Face liveness missing status: {liveness}")
+                        del face["liveness"]
+                    elif "is_real" not in liveness:
+                        logger.warning(f"Face liveness missing is_real: {liveness}")
+                        del face["liveness"]
+
+            # Remove embedding to reduce payload size
             if "embedding" in face:
                 del face["embedding"]
 
+            serialized_faces.append(face)
+
         processing_time_ms = processing_time * 1000
-        suggested_skip = (
-            2 if processing_time_ms > 50 else (1 if processing_time_ms > 30 else 0)
-        )
+        if processing_time_ms > 50:
+            suggested_skip = 2
+        elif processing_time_ms > 30:
+            suggested_skip = 1
+        else:
+            suggested_skip = 0
 
         return DetectionResponse(
             success=True,
-            faces=faces,
+            faces=serialized_faces,
             processing_time=processing_time,
             model_used=request.model_type,
             suggested_skip=suggested_skip,
@@ -387,32 +441,79 @@ async def detect_faces_upload(
 
         processing_time = time.time() - start_time
 
+        serialized_faces = []
         for face in faces:
-            if "bbox" in face and isinstance(face["bbox"], dict):
-                bbox_orig = face.get("bbox_original", face["bbox"])
-                face["bbox"] = [
-                    bbox_orig.get("x", 0),
-                    bbox_orig.get("y", 0),
-                    bbox_orig.get("width", 0),
-                    bbox_orig.get("height", 0),
-                ]
+            # Validate required fields - no fallbacks
+            if "bbox" not in face or not isinstance(face["bbox"], dict):
+                logger.warning(f"Face missing bbox in /detect/upload endpoint: {face}")
+                continue
 
-            if "track_id" in face:
+            # Use bbox_original if present, otherwise use bbox
+            if "bbox_original" in face:
+                bbox_orig = face["bbox_original"]
+                if not isinstance(bbox_orig, dict):
+                    logger.warning(f"Face bbox_original is not a dict: {face}")
+                    continue
+            else:
+                bbox_orig = face["bbox"]
+            
+            # Validate bbox has all required fields
+            required_bbox_fields = ["x", "y", "width", "height"]
+            if not all(field in bbox_orig for field in required_bbox_fields):
+                logger.warning(f"Face bbox missing required fields: {bbox_orig}")
+                continue
+
+            # Validate confidence is present
+            if "confidence" not in face or face["confidence"] is None:
+                logger.warning(f"Face missing confidence: {face}")
+                continue
+
+            # Serialize bbox as array [x, y, width, height]
+            face["bbox"] = [
+                bbox_orig["x"],
+                bbox_orig["y"],
+                bbox_orig["width"],
+                bbox_orig["height"],
+            ]
+
+            # Convert track_id to int if present
+            if "track_id" in face and face["track_id"] is not None:
                 track_id_value = face["track_id"]
                 if isinstance(track_id_value, (np.integer, np.int32, np.int64)):
                     face["track_id"] = int(track_id_value)
 
+            # Validate liveness data if present
+            if "liveness" in face:
+                liveness = face["liveness"]
+                if not isinstance(liveness, dict):
+                    logger.warning(f"Face liveness is not a dict: {face}")
+                    del face["liveness"]
+                else:
+                    # Validate required liveness fields
+                    if "status" not in liveness:
+                        logger.warning(f"Face liveness missing status: {liveness}")
+                        del face["liveness"]
+                    elif "is_real" not in liveness:
+                        logger.warning(f"Face liveness missing is_real: {liveness}")
+                        del face["liveness"]
+
+            # Remove embedding to reduce payload size
             if "embedding" in face:
                 del face["embedding"]
 
+            serialized_faces.append(face)
+
         processing_time_ms = processing_time * 1000
-        suggested_skip = (
-            2 if processing_time_ms > 50 else (1 if processing_time_ms > 30 else 0)
-        )
+        if processing_time_ms > 50:
+            suggested_skip = 2
+        elif processing_time_ms > 30:
+            suggested_skip = 1
+        else:
+            suggested_skip = 0
 
         return {
             "success": True,
-            "faces": faces,
+            "faces": serialized_faces,
             "processing_time": processing_time,
             "model_used": model_type,
             "suggested_skip": suggested_skip,
@@ -813,8 +914,9 @@ async def get_face_stats():
 
 @app.websocket("/ws/detect/{client_id}")
 async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
+    logger.info(f"[WebSocket] Client {client_id} attempting to connect...")
     await websocket.accept()
-    # WebSocket detection connected
+    logger.info(f"[WebSocket] Client {client_id} connected successfully")
 
     # Store enable_liveness_detection per client (default to True)
     enable_liveness_detection = True
@@ -837,7 +939,10 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                 }
             )
         )
+        logger.info(f"[WebSocket] Sent connection confirmation to client {client_id}")
 
+        logger.info(f"[WebSocket] Starting message loop for client {client_id}")
+        
         while True:
             try:
                 message_data = await websocket.receive()
@@ -919,22 +1024,66 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
 
                     serialized_faces = []
                     for face in faces:
-                        if "bbox" in face and isinstance(face["bbox"], dict):
-                            bbox_orig = face.get("bbox_original", face["bbox"])
-                            face["bbox"] = [
-                                bbox_orig.get("x", 0),
-                                bbox_orig.get("y", 0),
-                                bbox_orig.get("width", 0),
-                                bbox_orig.get("height", 0),
-                            ]
+                        # Validate required fields - no fallbacks, fail if data is incomplete
+                        if "bbox" not in face or not isinstance(face["bbox"], dict):
+                            logger.warning(f"Face missing bbox: {face}")
+                            continue
 
-                        if "track_id" in face:
+                        # Use bbox_original if present, otherwise use bbox (no fallback - both should exist)
+                        if "bbox_original" in face:
+                            bbox_orig = face["bbox_original"]
+                            if not isinstance(bbox_orig, dict):
+                                logger.warning(f"Face bbox_original is not a dict: {face}")
+                                continue
+                        else:
+                            bbox_orig = face["bbox"]
+                        
+                        # Validate bbox has all required fields
+                        required_bbox_fields = ["x", "y", "width", "height"]
+                        if not all(field in bbox_orig for field in required_bbox_fields):
+                            logger.warning(f"Face bbox missing required fields: {bbox_orig}")
+                            continue
+
+                        # Validate confidence is present and valid
+                        if "confidence" not in face:
+                            logger.warning(f"Face missing confidence: {face}")
+                            continue
+                        if face["confidence"] is None:
+                            logger.warning(f"Face confidence is None: {face}")
+                            continue
+
+                        # Serialize bbox as array [x, y, width, height]
+                        face["bbox"] = [
+                            bbox_orig["x"],
+                            bbox_orig["y"],
+                            bbox_orig["width"],
+                            bbox_orig["height"],
+                        ]
+
+                        # Convert track_id to int if present
+                        if "track_id" in face and face["track_id"] is not None:
                             track_id_value = face["track_id"]
                             if isinstance(
                                 track_id_value, (np.integer, np.int32, np.int64)
                             ):
                                 face["track_id"] = int(track_id_value)
 
+                        # Validate liveness data if present
+                        if "liveness" in face:
+                            liveness = face["liveness"]
+                            if not isinstance(liveness, dict):
+                                logger.warning(f"Face liveness is not a dict: {face}")
+                                del face["liveness"]
+                            else:
+                                # Validate required liveness fields
+                                if "status" not in liveness:
+                                    logger.warning(f"Face liveness missing status: {liveness}")
+                                    del face["liveness"]
+                                elif "is_real" not in liveness:
+                                    logger.warning(f"Face liveness missing is_real: {liveness}")
+                                    del face["liveness"]
+
+                        # Remove embedding to reduce payload size
                         if "embedding" in face:
                             del face["embedding"]
 
@@ -942,55 +1091,71 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
 
                     processing_time = time.time() - start_time
 
-                    await websocket.send_text(
-                        json.dumps(
-                            {
-                                "type": "detection_response",
-                                "faces": serialized_faces,
-                                "model_used": "face_detector",
-                                "processing_time": processing_time,
-                                "timestamp": time.time(),
-                                "success": True,
-                                "suggested_skip": (
-                                    2
-                                    if processing_time * 1000 > 50
-                                    else (1 if processing_time * 1000 > 30 else 0)
-                                ),
-                            }
-                        )
-                    )
+                    current_timestamp = time.time()
+                    response_data = {
+                        "type": "detection_response",
+                        "faces": serialized_faces,
+                        "model_used": "face_detector",
+                        "processing_time": processing_time,
+                        "timestamp": current_timestamp,
+                        "frame_timestamp": current_timestamp,
+                        "success": True,
+                    }
+                    
+                    # Calculate suggested_skip based on processing time
+                    if processing_time * 1000 > 50:
+                        suggested_skip = 2
+                    elif processing_time * 1000 > 30:
+                        suggested_skip = 1
+                    else:
+                        suggested_skip = 0
+                    
+                    response_data["suggested_skip"] = suggested_skip
+                    
+                    await websocket.send_text(json.dumps(response_data))
 
             except WebSocketDisconnect:
                 # Connection closed by client, exit gracefully
+                logger.info(f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)")
                 break
             except Exception as e:
+                # Check if it's a connection-related error
+                error_str = str(e).lower()
+                if "disconnect" in error_str or "close" in error_str:
+                    logger.info(f"[WebSocket] Client {client_id} disconnected due to connection error: {e}")
+                    break
                 # Only log if it's not a connection-related error
-                if "disconnect" not in str(e).lower() and "close" not in str(e).lower():
-                    logger.error(f"Detection processing error: {e}")
-                    try:
-                        await websocket.send_text(
-                            json.dumps(
-                                {
-                                    "type": "error",
-                                    "message": f"Detection failed: {str(e)}",
-                                    "timestamp": time.time(),
-                                }
-                            )
+                logger.error(f"[WebSocket] Detection processing error for client {client_id}: {e}")
+                try:
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "message": f"Detection failed: {str(e)}",
+                                "timestamp": time.time(),
+                            }
                         )
-                    except (WebSocketDisconnect, RuntimeError):
-                        # Connection already closed, ignore
-                        break
+                    )
+                except (WebSocketDisconnect, RuntimeError) as send_error:
+                    # Connection already closed, ignore
+                    logger.info(f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}")
+                    break
 
-    except WebSocketDisconnect:
-        pass  # WebSocket detection disconnected
+    except WebSocketDisconnect as e:
+        logger.info(f"[WebSocket] Client {client_id} disconnected (outer exception - WebSocketDisconnect)")
     except Exception as e:
         # Only log if it's not a connection-related error
+        error_str = str(e).lower()
         if (
-            "disconnect" not in str(e).lower()
-            and "close" not in str(e).lower()
-            and "send" not in str(e).lower()
+            "disconnect" not in error_str
+            and "close" not in error_str
+            and "send" not in error_str
         ):
-            logger.error(f"WebSocket detection error: {e}")
+            logger.error(f"[WebSocket] Detection error for client {client_id}: {e}")
+        else:
+            logger.info(f"[WebSocket] Client {client_id} disconnected due to exception: {e}")
+    finally:
+        logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")
 
 
 @app.websocket("/ws/notifications/{client_id}")
