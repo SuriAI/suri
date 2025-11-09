@@ -102,8 +102,9 @@ export class AttendanceManager {
    */
   private async loadSettingsWhenReady(): Promise<void> {
     // Wait for backend to be ready (check via backend_ready API)
-    const maxWaitTime = 10000; // 10 seconds max wait
-    const checkInterval = 300; // Check every 300ms
+    // Increased timeout to 60 seconds to match WebSocket initialization timeout
+    const maxWaitTime = 60000; // 60 seconds max wait (models can take time to load)
+    const checkInterval = 500; // Check every 500ms
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxWaitTime) {
@@ -116,19 +117,32 @@ export class AttendanceManager {
             await this.loadSettings();
             return;
           }
+        } else {
+          // If electronAPI is not available yet, wait a bit and retry
+          await new Promise((resolve) => setTimeout(resolve, checkInterval));
+          continue;
         }
         // Not ready yet, wait a bit
         await new Promise((resolve) => setTimeout(resolve, checkInterval));
-      } catch {
-        // Ignore errors during startup
+      } catch (error) {
+        // Log error for debugging but continue waiting
+        console.debug("[AttendanceManager] Error checking backend readiness:", error);
         await new Promise((resolve) => setTimeout(resolve, checkInterval));
       }
     }
 
-    // Timeout - use default settings
+    // Timeout - try to load settings anyway (backend might be ready but API check failed)
     console.warn(
-      "[AttendanceManager] Backend not ready after timeout, using default settings",
+      "[AttendanceManager] Backend not ready after timeout, attempting to load settings anyway...",
     );
+    try {
+      await this.loadSettings();
+    } catch (error) {
+      console.warn(
+        "[AttendanceManager] Failed to load settings after timeout, using default settings:",
+        error,
+      );
+    }
   }
 
   private async loadSettings(): Promise<void> {

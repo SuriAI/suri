@@ -27,18 +27,27 @@ class FaceDetector:
         self.set_top_k(top_k)
         self.set_min_face_size(min_face_size)
 
-        if model_path and os.path.isfile(model_path):
-            try:
-                self.detector = cv.FaceDetectorYN.create(
-                    self.model_path,
-                    "",  # Empty for ONNX - params passed directly
-                    self.input_size,
-                    self.conf_threshold,
-                    self.nms_threshold,
-                    self.top_k,
-                )
-            except Exception as e:
-                logger.error(f"Error loading face detector model: {e}")
+        if not model_path:
+            raise ValueError("Model path is required for FaceDetector")
+        
+        if not os.path.isfile(model_path):
+            raise FileNotFoundError(f"Face detector model file not found: {model_path}")
+        
+        try:
+            self.detector = cv.FaceDetectorYN.create(
+                self.model_path,
+                "",  # Empty for ONNX - params passed directly
+                self.input_size,
+                self.conf_threshold,
+                self.nms_threshold,
+                self.top_k,
+            )
+            if self.detector is None:
+                raise RuntimeError("Failed to create FaceDetectorYN instance")
+            logger.info(f"Face detector model loaded successfully from {model_path}")
+        except Exception as e:
+            logger.error(f"Error loading face detector model: {e}")
+            raise  # Re-raise to prevent server from starting with broken model
 
     def detect_faces(self, image: np.ndarray) -> List[dict]:
         if not self.detector or image is None or image.size == 0:

@@ -208,6 +208,10 @@ class LivenessDetector:
                     detection["liveness"] = {
                         "is_real": False,
                         "status": "too_small",
+                        "live_score": 0.0,
+                        "spoof_score": 1.0,
+                        "confidence": 0.0,
+                        "label": "Too Small",
                     }
                     results.append(detection)
                     continue

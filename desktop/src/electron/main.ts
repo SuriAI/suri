@@ -364,8 +364,21 @@ ipcMain.handle("window:close", () => {
 // Check if backend server is ready
 // All AI models are loaded on the server side, not in Electron
 ipcMain.handle("backend:is-ready", async () => {
-  const result = await backendService.checkReadiness();
-  return result.ready && result.modelsLoaded;
+  try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      setTimeout(() => resolve(false), 15000); // 15 second timeout
+    });
+
+    const readinessPromise = backendService.checkReadiness().then((result) => {
+      return result.ready && result.modelsLoaded;
+    });
+
+    return await Promise.race([readinessPromise, timeoutPromise]);
+  } catch (error) {
+    console.error("[Main] Backend readiness check error:", error);
+    return false;
+  }
 });
 
 function createWindow(): void {
@@ -524,6 +537,19 @@ function createWindow(): void {
     // Disable Ctrl+Mouse wheel zoom
     if (input.control && input.type === "mouseWheel") {
       event.preventDefault();
+    }
+  });
+
+  // Handle renderer process crash or reload
+  mainWindow.webContents.on("render-process-gone", (event, details) => {
+    console.log("[Main] Renderer process gone:", details.reason);
+    // WebSocket connections will be automatically closed when renderer process dies
+  });
+
+  // Handle navigation
+  mainWindow.webContents.on("did-start-navigation", (event, navigationUrl) => {
+    if (navigationUrl && navigationUrl !== mainWindow.webContents.getURL()) {
+      console.log("[Main] Navigation started to:", navigationUrl);
     }
   });
 

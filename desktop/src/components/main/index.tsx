@@ -3,7 +3,6 @@ import {
   useEffect,
   useRef,
   useCallback,
-  useDeferredValue,
   startTransition,
 } from "react";
 import { BackendService } from "../../services/BackendService";
@@ -94,31 +93,27 @@ export default function Main() {
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
-  const detectionEnabledRef = useRef<boolean>(false);
   const backendServiceRef = useRef<BackendService | null>(null);
   const isProcessingRef = useRef<boolean>(false);
   const isStreamingRef = useRef<boolean>(false);
   const lastDetectionFrameRef = useRef<ArrayBuffer | null>(null);
 
-  // Debounce refs
   const lastStartTimeRef = useRef<number>(0);
   const lastStopTimeRef = useRef<number>(0);
   const isStartingRef = useRef<boolean>(false);
   const isStoppingRef = useRef<boolean>(false);
 
-  // Emergency recovery
   const emergencyRecovery = useCallback(() => {
     isStartingRef.current = false;
     isStoppingRef.current = false;
     isProcessingRef.current = false;
     lastStartTimeRef.current = 0;
     lastStopTimeRef.current = 0;
-    if (isStreamingRef.current) {
-      setIsStreaming(false);
-      isStreamingRef.current = false;
-      setDetectionEnabled(false);
-      detectionEnabledRef.current = false;
-    }
+      if (isStreamingRef.current) {
+        isStreamingRef.current = false;
+        isScanningRef.current = false;
+        setIsStreaming(false);
+      }
 
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -126,7 +121,6 @@ export default function Main() {
     }
   }, []);
 
-  // Performance refs
   const lastCanvasSizeRef = useRef<{ width: number; height: number }>({
     width: 0,
     height: 0,
@@ -142,15 +136,12 @@ export default function Main() {
     offsetY: number;
   }>({ scaleX: 1, scaleY: 1, offsetX: 0, offsetY: 0 });
   const lastDetectionHashRef = useRef<string>("");
-
-  // Cache video rect
   const videoRectRef = useRef<DOMRect | null>(null);
   const lastVideoRectUpdateRef = useRef<number>(0);
 
   const [isStreaming, setIsStreaming] = useState(false);
-  const [detectionEnabled, setDetectionEnabled] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
-  const [cameraActive, setCameraActive] = useState(false);
+  const [, setCameraActive] = useState(false);
   const [currentDetections, setCurrentDetections] =
     useState<DetectionResult | null>(null);
   const [detectionFps, setDetectionFps] = useState<number>(0);
@@ -158,8 +149,8 @@ export default function Main() {
     "disconnected" | "connecting" | "connected"
   >("disconnected");
   const backendServiceReadyRef = useRef(false);
+  const isScanningRef = useRef(false);
 
-  // Sync camera state
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -169,16 +160,20 @@ export default function Main() {
       const isPlaying = !video.paused && !video.ended && video.readyState > 2;
       const shouldBeActive = hasStream && isPlaying;
 
-      if (cameraActive !== shouldBeActive) {
-        setCameraActive(shouldBeActive);
-        if (shouldBeActive && !isStreaming) {
-          setIsStreaming(true);
-          isStreamingRef.current = true;
-        } else if (!shouldBeActive && isStreaming) {
-          setIsStreaming(false);
-          isStreamingRef.current = false;
+      setCameraActive((prevActive) => {
+        if (prevActive !== shouldBeActive) {
+          if (shouldBeActive && !isStreamingRef.current) {
+            isStreamingRef.current = true;
+            setIsStreaming(true);
+          } else if (!shouldBeActive && isStreamingRef.current) {
+            isStreamingRef.current = false;
+            setIsStreaming(false);
+            isScanningRef.current = false;
+          }
+          return shouldBeActive;
         }
-      }
+        return prevActive;
+      });
     };
 
     checkVideoState();
@@ -194,7 +189,7 @@ export default function Main() {
       });
       clearInterval(interval);
     };
-  }, [cameraActive, isStreaming]);
+  }, []);
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
@@ -202,15 +197,13 @@ export default function Main() {
   const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>("");
 
-  // Anti-spoofing settings
   const [currentRecognitionResults, setCurrentRecognitionResults] = useState<
     Map<number, ExtendedFaceRecognitionResponse>
   >(new Map());
 
-  // FPS tracking
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
-    maxSamples: 5,
+    maxSamples: 10,
     lastUpdateTime: Date.now(),
   });
 
@@ -275,7 +268,6 @@ export default function Main() {
   const [trackedFaces, setTrackedFaces] = useState<Map<string, TrackedFace>>(
     new Map(),
   );
-  // Attendance data
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceGroup[]>(
     [],
   );
@@ -290,47 +282,21 @@ export default function Main() {
   );
   const [newGroupName, setNewGroupName] = useState("");
 
-  // Cooldown tracking
   const [persistentCooldowns, setPersistentCooldowns] = useState<
     Map<string, CooldownInfo>
   >(new Map());
   const persistentCooldownsRef = useRef<Map<string, CooldownInfo>>(new Map());
-  const deferredCurrentRecognitionResults = useDeferredValue(
-    currentRecognitionResults,
-  );
 
   useEffect(() => {
     persistentCooldownsRef.current = persistentCooldowns;
   }, [persistentCooldowns]);
 
   useEffect(() => {
-    isStreamingRef.current = isStreaming;
-  }, [isStreaming]);
-
-  useEffect(() => {
-    detectionEnabledRef.current = detectionEnabled;
-  }, [detectionEnabled]);
-
-  // Update spoof detection setting
-  useEffect(() => {
     if (backendServiceRef.current) {
       backendServiceRef.current.setLivenessDetection(enableSpoofDetection);
     }
   }, [enableSpoofDetection]);
 
-  // State validation
-  useEffect(() => {
-    const validationInterval = setInterval(() => {
-      if (isStartingRef.current && isStoppingRef.current) {
-        isStartingRef.current = false;
-        isStoppingRef.current = false;
-      }
-    }, 10000);
-
-    return () => clearInterval(validationInterval);
-  }, []);
-
-  // Timeout detection
   useEffect(() => {
     let startTimeout: NodeJS.Timeout | undefined;
     let stopTimeout: NodeJS.Timeout | undefined;
@@ -357,15 +323,17 @@ export default function Main() {
     };
   }, [emergencyRecovery]);
 
-  // Cooldown countdown updater
   useEffect(() => {
     let lastUpdateTime = 0;
     const updateInterval = 1000;
+    let rafId: number | null = null;
 
     const updateCooldowns = () => {
       const now = Date.now();
       startTransition(() => {
         setPersistentCooldowns((prev) => {
+          if (prev.size === 0) return prev;
+          
           const newPersistent = new Map(prev);
           let hasChanges = false;
 
@@ -393,18 +361,36 @@ export default function Main() {
       if (now - lastUpdateTime >= updateInterval) {
         updateCooldowns();
         lastUpdateTime = now;
+        
+        if (persistentCooldownsRef.current.size === 0) {
+          rafId = null;
+          return;
+        }
       }
-      requestAnimationFrame(scheduleUpdate);
+      rafId = requestAnimationFrame(scheduleUpdate);
     };
 
-    const rafId = requestAnimationFrame(scheduleUpdate);
+    const startUpdate = () => {
+      if (rafId === null && persistentCooldownsRef.current.size > 0) {
+        rafId = requestAnimationFrame(scheduleUpdate);
+      }
+    };
+
+    startUpdate();
+    const checkInterval = setInterval(() => {
+      if (persistentCooldownsRef.current.size > 0 && rafId === null) {
+        startUpdate();
+      }
+    }, 1000);
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      clearInterval(checkInterval);
     };
   }, [attendanceCooldownSeconds]);
 
-  // Capture frame as ArrayBuffer
   const captureFrame = useCallback((): Promise<ArrayBuffer | null> => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -458,7 +444,6 @@ export default function Main() {
     });
   }, []);
 
-  // Face recognition
   const performFaceRecognition = useCallback(
     async (detectionResult: DetectionResult, frameData: ArrayBuffer | null) => {
       try {
@@ -637,7 +622,12 @@ export default function Main() {
 
                 if (!shouldSkipAttendanceLogging) {
                   try {
-                    const actualConfidence = response.similarity || 0;
+                    // Validate similarity is present
+                    if (response.similarity === undefined || response.similarity === null) {
+                      console.warn("[Recognition] Missing similarity in response:", response);
+                      return null;
+                    }
+                    const actualConfidence = response.similarity;
 
                     if (trackingMode === "auto") {
                       const currentTime = Date.now();
@@ -705,7 +695,6 @@ export default function Main() {
                           });
                         });
                       } else {
-                        // Update metadata only, preserve startTime
                         startTransition(() => {
                           setPersistentCooldowns((prev) => {
                             const newPersistent = new Map(prev);
@@ -716,7 +705,6 @@ export default function Main() {
                                 memberName: memberName,
                                 lastKnownBbox: face.bbox,
                               });
-                              // Sync ref with latest state
                               persistentCooldownsRef.current = newPersistent;
                             }
                             return newPersistent;
@@ -892,11 +880,10 @@ export default function Main() {
     [trackingMode, attendanceCooldownSeconds, attendanceEnabled],
   );
 
-  // Process current frame
   const processCurrentFrame = useCallback(async () => {
     if (
       !backendServiceRef.current?.isWebSocketReady() ||
-      !detectionEnabledRef.current ||
+      !isScanningRef.current ||
       !isStreamingRef.current
     ) {
       return;
@@ -905,15 +892,14 @@ export default function Main() {
     frameCounter++;
 
     if (frameCounter % (skipFrames + 1) !== 0) {
-      if (detectionEnabledRef.current && isStreamingRef.current) {
-        requestAnimationFrame(() => processCurrentFrameRef.current());
-      }
+      requestAnimationFrame(() => processCurrentFrameRef.current());
       return;
     }
 
     try {
       const frameData = await captureFrame();
-      if (!frameData || !backendServiceRef.current) {
+      if (!frameData) {
+        requestAnimationFrame(() => processCurrentFrameRef.current());
         return;
       }
 
@@ -923,17 +909,11 @@ export default function Main() {
         .sendDetectionRequest(frameData)
         .catch((error) => {
           console.error("❌ WebSocket detection request failed:", error);
-
-          if (detectionEnabledRef.current && isStreamingRef.current) {
-            requestAnimationFrame(() => processCurrentFrameRef.current());
-          }
+          requestAnimationFrame(() => processCurrentFrameRef.current());
         });
     } catch (error) {
       console.error("❌ Frame capture failed:", error);
-
-      if (detectionEnabledRef.current && isStreamingRef.current) {
-        requestAnimationFrame(() => processCurrentFrameRef.current());
-      }
+      requestAnimationFrame(() => processCurrentFrameRef.current());
     }
   }, [captureFrame]);
 
@@ -941,164 +921,300 @@ export default function Main() {
     processCurrentFrameRef.current = processCurrentFrame;
   }, [processCurrentFrame]);
 
-  // Initialize WebSocket
-  const initializeWebSocket = useCallback(async () => {
-    try {
-      if (websocketStatus === "connecting") {
-        return;
-      }
+  const waitForBackendReady = useCallback(
+    async (
+      maxWaitTime: number = 60000,
+      pollInterval: number = 500,
+    ): Promise<{ ready: boolean; modelsLoaded: boolean; error?: string }> => {
+      const startTime = Date.now();
+      let lastError: string | undefined;
 
-      if (!backendServiceRef.current) {
-        backendServiceRef.current = new BackendService();
-      }
-
-      const readinessCheck = await window.electronAPI?.backend.checkReadiness();
-
-      if (!readinessCheck?.ready || !readinessCheck?.modelsLoaded) {
-        throw new Error("Backend not ready: Models still loading");
-      }
-
-      await backendServiceRef.current.connectWebSocket();
-      backendServiceRef.current.onMessage(
-        "detection_response",
-        (data: WebSocketDetectionResponse) => {
-          if (!isStreamingRef.current || !detectionEnabledRef.current) {
-            return;
+      while (Date.now() - startTime < maxWaitTime) {
+        try {
+          if (!window.electronAPI?.backend) {
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            continue;
           }
 
-          const responseFrameTimestamp = data.frame_timestamp || 0;
-          const lastFrameTimestamp = lastFrameTimestampRef.current || 0;
+          const readinessCheck =
+            await window.electronAPI.backend.checkReadiness();
 
-          if (responseFrameTimestamp < lastFrameTimestamp) {
-            return;
+          if (readinessCheck?.ready && readinessCheck?.modelsLoaded) {
+            return {
+              ready: true,
+              modelsLoaded: true,
+            };
           }
 
-          lastFrameTimestampRef.current = responseFrameTimestamp;
-
-          const now = Date.now();
-          const fpsTracking = fpsTrackingRef.current;
-          fpsTracking.timestamps.push(now);
-
-          if (fpsTracking.timestamps.length > fpsTracking.maxSamples) {
-            fpsTracking.timestamps.shift();
+          if (readinessCheck?.error) {
+            lastError = readinessCheck.error;
+          } else {
+            lastError = "Models still loading";
           }
 
           if (
-            now - fpsTracking.lastUpdateTime >= 100 &&
-            fpsTracking.timestamps.length >= 2
+            readinessCheck?.error?.includes("Backend service not started") ||
+            readinessCheck?.error?.includes("Backend health check failed")
           ) {
-            const timeSpan =
-              fpsTracking.timestamps[fpsTracking.timestamps.length - 1] -
-              fpsTracking.timestamps[0];
-            const frameCount = fpsTracking.timestamps.length - 1;
-
-            if (timeSpan > 0) {
-              const accurateFps = (frameCount * 1000) / timeSpan;
-              setDetectionFps(Math.round(accurateFps * 10) / 10);
-            }
-
-            fpsTracking.lastUpdateTime = now;
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
+            continue;
           }
+
+          const waitTime = Math.min(pollInterval * 2, 2000);
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+        } catch (error) {
+          lastError =
+            error instanceof Error ? error.message : "Unknown error";
+          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        }
+      }
+
+      return {
+        ready: false,
+        modelsLoaded: false,
+        error: lastError ?? "Timeout waiting for backend to be ready",
+      };
+    },
+    [],
+  );
+
+  const registerWebSocketHandlers = useCallback(() => {
+    if (!backendServiceRef.current) return;
+
+    backendServiceRef.current.offMessage("detection_response");
+    backendServiceRef.current.offMessage("connection");
+    backendServiceRef.current.offMessage("error");
+
+    backendServiceRef.current.onMessage(
+      "detection_response",
+      (data: WebSocketDetectionResponse) => {
+        if (!isStreamingRef.current || !isScanningRef.current) {
+          return;
+        }
+
+        if (data.frame_timestamp === undefined) {
+          console.warn("[WebSocket] Received detection response without frame_timestamp");
+          return;
+        }
+
+        const responseFrameTimestamp = data.frame_timestamp;
+        const lastFrameTimestamp = lastFrameTimestampRef.current;
+
+        if (responseFrameTimestamp < lastFrameTimestamp) {
+          return;
+        }
+
+        lastFrameTimestampRef.current = responseFrameTimestamp;
+
+        const now = Date.now();
+        const fpsTracking = fpsTrackingRef.current;
+        fpsTracking.timestamps.push(now);
+
+        if (fpsTracking.timestamps.length > fpsTracking.maxSamples) {
+          fpsTracking.timestamps.shift();
+        }
+
+        if (
+          now - fpsTracking.lastUpdateTime >= 100 &&
+          fpsTracking.timestamps.length >= 2
+        ) {
+          const timeSpan =
+            fpsTracking.timestamps[fpsTracking.timestamps.length - 1] -
+            fpsTracking.timestamps[0];
+          const frameCount = fpsTracking.timestamps.length - 1;
+
+          if (timeSpan > 0) {
+            const accurateFps = (frameCount * 1000) / timeSpan;
+            setDetectionFps(Math.round(accurateFps * 10) / 10);
+          }
+
+          fpsTracking.lastUpdateTime = now;
+        }
 
           if (data.faces && Array.isArray(data.faces)) {
             if (data.suggested_skip !== undefined) {
               skipFrames = data.suggested_skip;
             }
 
+            if (!data.model_used) {
+              console.warn("[WebSocket] Detection response missing model_used");
+              return;
+            }
+
             const detectionResult: DetectionResult = {
               faces: data.faces.map((face: WebSocketFaceData) => {
-                const bbox = face.bbox || [0, 0, 0, 0];
+                if (!face.bbox || !Array.isArray(face.bbox) || face.bbox.length !== 4) {
+                  console.warn("[WebSocket] Invalid bbox in face data:", face);
+                  return null;
+                }
+
+                if (face.confidence === undefined) {
+                  console.warn("[WebSocket] Missing confidence in face data:", face);
+                  return null;
+                }
+
+                const bbox = face.bbox;
 
                 return {
                   bbox: {
-                    x: bbox[0] || 0,
-                    y: bbox[1] || 0,
-                    width: bbox[2] || 0,
-                    height: bbox[3] || 0,
+                    x: bbox[0],
+                    y: bbox[1],
+                    width: bbox[2],
+                    height: bbox[3],
                   },
-                  confidence: face.confidence || 0,
+                  confidence: face.confidence,
                   track_id: face.track_id,
                   landmarks_5: face.landmarks_5,
-                  liveness: face.liveness
-                    ? {
-                        is_real: face.liveness.is_real ?? null,
-                        confidence: face.liveness.confidence ?? 0,
-                        live_score: face.liveness.live_score,
-                        status: face.liveness.status || "error",
-                        label: face.liveness.label,
-                        attack_type: face.liveness.attack_type,
-                        message: face.liveness.message,
-                      }
-                    : undefined,
+                  liveness: (() => {
+                    if (!face.liveness) {
+                      return undefined;
+                    }
+                    if (face.liveness.status === undefined) {
+                      console.warn("[WebSocket] Liveness data missing status:", face.liveness);
+                      return undefined;
+                    }
+                    if (face.liveness.is_real === undefined) {
+                      console.warn("[WebSocket] Liveness data missing is_real:", face.liveness);
+                      return undefined;
+                    }
+                    return {
+                      is_real: face.liveness.is_real,
+                      confidence: face.liveness.confidence,
+                      live_score: face.liveness.live_score,
+                      status: face.liveness.status,
+                      label: face.liveness.label,
+                      attack_type: face.liveness.attack_type,
+                      message: face.liveness.message,
+                    };
+                  })(),
                 };
-              }),
-              model_used: data.model_used || "unknown",
+              }).filter((face) => face !== null) as DetectionResult["faces"],
+              model_used: data.model_used,
             };
 
-            setCurrentDetections(detectionResult);
-            lastDetectionRef.current = detectionResult;
+          setCurrentDetections(detectionResult);
+          lastDetectionRef.current = detectionResult;
 
-            if (
-              recognitionEnabled &&
-              backendServiceReadyRef.current &&
-              detectionResult.faces.length > 0
-            ) {
-              startTransition(() => {
-                const frameDataForRecognition = lastDetectionFrameRef.current;
-                performFaceRecognition(
-                  detectionResult,
-                  frameDataForRecognition,
-                ).catch((error) => {
-                  console.error("Face recognition failed:", error);
-                });
+          if (
+            recognitionEnabled &&
+            backendServiceReadyRef.current &&
+            detectionResult.faces.length > 0
+          ) {
+            startTransition(() => {
+              const frameDataForRecognition = lastDetectionFrameRef.current;
+              performFaceRecognition(
+                detectionResult,
+                frameDataForRecognition,
+              ).catch((error) => {
+                console.error("Face recognition failed:", error);
               });
-            }
-
-            if (detectionEnabledRef.current && isStreamingRef.current) {
-              requestAnimationFrame(() => processCurrentFrameRef.current());
-            }
-          } else {
-            if (detectionEnabledRef.current && isStreamingRef.current) {
-              requestAnimationFrame(() => processCurrentFrameRef.current());
-            }
+            });
           }
-        },
-      );
+        }
 
-      backendServiceRef.current.onMessage(
-        "connection",
-        (data: WebSocketConnectionMessage) => {
-          if (data.status === "connected") {
-            backendServiceReadyRef.current = true;
-          }
-        },
-      );
+        if (isScanningRef.current && isStreamingRef.current) {
+          requestAnimationFrame(() => processCurrentFrameRef.current());
+        }
+      },
+    );
 
-      backendServiceRef.current.onMessage(
-        "error",
-        (data: WebSocketErrorMessage) => {
-          if (!isStreamingRef.current || !detectionEnabledRef.current) {
+    backendServiceRef.current.onMessage(
+      "connection",
+      (data: WebSocketConnectionMessage) => {
+        if (data.status === "connected") {
+          backendServiceReadyRef.current = true;
+          setWebsocketStatus("connected");
+          console.log("[WebSocket] Connected successfully");
+        } else if (data.status === "disconnected") {
+          setWebsocketStatus("disconnected");
+        }
+      },
+    );
+
+    backendServiceRef.current.onMessage(
+      "error",
+      (data: WebSocketErrorMessage) => {
+        if (!isStreamingRef.current || !isScanningRef.current) {
+          return;
+        }
+
+        console.error("❌ WebSocket error message:", data);
+        if (data.message) {
+          setError(`Detection error: ${data.message}`);
+        } else {
+          setError("Detection error occurred");
+        }
+
+        requestAnimationFrame(() => processCurrentFrameRef.current());
+      },
+    );
+  }, [recognitionEnabled, performFaceRecognition]);
+
+  const initializeWebSocket = useCallback(async () => {
+    try {
+      if (!backendServiceRef.current) {
+        backendServiceRef.current = new BackendService();
+      }
+
+      const currentStatus = backendServiceRef.current.getWebSocketStatus();
+      if (currentStatus === "connected") {
+        console.log("[WebSocket] Already connected, reusing existing connection");
+        registerWebSocketHandlers();
+        return;
+      }
+
+      if (currentStatus === "connecting") {
+        console.log("[WebSocket] Already connecting, waiting...");
+        let attempts = 0;
+        while (attempts < 50) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const status = backendServiceRef.current.getWebSocketStatus();
+          if (status === "connected") {
+            registerWebSocketHandlers();
             return;
           }
-
-          console.error("❌ WebSocket error message:", data);
-          setError(`Detection error: ${data.message || "Unknown error"}`);
-
-          if (detectionEnabledRef.current && isStreamingRef.current) {
-            requestAnimationFrame(() => processCurrentFrameRef.current());
+          if (status === "disconnected") {
+            break;
           }
-        },
-      );
+          attempts++;
+        }
+      }
+
+      const readinessResult = await waitForBackendReady(60000, 500);
+
+      if (!readinessResult.ready || !readinessResult.modelsLoaded) {
+        const errorMessage = readinessResult.error ?? "Backend not ready: Models still loading";
+        throw new Error(errorMessage);
+      }
+
+      await backendServiceRef.current.connectWebSocket();
+      registerWebSocketHandlers();
     } catch (error) {
       console.error("❌ WebSocket initialization failed:", error);
-      if (!isStartingRef.current) {
-        setError("Failed to connect to real-time detection service");
-      }
-      backendServiceReadyRef.current = false;
-    }
-  }, [recognitionEnabled, performFaceRecognition, websocketStatus]);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
 
-  // Get camera devices
+      if (!isStartingRef.current) {
+        if (errorMessage.includes("Models still loading")) {
+          setError(
+            "AI models are still loading. Please wait a moment and try again.",
+          );
+        } else if (errorMessage.includes("Backend service not started")) {
+          setError(
+            "Backend service is not running. Please restart the application.",
+          );
+        } else if (errorMessage.includes("Timeout")) {
+          setError(
+            "Backend took too long to load models. Please check if the backend service is running.",
+          );
+        } else {
+          setError(`Failed to connect to detection service: ${errorMessage}`);
+        }
+      }
+      throw error;
+    }
+  }, [waitForBackendReady, registerWebSocketHandlers]);
+
   const getCameraDevices = useCallback(async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -1114,20 +1230,6 @@ export default function Main() {
     }
   }, [selectedCamera]);
 
-  const processFrameForDetection = useCallback(() => {
-    processCurrentFrameRef.current();
-  }, []);
-
-  const startDetectionInterval = useCallback(() => {
-    if (
-      detectionEnabledRef.current &&
-      backendServiceRef.current?.isWebSocketReady()
-    ) {
-      processFrameForDetection();
-    }
-  }, [processFrameForDetection]);
-
-  // Start camera
   const startCamera = useCallback(async () => {
     try {
       const now = Date.now();
@@ -1138,20 +1240,39 @@ export default function Main() {
         return;
       }
 
-      if (timeSinceLastStop < 100) {
-        return;
-      }
-
-      if (timeSinceLastStart < 200) {
+      if (timeSinceLastStop < 100 || timeSinceLastStart < 200) {
         return;
       }
 
       isStartingRef.current = true;
       lastStartTimeRef.current = now;
-      setIsStreaming(true);
       isStreamingRef.current = true;
+      setIsStreaming(true);
       setIsVideoLoading(true);
       setError(null);
+
+      if (!backendServiceRef.current) {
+        backendServiceRef.current = new BackendService();
+      }
+
+      const currentStatus = backendServiceRef.current.getWebSocketStatus();
+      if (currentStatus !== "connected") {
+        try {
+          setError("Connecting to detection service...");
+          await initializeWebSocket();
+          setError(null);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          setError(`Failed to connect to detection service: ${errorMessage}`);
+          isStreamingRef.current = false;
+          setIsStreaming(false);
+          setIsVideoLoading(false);
+          setCameraActive(false);
+          isStartingRef.current = false;
+          return;
+        }
+      }
+
       await getCameraDevices();
 
       if (streamRef.current) {
@@ -1202,130 +1323,144 @@ export default function Main() {
         setIsVideoLoading(false);
         setCameraActive(true);
 
-        try {
-          const readinessCheck =
-            await window.electronAPI?.backend.checkReadiness();
+        frameCounter = 0;
+        lastFrameTimestampRef.current = 0;
 
-          if (!readinessCheck?.ready || !readinessCheck?.modelsLoaded) {
-            setError(
-              "Backend models are still loading. Please wait and try again.",
-            );
-            setDetectionEnabled(false);
-            return;
-          }
-
-          setDetectionEnabled(true);
-          detectionEnabledRef.current = true;
-
-          if (websocketStatus === "disconnected") {
-            try {
-              await initializeWebSocket();
-              backendServiceReadyRef.current = true;
-              startDetectionInterval();
-            } catch (error) {
-              console.error(
-                "❌ Failed to initialize WebSocket or start detection:",
-                error,
-              );
-              setDetectionEnabled(false);
-              if (!isStartingRef.current) {
-                setError("Failed to connect to detection service");
-              }
-            }
-          } else if (websocketStatus === "connected") {
-            backendServiceReadyRef.current = true;
-            setDetectionEnabled(true);
-            detectionEnabledRef.current = true;
-
-            if (!isStreamingRef.current) {
-              isStreamingRef.current = true;
-            }
-
-            isProcessingRef.current = false;
-            startDetectionInterval();
-          }
-        } catch (error) {
-          console.error("❌ Failed to check backend readiness:", error);
-          if (!isStartingRef.current) {
-            setError("Failed to check backend readiness");
-          }
-          setDetectionEnabled(false);
-        }
-
-        if (websocketStatus === "connecting") {
-          backendServiceReadyRef.current = true;
-          setDetectionEnabled(true);
-          detectionEnabledRef.current = true;
-
-          if (!isStreamingRef.current) {
-            isStreamingRef.current = true;
-          }
-
-          isProcessingRef.current = false;
+        isScanningRef.current = true;
+        backendServiceReadyRef.current = true;
+        
+        if (backendServiceRef.current?.isWebSocketReady()) {
+          processCurrentFrameRef.current();
+        } else {
+          console.warn("[Camera] WebSocket not ready, scanning will start when connected");
         }
       }
     } catch (err) {
       console.error("Error starting camera:", err);
       setError("Failed to start camera. Please check permissions.");
-
-      setIsStreaming(false);
       isStreamingRef.current = false;
+      isScanningRef.current = false;
+      setIsStreaming(false);
       setIsVideoLoading(false);
       setCameraActive(false);
     } finally {
       isStartingRef.current = false;
     }
-  }, [
-    selectedCamera,
-    websocketStatus,
-    initializeWebSocket,
-    startDetectionInterval,
-    getCameraDevices,
-  ]);
+  }, [selectedCamera, getCameraDevices, initializeWebSocket]);
 
-  // Stop camera
-  const stopCamera = useCallback(() => {
+  const cleanupOnUnload = useCallback(() => {
+    try {
+      console.log("[Cleanup] Cleaning up on window reload/unload...");
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch (err) {
+            console.warn("[Cleanup] Error stopping track:", err);
+          }
+        });
+        streamRef.current = null;
+      }
+
+      if (videoRef.current) {
+        try {
+          videoRef.current.srcObject = null;
+          videoRef.current.pause();
+        } catch (err) {
+          console.warn("[Cleanup] Error clearing video:", err);
+        }
+      }
+
+      if (animationFrameRef.current) {
+        try {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = undefined;
+        } catch (err) {
+          console.warn("[Cleanup] Error canceling animation frame:", err);
+        }
+      }
+
+      if (backendServiceRef.current) {
+        try {
+          const wsStatus = backendServiceRef.current.getWebSocketStatus();
+          if (wsStatus === "connected" || wsStatus === "connecting") {
+            console.log("[Cleanup] Closing WebSocket connection on reload...");
+            backendServiceRef.current.disconnect();
+          }
+        } catch (err) {
+          console.warn("[Cleanup] Error closing WebSocket:", err);
+        }
+      }
+
+    isStreamingRef.current = false;
+    isScanningRef.current = false;
+    isProcessingRef.current = false;
+    isStartingRef.current = false;
+    isStoppingRef.current = false;
+    backendServiceReadyRef.current = false;
+
+      console.log("[Cleanup] Cleanup completed");
+    } catch (error) {
+      console.error("[Cleanup] Cleanup failed:", error);
+    }
+  }, []);
+
+  const stopCamera = useCallback((forceCleanup: boolean = false) => {
     const now = Date.now();
     const timeSinceLastStop = now - lastStopTimeRef.current;
 
-    if (isStoppingRef.current || !isStreamingRef.current) {
-      return;
-    }
+    if (!forceCleanup) {
+      if (isStoppingRef.current || !isStreamingRef.current) {
+        return;
+      }
 
-    if (timeSinceLastStop < 100) {
-      return;
+      if (timeSinceLastStop < 100) {
+        return;
+      }
     }
 
     isStoppingRef.current = true;
     lastStopTimeRef.current = now;
 
+    isScanningRef.current = false;
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
-        track.stop();
+        try {
+          track.stop();
+        } catch (err) {
+          console.warn("[Camera] Error stopping track:", err);
+        }
       });
       streamRef.current = null;
     }
 
     if (videoRef.current) {
-      videoRef.current.srcObject = null;
+      try {
+        videoRef.current.srcObject = null;
+        if (!forceCleanup) {
+          videoRef.current.pause();
+        }
+      } catch (err) {
+        console.warn("[Camera] Error clearing video:", err);
+      }
     }
 
-    setDetectionEnabled(false);
+    isStreamingRef.current = false;
+    isProcessingRef.current = false;
     setIsStreaming(false);
     setIsVideoLoading(false);
     setCameraActive(false);
-    isProcessingRef.current = false;
-    backendServiceReadyRef.current = false;
-
-    lastFrameTimestampRef.current = 0;
-    lastDetectionHashRef.current = "";
-    lastDetectionFrameRef.current = null;
 
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = undefined;
     }
 
+    lastFrameTimestampRef.current = 0;
+    lastDetectionHashRef.current = "";
+    lastDetectionFrameRef.current = null;
     setCurrentDetections(null);
     lastDetectionRef.current = null;
     setCurrentRecognitionResults(new Map());
@@ -1342,7 +1477,6 @@ export default function Main() {
     lastVideoSizeRef.current = { width: 0, height: 0 };
     lastCanvasSizeRef.current = { width: 0, height: 0 };
     scaleFactorsRef.current = { scaleX: 1, scaleY: 1, offsetX: 0, offsetY: 0 };
-    setError(null);
 
     const overlayCanvas = overlayCanvasRef.current;
     if (overlayCanvas) {
@@ -1350,6 +1484,12 @@ export default function Main() {
       if (ctx) {
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
       }
+    }
+
+    frameCounter = 0;
+
+    if (!forceCleanup) {
+      console.log("[Camera] Stopped - WebSocket connection remains open");
     }
 
     isStoppingRef.current = false;
@@ -1458,10 +1598,7 @@ export default function Main() {
       }
     }
 
-    const recognitionForHash =
-      deferredCurrentRecognitionResults.size > 0
-        ? deferredCurrentRecognitionResults
-        : currentRecognitionResults;
+    const recognitionForHash = currentRecognitionResults;
 
     const currentHash = detectionsToRender
       ? `${detectionsToRender.faces.length}-${detectionsToRender.faces.map((f) => `${f.bbox.x},${f.bbox.y}`).join(",")}-${recognitionForHash.size}-${Array.from(
@@ -1484,10 +1621,8 @@ export default function Main() {
     handleDrawOverlays,
     currentDetections,
     currentRecognitionResults,
-    deferredCurrentRecognitionResults,
   ]);
 
-  // Load settings
   const loadSettings = useCallback(async () => {
     try {
       const settings = await attendanceManager.getSettings();
@@ -1677,15 +1812,125 @@ export default function Main() {
     setGroupToDelete(null);
   }, []);
 
+  const initializationRef = useRef<{
+    initialized: boolean;
+    isInitializing: boolean;
+    cleanupTimeout?: NodeJS.Timeout;
+  }>({ initialized: false, isInitializing: false });
+
   useEffect(() => {
-    getCameraDevices();
-    return () => {
-      stopCamera();
-      if (backendServiceRef.current) {
-        backendServiceRef.current.disconnect();
+    isStreamingRef.current = false;
+    isScanningRef.current = false;
+    isProcessingRef.current = false;
+    isStartingRef.current = false;
+    isStoppingRef.current = false;
+    backendServiceReadyRef.current = false;
+    setError(null);
+    setIsStreaming(false);
+    setIsVideoLoading(false);
+    setCameraActive(false);
+    setWebsocketStatus("disconnected");
+
+    if (streamRef.current) {
+      try {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
+      } catch (err) {
+        console.warn("[Mount] Error cleaning up stale stream:", err);
+      }
+    }
+
+    if (videoRef.current) {
+      try {
+        videoRef.current.srcObject = null;
+        videoRef.current.pause();
+      } catch (err) {
+        console.warn("[Mount] Error clearing video:", err);
+      }
+    }
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = undefined;
+    }
+
+    if (initializationRef.current.cleanupTimeout) {
+      clearTimeout(initializationRef.current.cleanupTimeout);
+      initializationRef.current.cleanupTimeout = undefined;
+    }
+
+    if (backendServiceRef.current?.isWebSocketReady()) {
+      console.log("[WebSocket] WebSocket already connected, registering handlers...");
+      registerWebSocketHandlers();
+      initializationRef.current.initialized = true;
+      initializationRef.current.isInitializing = false;
+      return;
+    }
+
+    if (initializationRef.current.isInitializing) {
+      console.log("[WebSocket] Initialization already in progress, skipping...");
+      return;
+    }
+
+    if (initializationRef.current.initialized && !backendServiceRef.current?.isWebSocketReady()) {
+      console.log("[WebSocket] Was initialized but WebSocket not ready, reinitializing...");
+      initializationRef.current.initialized = false;
+    }
+
+    initializationRef.current.isInitializing = true;
+
+    const initWebSocket = async () => {
+      try {
+        console.log("[WebSocket] Initializing on mount...");
+        await initializeWebSocket();
+        console.log("[WebSocket] Initialized successfully");
+        initializationRef.current.initialized = true;
+      } catch (error) {
+        console.error("[WebSocket] Failed to initialize on mount:", error);
+        setWebsocketStatus("disconnected");
+        initializationRef.current.initialized = false;
+      } finally {
+        initializationRef.current.isInitializing = false;
       }
     };
-  }, [getCameraDevices, stopCamera]);
+
+    initWebSocket();
+
+    const cleanupTimeout = initializationRef.current.cleanupTimeout;
+    const wasInitialized = initializationRef.current.initialized;
+    const wasInitializing = initializationRef.current.isInitializing;
+
+    return () => {
+      console.log("[WebSocket] Cleanup running...");
+
+      if (cleanupTimeout) {
+        clearTimeout(cleanupTimeout);
+      }
+
+      if (wasInitialized || wasInitializing) {
+        if (isStreamingRef.current) {
+          stopCamera(false);
+        }
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = undefined;
+        }
+
+        const initRef = initializationRef;
+        setTimeout(() => {
+          initRef.current.initialized = false;
+          initRef.current.isInitializing = false;
+        }, 50);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    getCameraDevices();
+  }, [getCameraDevices]);
   useEffect(() => {
     if (isStreaming) {
       animate();
@@ -1698,6 +1943,8 @@ export default function Main() {
   }, [isStreaming, animate]);
 
   useEffect(() => {
+    if (!backendServiceRef.current) return;
+
     const pollWebSocketStatus = () => {
       if (backendServiceRef.current) {
         const actualStatus = backendServiceRef.current.getWebSocketStatus();
@@ -1707,7 +1954,7 @@ export default function Main() {
       }
     };
 
-    const statusInterval = setInterval(pollWebSocketStatus, 250);
+    const statusInterval = setInterval(pollWebSocketStatus, 1000);
 
     return () => {
       clearInterval(statusInterval);
@@ -1715,12 +1962,17 @@ export default function Main() {
   }, [websocketStatus]);
 
   useEffect(() => {
-    if (websocketStatus === "connected" && detectionEnabledRef.current) {
+    if (
+      websocketStatus === "connected" &&
+      isScanningRef.current &&
+      isStreamingRef.current
+    ) {
+      console.log("[WebSocket] Connected - starting detection loop");
       if (backendServiceRef.current?.isWebSocketReady()) {
-        startDetectionInterval();
+        processCurrentFrameRef.current();
       }
     }
-  }, [websocketStatus, startDetectionInterval]);
+  }, [websocketStatus]);
 
   useEffect(() => {
     setCurrentRecognitionResults(new Map());
@@ -1728,9 +1980,39 @@ export default function Main() {
     setCurrentDetections(null);
 
     if (isStreamingRef.current) {
-      stopCamera();
+      stopCamera(false);
     }
   }, [currentGroup, stopCamera]);
+
+  // Setup window unload/reload cleanup handlers
+  useEffect(() => {
+    let cleanupExecuted = false;
+
+    const performCleanup = () => {
+      if (cleanupExecuted) return;
+      cleanupExecuted = true;
+      console.log("[Main] Performing cleanup before reload...");
+      cleanupOnUnload();
+    };
+
+    const handleBeforeUnload = () => {
+      performCleanup();
+    };
+
+    const handlePageHide = () => {
+      performCleanup();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload, { capture: true });
+    window.addEventListener("pagehide", handlePageHide, { capture: true });
+    window.addEventListener("unload", handlePageHide, { capture: true });
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload, { capture: true });
+      window.removeEventListener("pagehide", handlePageHide, { capture: true });
+      window.removeEventListener("unload", handlePageHide, { capture: true });
+    };
+  }, [cleanupOnUnload]);
 
   const handleManualLog = async (
     personId: string,
@@ -1900,12 +2182,10 @@ export default function Main() {
             enableSpoofDetection: enableSpoofDetection,
           }}
           onAttendanceSettingsChange={async (updates) => {
-            // Handle tracking mode change
             if (updates.trackingMode !== undefined) {
               setTrackingMode(updates.trackingMode);
             }
 
-            // Handle spoof detection toggle (global setting)
             if (updates.enableSpoofDetection !== undefined) {
               setEnableSpoofDetection(updates.enableSpoofDetection);
               localStorage.setItem(
@@ -1914,7 +2194,6 @@ export default function Main() {
               );
             }
 
-            // Handle cooldown change (global setting)
             if (updates.attendanceCooldownSeconds !== undefined) {
               setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds);
               try {
@@ -1927,7 +2206,6 @@ export default function Main() {
               }
             }
 
-            // Handle group settings changes
             if (
               currentGroup &&
               (updates.lateThresholdEnabled !== undefined ||
