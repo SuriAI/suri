@@ -418,17 +418,24 @@ export class BackendService {
       this.reconnectTimeout = null;
     }
 
-    // Reset connection state
     this.isConnecting = false;
     this.connectionPromise = null;
 
     if (this.ws) {
       try {
-        // Close WebSocket with proper close code and reason
-        if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        if (this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(
+            JSON.stringify({
+              type: "disconnect",
+              client_id: this.clientId,
+              timestamp: Date.now(),
+            })
+          );
           this.ws.close(1000, "Client disconnect");
-          console.log("[BackendService] WebSocket close() called");
+        } else if (this.ws.readyState === WebSocket.CONNECTING) {
+          this.ws.close(1000, "Client disconnect");
         }
+        console.log("[BackendService] WebSocket close() called");
       } catch (error) {
         console.warn("[BackendService] Error closing WebSocket:", error);
       } finally {

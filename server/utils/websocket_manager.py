@@ -59,7 +59,7 @@ class ConnectionManager:
             logger.error(f"Failed to connect client {client_id}: {e}")
             return False
 
-    def disconnect(self, client_id: str):
+    async def disconnect(self, client_id: str):
         """
         Disconnect a client
 
@@ -67,14 +67,23 @@ class ConnectionManager:
             client_id: Client identifier to disconnect
         """
         if client_id in self.active_connections:
+            websocket = self.active_connections[client_id]
+            
             # Cancel streaming task if active
             if client_id in self.streaming_tasks:
                 self.streaming_tasks[client_id].cancel()
                 del self.streaming_tasks[client_id]
 
+            # Close the WebSocket connection
+            try:
+                await websocket.close(code=1008, reason="Idle timeout")
+            except Exception as e:
+                logger.warning(f"Error closing websocket for {client_id}: {e}")
+
             # Remove connection
             del self.active_connections[client_id]
-            del self.connection_metadata[client_id]
+            if client_id in self.connection_metadata:
+                del self.connection_metadata[client_id]
 
     async def send_personal_message(self, message: dict, client_id: str) -> bool:
         """
@@ -103,7 +112,7 @@ class ConnectionManager:
 
         except Exception as e:
             logger.error(f"Failed to send message to {client_id}: {e}")
-            self.disconnect(client_id)
+            await self.disconnect(client_id)
             return False
 
     async def broadcast(self, message: dict, exclude: Optional[Set[str]] = None):
@@ -138,7 +147,7 @@ class ConnectionManager:
 
         # Clean up disconnected clients
         for client_id in disconnected_clients:
-            self.disconnect(client_id)
+            await self.disconnect(client_id)
 
     async def send_detection_result(
         self,
