@@ -42,42 +42,41 @@ const DetectionCard = memo(
       }
 
       const status = face.liveness.status;
-      const label = face.liveness.label;
 
       switch (status) {
-        case "real":
+        case "live":
           return {
             borderColor: "border-green-500/60",
             bgColor: "",
-            statusText: label?.toUpperCase() || "REAL",
+            statusText: "LIVE",
             statusColor: "text-green-400",
           };
-        case "fake":
+        case "spoof":
           return {
             borderColor: "border-red-500/90",
             bgColor: "bg-red-950/30",
-            statusText: `(${label?.toUpperCase()})`,
+            statusText: "SPOOF",
             statusColor: "text-red-300 font-semibold",
           };
         case "too_small":
           return {
             borderColor: "border-red-500/90",
             bgColor: "bg-red-950/30",
-            statusText: "TOO SMALL (SPOOF)",
+            statusText: "TOO SMALL",
             statusColor: "text-red-300 font-semibold",
           };
         default:
           return {
             borderColor: "border-white/20",
             bgColor: "",
-            statusText: label?.toUpperCase() || "UNKNOWN",
+            statusText: "UNKNOWN",
             statusColor: "text-white/60",
           };
       }
     };
 
     const statusStyles = getStatusStyles();
-    const isSpoof = face.liveness?.status === "fake" || face.liveness?.status === "too_small";
+    const isSpoof = face.liveness?.status === "spoof" || face.liveness?.status === "too_small";
     const hasName = isRecognized && recognitionResult?.person_id && displayName;
 
     return (
@@ -177,10 +176,10 @@ export function DetectionPanel({
       faces = currentDetections.faces;
     }
 
-    // Sort: LIVE faces (status === "real") always on top
+    // Sort: LIVE faces (status === "live") always on top
     return [...faces].sort((a, b) => {
-      const aIsLive = a.liveness?.status === "real";
-      const bIsLive = b.liveness?.status === "real";
+      const aIsLive = a.liveness?.status === "live";
+      const bIsLive = b.liveness?.status === "live";
       
       if (aIsLive && !bIsLive) return -1; // a comes first
       if (!aIsLive && bIsLive) return 1;  // b comes first

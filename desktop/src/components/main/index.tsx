@@ -32,8 +32,8 @@ import { GroupManagementModal } from "./components/GroupManagementModal";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 
 const NON_LOGGING_ANTISPOOF_STATUSES = new Set<
-  "real" | "fake" | "error" | "too_small"
->(["fake", "error", "too_small"]);
+  "live" | "spoof" | "error" | "too_small"
+>(["spoof", "error", "too_small"]);
 
 const TRACKING_HISTORY_LIMIT = 20;
 
@@ -471,7 +471,7 @@ export default function Main() {
             }
             const trackId = face.track_id;
 
-            if (face.liveness?.status === "fake") {
+            if (face.liveness?.status === "spoof") {
               return {
                 face: face,
                 skipRecognition: true,
@@ -1081,8 +1081,8 @@ export default function Main() {
                       is_real: face.liveness.is_real,
                       confidence: face.liveness.confidence,
                       live_score: face.liveness.live_score,
+                      spoof_score: face.liveness.spoof_score,
                       status: face.liveness.status,
-                      label: face.liveness.label,
                       attack_type: face.liveness.attack_type,
                       message: face.liveness.message,
                     };

@@ -21,10 +21,6 @@ class LivenessDetector:
 
         self.ort_session, self.input_name = self._init_session_(model_path)
 
-        self.result_file_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "result.txt"
-        )
-
     def _init_session_(self, onnx_model_path: str):
         """Initialize ONNX Runtime session"""
         ort_session = None
@@ -211,7 +207,6 @@ class LivenessDetector:
                         "live_score": 0.0,
                         "spoof_score": 1.0,
                         "confidence": 0.0,
-                        "label": "Too Small",
                     }
                     results.append(detection)
                     continue
@@ -283,64 +278,24 @@ class LivenessDetector:
 
             is_real = live_score >= self.confidence_threshold
 
-            if is_real:
-                label = "Live"
-            else:
-                label = "Spoof"
-
             result = {
                 "is_real": bool(is_real),
                 "live_score": float(live_score),
+                "spoof_score": float(spoof_score),
                 "confidence": float(max_confidence),
-                "label": label,
+                "status": "live" if is_real else "spoof",
             }
             processed_predictions.append(result)
-
-            track_id_str = str(track_id) if track_id is not None else "None"
-            bbox = detection.get("bbox", {})
-
-            if isinstance(bbox, dict):
-                bbox_x = int(bbox.get("x", 0))
-                bbox_y = int(bbox.get("y", 0))
-                bbox_w = int(bbox.get("width", 0))
-                bbox_h = int(bbox.get("height", 0))
-            elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
-                bbox_x = int(bbox[0])
-                bbox_y = int(bbox[1])
-                bbox_w = int(bbox[2])
-                bbox_h = int(bbox[3])
-            else:
-                bbox_x = bbox_y = bbox_w = bbox_h = 0
-
-            result_line = (
-                f"track_id={track_id_str} "
-                f"bbox=[{bbox_x},{bbox_y},{bbox_w},{bbox_h}] "
-                f"probabilities=[live={live_score:.6f},print={print_score:.6f},replay={replay_score:.6f}] "
-                f"spoof_score={spoof_score:.6f} max_confidence={max_confidence:.6f} "
-                f"live_threshold={self.confidence_threshold:.2f} is_real={is_real} label={label}"
-            )
-            self._write_result_to_file(result_line)
 
         for detection, prediction in zip(valid_detections, processed_predictions):
             if prediction is not None:
                 detection["liveness"] = {
                     "is_real": prediction["is_real"],
                     "live_score": prediction["live_score"],
+                    "spoof_score": prediction["spoof_score"],
                     "confidence": prediction["confidence"],
-                    "label": prediction["label"],
-                    "status": "real" if prediction["is_real"] else "fake",
+                    "status": prediction["status"],
                 }
             results.append(detection)
 
         return results
-
-    def _write_result_to_file(self, result_line: str):
-        try:
-            result_dir = os.path.dirname(self.result_file_path)
-            if result_dir and not os.path.exists(result_dir):
-                os.makedirs(result_dir, exist_ok=True)
-
-            with open(self.result_file_path, "a", encoding="utf-8") as f:
-                f.write(result_line + "\n")
-        except Exception:
-            pass

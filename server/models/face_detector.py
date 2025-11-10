@@ -138,12 +138,12 @@ class FaceDetector:
                     if visibility_ratio < 0.50:
                         detection["liveness"] = {
                             "is_real": False,
-                            "status": "fake",
+                            "status": "spoof",
                         }
                     elif is_near_edge or landmarks_near_edge:
                         detection["liveness"] = {
                             "is_real": False,
-                            "status": "fake",
+                            "status": "spoof",
                         }
 
             detections.append(detection)
