@@ -13,7 +13,8 @@ def get_weights_dir() -> Path:
         return Path(sys._MEIPASS) / "weights"
     else:
         # Development mode - use the server weights directory
-        base_dir = Path(__file__).parent
+        # config.py is now in server/core, so go up one level to server/
+        base_dir = Path(__file__).parent.parent
         return base_dir / "weights"
 
 
@@ -30,7 +31,8 @@ def get_data_dir() -> Path:
         return data_dir
     else:
         # Development mode - use server/data directory
-        base_dir = Path(__file__).parent
+        # config.py is now in server/core, so go up one level to server/
+        base_dir = Path(__file__).parent.parent
         data_dir = base_dir / "data"
         data_dir.mkdir(parents=True, exist_ok=True)
         return data_dir
@@ -151,7 +153,7 @@ MODEL_CONFIGS = {
         "score_threshold": 0.9,
         "nms_threshold": 0.3,
         "top_k": 5000,
-        "min_face_size": 80,  # Faces smaller are marked as "too_small" for UI feedback. 
+        "min_face_size": 80,  # Faces smaller are marked as "too_small" for UI feedback.
         "backend_id": 0,
         "target_id": 0,
         "supported_formats": ["jpg", "jpeg", "png", "bmp", "webp"],
@@ -365,10 +367,12 @@ def validate_model_paths():
 
 def validate_directories():
     """Validate that required directories exist"""
+    # BASE_DIR is now server/core, so models is at BASE_DIR / "models"
+    # but utils is at server/utils, so BASE_DIR.parent / "utils"
     required_dirs = [
         WEIGHTS_DIR,
         BASE_DIR / "models",
-        BASE_DIR / "utils",
+        BASE_DIR.parent / "utils",
     ]
 
     for directory in required_dirs:

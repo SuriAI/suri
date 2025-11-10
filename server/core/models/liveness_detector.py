@@ -72,7 +72,7 @@ class LivenessDetector:
         # Handle both single prediction [1, 3] and batch predictions [N, 3]
         if len(prediction.shape) == 1:
             prediction = prediction.reshape(1, -1)
-        
+
         # Apply softmax along the last dimension (axis=-1) for each sample
         # Subtract max for numerical stability
         exp_pred = np.exp(prediction - np.max(prediction, axis=-1, keepdims=True))
@@ -246,18 +246,20 @@ class LivenessDetector:
                 batch_inputs = np.concatenate(
                     [self.preprocessing(img) for img in face_crops], axis=0
                 )
-                
+
                 # Run single batch inference (much faster than N individual calls, especially on GPU)
                 onnx_results = self.ort_session.run([], {self.input_name: batch_inputs})
                 batch_logits = onnx_results[0]  # Shape: [N, 3]
-                
+
                 # Validate batch output shape
                 if batch_logits.shape[1] != 3:
                     raw_predictions = [None] * len(face_crops)
                 else:
                     # Apply postprocessing (softmax) to entire batch at once
-                    batch_predictions = self.postprocessing(batch_logits)  # Shape: [N, 3]
-                    
+                    batch_predictions = self.postprocessing(
+                        batch_logits
+                    )  # Shape: [N, 3]
+
                     # Extract individual predictions
                     for i in range(len(face_crops)):
                         try:
@@ -288,7 +290,9 @@ class LivenessDetector:
             spoof_score = print_score + replay_score
             max_confidence = max(live_score, spoof_score)
 
-            is_real = live_score > spoof_score and live_score >= self.confidence_threshold
+            is_real = (
+                live_score > spoof_score and live_score >= self.confidence_threshold
+            )
 
             result = {
                 "is_real": bool(is_real),

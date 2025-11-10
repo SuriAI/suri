@@ -18,7 +18,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import (
+from core.config import (
     CORS_CONFIG,
     DATA_DIR,
     FACE_DETECTOR_CONFIG,
@@ -34,7 +34,7 @@ from hooks import (
     process_liveness_detection,
     set_model_references,
 )
-from models import (
+from core.models import (
     LivenessDetector,
     FaceDetector,
     FaceRecognizer,
@@ -71,7 +71,7 @@ attendance_database = None
 async def lifespan(app: FastAPI):
     global face_detector, liveness_detector, face_recognizer, face_tracker, attendance_database
     cleanup_task = None
-    
+
     try:
         logger.info("Starting up backend server...")
         face_detector = FaceDetector(
@@ -172,7 +172,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure CORS - Use configuration from config.py
+# Configure CORS - Use configuration from core.config
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_CONFIG["allow_origins"],
@@ -198,7 +198,11 @@ async def get_available_models():
     models_info = {}
 
     # Check if face_detector exists and is actually functional
-    if face_detector and hasattr(face_detector, "detector") and face_detector.detector is not None:
+    if (
+        face_detector
+        and hasattr(face_detector, "detector")
+        and face_detector.detector is not None
+    ):
         models_info["face_detector"] = {
             "available": True,
         }
@@ -206,7 +210,11 @@ async def get_available_models():
         models_info["face_detector"] = {"available": False}
 
     # Check if liveness_detector exists and is actually functional
-    if liveness_detector and hasattr(liveness_detector, "ort_session") and liveness_detector.ort_session is not None:
+    if (
+        liveness_detector
+        and hasattr(liveness_detector, "ort_session")
+        and liveness_detector.ort_session is not None
+    ):
         models_info["liveness_detector"] = {
             "available": True,
         }
@@ -214,7 +222,11 @@ async def get_available_models():
         models_info["liveness_detector"] = {"available": False}
 
     # Check if face_recognizer exists and is actually functional
-    if face_recognizer and hasattr(face_recognizer, "session") and face_recognizer.session is not None:
+    if (
+        face_recognizer
+        and hasattr(face_recognizer, "session")
+        and face_recognizer.session is not None
+    ):
         try:
             models_info["face_recognizer"] = {
                 "available": True,
@@ -328,7 +340,7 @@ async def detect_faces(request: DetectionRequest):
                     continue
             else:
                 bbox_orig = face["bbox"]
-            
+
             # Validate bbox has all required fields
             required_bbox_fields = ["x", "y", "width", "height"]
             if not all(field in bbox_orig for field in required_bbox_fields):
@@ -471,7 +483,7 @@ async def detect_faces_upload(
                     continue
             else:
                 bbox_orig = face["bbox"]
-            
+
             # Validate bbox has all required fields
             required_bbox_fields = ["x", "y", "width", "height"]
             if not all(field in bbox_orig for field in required_bbox_fields):
@@ -932,7 +944,7 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
     logger.info(f"[WebSocket] Client {client_id} attempting to connect...")
     await websocket.accept()
     logger.info(f"[WebSocket] Client {client_id} connected successfully")
-    
+
     if client_id not in manager.active_connections:
         manager.active_connections[client_id] = websocket
     if client_id not in manager.connection_metadata:
@@ -967,7 +979,7 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
         logger.info(f"[WebSocket] Sent connection confirmation to client {client_id}")
 
         logger.info(f"[WebSocket] Starting message loop for client {client_id}")
-        
+
         while True:
             try:
                 message_data = await websocket.receive()
@@ -977,7 +989,9 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
 
                     if message.get("type") == "ping":
                         if client_id in manager.connection_metadata:
-                            manager.connection_metadata[client_id]["last_activity"] = datetime.now()
+                            manager.connection_metadata[client_id][
+                                "last_activity"
+                            ] = datetime.now()
                         await websocket.send_text(
                             json.dumps(
                                 {
@@ -990,7 +1004,9 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         continue
 
                     if message.get("type") == "disconnect":
-                        logger.info(f"[WebSocket] Client {client_id} requested disconnect")
+                        logger.info(
+                            f"[WebSocket] Client {client_id} requested disconnect"
+                        )
                         break
 
                     elif message.get("type") == "config":
@@ -1025,7 +1041,9 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
 
                 elif "bytes" in message_data:
                     if client_id in manager.connection_metadata:
-                        manager.connection_metadata[client_id]["last_activity"] = datetime.now()
+                        manager.connection_metadata[client_id][
+                            "last_activity"
+                        ] = datetime.now()
                     start_time = time.time()
                     frame_bytes = message_data["bytes"]
 
@@ -1066,15 +1084,21 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         if "bbox_original" in face:
                             bbox_orig = face["bbox_original"]
                             if not isinstance(bbox_orig, dict):
-                                logger.warning(f"Face bbox_original is not a dict: {face}")
+                                logger.warning(
+                                    f"Face bbox_original is not a dict: {face}"
+                                )
                                 continue
                         else:
                             bbox_orig = face["bbox"]
-                        
+
                         # Validate bbox has all required fields
                         required_bbox_fields = ["x", "y", "width", "height"]
-                        if not all(field in bbox_orig for field in required_bbox_fields):
-                            logger.warning(f"Face bbox missing required fields: {bbox_orig}")
+                        if not all(
+                            field in bbox_orig for field in required_bbox_fields
+                        ):
+                            logger.warning(
+                                f"Face bbox missing required fields: {bbox_orig}"
+                            )
                             continue
 
                         # Validate confidence is present and valid
@@ -1110,10 +1134,14 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                             else:
                                 # Validate required liveness fields
                                 if "status" not in liveness:
-                                    logger.warning(f"Face liveness missing status: {liveness}")
+                                    logger.warning(
+                                        f"Face liveness missing status: {liveness}"
+                                    )
                                     del face["liveness"]
                                 elif "is_real" not in liveness:
-                                    logger.warning(f"Face liveness missing is_real: {liveness}")
+                                    logger.warning(
+                                        f"Face liveness missing is_real: {liveness}"
+                                    )
                                     del face["liveness"]
 
                         # Remove embedding to reduce payload size
@@ -1134,7 +1162,7 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         "frame_timestamp": current_timestamp,
                         "success": True,
                     }
-                    
+
                     # Calculate suggested_skip based on processing time
                     if processing_time * 1000 > 50:
                         suggested_skip = 2
@@ -1142,23 +1170,29 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                         suggested_skip = 1
                     else:
                         suggested_skip = 0
-                    
+
                     response_data["suggested_skip"] = suggested_skip
-                    
+
                     await websocket.send_text(json.dumps(response_data))
 
             except WebSocketDisconnect:
                 # Connection closed by client, exit gracefully
-                logger.info(f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)")
+                logger.info(
+                    f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
+                )
                 break
             except Exception as e:
                 # Check if it's a connection-related error
                 error_str = str(e).lower()
                 if "disconnect" in error_str or "close" in error_str:
-                    logger.info(f"[WebSocket] Client {client_id} disconnected due to connection error: {e}")
+                    logger.info(
+                        f"[WebSocket] Client {client_id} disconnected due to connection error: {e}"
+                    )
                     break
                 # Only log if it's not a connection-related error
-                logger.error(f"[WebSocket] Detection processing error for client {client_id}: {e}")
+                logger.error(
+                    f"[WebSocket] Detection processing error for client {client_id}: {e}"
+                )
                 try:
                     await websocket.send_text(
                         json.dumps(
@@ -1171,11 +1205,15 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
                     )
                 except (WebSocketDisconnect, RuntimeError) as send_error:
                     # Connection already closed, ignore
-                    logger.info(f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}")
+                    logger.info(
+                        f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}"
+                    )
                     break
 
-    except WebSocketDisconnect as e:
-        logger.info(f"[WebSocket] Client {client_id} disconnected (outer exception - WebSocketDisconnect)")
+    except WebSocketDisconnect:
+        logger.info(
+            f"[WebSocket] Client {client_id} disconnected (outer exception - WebSocketDisconnect)"
+        )
     except Exception as e:
         error_str = str(e).lower()
         if (
@@ -1185,7 +1223,9 @@ async def websocket_detect_endpoint(websocket: WebSocket, client_id: str):
         ):
             logger.error(f"[WebSocket] Detection error for client {client_id}: {e}")
         else:
-            logger.info(f"[WebSocket] Client {client_id} disconnected due to exception: {e}")
+            logger.info(
+                f"[WebSocket] Client {client_id} disconnected due to exception: {e}"
+            )
     finally:
         if client_id in manager.active_connections:
             await manager.disconnect(client_id)

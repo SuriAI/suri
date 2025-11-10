@@ -54,7 +54,8 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=onnx_datas + [
-        ('models', 'models'),
+        ('core/models', 'core/models'),  # Models moved to core/models
+        ('core/config.py', 'core'),  # Config moved to core/config.py
         ('database', 'database'),  # Database managers (attendance.py, face.py)
         ('schemas', 'schemas'),  # API schemas (attendance_models.py)
         ('utils', 'utils'),

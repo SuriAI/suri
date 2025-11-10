@@ -29,10 +29,10 @@ class FaceDetector:
 
         if not model_path:
             raise ValueError("Model path is required for FaceDetector")
-        
+
         if not os.path.isfile(model_path):
             raise FileNotFoundError(f"Face detector model file not found: {model_path}")
-        
+
         try:
             self.detector = cv.FaceDetectorYN.create(
                 self.model_path,
