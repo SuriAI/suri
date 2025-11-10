@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { backendService } from "../../services/BackendService";
 import { attendanceManager } from "../../services/AttendanceManager";
 import { Display } from "./sections/Display";
@@ -31,6 +31,8 @@ interface SettingsProps {
   currentGroup?: AttendanceGroup | null;
   onGroupSelect?: (group: AttendanceGroup) => void;
   onGroupsChanged?: () => void;
+  // Pre-loaded data to avoid refetching
+  initialGroups?: AttendanceGroup[];
 }
 
 export const Settings: React.FC<SettingsProps> = ({
@@ -47,6 +49,7 @@ export const Settings: React.FC<SettingsProps> = ({
   currentGroup,
   onGroupSelect,
   onGroupsChanged,
+  initialGroups = [],
 }) => {
   const [activeSection, setActiveSection] = useState<string>(
     initialGroupSection ? "group" : "display",
@@ -59,7 +62,7 @@ export const Settings: React.FC<SettingsProps> = ({
     totalMembers: 0,
     lastUpdated: new Date().toISOString(),
   });
-  const [groups, setGroups] = useState<AttendanceGroup[]>([]);
+  const [groups, setGroups] = useState<AttendanceGroup[]>(initialGroups);
   const [isLoading, setIsLoading] = useState(false);
   const [, setShowCreateGroupInSettings] = useState(false);
 
@@ -72,30 +75,31 @@ export const Settings: React.FC<SettingsProps> = ({
     onAttendanceSettingsChange(updates);
   };
 
-  useEffect(() => {
-    loadSystemData();
-  }, []);
-
-  const loadSystemData = async () => {
-    setIsLoading(true);
+  const loadSystemData = useCallback(async () => {
+    // Load stats in the background without blocking UI
     try {
       const [faceStats, attendanceStats, groupsData] = await Promise.all([
         backendService.getDatabaseStats(),
         attendanceManager.getAttendanceStats(),
-        attendanceManager.getGroups(),
+        initialGroups.length === 0 ? attendanceManager.getGroups() : Promise.resolve(initialGroups),
       ]);
       setSystemData({
         totalPersons: faceStats.total_persons,
         totalMembers: attendanceStats.total_members,
         lastUpdated: new Date().toISOString(),
       });
-      setGroups(groupsData);
+      // Only update groups if we didn't receive them as props
+      if (initialGroups.length === 0) {
+        setGroups(groupsData);
+      }
     } catch (error) {
       console.error("Failed to load system data:", error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [initialGroups]);
+
+  useEffect(() => {
+    loadSystemData();
+  }, [loadSystemData]);
 
   const handleClearDatabase = async () => {
     if (
