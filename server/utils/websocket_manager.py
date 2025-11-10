@@ -68,7 +68,7 @@ class ConnectionManager:
         """
         if client_id in self.active_connections:
             websocket = self.active_connections[client_id]
-            
+
             # Cancel streaming task if active
             if client_id in self.streaming_tasks:
                 self.streaming_tasks[client_id].cancel()
