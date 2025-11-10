@@ -582,7 +582,7 @@ async def recognize_face(request: FaceRecognitionRequest):
                 status = liveness_data.get("status", "unknown")
 
                 # Block recognition for spoofed faces
-                if not is_real or status == "fake":
+                if not is_real or status == "spoof":
                     processing_time = time.time() - start_time
                     return FaceRecognitionResponse(
                         success=False,
@@ -692,7 +692,7 @@ async def register_person(request: FaceRegistrationRequest):
                 status = liveness_data.get("status", "unknown")
 
                 # Block registration for spoofed faces
-                if not is_real or status == "fake":
+                if not is_real or status == "spoof":
                     processing_time = time.time() - start_time
                     logger.warning(
                         f"Registration blocked for spoofed face: status={status}, is_real={is_real}"

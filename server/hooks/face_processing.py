@@ -42,7 +42,7 @@ async def process_liveness_detection(
 
     except Exception as e:
         logger.warning(f"Liveness detection failed: {e}")
-        # Mark ALL faces as FAKE on error for security
+        # Mark ALL faces as SPOOF on error
         for face in faces:
             face["liveness"] = {
                 "is_real": False,
@@ -50,7 +50,6 @@ async def process_liveness_detection(
                 "spoof_score": 1.0,
                 "confidence": 0.0,
                 "status": "error",
-                "label": "Error",
                 "message": f"Liveness detection error: {str(e)}",
             }
 
