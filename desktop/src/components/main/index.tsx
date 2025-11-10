@@ -2236,6 +2236,7 @@ export default function Main() {
           currentGroup={currentGroup}
           onGroupSelect={handleSelectGroup}
           onGroupsChanged={loadAttendanceData}
+          initialGroups={attendanceGroups}
         />
       )}
 
