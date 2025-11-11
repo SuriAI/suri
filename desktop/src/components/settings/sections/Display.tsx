@@ -35,12 +35,12 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
   ];
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl p-6">
       <div className="space-y-4">
         {settingItems.map(({ key, label, description }) => (
           <div
             key={key}
-            className="flex items-center justify-between py-3 border-b border-white/5 gap-4"
+            className="flex items-center py-3 border-b border-white/5 gap-4"
           >
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-white/90">{label}</div>
@@ -49,7 +49,7 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
 
             <button
               onClick={() => toggleQuickSetting(key)}
-              className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ${
+              className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
                 quickSettings[key] ? "bg-emerald-500/30" : "bg-white/10"
               }`}
             >

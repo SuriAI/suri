@@ -67,7 +67,7 @@ export function Members({
   };
 
   return (
-    <section className="h-full flex flex-col overflow-hidden space-y-4">
+    <section className="h-full flex flex-col overflow-hidden space-y-4 p-6">
       <div className="flex items-center justify-between flex-shrink-0">
         <h2 className="text-lg font-semibold">Members</h2>
         {members.length > 0 && (

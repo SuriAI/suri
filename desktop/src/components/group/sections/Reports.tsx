@@ -349,7 +349,7 @@ export function Reports({ group }: ReportsProps) {
   };
 
   return (
-    <section className="h-full flex flex-col overflow-hidden space-y-4">
+    <section className="h-full flex flex-col overflow-hidden space-y-4 p-6">
       <div className="flex items-center justify-between gap-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-2 text-xs">

@@ -22,9 +22,9 @@ export function Attendance({
   isStreaming = false,
 }: AttendanceProps) {
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4 max-w-3xl p-6">
       {/* Tracking Mode Section */}
-      <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+      <div className="flex items-center py-3 border-b border-white/5 gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-white/90">
             Capture Method
@@ -42,7 +42,7 @@ export function Attendance({
               attendanceSettings.trackingMode === "auto" ? "manual" : "auto",
             )
           }
-          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ${
+          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
             attendanceSettings.trackingMode === "manual"
               ? "bg-emerald-500/30"
               : "bg-white/10"
@@ -59,7 +59,7 @@ export function Attendance({
       </div>
 
       {/* Spoof Detection Section */}
-      <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+      <div className="flex items-center py-3 border-b border-white/5 gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-white/90">
             Anti-Spoof Detection
@@ -76,7 +76,7 @@ export function Attendance({
             onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)
           }
           disabled={isStreaming}
-          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ${
+          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
             attendanceSettings.enableSpoofDetection
               ? "bg-emerald-500/30"
               : "bg-white/10"
@@ -93,7 +93,7 @@ export function Attendance({
       </div>
 
       {/* Attendance Cooldown Section */}
-      <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+      <div className="flex items-center py-3 border-b border-white/5 gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-white/90">
             Attendance Cooldown
@@ -104,7 +104,7 @@ export function Attendance({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
           <input
             type="range"
             min="3"
@@ -124,7 +124,7 @@ export function Attendance({
       {/* Late Tracking Section */}
       <div className="space-y-4">
         {/* Enable/Disable Toggle */}
-        <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+        <div className="flex items-center py-3 border-b border-white/5 gap-4">
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-white/90">Late</div>
             <div className="text-xs text-white/50 mt-0.5">
@@ -137,7 +137,7 @@ export function Attendance({
               onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)
             }
             disabled={isStreaming}
-            className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ${
+            className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
               attendanceSettings.lateThresholdEnabled
                 ? "bg-emerald-500/30"
                 : "bg-white/10"
@@ -156,7 +156,7 @@ export function Attendance({
         {/* Class Start Time */}
         {attendanceSettings.lateThresholdEnabled && (
           <>
-            <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+            <div className="flex items-center py-3 border-b border-white/5 gap-4">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white/90">
                   Start Time
@@ -171,12 +171,12 @@ export function Attendance({
                 value={attendanceSettings.classStartTime}
                 onChange={(e) => onClassStartTimeChange(e.target.value)}
                 disabled={isStreaming}
-                className="px-3 py-2 bg-white/5 text-white text-sm border border-white/10 rounded-md focus:border-amber-500/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                className="px-3 py-2 bg-white/5 text-white text-sm border border-white/10 rounded-md focus:border-amber-500/50 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 ml-auto"
               />
             </div>
 
             {/* Late Threshold */}
-            <div className="flex items-center justify-between py-3 border-b border-white/5 gap-4">
+            <div className="flex items-center py-3 border-b border-white/5 gap-4">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white/90">
                   Late After
@@ -187,7 +187,7 @@ export function Attendance({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
                 <input
                   type="range"
                   min="5"
