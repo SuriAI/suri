@@ -253,7 +253,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {/* Scrollable Content Section */}
-      <div className="flex-1 overflow-y-auto min-h-0 custom-scroll">
+      <div className="flex-1 overflow-y-auto min-h-0 custom-scroll flex flex-col">
         {/* Recent Attendance */}
         {visibleRecords.length > 0 ? (
           <>
@@ -282,27 +282,33 @@ export const AttendancePanel = memo(function AttendancePanel({
             )}
           </>
         ) : searchQuery ? (
-          <div className="text-white/50 text-sm text-center py-8">
-            No results for "{searchQuery}"
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="text-white/50 text-sm text-center">
+              No results for "{searchQuery}"
+            </div>
           </div>
         ) : groupMembers.length === 0 && currentGroup ? (
-          <div className="flex flex-col items-center justify-center py-8 px-4 space-y-3">
-            <div className="text-white/40 text-xs text-center">
-              <div className="mb-3">No members in this group yet</div>
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <div className="text-white/40 text-xs text-center">
+                No members in this group yet
+              </div>
+              {onOpenSettingsForRegistration && (
+                <button
+                  onClick={onOpenSettingsForRegistration}
+                  className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
+                >
+                  <i className="fa-solid fa-user-plus text-xs"></i>
+                  Add Member
+                </button>
+              )}
             </div>
-            {onOpenSettingsForRegistration && (
-              <button
-                onClick={onOpenSettingsForRegistration}
-                className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
-              >
-                <i className="fa-solid fa-user-plus text-xs"></i>
-                Add Member
-              </button>
-            )}
           </div>
         ) : (
-          <div className="text-white/50 text-xs text-center py-8">
-            NO RECORDS FOUND
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="text-white/40 text-xs text-center">
+              NO RECORDS FOUND
+            </div>
           </div>
         )}
       </div>

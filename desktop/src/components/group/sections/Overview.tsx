@@ -88,7 +88,7 @@ export function Overview({ group, members }: OverviewProps) {
   }
 
   return (
-    <section className="space-y-4 h-full flex flex-col overflow-hidden">
+    <section className="space-y-4 h-full flex flex-col overflow-hidden p-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
         <StatsCard type="active" value={activeNow} label="Active Now" />

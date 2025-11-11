@@ -50,7 +50,7 @@ export function GroupSettings({
 
   return (
     <section className="h-full flex flex-col overflow-hidden space-y-4">
-      <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2 space-y-4">
+      <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 p-6 space-y-4">
         {/* Group Information Card */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-5">
           <div className="flex items-start justify-between mb-4">

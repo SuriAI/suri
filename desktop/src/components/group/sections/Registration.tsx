@@ -57,7 +57,7 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
   const progress = total > 0 ? (registered / total) * 100 : 0;
 
   return (
-    <div className="h-full flex flex-col overflow-hidden space-y-6">
+    <div className="h-full flex flex-col overflow-hidden space-y-6 p-6">
       {/* Registration Status - Minimalist Progress Ring */}
       <div className="flex items-center justify-center flex-shrink-0">
         <div className="relative">

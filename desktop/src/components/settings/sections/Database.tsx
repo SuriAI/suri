@@ -320,7 +320,7 @@ export function Database({
   );
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl p-6">
       {/* Statistics Overview */}
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-lg p-4 bg-white/5 border border-white/10">
@@ -363,7 +363,7 @@ export function Database({
       </div>
 
       {/* Groups with Members */}
-      <div className="space-y-2">
+      <div className="space-y-2 h-24">
         {filteredData.length === 0 ? (
           <div className="text-center py-12 text-white/50">
             <div className="text-sm">No groups or members found</div>

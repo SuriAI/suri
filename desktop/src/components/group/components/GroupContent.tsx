@@ -50,7 +50,7 @@ export function GroupContent({
   }
 
   return (
-    <div className="h-full px-6 pt-6">
+    <>
       {activeSection === "overview" && (
         <Overview group={selectedGroup} members={members} />
       )}
@@ -85,6 +85,6 @@ export function GroupContent({
           onRefresh={onMembersChange}
         />
       )}
-    </div>
+    </>
   );
 }
