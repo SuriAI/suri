@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Types
 export type { GroupSection } from "./types";
@@ -105,9 +105,12 @@ export function GroupPanel({
   }, [initialSection]);
 
   // Handle triggerCreateGroup prop
+  const prevTriggerRef = useRef(0);
   useEffect(() => {
-    if (triggerCreateGroup > 0) {
+    // Only trigger if the value actually changed (not just > 0)
+    if (triggerCreateGroup > 0 && triggerCreateGroup !== prevTriggerRef.current) {
       openCreateGroup();
+      prevTriggerRef.current = triggerCreateGroup;
     }
   }, [triggerCreateGroup, openCreateGroup]);
 
