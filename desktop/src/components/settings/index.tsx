@@ -6,12 +6,13 @@ import { Database } from "./sections/Database";
 import { Attendance } from "./sections/Attendance";
 import { GroupPanel, type GroupSection } from "../group";
 import { Dropdown } from "../shared/Dropdown";
+import { RegistrationStatus } from "../shared/RegistrationStatus";
 import type {
   QuickSettings,
   AttendanceSettings,
   SettingsOverview,
 } from "./types";
-import type { AttendanceGroup } from "../../types/recognition";
+import type { AttendanceGroup, AttendanceMember } from "../../types/recognition";
 
 export type { QuickSettings, AttendanceSettings };
 
@@ -63,6 +64,8 @@ export const Settings: React.FC<SettingsProps> = ({
   });
   const [groups, setGroups] = useState<AttendanceGroup[]>(initialGroups);
   const [isLoading, setIsLoading] = useState(false);
+  const [members, setMembers] = useState<AttendanceMember[]>([]);
+  const [triggerCreateGroup, setTriggerCreateGroup] = useState(0);
 
   const toggleQuickSetting = (key: keyof QuickSettings) => {
     const newSettings = { ...quickSettings, [key]: !quickSettings[key] };
@@ -98,6 +101,31 @@ export const Settings: React.FC<SettingsProps> = ({
   useEffect(() => {
     loadSystemData();
   }, [loadSystemData]);
+
+  // Fetch members when showing registration section
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (
+        activeSection === "group" &&
+        groupInitialSection === "registration" &&
+        currentGroup
+      ) {
+        try {
+          const groupMembers = await attendanceManager.getGroupMembers(
+            currentGroup.id,
+          );
+          setMembers(groupMembers);
+        } catch (error) {
+          console.error("Failed to load members:", error);
+          setMembers([]);
+        }
+      } else {
+        setMembers([]);
+      }
+    };
+
+    fetchMembers();
+  }, [activeSection, groupInitialSection, currentGroup]);
 
   const handleClearDatabase = async () => {
     if (
@@ -192,8 +220,13 @@ export const Settings: React.FC<SettingsProps> = ({
             <button
               onClick={() => {
                 setActiveSection("group");
-                setGroupInitialSection("overview");
+                // Preserve current section if already in group section, otherwise default to overview
+                if (activeSection !== "group" || !groupInitialSection) {
+                  setGroupInitialSection("overview");
+                }
                 setIsGroupExpanded(true);
+                // Use timestamp to ensure trigger always changes
+                setTriggerCreateGroup(Date.now());
               }}
               className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
               title="Create new group"
@@ -280,21 +313,29 @@ export const Settings: React.FC<SettingsProps> = ({
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Section Header */}
         <div className="px-8 py-6 border-b border-white/10">
-          <h2 className="text-xl font-semibold flex items-center">
-            {activeSection === "group" ? (
-              <>
-                Group{" "}
-                <span className="text-sm text-white/60 ml-1">
-                  (
-                  {groupSections.find((s) => s.id === groupInitialSection)
-                    ?.label || "Overview"}
-                  )
-                </span>
-              </>
-            ) : (
-              sections.find((s) => s.id === activeSection)?.label
-            )}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold flex items-center">
+              {activeSection === "group" ? (
+                <>
+                  Group{" "}
+                  <span className="text-sm text-white/60 ml-1">
+                    (
+                    {groupSections.find((s) => s.id === groupInitialSection)
+                      ?.label || "Overview"}
+                    )
+                  </span>
+                </>
+              ) : (
+                sections.find((s) => s.id === activeSection)?.label
+              )}
+            </h2>
+            {activeSection === "group" &&
+              groupInitialSection === "registration" && (
+                <div className="flex items-center">
+                  <RegistrationStatus members={members} />
+                </div>
+              )}
+          </div>
         </div>
 
         {/* Section Content */}
@@ -305,9 +346,24 @@ export const Settings: React.FC<SettingsProps> = ({
                 onBack={() => setActiveSection("attendance")}
                 initialSection={groupInitialSection}
                 initialGroup={currentGroup}
-                onGroupsChanged={() => {
+                triggerCreateGroup={triggerCreateGroup}
+                onGroupsChanged={async () => {
                   loadSystemData();
                   if (onGroupsChanged) onGroupsChanged();
+                  // Refresh members if showing registration section
+                  if (
+                    groupInitialSection === "registration" &&
+                    currentGroup
+                  ) {
+                    try {
+                      const groupMembers = await attendanceManager.getGroupMembers(
+                        currentGroup.id,
+                      );
+                      setMembers(groupMembers);
+                    } catch (error) {
+                      console.error("Failed to refresh members:", error);
+                    }
+                  }
                 }}
                 isEmbedded={true}
               />

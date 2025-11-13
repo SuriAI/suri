@@ -22,6 +22,7 @@ export function GroupPanel({
   initialGroup,
   onGroupsChanged,
   isEmbedded = false,
+  triggerCreateGroup = 0,
 }: GroupPanelProps) {
   const [activeSection, setActiveSection] = useState(
     initialSection ?? "overview",
@@ -102,6 +103,13 @@ export function GroupPanel({
       setActiveSection(initialSection);
     }
   }, [initialSection]);
+
+  // Handle triggerCreateGroup prop
+  useEffect(() => {
+    if (triggerCreateGroup > 0) {
+      openCreateGroup();
+    }
+  }, [triggerCreateGroup, openCreateGroup]);
 
   // Restore sidebar state from localStorage
   useEffect(() => {
