@@ -51,55 +51,8 @@ export function Registration({ group, members, onRefresh }: RegistrationProps) {
     );
   }
 
-  // Mode Selection View - Calculate actual registration status
-  const total = members.length;
-  const registered = members.filter((member) => member.has_face_data).length;
-  const progress = total > 0 ? (registered / total) * 100 : 0;
-
   return (
     <div className="h-full flex flex-col overflow-hidden space-y-6 p-6">
-      {/* Registration Status - Minimalist Progress Ring */}
-      <div className="flex items-center justify-center flex-shrink-0">
-        <div className="relative">
-          {/* Progress Ring */}
-          <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-            {/* Background circle */}
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke="rgba(255,255,255,0.1)"
-              strokeWidth="2"
-            />
-            {/* Progress circle */}
-            <path
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              fill="none"
-              stroke={
-                progress === 100
-                  ? "#00ff88"
-                  : progress > 0
-                    ? "#fbbf24"
-                    : "rgba(255,255,255,0.3)"
-              }
-              strokeWidth="2"
-              strokeDasharray={`${progress}, 100`}
-              className="transition-all duration-500 ease-out"
-            />
-          </svg>
-
-          {/* Count in center */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div
-                className={`text-lg font-medium ${progress === 100 ? "text-[#00ff88]" : progress > 0 ? "text-[#fbbf24]" : "text-white/60"}`}
-              >
-                {registered}/{total}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Mode Cards */}
       <div className="grid gap-3 flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pr-2">
         {/* Single */}

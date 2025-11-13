@@ -13,4 +13,5 @@ export interface GroupPanelProps {
   initialGroup?: AttendanceGroup | null; // Pre-select this group when GroupPanel opens
   onGroupsChanged?: () => void; // Callback when groups are created/deleted
   isEmbedded?: boolean; // Whether GroupPanel is embedded in Settings or standalone
+  triggerCreateGroup?: number; // When set to a timestamp, opens create group modal
 }
