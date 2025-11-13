@@ -261,6 +261,8 @@ export const Settings: React.FC<SettingsProps> = ({
                     onClick={() => {
                       setActiveSection("group");
                       setGroupInitialSection(subsection.id as GroupSection);
+                      // Reset trigger when switching subsections to prevent accidental modal opening
+                      setTriggerCreateGroup(0);
                     }}
                     className={`w-full text-left px-3 py-2 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                       activeSection === "group" &&
