@@ -383,6 +383,7 @@ function createWindow(): void {
     minHeight: 500,
     maxWidth: 3840, // 4K width limit
     maxHeight: 2160, // 4K height limit
+    show: false, // Prevent flash, show after ready
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -480,10 +481,14 @@ function createWindow(): void {
     mainWindow.webContents.setZoomFactor(1.0);
 
     mainWindow.show();
+    mainWindow.focus();
+
     if (process.platform === "win32") {
       try {
         const { width, height } = mainWindow.getBounds();
         mainWindow.setShape(createShape(width, height));
+        // Ensure window is on top and focused on Windows
+        mainWindow.moveTop();
       } catch (error) {
         console.warn("Could not set window shape:", error);
       }
@@ -592,7 +597,13 @@ app.whenReady().then(async () => {
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    } else if (mainWindowRef && !mainWindowRef.isVisible()) {
+      // Show and focus window if it exists but is hidden
+      mainWindowRef.show();
+      mainWindowRef.focus();
+    }
   });
 });
 
@@ -611,9 +622,9 @@ function cleanupBackend(): void {
   if (isQuitting) return;
   isQuitting = true;
 
-  console.log("[Main] 🛑 Stopping backend...");
+  console.log("[Main] Stopping backend...");
   backendService.killSync(); // Sends taskkill, backend handles gracefully
-  console.log("[Main] ✅ Backend stopped");
+  console.log("[Main] Backend stopped");
 }
 
 // Primary handler: Before quit (covers window close + menu quit + Alt+F4)
