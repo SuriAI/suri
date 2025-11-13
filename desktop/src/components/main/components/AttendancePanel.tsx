@@ -21,7 +21,6 @@ interface AttendancePanelProps {
 type SortField = "time" | "name";
 type SortOrder = "asc" | "desc";
 
-// Memoized attendance record item to prevent unnecessary re-renders
 const AttendanceRecordItem = memo(
   ({
     record,
@@ -68,7 +67,6 @@ export const AttendancePanel = memo(function AttendancePanel({
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [displayLimit, setDisplayLimit] = useState(20);
 
-  // Memoize handlers to prevent recreation
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value);
@@ -80,11 +78,10 @@ export const AttendancePanel = memo(function AttendancePanel({
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const field = e.target.value as SortField;
       setSortField(field);
-      // Set smart defaults based on field type
       if (field === "time") {
-        setSortOrder("desc"); // Newest first
+        setSortOrder("desc");
       } else if (field === "name") {
-        setSortOrder("asc"); // A-Z
+        setSortOrder("asc");
       }
     },
     [],
@@ -94,58 +91,65 @@ export const AttendancePanel = memo(function AttendancePanel({
     setDisplayLimit((prev) => prev + 20);
   }, []);
 
-  // Create display name map for members
   const displayNameMap = useMemo(() => {
     return createDisplayNameMap(groupMembers);
   }, [groupMembers]);
 
-  // Filtered and sorted attendance records (memoized for performance)
   const processedRecords = useMemo(() => {
-    let filtered = [...recentAttendance];
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((record) => {
-        const displayName = displayNameMap.get(record.person_id) || "Unknown";
-        return displayName.toLowerCase().includes(query);
-      });
+    if (!recentAttendance.length) {
+      return [];
     }
 
-    // Sort
-    filtered.sort((a, b) => {
-      let comparison = 0;
+    let filtered = [...recentAttendance];
 
-      switch (sortField) {
-        case "time":
-          comparison = a.timestamp.getTime() - b.timestamp.getTime();
-          break;
-        case "name": {
-          const nameA = (
-            displayNameMap.get(a.person_id) || "Unknown"
-          ).toLowerCase();
-          const nameB = (
-            displayNameMap.get(b.person_id) || "Unknown"
-          ).toLowerCase();
-          comparison = nameA.localeCompare(nameB);
-          break;
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const hasSearchQuery = normalizedQuery.length > 0;
+
+    if (hasSearchQuery) {
+      const filteredArray: typeof filtered = [];
+      for (let i = 0; i < filtered.length; i++) {
+        const record = filtered[i];
+        const displayName = (displayNameMap.get(record.person_id) || "Unknown").toLowerCase();
+        if (displayName.includes(normalizedQuery)) {
+          filteredArray.push(record);
         }
       }
+      filtered = filteredArray;
+    }
 
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    if (sortField === "time") {
+      filtered.sort((a, b) => {
+        const timeA = a.timestamp.getTime();
+        const timeB = b.timestamp.getTime();
+        return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+      });
+    } else if (sortField === "name") {
+      const nameCache = new Map<string, string>();
+      filtered.sort((a, b) => {
+        let nameA = nameCache.get(a.person_id);
+        if (!nameA) {
+          nameA = (displayNameMap.get(a.person_id) || "Unknown").toLowerCase();
+          nameCache.set(a.person_id, nameA);
+        }
+        let nameB = nameCache.get(b.person_id);
+        if (!nameB) {
+          nameB = (displayNameMap.get(b.person_id) || "Unknown").toLowerCase();
+          nameCache.set(b.person_id, nameB);
+        }
+        const comparison = nameA.localeCompare(nameB);
+        return sortOrder === "asc" ? comparison : -comparison;
+      });
+    }
 
     return filtered;
   }, [recentAttendance, displayNameMap, searchQuery, sortField, sortOrder]);
 
-  // Visible records with pagination for performance
   const visibleRecords = useMemo(() => {
     return processedRecords.slice(0, displayLimit);
   }, [processedRecords, displayLimit]);
 
   const hasMore = processedRecords.length > displayLimit;
 
-  // Reset display limit when search query or sort changes
   useEffect(() => {
     setDisplayLimit(20);
   }, [searchQuery, sortField, sortOrder]);
@@ -167,7 +171,6 @@ export const AttendancePanel = memo(function AttendancePanel({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Fixed Header Section - Active Group Selection */}
       {attendanceGroups.length > 0 ? (
         <div className="p-2 pb-2 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -220,12 +223,9 @@ export const AttendancePanel = memo(function AttendancePanel({
         </div>
       )}
 
-      {/* Search and Controls */}
       {recentAttendance.length > 0 && (
         <div className="px-2 pb-2 flex-shrink-0">
-          {/* Search and Sort Controls - Side by Side */}
           <div className="flex items-center gap-3 text-[8px]">
-            {/* Search - Left Side */}
             <input
               type="text"
               placeholder="Search by name..."
@@ -234,7 +234,6 @@ export const AttendancePanel = memo(function AttendancePanel({
               className="flex-1 bg-white/[0.05] text-white text-xs border border-white/[0.1] rounded px-3 py-1.5 placeholder:text-white/30 focus:border-blue-500 focus:outline-none"
             />
 
-            {/* Sort Controls and Log Count - Right Side */}
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1">
                 <select
@@ -255,10 +254,8 @@ export const AttendancePanel = memo(function AttendancePanel({
         </div>
       )}
 
-      {/* Scrollable Content Section */}
       {attendanceGroups.length > 0 && (
         <div className="flex-1 overflow-y-auto min-h-0 custom-scroll flex flex-col">
-          {/* Recent Attendance */}
           {visibleRecords.length > 0 ? (
             <>
               {visibleRecords.map((record) => {
@@ -273,7 +270,6 @@ export const AttendancePanel = memo(function AttendancePanel({
                 );
               })}
 
-              {/* Load More Button */}
               {hasMore && (
                 <div className="px-2 py-2">
                   <button

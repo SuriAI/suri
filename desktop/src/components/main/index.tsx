@@ -40,7 +40,6 @@ const TRACKING_HISTORY_LIMIT = 20;
 let skipFrames = 0;
 let frameCounter = 0;
 
-// Extended recognition response with additional UI properties
 export interface ExtendedFaceRecognitionResponse
   extends FaceRecognitionResponse {
   memberName?: string;
@@ -138,6 +137,7 @@ export default function Main() {
   const lastDetectionHashRef = useRef<string>("");
   const videoRectRef = useRef<DOMRect | null>(null);
   const lastVideoRectUpdateRef = useRef<number>(0);
+  const lastHashCalculationRef = useRef<number>(0);
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
@@ -181,13 +181,24 @@ export default function Main() {
     events.forEach((event) => {
       video.addEventListener(event, checkVideoState);
     });
-    const interval = setInterval(checkVideoState, 100);
+    const interval = setInterval(checkVideoState, 200);
+
+    const resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => {
+        if (video && videoRectRef.current) {
+          videoRectRef.current = video.getBoundingClientRect();
+          lastVideoRectUpdateRef.current = Date.now();
+        }
+      });
+    });
+    resizeObserver.observe(video);
 
     return () => {
       events.forEach((event) => {
         video.removeEventListener(event, checkVideoState);
       });
       clearInterval(interval);
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -221,7 +232,6 @@ export default function Main() {
     showLandmarks: true,
   });
 
-  // Attendance state
   const attendanceEnabled = true;
   const [currentGroup, setCurrentGroupInternal] =
     useState<AttendanceGroup | null>(null);
@@ -241,7 +251,6 @@ export default function Main() {
   const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {});
   const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
 
-  // Set current group with persistence
   const setCurrentGroup = useCallback((group: AttendanceGroup | null) => {
     setCurrentGroupInternal(group);
     currentGroupRef.current = group;
@@ -255,14 +264,13 @@ export default function Main() {
 
   const recognitionEnabled = true;
 
-  // Tracking system
   const [trackingMode, setTrackingMode] = useState<"auto" | "manual">("auto");
   const [attendanceCooldownSeconds, setAttendanceCooldownSeconds] =
     useState<number>(10);
   const [enableSpoofDetection, setEnableSpoofDetection] = useState<boolean>(
     () => {
       const saved = localStorage.getItem("suri_enable_spoof_detection");
-      return saved !== null ? saved === "true" : true; // Default to enabled
+      return saved !== null ? saved === "true" : true;
     },
   );
   const [trackedFaces, setTrackedFaces] = useState<Map<string, TrackedFace>>(
@@ -622,9 +630,7 @@ export default function Main() {
 
                 if (!shouldSkipAttendanceLogging) {
                   try {
-                    // Validate similarity is present
                     if (response.similarity === undefined || response.similarity === null) {
-                      console.warn("[Recognition] Missing similarity in response:", response);
                       return null;
                     }
                     const actualConfidence = response.similarity;
@@ -723,28 +729,19 @@ export default function Main() {
                           );
 
                         if (attendanceEvent) {
-                          const scheduleRefresh = () => {
-                            if ("requestIdleCallback" in window) {
-                              requestIdleCallback(
-                                () => {
-                                  loadAttendanceDataRef
-                                    .current()
-                                    .catch((err) =>
-                                      console.error(
-                                        "Failed to refresh attendance:",
-                                        err,
-                                      ),
-                                    );
-                                },
-                                { timeout: 500 },
-                              );
-                            } else {
-                              setTimeout(async () => {
-                                await loadAttendanceDataRef.current();
-                              }, 100);
-                            }
-                          };
-                          scheduleRefresh();
+                          requestIdleCallback(
+                            () => {
+                              loadAttendanceDataRef
+                                .current()
+                                .catch((err) =>
+                                  console.error(
+                                    "Failed to refresh attendance:",
+                                    err,
+                                  ),
+                                );
+                            },
+                            { timeout: 500 },
+                          );
                         }
                         setError(null);
                       } catch (attendanceError: unknown) {
@@ -800,9 +797,8 @@ export default function Main() {
                 });
               });
             }
-          } catch (error) {
-            // Silently handle recognition errors for individual faces
-            console.debug("Face recognition error:", error);
+          } catch {
+            // Ignore individual face recognition errors
           }
           return null;
         });
@@ -993,7 +989,6 @@ export default function Main() {
         }
 
         if (data.frame_timestamp === undefined) {
-          console.warn("[WebSocket] Received detection response without frame_timestamp");
           return;
         }
 
@@ -1037,19 +1032,16 @@ export default function Main() {
             }
 
             if (!data.model_used) {
-              console.warn("[WebSocket] Detection response missing model_used");
               return;
             }
 
             const detectionResult: DetectionResult = {
               faces: data.faces.map((face: WebSocketFaceData) => {
                 if (!face.bbox || !Array.isArray(face.bbox) || face.bbox.length !== 4) {
-                  console.warn("[WebSocket] Invalid bbox in face data:", face);
                   return null;
                 }
 
                 if (face.confidence === undefined) {
-                  console.warn("[WebSocket] Missing confidence in face data:", face);
                   return null;
                 }
 
@@ -1070,11 +1062,9 @@ export default function Main() {
                       return undefined;
                     }
                     if (face.liveness.status === undefined) {
-                      console.warn("[WebSocket] Liveness data missing status:", face.liveness);
                       return undefined;
                     }
                     if (face.liveness.is_real === undefined) {
-                      console.warn("[WebSocket] Liveness data missing is_real:", face.liveness);
                       return undefined;
                     }
                     return {
@@ -1124,7 +1114,6 @@ export default function Main() {
         if (data.status === "connected") {
           backendServiceReadyRef.current = true;
           setWebsocketStatus("connected");
-          console.log("[WebSocket] Connected successfully");
         } else if (data.status === "disconnected") {
           setWebsocketStatus("disconnected");
         }
@@ -1158,13 +1147,11 @@ export default function Main() {
 
       const currentStatus = backendServiceRef.current.getWebSocketStatus();
       if (currentStatus === "connected") {
-        console.log("[WebSocket] Already connected, reusing existing connection");
         registerWebSocketHandlers();
         return;
       }
 
       if (currentStatus === "connecting") {
-        console.log("[WebSocket] Already connecting, waiting...");
         let attempts = 0;
         while (attempts < 50) {
           await new Promise((resolve) => setTimeout(resolve, 100));
@@ -1327,8 +1314,6 @@ export default function Main() {
         
         if (backendServiceRef.current?.isWebSocketReady()) {
           processCurrentFrameRef.current();
-        } else {
-          console.warn("[Camera] WebSocket not ready, scanning will start when connected");
         }
       }
     } catch (err) {
@@ -1346,14 +1331,12 @@ export default function Main() {
 
   const cleanupOnUnload = useCallback(() => {
     try {
-      console.log("[Cleanup] Cleaning up on window reload/unload...");
-
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => {
           try {
             track.stop();
-          } catch (err) {
-            console.warn("[Cleanup] Error stopping track:", err);
+          } catch {
+            // Ignore cleanup errors
           }
         });
         streamRef.current = null;
@@ -1363,8 +1346,8 @@ export default function Main() {
         try {
           videoRef.current.srcObject = null;
           videoRef.current.pause();
-        } catch (err) {
-          console.warn("[Cleanup] Error clearing video:", err);
+        } catch {
+          // Ignore cleanup errors
         }
       }
 
@@ -1372,8 +1355,8 @@ export default function Main() {
         try {
           cancelAnimationFrame(animationFrameRef.current);
           animationFrameRef.current = undefined;
-        } catch (err) {
-          console.warn("[Cleanup] Error canceling animation frame:", err);
+        } catch {
+          // Ignore cleanup errors
         }
       }
 
@@ -1381,24 +1364,21 @@ export default function Main() {
         try {
           const wsStatus = backendServiceRef.current.getWebSocketStatus();
           if (wsStatus === "connected" || wsStatus === "connecting") {
-            console.log("[Cleanup] Closing WebSocket connection on reload...");
             backendServiceRef.current.disconnect();
           }
-        } catch (err) {
-          console.warn("[Cleanup] Error closing WebSocket:", err);
+        } catch {
+          // Ignore cleanup errors
         }
       }
 
-    isStreamingRef.current = false;
-    isScanningRef.current = false;
-    isProcessingRef.current = false;
-    isStartingRef.current = false;
-    isStoppingRef.current = false;
-    backendServiceReadyRef.current = false;
-
-      console.log("[Cleanup] Cleanup completed");
-    } catch (error) {
-      console.error("[Cleanup] Cleanup failed:", error);
+      isStreamingRef.current = false;
+      isScanningRef.current = false;
+      isProcessingRef.current = false;
+      isStartingRef.current = false;
+      isStoppingRef.current = false;
+      backendServiceReadyRef.current = false;
+    } catch {
+      // Ignore cleanup errors
     }
   }, []);
 
@@ -1425,8 +1405,8 @@ export default function Main() {
       streamRef.current.getTracks().forEach((track) => {
         try {
           track.stop();
-        } catch (err) {
-          console.warn("[Camera] Error stopping track:", err);
+        } catch {
+          // Ignore cleanup errors
         }
       });
       streamRef.current = null;
@@ -1438,8 +1418,8 @@ export default function Main() {
         if (!forceCleanup) {
           videoRef.current.pause();
         }
-      } catch (err) {
-        console.warn("[Camera] Error clearing video:", err);
+      } catch {
+        // Ignore cleanup errors
       }
     }
 
@@ -1483,10 +1463,6 @@ export default function Main() {
 
     frameCounter = 0;
 
-    if (!forceCleanup) {
-      console.log("[Camera] Stopped - WebSocket connection remains open");
-    }
-
     isStoppingRef.current = false;
   }, []);
 
@@ -1495,7 +1471,7 @@ export default function Main() {
     if (!video) return null;
 
     const now = Date.now();
-    if (!videoRectRef.current || now - lastVideoRectUpdateRef.current > 100) {
+    if (!videoRectRef.current || now - lastVideoRectUpdateRef.current > 200) {
       videoRectRef.current = video.getBoundingClientRect();
       lastVideoRectUpdateRef.current = now;
     }
@@ -1586,26 +1562,75 @@ export default function Main() {
   const animate = useCallback(() => {
     const detectionsToRender = currentDetections;
     const overlayCanvas = overlayCanvasRef.current;
-    if (overlayCanvas && (!detectionsToRender || !isStreaming)) {
-      const ctx = overlayCanvas.getContext("2d");
-      if (ctx) {
+    
+    if (!overlayCanvas || !isStreaming) {
+      if (overlayCanvas && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
+        const ctx = overlayCanvas.getContext("2d", { willReadFrequently: false });
+        if (ctx) {
+          ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        }
+      }
+      if (isStreaming) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+      return;
+    }
+
+    if (!detectionsToRender || !detectionsToRender.faces?.length) {
+      const ctx = overlayCanvas.getContext("2d", { willReadFrequently: false });
+      if (ctx && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      }
+      lastDetectionHashRef.current = "";
+      if (isStreaming) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+      return;
+    }
+
+    const now = performance.now();
+    const recognitionForHash = currentRecognitionResults;
+    let shouldRedraw = false;
+
+    if (now - lastHashCalculationRef.current >= 16) {
+      const facesCount = detectionsToRender.faces.length;
+      const recognitionCount = recognitionForHash.size;
+      
+      let hashSum = facesCount * 1000 + recognitionCount;
+      
+      const sampleCount = Math.min(3, detectionsToRender.faces.length);
+      for (let i = 0; i < sampleCount; i++) {
+        const face = detectionsToRender.faces[i];
+        hashSum += Math.round(face.bbox.x / 10) * 100;
+        hashSum += Math.round(face.bbox.y / 10) * 10;
+      }
+      
+      let recIndex = 0;
+      for (const [trackId, result] of recognitionForHash) {
+        if (recIndex >= 3) break;
+        hashSum += trackId * 1000;
+        if (result.person_id) {
+          hashSum += result.person_id.length * 100;
+        }
+        recIndex++;
+      }
+      
+      const simpleHash = String(hashSum);
+
+      if (simpleHash !== lastDetectionHashRef.current) {
+        lastDetectionHashRef.current = simpleHash;
+        shouldRedraw = true;
+        lastHashCalculationRef.current = now;
+      }
+    } else {
+      if (detectionsToRender !== lastDetectionRef.current) {
+        shouldRedraw = true;
+        lastDetectionRef.current = detectionsToRender;
       }
     }
 
-    const recognitionForHash = currentRecognitionResults;
-
-    const currentHash = detectionsToRender
-      ? `${detectionsToRender.faces.length}-${detectionsToRender.faces.map((f) => `${f.bbox.x},${f.bbox.y}`).join(",")}-${recognitionForHash.size}-${Array.from(
-          recognitionForHash.values(),
-        )
-          .map((r) => r.person_id || "none")
-          .join(",")}`
-      : "";
-
-    if (currentHash !== lastDetectionHashRef.current) {
+    if (shouldRedraw) {
       handleDrawOverlays();
-      lastDetectionHashRef.current = currentHash;
     }
 
     if (isStreaming) {
@@ -1672,7 +1697,6 @@ export default function Main() {
     }
   }, [setCurrentGroup]);
 
-  // Tracking helpers
   const calculateAngleConsistency = useCallback(
     (
       history: Array<{
@@ -1837,8 +1861,8 @@ export default function Main() {
           track.stop();
         });
         streamRef.current = null;
-      } catch (err) {
-        console.warn("[Mount] Error cleaning up stale stream:", err);
+      } catch {
+        // Ignore cleanup errors
       }
     }
 
@@ -1846,8 +1870,8 @@ export default function Main() {
       try {
         videoRef.current.srcObject = null;
         videoRef.current.pause();
-      } catch (err) {
-        console.warn("[Mount] Error clearing video:", err);
+      } catch {
+        // Ignore cleanup errors
       }
     }
 
@@ -1862,7 +1886,6 @@ export default function Main() {
     }
 
     if (backendServiceRef.current?.isWebSocketReady()) {
-      console.log("[WebSocket] WebSocket already connected, registering handlers...");
       registerWebSocketHandlers();
       initializationRef.current.initialized = true;
       initializationRef.current.isInitializing = false;
@@ -1870,12 +1893,10 @@ export default function Main() {
     }
 
     if (initializationRef.current.isInitializing) {
-      console.log("[WebSocket] Initialization already in progress, skipping...");
       return;
     }
 
     if (initializationRef.current.initialized && !backendServiceRef.current?.isWebSocketReady()) {
-      console.log("[WebSocket] Was initialized but WebSocket not ready, reinitializing...");
       initializationRef.current.initialized = false;
     }
 
@@ -1883,12 +1904,9 @@ export default function Main() {
 
     const initWebSocket = async () => {
       try {
-        console.log("[WebSocket] Initializing on mount...");
         await initializeWebSocket();
-        console.log("[WebSocket] Initialized successfully");
         initializationRef.current.initialized = true;
-      } catch (error) {
-        console.error("[WebSocket] Failed to initialize on mount:", error);
+      } catch {
         setWebsocketStatus("disconnected");
         initializationRef.current.initialized = false;
       } finally {
@@ -1903,8 +1921,6 @@ export default function Main() {
     const wasInitializing = initializationRef.current.isInitializing;
 
     return () => {
-      console.log("[WebSocket] Cleanup running...");
-
       if (cleanupTimeout) {
         clearTimeout(cleanupTimeout);
       }
@@ -1924,8 +1940,7 @@ export default function Main() {
         }, 50);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initializeWebSocket, registerWebSocketHandlers, stopCamera]);
 
   useEffect(() => {
     getCameraDevices();
@@ -1966,7 +1981,6 @@ export default function Main() {
       isScanningRef.current &&
       isStreamingRef.current
     ) {
-      console.log("[WebSocket] Connected - starting detection loop");
       if (backendServiceRef.current?.isWebSocketReady()) {
         processCurrentFrameRef.current();
       }
@@ -1983,14 +1997,12 @@ export default function Main() {
     }
   }, [currentGroup, stopCamera]);
 
-  // Setup window unload/reload cleanup handlers
   useEffect(() => {
     let cleanupExecuted = false;
 
     const performCleanup = () => {
       if (cleanupExecuted) return;
       cleanupExecuted = true;
-      console.log("[Main] Performing cleanup before reload...");
       cleanupOnUnload();
     };
 
@@ -2079,18 +2091,14 @@ export default function Main() {
 
   return (
     <div className="pt-9 pb-5 h-screen bg-black text-white flex flex-col overflow-hidden">
-      {/* Error Display */}
       {error && (
         <div className="mx-4 mt-3 bg-red-900 border border-red-600 p-3 rounded text-red-200">
           {error}
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex min-h-0">
-        {/* Video Section */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Video Container */}
           <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-4">
             <VideoCanvas
               videoRef={videoRef}
@@ -2110,7 +2118,6 @@ export default function Main() {
             />
           </div>
 
-          {/* Controls Bar */}
           <ControlBar
             cameraDevices={cameraDevices}
             selectedCamera={selectedCamera}
@@ -2121,7 +2128,6 @@ export default function Main() {
           />
         </div>
 
-        {/* Sidebar */}
         <Sidebar
           currentDetections={currentDetections}
           currentRecognitionResults={currentRecognitionResults}
@@ -2143,7 +2149,6 @@ export default function Main() {
         />
       </div>
 
-      {/* Group Management Modal */}
       <GroupManagementModal
         showGroupManagement={showGroupManagement}
         setShowGroupManagement={setShowGroupManagement}
@@ -2156,14 +2161,13 @@ export default function Main() {
         handleDeleteGroup={handleDeleteGroup}
       />
 
-      {/* Settings Modal (with integrated Menu) */}
       {showSettings && (
         <Settings
           onBack={() => {
             setShowSettings(false);
             setIsSettingsFullScreen(false);
             setGroupInitialSection(undefined);
-            loadAttendanceData(); // Refresh data when closing
+            loadAttendanceData();
           }}
           isFullScreen={isSettingsFullScreen}
           onToggleFullScreen={() => setIsSettingsFullScreen((prev) => !prev)}
@@ -2246,7 +2250,6 @@ export default function Main() {
         />
       )}
 
-      {/* Delete Group Confirmation Dialog */}
       <DeleteConfirmationModal
         showDeleteConfirmation={showDeleteConfirmation}
         groupToDelete={groupToDelete}
