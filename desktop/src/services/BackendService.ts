@@ -84,12 +84,8 @@ export class BackendService {
   private isConnecting = false;
   private connectionPromise: Promise<void> | null = null;
   private enableLivenessDetection: boolean = (() => {
-    // Initialize from localStorage if available, default to true
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("suri_enable_spoof_detection");
-      return saved !== null ? saved === "true" : true;
-    }
-    return true;
+    const saved = localStorage.getItem("suri_enable_spoof_detection");
+    return saved !== null ? saved === "true" : true;
   })();
 
   constructor(config?: Partial<BackendConfig>) {

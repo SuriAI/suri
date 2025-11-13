@@ -1,5 +1,3 @@
-// Canvas overlay rendering utilities
-
 import type { DetectionResult } from "../types";
 import type { ExtendedFaceRecognitionResponse } from "../index";
 import type { QuickSettings } from "../../settings";
@@ -14,10 +12,8 @@ export const getFaceColor = (
 ) => {
   const isRecognized = recognitionEnabled && recognitionResult?.person_id;
 
-  if (isRecognized) return "#00ff41"; // Green for recognized faces
-
-  // All unknown/unrecognized faces should be red, regardless of liveness status
-  return "#ff0000"; // Red for all unknown faces
+  if (isRecognized) return "#00ff41";
+  return "#ff0000";
 };
 
 export const drawBoundingBox = (
@@ -30,10 +26,8 @@ export const drawBoundingBox = (
   const width = x2 - x1;
   const height = y2 - y1;
 
-  // Ultra minimalist full box with sharp corners
   ctx.lineWidth = 1.5;
   ctx.lineCap = "square";
-
   ctx.beginPath();
   ctx.rect(x1, y1, width, height);
   ctx.stroke();
@@ -298,13 +292,14 @@ export const drawOverlays = ({
 
   if (!video || !overlayCanvas || !currentDetections) return;
 
-  // OPTIMIZATION: Reuse canvas context with optimal settings
   const ctx = overlayCanvas.getContext("2d", {
     alpha: true,
     willReadFrequently: false,
-    desynchronized: true, // Enable desynchronized hint for better performance
+    desynchronized: true,
   });
   if (!ctx) return;
+
+  ctx.imageSmoothingEnabled = false;
 
   if (!isStreaming || !currentDetections.faces?.length) {
     ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
@@ -317,20 +312,20 @@ export const drawOverlays = ({
   const displayWidth = Math.round(rect.width);
   const displayHeight = Math.round(rect.height);
 
-  // OPTIMIZATION: Batch DOM writes - only update if size changed
-  if (
-    overlayCanvas.width !== displayWidth ||
-    overlayCanvas.height !== displayHeight
-  ) {
+  const currentWidth = overlayCanvas.width;
+  const currentHeight = overlayCanvas.height;
+  
+  if (currentWidth !== displayWidth || currentHeight !== displayHeight) {
     overlayCanvas.width = displayWidth;
     overlayCanvas.height = displayHeight;
-    overlayCanvas.style.width = `${displayWidth}px`;
-    overlayCanvas.style.height = `${displayHeight}px`;
+    if (overlayCanvas.style.width !== `${displayWidth}px` || 
+        overlayCanvas.style.height !== `${displayHeight}px`) {
+      overlayCanvas.style.width = `${displayWidth}px`;
+      overlayCanvas.style.height = `${displayHeight}px`;
+    }
   }
 
-  // OPTIMIZATION: Save/restore context state only once at start
   ctx.save();
-
   ctx.clearRect(0, 0, displayWidth, displayHeight);
 
   const scaleFactors = calculateScaleFactors();
@@ -353,7 +348,6 @@ export const drawOverlays = ({
     )
       return;
 
-    // Mirror X coordinates only if camera mirroring is enabled
     const x1 = quickSettings.cameraMirrored
       ? displayWidth - (bbox.x * scaleX + offsetX) - bbox.width * scaleX
       : bbox.x * scaleX + offsetX;
@@ -366,14 +360,11 @@ export const drawOverlays = ({
     if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2))
       return;
 
-    // CRITICAL: Clamp coordinates to canvas bounds to prevent rendering outside visible area
-    // This ensures accuracy even when faces are at video edges
     const clampedX1 = Math.max(0, Math.min(displayWidth, x1));
     const clampedY1 = Math.max(0, Math.min(displayHeight, y1));
     const clampedX2 = Math.max(0, Math.min(displayWidth, x2));
     const clampedY2 = Math.max(0, Math.min(displayHeight, y2));
 
-    // Skip if bbox is completely outside canvas (edge case handling)
     if (clampedX2 <= clampedX1 || clampedY2 <= clampedY1) return;
 
     const trackId = face.track_id!;
@@ -382,12 +373,9 @@ export const drawOverlays = ({
 
     setupCanvasContext(ctx, color);
     if (quickSettings.showBoundingBoxes) {
-      // Use clamped coordinates to ensure accurate rendering at edges
       drawBoundingBox(ctx, clampedX1, clampedY1, clampedX2, clampedY2);
     }
 
-    // Draw YuNet 5-point landmarks if available and enabled
-    // Pass displayHeight for accurate edge case handling
     if (
       quickSettings.showLandmarks &&
       landmarks_5 &&
@@ -429,26 +417,22 @@ export const drawOverlays = ({
     if (shouldShowLabel) {
       ctx.save();
 
-      // Clamp label position to canvas bounds to ensure visibility at edges
       const labelX = Math.max(4, Math.min(displayWidth - 100, clampedX1 + 4));
       const labelY = Math.max(13, Math.min(displayHeight - 4, clampedY1 - 6));
 
-      // Draw name
       ctx.font = "600 13px system-ui, -apple-system, sans-serif";
       ctx.fillStyle = color;
       ctx.fillText(label, labelX, labelY);
 
-      // Draw similarity percentage beside the name if available
       if (similarityScore) {
-        // Measure name width to position percentage next to it
         const nameWidth = ctx.measureText(label).width;
-        const percentageX = labelX + nameWidth + 6; // 6px spacing
+        const percentageX = labelX + nameWidth + 6;
 
         ctx.font = "500 11px system-ui, -apple-system, sans-serif";
-        ctx.globalAlpha = 0.8; // Slightly transparent
+        ctx.globalAlpha = 0.8;
         ctx.fillStyle = color;
         ctx.fillText(`${similarityScore}%`, percentageX, labelY);
-        ctx.globalAlpha = 1.0; // Reset alpha
+        ctx.globalAlpha = 1.0;
       }
 
       ctx.restore();
@@ -466,11 +450,9 @@ export const drawOverlays = ({
         const remainingMs = cooldownMs - timeSinceStart;
         const remainingCooldownSeconds = Math.floor(remainingMs / 1000);
 
-        // Show "Done" while cooldown is active, but hide when showing 0s for better UX
         if (timeSinceStart < cooldownMs && remainingCooldownSeconds > 0) {
           ctx.save();
 
-          // Use clamped coordinates for center calculation to ensure accurate positioning at edges
           const centerX = (clampedX1 + clampedX2) / 2;
           const centerY = (clampedY1 + clampedY2) / 2;
 
@@ -488,6 +470,5 @@ export const drawOverlays = ({
     ctx.shadowBlur = 0;
   });
 
-  // OPTIMIZATION: Restore context state once at end
   ctx.restore();
 };
