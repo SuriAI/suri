@@ -269,4 +269,3 @@ class DeepSort:
     def get_track_count(self) -> int:
         """Get number of active tracks"""
         return len(self.tracks)
-

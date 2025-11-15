@@ -39,22 +39,20 @@ class FaceTracker:
 
         dets = []
         for face in face_detections:
-            bbox = face.get("bbox", face.get("box", {}))
+            bbox = face.get("bbox", {})
 
-            if isinstance(bbox, dict):
-                x = bbox.get("x", 0)
-                y = bbox.get("y", 0)
-                width = bbox.get("width", 0)
-                height = bbox.get("height", 0)
-            elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
-                x, y, width, height = bbox[:4]
-            else:
+            if not isinstance(bbox, dict):
                 logger.warning(f"Invalid bbox format: {bbox}")
                 continue
 
+            x = bbox.get("x", 0)
+            y = bbox.get("y", 0)
+            width = bbox.get("width", 0)
+            height = bbox.get("height", 0)
+
             x1, y1 = x, y
             x2, y2 = x + width, y + height
-            score = face.get("confidence", face.get("score", 1.0))
+            score = face.get("confidence", 1.0)
 
             dets.append([x1, y1, x2, y2, score])
 
@@ -114,4 +112,3 @@ class FaceTracker:
     def get_active_track_count(self) -> int:
         """Get number of active tracks"""
         return self.tracker.get_track_count()
-

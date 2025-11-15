@@ -15,18 +15,16 @@ def deduplicate_detections(face_detections: List[Dict]) -> List[Dict]:
 
     for detection in face_detections:
         bbox = detection.get("bbox", {})
-        if isinstance(bbox, dict):
-            bbox_key = (
-                bbox.get("x", 0),
-                bbox.get("y", 0),
-                bbox.get("width", 0),
-                bbox.get("height", 0),
-            )
-        elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
-            bbox_key = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
-        else:
+        if not isinstance(bbox, dict):
             deduplicated_detections.append(detection)
             continue
+
+        bbox_key = (
+            bbox.get("x", 0),
+            bbox.get("y", 0),
+            bbox.get("width", 0),
+            bbox.get("height", 0),
+        )
 
         track_id = detection.get("track_id", None)
         if track_id is not None:
@@ -95,19 +93,11 @@ def validate_detection(
         return False, None
 
     bbox = detection.get("bbox", {})
-    if not bbox:
+    if not bbox or not isinstance(bbox, dict):
         return False, None
 
-    # Handle dict format: {"x": x, "y": y, "width": w, "height": h}
-    if isinstance(bbox, dict):
-        w = int(bbox.get("width", 0))
-        h = int(bbox.get("height", 0))
-    # Handle list/tuple format: [x, y, width, height]
-    elif isinstance(bbox, (list, tuple)) and len(bbox) >= 4:
-        w = int(bbox[2])
-        h = int(bbox[3])
-    else:
-        return False, None
+    w = int(bbox.get("width", 0))
+    h = int(bbox.get("height", 0))
 
     if w <= 0 or h <= 0:
         return False, None

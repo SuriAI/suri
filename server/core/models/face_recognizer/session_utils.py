@@ -49,4 +49,3 @@ def init_face_recognizer_session(
     except Exception as e:
         logger.error(f"Failed to initialize face recognizer model: {e}")
         raise
-
