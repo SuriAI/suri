@@ -114,4 +114,3 @@ class Track:
             avg_feature = avg_feature / norm
 
         return avg_feature
-

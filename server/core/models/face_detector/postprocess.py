@@ -61,5 +61,5 @@ def process_detection(
                 "is_real": False,
                 "status": "too_small",
             }
-            
+
     return detection

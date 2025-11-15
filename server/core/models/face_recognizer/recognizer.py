@@ -75,9 +75,7 @@ class FaceRecognizer:
 
         # Preprocessing Layer: Align and preprocess
         aligned_face = align_face(image, landmarks, self.input_size)
-        input_tensor = preprocess_image(
-            aligned_face, self.INPUT_MEAN, self.INPUT_STD
-        )
+        input_tensor = preprocess_image(aligned_face, self.INPUT_MEAN, self.INPUT_STD)
 
         # Inference Layer: Run model
         feeds = {self.input_name: input_tensor}
@@ -105,9 +103,7 @@ class FaceRecognizer:
             return []
 
         # Preprocessing Layer: Batch preprocessing
-        batch_input = preprocess_batch(
-            aligned_faces, self.INPUT_MEAN, self.INPUT_STD
-        )
+        batch_input = preprocess_batch(aligned_faces, self.INPUT_MEAN, self.INPUT_STD)
 
         # Inference Layer: Batch inference
         feeds = {self.input_name: batch_input}
@@ -184,7 +180,9 @@ class FaceRecognizer:
         def _recognize():
             try:
                 embedding = self._extract_embedding(image, landmarks_5)
-                person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
+                person_id, similarity = self._find_best_match(
+                    embedding, allowed_person_ids
+                )
 
                 return {
                     "person_id": person_id,
@@ -256,18 +254,16 @@ class FaceRecognizer:
             for face in face_detections:
                 bbox = face.get("bbox")
 
-                if isinstance(bbox, dict):
-                    bbox_list = [
-                        bbox.get("x", 0),
-                        bbox.get("y", 0),
-                        bbox.get("width", 0),
-                        bbox.get("height", 0),
-                    ]
-                elif isinstance(bbox, (list, tuple)):
-                    bbox_list = list(bbox[:4])
-                else:
+                if not isinstance(bbox, dict):
                     logger.warning(f"Invalid bbox format: {bbox}")
                     continue
+
+                bbox_list = [
+                    bbox.get("x", 0),
+                    bbox.get("y", 0),
+                    bbox.get("width", 0),
+                    bbox.get("height", 0),
+                ]
 
                 face_data = {"bbox": bbox_list}
 
@@ -394,4 +390,3 @@ class FaceRecognizer:
         """Invalidate cache without refreshing"""
         self._persons_cache = None
         self._cache_timestamp = 0
-

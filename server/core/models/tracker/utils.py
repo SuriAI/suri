@@ -22,7 +22,9 @@ def iou_batch(bb_test: np.ndarray, bb_gt: np.ndarray) -> np.ndarray:
     h = np.maximum(0.0, yy2 - yy1)
     wh = w * h
 
-    area_test = (bb_test[..., 2] - bb_test[..., 0]) * (bb_test[..., 3] - bb_test[..., 1])
+    area_test = (bb_test[..., 2] - bb_test[..., 0]) * (
+        bb_test[..., 3] - bb_test[..., 1]
+    )
     area_gt = (bb_gt[..., 2] - bb_gt[..., 0]) * (bb_gt[..., 3] - bb_gt[..., 1])
 
     return wh / (area_test + area_gt - wh)
@@ -60,4 +62,3 @@ def cosine_distance(features: np.ndarray, gallery: np.ndarray) -> np.ndarray:
     gallery = gallery / (np.linalg.norm(gallery, axis=1, keepdims=True) + 1e-6)
     similarity = np.dot(features, gallery.T)
     return 1.0 - similarity
-

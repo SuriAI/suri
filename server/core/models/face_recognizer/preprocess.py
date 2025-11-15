@@ -6,17 +6,19 @@ from typing import List, Tuple
 # Reference points for face alignment (112x112 standard)
 REFERENCE_POINTS = np.array(
     [
-        [38.2946, 51.6963], # left eye
-        [73.5318, 51.5014], # right eye
-        [56.0252, 71.7366], # nose
-        [41.5493, 92.3655], # left mouth
-        [70.7299, 92.2041], # right mouth
+        [38.2946, 51.6963],  # left eye
+        [73.5318, 51.5014],  # right eye
+        [56.0252, 71.7366],  # nose
+        [41.5493, 92.3655],  # left mouth
+        [70.7299, 92.2041],  # right mouth
     ],
     dtype=np.float32,
 )
 
 
-def align_face(image: np.ndarray, landmarks: np.ndarray, input_size: Tuple[int, int]) -> np.ndarray:
+def align_face(
+    image: np.ndarray, landmarks: np.ndarray, input_size: Tuple[int, int]
+) -> np.ndarray:
     """
     Align face using similarity transformation based on 5 landmarks.
 
@@ -51,7 +53,9 @@ def align_face(image: np.ndarray, landmarks: np.ndarray, input_size: Tuple[int, 
     return aligned_face
 
 
-def preprocess_image(aligned_face: np.ndarray, input_mean: float = 127.5, input_std: float = 127.5) -> np.ndarray:
+def preprocess_image(
+    aligned_face: np.ndarray, input_mean: float = 127.5, input_std: float = 127.5
+) -> np.ndarray:
     """
     Preprocess aligned face for model inference.
 
@@ -121,4 +125,3 @@ def preprocess_batch(
         preprocess_image(face, input_mean, input_std)[0] for face in aligned_faces
     ]
     return np.stack(batch_tensors, axis=0)
-

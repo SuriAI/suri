@@ -97,4 +97,3 @@ def find_best_match(
         return best_person_id, best_similarity
     else:
         return None, best_similarity
-
