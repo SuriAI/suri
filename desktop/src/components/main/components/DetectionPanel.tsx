@@ -10,7 +10,6 @@ interface DetectionPanelProps {
   recognitionEnabled: boolean;
   trackedFaces: Map<string, TrackedFace>;
   groupMembers: AttendanceMember[];
-  enableSpoofDetection: boolean;
 }
 
 // Memoized individual detection card - compact border-status design with enhanced spoof UI
@@ -143,7 +142,6 @@ export function DetectionPanel({
   recognitionEnabled,
   trackedFaces,
   groupMembers,
-  enableSpoofDetection,
 }: DetectionPanelProps) {
   // Create display name map for members
   const displayNameMap = useMemo(() => {
@@ -156,25 +154,13 @@ export function DetectionPanel({
     [trackedFaces],
   );
 
-  // Filter faces: if spoof detection is OFF, only show recognized faces
-  // If spoof detection is ON, show all faces (current behavior)
+  // Show all faces (including unknown faces)
   // Sort: LIVE faces always on top
   const filteredFaces = useMemo(() => {
     if (!currentDetections?.faces) return [];
 
-    let faces: DetectionResult["faces"] = [];
-
-    if (!enableSpoofDetection) {
-      // Only show recognized faces when spoof detection is off
-      faces = currentDetections.faces.filter((face) => {
-        const trackId = face.track_id!;
-        const recognitionResult = currentRecognitionResults.get(trackId);
-        return recognitionEnabled && !!recognitionResult?.person_id;
-      });
-    } else {
-      // Show all faces when spoof detection is on
-      faces = currentDetections.faces;
-    }
+    // Show all faces
+    const faces = currentDetections.faces;
 
     // Sort: LIVE faces (status === "live") always on top
     return [...faces].sort((a, b) => {
@@ -187,9 +173,6 @@ export function DetectionPanel({
     });
   }, [
     currentDetections?.faces,
-    currentRecognitionResults,
-    recognitionEnabled,
-    enableSpoofDetection,
   ]);
 
   const hasDetections = filteredFaces.length > 0;

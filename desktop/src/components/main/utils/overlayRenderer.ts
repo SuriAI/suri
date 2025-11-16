@@ -12,8 +12,30 @@ export const getFaceColor = (
 ) => {
   const isRecognized = recognitionEnabled && recognitionResult?.person_id;
 
-  if (isRecognized) return "#00ff41";
-  return "#ff0000";
+  if (isRecognized) return "#00ff41"; // Green for recognized faces
+  return "#ff0000"; // Red for all unknown faces
+};
+
+// Helper to draw rounded rectangle (manual implementation for compatibility)
+const drawRoundedRect = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) => {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
 };
 
 export const drawBoundingBox = (
@@ -25,11 +47,11 @@ export const drawBoundingBox = (
 ) => {
   const width = x2 - x1;
   const height = y2 - y1;
+  const cornerRadius = 8; // Modern rounded corners
 
-  ctx.lineWidth = 1.5;
-  ctx.lineCap = "square";
+  // Draw rounded rectangle
   ctx.beginPath();
-  ctx.rect(x1, y1, width, height);
+  drawRoundedRect(ctx, x1, y1, width, height, cornerRadius);
   ctx.stroke();
 };
 
@@ -69,43 +91,17 @@ export const drawLandmarks = (
             return;
           }
 
+          // Simple landmarks with glow matching bbox color
           ctx.save();
+
+          ctx.fillStyle = color;
           ctx.shadowColor = color;
-          ctx.shadowBlur = 8;
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1.5;
-          ctx.lineCap = "square";
+          ctx.shadowBlur = 8; // Stronger glow to match bounding box
+
           ctx.beginPath();
           ctx.arc(x, y, 3, 0, 2 * Math.PI);
-          ctx.stroke();
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.arc(x, y, 1, 0, 2 * Math.PI);
           ctx.fill();
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.6;
-          ctx.beginPath();
-          const hStart = Math.max(0, x - 5);
-          const hMid1 = Math.max(0, x - 2);
-          const hMid2 = Math.min(displayWidth, x + 2);
-          const hEnd = Math.min(displayWidth, x + 5);
-          ctx.moveTo(hStart, y);
-          ctx.lineTo(hMid1, y);
-          ctx.moveTo(hMid2, y);
-          ctx.lineTo(hEnd, y);
-          ctx.stroke();
-          ctx.beginPath();
-          const vStart = Math.max(0, y - 5);
-          const vMid1 = Math.max(0, y - 2);
-          const vMid2 = Math.min(displayHeight, y + 2);
-          const vEnd = Math.min(displayHeight, y + 5);
-          ctx.moveTo(x, vStart);
-          ctx.lineTo(x, vMid1);
-          ctx.moveTo(x, vMid2);
-          ctx.lineTo(x, vEnd);
-          ctx.stroke();
+
           ctx.restore();
         }
       }
@@ -191,43 +187,17 @@ export const drawLandmarks = (
         return;
       }
 
+      // Simple landmarks with glow matching bbox color
       ctx.save();
+
+      ctx.fillStyle = color;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 8;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.lineCap = "square";
+      ctx.shadowBlur = 8; // Stronger glow to match bounding box
+
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, 1, 0, 2 * Math.PI);
       ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.6;
-      ctx.beginPath();
-      const hStart = Math.max(0, x - 5);
-      const hMid1 = Math.max(0, x - 2);
-      const hMid2 = Math.min(displayWidth, x + 2);
-      const hEnd = Math.min(displayWidth, x + 5);
-      ctx.moveTo(hStart, y);
-      ctx.lineTo(hMid1, y);
-      ctx.moveTo(hMid2, y);
-      ctx.lineTo(hEnd, y);
-      ctx.stroke();
-      ctx.beginPath();
-      const vStart = Math.max(0, y - 5);
-      const vMid1 = Math.max(0, y - 2);
-      const vMid2 = Math.min(displayHeight, y + 2);
-      const vEnd = Math.min(displayHeight, y + 5);
-      ctx.moveTo(x, vStart);
-      ctx.lineTo(x, vMid1);
-      ctx.moveTo(x, vMid2);
-      ctx.lineTo(x, vEnd);
-      ctx.stroke();
+
       ctx.restore();
     }
   });
@@ -239,11 +209,11 @@ export const setupCanvasContext = (
 ) => {
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
-  ctx.lineWidth = 1.5;
-  ctx.shadowColor = "transparent";
-  ctx.shadowBlur = 0;
-  ctx.lineCap = "square";
-  ctx.lineJoin = "miter";
+  ctx.lineWidth = 2;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 8;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 };
 
 interface DrawOverlaysParams {

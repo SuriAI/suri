@@ -2100,7 +2100,6 @@ export default function Main() {
           handleSelectGroup={handleSelectGroup}
           setShowGroupManagement={setShowGroupManagement}
           setShowSettings={setShowSettings}
-          enableSpoofDetection={enableSpoofDetection}
           onOpenSettingsForRegistration={handleOpenSettingsForRegistration}
         />
       </div>
