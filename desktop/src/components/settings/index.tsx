@@ -215,7 +215,8 @@ export const Settings: React.FC<SettingsProps> = ({
                 placeholder="Select group…"
                 emptyMessage="No groups available"
                 maxHeight={256}
-                allowClear={true}
+                allowClear={groups.length === 0}
+                showPlaceholderOption={groups.length === 0}
               />
             </div>
             {/* Create Group Button - Opens Group section with create modal */}
@@ -334,7 +335,8 @@ export const Settings: React.FC<SettingsProps> = ({
               )}
             </h2>
             {activeSection === "group" &&
-              groupInitialSection === "members" && (
+              groupInitialSection === "members" &&
+              currentGroup && (
                 <div className="flex items-center">
                   <RegistrationStatus members={members} />
                 </div>
