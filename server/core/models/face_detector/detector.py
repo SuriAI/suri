@@ -18,8 +18,6 @@ class FaceDetector:
         top_k: int,
         min_face_size: int,
     ):
-        self.model_path = model_path
-        self.input_size = input_size
         self.detector = None
 
         # Set attributes via setters
@@ -69,12 +67,6 @@ class FaceDetector:
             detections.append(detection)
 
         return detections
-
-    def set_input_size(self, input_size):
-        """Update input size"""
-        self.input_size = input_size
-        if self.detector:
-            self.detector.setInputSize(input_size)
 
     def set_score_threshold(self, threshold):
         """Update confidence threshold"""
