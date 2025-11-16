@@ -903,26 +903,6 @@ export function FaceCapture({
                           >
                             {member.displayName}
                           </div>
-                          {hasEmbeddings && (
-                            <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                              <svg
-                                className="w-3 h-3 text-emerald-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                              <span className="text-xs font-medium text-emerald-300">
-                                Registered
-                              </span>
-                            </span>
-                          )}
                         </div>
                         {member.role && (
                           <div className="text-xs text-white/40 truncate mt-0.5">
@@ -930,11 +910,31 @@ export function FaceCapture({
                           </div>
                         )}
                       </div>
-                      {isSelected && (
-                        <div className="flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {hasEmbeddings && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                            <svg
+                              className="w-3 h-3 text-emerald-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            <span className="text-xs font-medium text-emerald-300">
+                              Registered
+                            </span>
+                          </span>
+                        )}
+                        {isSelected && (
                           <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                     {hasEmbeddings && isSelected && (
                       <div
