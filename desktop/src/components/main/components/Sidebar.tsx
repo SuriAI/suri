@@ -46,7 +46,6 @@ interface SidebarProps {
 
   // Settings
   setShowSettings: (show: boolean) => void;
-  enableSpoofDetection: boolean;
   onOpenSettingsForRegistration?: () => void;
 }
 
@@ -71,7 +70,6 @@ export const Sidebar = memo(function Sidebar({
   handleSelectGroup,
   setShowGroupManagement,
   setShowSettings,
-  enableSpoofDetection,
   onOpenSettingsForRegistration,
 }: SidebarProps) {
   // Persistent state from localStorage
@@ -322,7 +320,6 @@ export const Sidebar = memo(function Sidebar({
                   recognitionEnabled={recognitionEnabled}
                   trackedFaces={trackedFaces}
                   groupMembers={groupMembers}
-                  enableSpoofDetection={enableSpoofDetection}
                 />
               </div>
             </div>
