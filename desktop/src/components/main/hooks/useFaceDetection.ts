@@ -4,17 +4,17 @@ import type { DetectionResult } from "../types";
 import { useDetectionStore } from "../stores/detectionStore";
 
 interface UseFaceDetectionOptions {
-  backendServiceRef: React.MutableRefObject<BackendService | null>;
-  isScanningRef: React.MutableRefObject<boolean>;
-  isStreamingRef: React.MutableRefObject<boolean>;
+  backendServiceRef: React.RefObject<BackendService | null>;
+  isScanningRef: React.RefObject<boolean>;
+  isStreamingRef: React.RefObject<boolean>;
   captureFrame: () => Promise<ArrayBuffer | null>;
-  lastDetectionFrameRef: React.MutableRefObject<ArrayBuffer | null>;
-  frameCounterRef: React.MutableRefObject<number>;
-  skipFramesRef: React.MutableRefObject<number>;
-  lastFrameTimestampRef: React.MutableRefObject<number>;
-  lastDetectionRef: React.MutableRefObject<DetectionResult | null>;
-  processCurrentFrameRef: React.MutableRefObject<() => Promise<void>>;
-  fpsTrackingRef: React.MutableRefObject<{
+  lastDetectionFrameRef: React.RefObject<ArrayBuffer | null>;
+  frameCounterRef: React.RefObject<number>;
+  skipFramesRef: React.RefObject<number>;
+  lastFrameTimestampRef: React.RefObject<number>;
+  lastDetectionRef: React.RefObject<DetectionResult | null>;
+  processCurrentFrameRef: React.RefObject<() => Promise<void>>;
+  fpsTrackingRef: React.RefObject<{
     timestamps: number[];
     maxSamples: number;
     lastUpdateTime: number;
@@ -36,36 +36,36 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
       return;
     }
 
-    frameCounterRef.current += 1;
+    (frameCounterRef as React.MutableRefObject<number>).current += 1;
 
-    if (frameCounterRef.current % (skipFramesRef.current + 1) !== 0) {
-      requestAnimationFrame(() => processCurrentFrameRef.current());
+    if ((frameCounterRef.current ?? 0) % ((skipFramesRef.current ?? 0) + 1) !== 0) {
+      requestAnimationFrame(() => processCurrentFrameRef.current?.());
       return;
     }
 
     try {
       const frameData = await captureFrame();
       if (!frameData) {
-        requestAnimationFrame(() => processCurrentFrameRef.current());
+        requestAnimationFrame(() => processCurrentFrameRef.current?.());
         return;
       }
 
-      lastDetectionFrameRef.current = frameData;
+      (lastDetectionFrameRef as React.MutableRefObject<ArrayBuffer | null>).current = frameData;
 
       backendServiceRef.current
         .sendDetectionRequest(frameData)
         .catch((error) => {
           console.error("❌ WebSocket detection request failed:", error);
-          requestAnimationFrame(() => processCurrentFrameRef.current());
+          requestAnimationFrame(() => processCurrentFrameRef.current?.());
         });
     } catch (error) {
       console.error("❌ Frame capture failed:", error);
-      requestAnimationFrame(() => processCurrentFrameRef.current());
+      requestAnimationFrame(() => processCurrentFrameRef.current?.());
     }
   }, [captureFrame, backendServiceRef, isScanningRef, isStreamingRef, frameCounterRef, lastDetectionFrameRef, processCurrentFrameRef, skipFramesRef]);
 
   useEffect(() => {
-    processCurrentFrameRef.current = processCurrentFrame;
+    (processCurrentFrameRef as React.MutableRefObject<() => Promise<void>>).current = processCurrentFrame;
   }, [processCurrentFrame, processCurrentFrameRef]);
 
   return {

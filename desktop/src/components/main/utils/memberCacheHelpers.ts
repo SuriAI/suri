@@ -13,13 +13,14 @@ import type { AttendanceGroup, AttendanceMember } from "../../../types/recogniti
 export async function getMemberFromCache(
   personId: string,
   currentGroup: AttendanceGroup | null,
-  memberCacheRef: React.MutableRefObject<Map<string, AttendanceMember | null>>
+  memberCacheRef: React.RefObject<Map<string, AttendanceMember | null>>
 ): Promise<{ member: AttendanceMember | null; memberName: string } | null> {
   try {
+    if (!memberCacheRef.current) return null;
     let member = memberCacheRef.current.get(personId);
     if (!member && member !== null) {
       member = await attendanceManager.getMember(personId);
-      memberCacheRef.current.set(personId, member || null);
+      (memberCacheRef as React.MutableRefObject<Map<string, AttendanceMember | null>>).current.set(personId, member || null);
     }
 
     // If we have a current group, validate that the member exists and belongs to it
@@ -40,7 +41,9 @@ export async function getMemberFromCache(
       return { member: member || null, memberName };
     }
   } catch {
-    memberCacheRef.current.set(personId, null);
+    if (memberCacheRef.current) {
+      (memberCacheRef as React.MutableRefObject<Map<string, AttendanceMember | null>>).current.set(personId, null);
+    }
     // In original, when no group, catch doesn't return null - it just sets cache to null
     // But since we're in a try-catch, we need to return something
     // Match original: if no group, return with personId as name; if group, return null

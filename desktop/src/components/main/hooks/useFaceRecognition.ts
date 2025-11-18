@@ -13,10 +13,10 @@ import { useAttendanceStore } from "../stores/attendanceStore";
 import { useUIStore } from "../stores/uiStore";
 
 interface UseFaceRecognitionOptions {
-  backendServiceRef: React.MutableRefObject<BackendService | null>;
-  currentGroupRef: React.MutableRefObject<AttendanceGroup | null>;
-  memberCacheRef: React.MutableRefObject<Map<string, AttendanceMember | null>>;
-  calculateAngleConsistencyRef: React.MutableRefObject<
+  backendServiceRef: React.RefObject<BackendService | null>;
+  currentGroupRef: React.RefObject<AttendanceGroup | null>;
+  memberCacheRef: React.RefObject<Map<string, AttendanceMember | null>>;
+  calculateAngleConsistencyRef: React.RefObject<
     (
       history: Array<{
         timestamp: number;
@@ -25,8 +25,8 @@ interface UseFaceRecognitionOptions {
       }>,
     ) => number
   >;
-  persistentCooldownsRef: React.MutableRefObject<Map<string, import("../types").CooldownInfo>>;
-  loadAttendanceDataRef: React.MutableRefObject<() => Promise<void>>;
+  persistentCooldownsRef: React.RefObject<Map<string, import("../types").CooldownInfo>>;
+  loadAttendanceDataRef: React.RefObject<() => Promise<void>>;
 }
 
 export function useFaceRecognition(options: UseFaceRecognitionOptions) {
@@ -121,7 +121,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                   const currentLivenessStatus = face.liveness?.status;
                   const existingTrack = newTracked.get(trackedFaceId);
 
-                  if (existingTrack) {
+                      if (existingTrack) {
                     existingTrack.lastSeen = currentTime;
                     existingTrack.confidence = Math.max(
                       existingTrack.confidence,
@@ -137,9 +137,9 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                     );
                     existingTrack.occlusionCount = 0;
                     existingTrack.angleConsistency =
-                      calculateAngleConsistencyRef.current(
+                      calculateAngleConsistencyRef.current?.(
                         existingTrack.trackingHistory,
-                      );
+                      ) ?? 1.0;
                     existingTrack.livenessStatus = currentLivenessStatus;
 
                     newTracked.set(existingTrack.id, existingTrack);
@@ -218,7 +218,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                                 ...existing,
                                 lastKnownBbox: face.bbox,
                               });
-                              persistentCooldownsRef.current = newPersistent;
+                              (persistentCooldownsRef as React.MutableRefObject<Map<string, import("../types").CooldownInfo>>).current = newPersistent;
                               return newPersistent;
                             }
                             return prev;
@@ -233,7 +233,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
 
                       const logTime = Date.now();
                       const existingInState =
-                        persistentCooldownsRef.current.get(cooldownKey);
+                        persistentCooldownsRef.current?.get(cooldownKey);
                       const existingCooldownSeconds =
                         existingInState?.cooldownDurationSeconds ??
                         attendanceCooldownSeconds;
@@ -256,7 +256,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                                 attendanceCooldownSeconds,
                             };
                             newPersistent.set(cooldownKey, cooldownData);
-                            persistentCooldownsRef.current = newPersistent;
+                            (persistentCooldownsRef as React.MutableRefObject<Map<string, import("../types").CooldownInfo>>).current = newPersistent;
                             return newPersistent;
                           });
                         });
@@ -271,7 +271,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                                 memberName: memberName,
                                 lastKnownBbox: face.bbox,
                               });
-                              persistentCooldownsRef.current = newPersistent;
+                              (persistentCooldownsRef as React.MutableRefObject<Map<string, import("../types").CooldownInfo>>).current = newPersistent;
                             }
                             return newPersistent;
                           });
