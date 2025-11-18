@@ -9,9 +9,9 @@ import { useUIStore } from "../stores/uiStore";
 interface UseOverlayRenderingOptions {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   overlayCanvasRef: React.RefObject<HTMLCanvasElement | null>;
-  animationFrameRef: React.MutableRefObject<number | undefined>;
-  videoRectRef: React.MutableRefObject<DOMRect | null>;
-  lastVideoRectUpdateRef: React.MutableRefObject<number>;
+  animationFrameRef: React.RefObject<number | undefined>;
+  videoRectRef: React.RefObject<DOMRect | null>;
+  lastVideoRectUpdateRef: React.RefObject<number>;
 }
 
 export function useOverlayRendering(options: UseOverlayRenderingOptions) {
@@ -54,9 +54,9 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     if (!video) return null;
 
     const now = Date.now();
-    if (!videoRectRef.current || now - lastVideoRectUpdateRef.current > 200) {
-      videoRectRef.current = video.getBoundingClientRect();
-      lastVideoRectUpdateRef.current = now;
+    if (!videoRectRef.current || now - (lastVideoRectUpdateRef.current ?? 0) > 200) {
+      (videoRectRef as React.MutableRefObject<DOMRect | null>).current = video.getBoundingClientRect();
+      (lastVideoRectUpdateRef as React.MutableRefObject<number>).current = now;
     }
 
     return videoRectRef.current;
@@ -157,7 +157,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
         }
       }
       if (isStreaming) {
-        animationFrameRef.current = requestAnimationFrame(animate);
+        (animationFrameRef as React.MutableRefObject<number | undefined>).current = requestAnimationFrame(animate);
       }
       return;
     }
@@ -169,7 +169,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
       }
       lastDetectionHashRef.current = "";
       if (isStreaming) {
-        animationFrameRef.current = requestAnimationFrame(animate);
+        (animationFrameRef as React.MutableRefObject<number | undefined>).current = requestAnimationFrame(animate);
       }
       return;
     }
@@ -231,7 +231,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     }
 
     if (isStreaming) {
-      animationFrameRef.current = requestAnimationFrame(animate);
+      (animationFrameRef as React.MutableRefObject<number | undefined>).current = requestAnimationFrame(animate);
     }
   }, [
     isStreaming,

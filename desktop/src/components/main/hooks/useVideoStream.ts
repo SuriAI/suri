@@ -5,11 +5,11 @@ import { useUIStore } from "../stores/uiStore";
 interface UseVideoStreamOptions {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  isStreamingRef: React.MutableRefObject<boolean>;
-  isScanningRef: React.MutableRefObject<boolean>;
-  videoRectRef: React.MutableRefObject<DOMRect | null>;
-  lastVideoRectUpdateRef: React.MutableRefObject<number>;
-  isStartingRef: React.MutableRefObject<boolean>;
+  isStreamingRef: React.RefObject<boolean>;
+  isScanningRef: React.RefObject<boolean>;
+  videoRectRef: React.RefObject<DOMRect | null>;
+  lastVideoRectUpdateRef: React.RefObject<number>;
+  isStartingRef: React.RefObject<boolean>;
 }
 
 export function useVideoStream(options: UseVideoStreamOptions) {
@@ -39,7 +39,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
         setCameraActive((prevActive: boolean) => {
           if (prevActive !== shouldBeActive) {
             if (shouldBeActive && !isStreamingRef.current) {
-              isStreamingRef.current = true;
+              (isStreamingRef as React.MutableRefObject<boolean>).current = true;
               setIsStreaming(true);
             } else if (!shouldBeActive && isStreamingRef.current) {
               // Don't stop if we're in the middle of starting (matches original behavior)
@@ -47,9 +47,9 @@ export function useVideoStream(options: UseVideoStreamOptions) {
               if (isStartingRef.current) {
                 return prevActive;
               }
-              isStreamingRef.current = false;
+              (isStreamingRef as React.MutableRefObject<boolean>).current = false;
               setIsStreaming(false);
-              isScanningRef.current = false;
+              (isScanningRef as React.MutableRefObject<boolean>).current = false;
             }
             return shouldBeActive;
           }
@@ -67,8 +67,8 @@ export function useVideoStream(options: UseVideoStreamOptions) {
     const resizeObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
         if (video && videoRectRef.current) {
-          videoRectRef.current = video.getBoundingClientRect();
-          lastVideoRectUpdateRef.current = Date.now();
+          (videoRectRef as React.MutableRefObject<DOMRect | null>).current = video.getBoundingClientRect();
+          (lastVideoRectUpdateRef as React.MutableRefObject<number>).current = Date.now();
         }
       });
     });
