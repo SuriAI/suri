@@ -1,7 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager.js";
-import { getLocalDateString, generateDateRange } from "../../../utils/dateUtils.js";
-import { createDisplayNameMap } from "../../../utils/displayNameUtils.js";
+import { attendanceManager } from "../../../services";
+import {
+  getLocalDateString,
+  generateDateRange,
+  createDisplayNameMap,
+} from "../../../utils";
 import type {
   AttendanceGroup,
   AttendanceReport,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager";
-import { getLocalDateString } from "../../../utils/dateUtils";
+import { attendanceManager } from "../../../services";
+import { getLocalDateString } from "../../../utils";
 import type {
   AttendanceGroup,
   AttendanceMember,

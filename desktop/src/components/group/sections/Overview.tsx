@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager.js";
-import { getLocalDateString } from "../../../utils/dateUtils.js";
+import { attendanceManager } from "../../../services";
+import { getLocalDateString, createDisplayNameMap } from "../../../utils";
 import { StatsCard } from "../shared/StatsCard.js";
-import { createDisplayNameMap } from "../../../utils/displayNameUtils.js";
 import type {
   AttendanceGroup,
   AttendanceMember,

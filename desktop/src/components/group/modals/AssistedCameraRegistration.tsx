@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager";
-import { backendService } from "../../../services/BackendService";
+import { attendanceManager, backendService } from "../../../services";
 import type {
   AttendanceGroup,
   AttendanceMember,

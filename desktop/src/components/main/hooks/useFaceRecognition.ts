@@ -1,16 +1,13 @@
 import { useCallback } from "react";
 import { startTransition } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager";
-import type { BackendService } from "../../../services/BackendService";
+import { attendanceManager } from "../../../services";
+import type { BackendService } from "../../../services";
 import type { AttendanceGroup, AttendanceMember } from "../../../types/recognition";
 import type { DetectionResult } from "../types";
-import type { ExtendedFaceRecognitionResponse } from "../utils/recognitionHelpers";
-import { trimTrackingHistory, areRecognitionMapsEqual } from "../utils/recognitionHelpers";
+import type { ExtendedFaceRecognitionResponse } from "../utils";
+import { trimTrackingHistory, areRecognitionMapsEqual, getMemberFromCache } from "../utils";
 import { NON_LOGGING_ANTISPOOF_STATUSES } from "../constants";
-import { getMemberFromCache } from "../utils/memberCacheHelpers";
-import { useDetectionStore } from "../stores/detectionStore";
-import { useAttendanceStore } from "../stores/attendanceStore";
-import { useUIStore } from "../stores/uiStore";
+import { useDetectionStore, useAttendanceStore, useUIStore } from "../stores";
 
 interface UseFaceRecognitionOptions {
   backendServiceRef: React.RefObject<BackendService | null>;

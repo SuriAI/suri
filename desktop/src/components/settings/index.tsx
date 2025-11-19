@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { backendService } from "../../services/BackendService";
-import { attendanceManager } from "../../services/AttendanceManager";
+import { backendService, attendanceManager } from "../../services";
 import { Display } from "./sections/Display";
 import { Database } from "./sections/Database";
 import { Attendance } from "./sections/Attendance";

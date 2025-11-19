@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager";
+import { attendanceManager } from "../../../services";
 import type { SettingsOverview } from "../types";
 import type {
   AttendanceGroup,

@@ -4,36 +4,45 @@ import {
   useCallback,
 } from "react";
 import { Settings } from "../settings";
-import { attendanceManager } from "../../services/AttendanceManager";
+// Import all services
+import { attendanceManager, BackendService } from "../../services";
+// Import all hooks
+import {
+  useStreamState,
+  useAttendanceCooldown,
+  useVideoStream,
+  useOverlayRendering,
+  useFaceDetection,
+  useFaceRecognition,
+  useFaceTracking,
+  useAttendanceGroups,
+  useBackendService,
+} from "./hooks";
+// Import all utils
+import type { ExtendedFaceRecognitionResponse } from "./utils";
+import {
+  cleanupStream,
+  cleanupVideo,
+  cleanupAnimationFrame,
+  resetFrameCounters,
+  resetLastDetectionRef,
+} from "./utils";
+// Import all stores
+import {
+  useCameraStore,
+  useDetectionStore,
+  useAttendanceStore,
+  useUIStore,
+} from "./stores";
+
 import { ControlBar } from "./components/ControlBar";
 import { VideoCanvas } from "./components/VideoCanvas";
 import { Sidebar } from "./components/Sidebar";
 import { GroupManagementModal } from "./components/GroupManagementModal";
 import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 import type { DetectionResult } from "./types";
-import type { ExtendedFaceRecognitionResponse } from "./utils/recognitionHelpers";
 
 export type { ExtendedFaceRecognitionResponse };
-
-// Import all hooks
-import { useStreamState } from "./hooks/useStreamState";
-import { useAttendanceCooldown } from "./hooks/useAttendanceCooldown";
-import { useVideoStream } from "./hooks/useVideoStream";
-import { useOverlayRendering } from "./hooks/useOverlayRendering";
-import { useFaceDetection } from "./hooks/useFaceDetection";
-import { useFaceRecognition } from "./hooks/useFaceRecognition";
-import { useFaceTracking } from "./hooks/useFaceTracking";
-import { useAttendanceGroups } from "./hooks/useAttendanceGroups";
-import { useBackendService } from "./hooks/useBackendService";
-import { BackendService } from "../../services/BackendService";
-import { cleanupStream, cleanupVideo, cleanupAnimationFrame } from "./utils/cleanupHelpers";
-import { resetFrameCounters, resetLastDetectionRef } from "./utils/stateResetHelpers";
-
-// Stores
-import { useCameraStore } from "./stores/cameraStore";
-import { useDetectionStore } from "./stores/detectionStore";
-import { useAttendanceStore } from "./stores/attendanceStore";
-import { useUIStore } from "./stores/uiStore";
 
 export default function Main() {
   // ===== REFS (Created in main, passed to hooks) =====

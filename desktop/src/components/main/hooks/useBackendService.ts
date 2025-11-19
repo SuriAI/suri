@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from "react";
 import { startTransition } from "react";
-import { BackendService } from "../../../services/BackendService";
+import { BackendService } from "../../../services";
 import type {
   WebSocketDetectionResponse,
   WebSocketConnectionMessage,
@@ -8,11 +8,13 @@ import type {
   DetectionResult,
   WebSocketFaceData,
 } from "../types";
-import { cleanupStream, cleanupVideo, cleanupAnimationFrame } from "../utils/cleanupHelpers";
-import { useCameraStore } from "../stores/cameraStore";
-import { useDetectionStore } from "../stores/detectionStore";
-import { useAttendanceStore } from "../stores/attendanceStore";
-import { useUIStore } from "../stores/uiStore";
+import { cleanupStream, cleanupVideo, cleanupAnimationFrame } from "../utils";
+import {
+  useCameraStore,
+  useDetectionStore,
+  useAttendanceStore,
+  useUIStore,
+} from "../stores";
 
 interface UseBackendServiceOptions {
   backendServiceRef: React.RefObject<BackendService | null>;

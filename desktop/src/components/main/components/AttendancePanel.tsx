@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, memo, useCallback } from "react";
-import { createDisplayNameMap } from "../../../utils/displayNameUtils.js";
+import { createDisplayNameMap } from "../../../utils";
 import { Dropdown } from "../../shared/Dropdown";
 import type {
   AttendanceGroup,

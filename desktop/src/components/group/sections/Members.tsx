@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager.js";
-import { getLocalDateString } from "../../../utils/dateUtils.js";
-import { generateDisplayNames } from "../../../utils/displayNameUtils.js";
+import { attendanceManager } from "../../../services";
+import {
+  getLocalDateString,
+  generateDisplayNames,
+  getStatusLabel,
+  getStatusClassName,
+} from "../../../utils";
 import { RegistrationStatus } from "../../shared/RegistrationStatus.js";
-import { getStatusLabel, getStatusClassName } from "../../../utils/attendanceStatusUtils.js";
 import type {
   AttendanceGroup,
   AttendanceMember,

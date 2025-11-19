@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
-import type { BackendService } from "../../../services/BackendService";
+import type { BackendService } from "../../../services";
 import type { DetectionResult } from "../types";
-import { useDetectionStore } from "../stores/detectionStore";
+import { useDetectionStore } from "../stores";
 
 interface UseFaceDetectionOptions {
   backendServiceRef: React.RefObject<BackendService | null>;
