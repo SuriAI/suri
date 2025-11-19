@@ -11,7 +11,7 @@ import type { ExtendedFaceRecognitionResponse } from "../index";
 import { AttendancePanel } from "./AttendancePanel";
 import { CooldownList } from "./CooldownList";
 import { DetectionPanel } from "./DetectionPanel";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 
 // Get asset path that works in both dev and production (Electron)
 // In Electron with loadFile, we need to use paths relative to the HTML file
@@ -87,7 +87,7 @@ export const Sidebar = memo(function Sidebar({
 
   // Load initial state from store
   useEffect(() => {
-    appStore.getUIState().then((uiState) => {
+    persistentSettings.getUIState().then((uiState) => {
       setIsCollapsed(uiState.sidebarCollapsed);
       const width = Math.max(
         MIN_EXPANDED_WIDTH,
@@ -104,12 +104,16 @@ export const Sidebar = memo(function Sidebar({
 
   // Save state to store
   useEffect(() => {
-    appStore.setUIState({ sidebarCollapsed: isCollapsed }).catch(console.error);
+    persistentSettings
+      .setUIState({ sidebarCollapsed: isCollapsed })
+      .catch(console.error);
   }, [isCollapsed]);
 
   useEffect(() => {
     if (!isResizing) {
-      appStore.setUIState({ sidebarWidth: sidebarWidth }).catch(console.error);
+      persistentSettings
+        .setUIState({ sidebarWidth: sidebarWidth })
+        .catch(console.error);
     }
   }, [sidebarWidth, isResizing]);
 

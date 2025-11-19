@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { attendanceManager } from "../../../services";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 import {
   getLocalDateString,
   generateDateRange,
@@ -154,13 +154,12 @@ export function Reports({
   useEffect(() => {
     const loadViews = async () => {
       try {
-        const parsed = (await appStore.getReportViews(
+        const parsed = (await persistentSettings.getReportViews(
           group.id,
         )) as SavedViewConfig[];
         setViews(parsed);
-        const storedDefaultName = await appStore.getReportDefaultViewName(
-          group.id,
-        );
+        const storedDefaultName =
+          await persistentSettings.getReportDefaultViewName(group.id);
         setDefaultViewName(storedDefaultName);
         if (parsed.length > 0) {
           // Pick default view if stored, else first
@@ -201,7 +200,7 @@ export function Reports({
 
   const saveViewsToStorage = (next: SavedViewConfig[]) => {
     setViews(next);
-    appStore.setReportViews(group.id, next).catch(console.error);
+    persistentSettings.setReportViews(group.id, next).catch(console.error);
   };
 
   // Helpers to determine if current config differs from the selected view (or base defaults)
@@ -612,7 +611,7 @@ export function Reports({
                           setSearch(v.search);
                           // Auto-set default to the selected view
                           setDefaultViewName(v.name);
-                          appStore
+                          persistentSettings
                             .setReportDefaultViewName(group.id, v.name)
                             .catch(console.error);
                         }
@@ -623,7 +622,7 @@ export function Reports({
                         setStatusFilter("all");
                         setSearch("");
                         setDefaultViewName(null);
-                        appStore
+                        persistentSettings
                           .setReportDefaultViewName(group.id, null)
                           .catch(console.error);
                       }

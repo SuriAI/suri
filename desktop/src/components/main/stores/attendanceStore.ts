@@ -5,7 +5,7 @@ import type {
   AttendanceRecord,
 } from "../../../types/recognition";
 import type { CooldownInfo } from "../types";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 
 interface AttendanceState {
   // Group state
@@ -47,9 +47,9 @@ interface AttendanceState {
   setEnableSpoofDetection: (enabled: boolean) => void;
 }
 
-// Load initial settings from store (async, will be set after store loads)
+// Load initial settings from persistent store (async, will be set after store loads)
 const loadInitialSettings = async () => {
-  const attendanceSettings = await appStore.getAttendanceSettings();
+  const attendanceSettings = await persistentSettings.getAttendanceSettings();
   return {
     trackingMode: attendanceSettings.trackingMode,
     attendanceCooldownSeconds: attendanceSettings.attendanceCooldownSeconds,
@@ -75,8 +75,8 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   // Actions
   setCurrentGroup: (group) => {
     set({ currentGroup: group });
-    // Save to store asynchronously (don't block)
-    appStore
+    // Save to persistent settings asynchronously (don't block)
+    persistentSettings
       .setUIState({
         selectedGroupId: group?.id || null,
       })
@@ -98,17 +98,19 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   },
   setTrackingMode: (mode) => {
     set({ trackingMode: mode });
-    appStore.setAttendanceSettings({ trackingMode: mode }).catch(console.error);
+    persistentSettings
+      .setAttendanceSettings({ trackingMode: mode })
+      .catch(console.error);
   },
   setAttendanceCooldownSeconds: (seconds) => {
     set({ attendanceCooldownSeconds: seconds });
-    appStore
+    persistentSettings
       .setAttendanceSettings({ attendanceCooldownSeconds: seconds })
       .catch(console.error);
   },
   setEnableSpoofDetection: (enabled) => {
     set({ enableSpoofDetection: enabled });
-    appStore
+    persistentSettings
       .setAttendanceSettings({ enableSpoofDetection: enabled })
       .catch(console.error);
   },

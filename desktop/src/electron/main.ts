@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "node:url";
 import isDev from "./util.js";
 import { backendService, type DetectionOptions } from "./backendService.js";
-import { appStore } from "./store.js";
+import { persistentStore } from "./persistentStore.js";
 // Set consistent app name across all platforms for userData directory
 app.setName("Suri");
 
@@ -359,34 +359,34 @@ ipcMain.handle("window:close", () => {
 // STORE IPC HANDLERS
 // =============================================================================
 
-// Get store value
+// Get persistent settings value
 ipcMain.handle("store:get", (_event, key: string) => {
-  return appStore.get(key);
+  return persistentStore.get(key);
 });
 
-// Set store value
+// Set persistent settings value
 ipcMain.handle("store:set", (_event, key: string, value: unknown) => {
-  appStore.set(key, value);
+  persistentStore.set(key, value);
   return true;
 });
 
-// Delete store value
+// Delete persistent settings value
 ipcMain.handle("store:delete", (_event, key: string) => {
   // electron-store supports dot notation paths (e.g., "ui.sidebarCollapsed")
   // Type assertion needed because IPC passes string, but store expects typed key
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (appStore.delete as any)(key);
+  (persistentStore.delete as any)(key);
   return true;
 });
 
-// Get all store data
+// Get all persistent settings data
 ipcMain.handle("store:getAll", () => {
-  return appStore.store;
+  return persistentStore.store;
 });
 
-// Reset store to defaults
+// Reset persistent settings to defaults
 ipcMain.handle("store:reset", () => {
-  appStore.clear();
+  persistentStore.clear();
   return true;
 });
 

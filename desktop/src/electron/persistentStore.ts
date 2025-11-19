@@ -1,8 +1,8 @@
 import Store from "electron-store";
 import type { QuickSettings } from "../components/settings/types.js";
 
-// Define the store schema
-export interface AppStore {
+// Define the persistent settings schema
+export interface PersistentSettingsSchema {
   // Display Settings (QuickSettings)
   quickSettings: QuickSettings;
 
@@ -30,8 +30,8 @@ export interface AppStore {
   reportDefaultViewNames: Record<string, string>;
 }
 
-// Default values
-const defaults: AppStore = {
+// Default values (exported for reuse in service)
+export const defaultSettings: PersistentSettingsSchema = {
   quickSettings: {
     showFPS: false,
     showPreprocessing: false,
@@ -59,8 +59,8 @@ const defaults: AppStore = {
   reportDefaultViewNames: {},
 };
 
-// Create the store instance
-export const appStore = new Store<AppStore>({
+// Create the persistent store instance (electron-store)
+export const persistentStore = new Store<PersistentSettingsSchema>({
   name: "config",
-  defaults,
+  defaults: defaultSettings,
 });

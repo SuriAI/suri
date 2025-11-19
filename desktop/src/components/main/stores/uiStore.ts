@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { QuickSettings } from "../../settings";
 import type { GroupSection } from "../../group";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 
 interface UIState {
   // Error state
@@ -27,7 +27,7 @@ interface UIState {
 
 // Load initial QuickSettings from store
 const loadInitialQuickSettings = async (): Promise<QuickSettings> => {
-  return await appStore.getQuickSettings();
+  return await persistentSettings.getQuickSettings();
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -58,7 +58,7 @@ export const useUIStore = create<UIState>((set) => ({
         : settings;
     set({ quickSettings: newSettings });
     // Save to store asynchronously (don't block)
-    appStore.setQuickSettings(newSettings).catch(console.error);
+    persistentSettings.setQuickSettings(newSettings).catch(console.error);
   },
 }));
 

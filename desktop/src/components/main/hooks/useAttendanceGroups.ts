@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from "react";
-import { attendanceManager, appStore } from "../../../services";
+import { attendanceManager, persistentSettings } from "../../../services";
 import type {
   AttendanceGroup,
   AttendanceMember,
@@ -263,7 +263,7 @@ export function useAttendanceGroups() {
         if (groups.length === 0) {
           setCurrentGroupWithCache(null);
         } else if (!currentGroup) {
-          const uiState = await appStore.getUIState();
+          const uiState = await persistentSettings.getUIState();
           const savedGroupId = uiState.selectedGroupId;
           let groupToSelect = null;
 

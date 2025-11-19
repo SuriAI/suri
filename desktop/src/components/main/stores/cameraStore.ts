@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 
 interface CameraState {
   // Streaming state
@@ -41,13 +41,15 @@ export const useCameraStore = create<CameraState>((set) => ({
   setSelectedCamera: (deviceId) => {
     set({ selectedCamera: deviceId });
     // Save to store asynchronously
-    appStore.setUIState({ selectedCamera: deviceId }).catch(console.error);
+    persistentSettings
+      .setUIState({ selectedCamera: deviceId })
+      .catch(console.error);
   },
 }));
 
 // Load selectedCamera from store on initialization
 if (typeof window !== "undefined") {
-  appStore.getUIState().then((uiState) => {
+  persistentSettings.getUIState().then((uiState) => {
     if (uiState.selectedCamera) {
       useCameraStore.setState({ selectedCamera: uiState.selectedCamera });
     }
