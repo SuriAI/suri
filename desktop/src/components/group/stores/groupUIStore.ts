@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { AttendanceMember } from "../../../types/recognition";
 import type { GroupSection } from "../types";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 
 interface GroupUIState {
   // Navigation
@@ -67,7 +67,7 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
   // Sidebar
   setIsSidebarCollapsed: (collapsed) => {
     set({ isSidebarCollapsed: collapsed });
-    appStore
+    persistentSettings
       .setUIState({ groupSidebarCollapsed: collapsed })
       .catch(console.error);
   },
@@ -75,7 +75,7 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
   toggleSidebar: () => {
     const newValue = !get().isSidebarCollapsed;
     set({ isSidebarCollapsed: newValue });
-    appStore
+    persistentSettings
       .setUIState({ groupSidebarCollapsed: newValue })
       .catch(console.error);
   },
@@ -102,7 +102,7 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
 
 // Load sidebar state from store on initialization
 if (typeof window !== "undefined") {
-  appStore.getUIState().then((uiState) => {
+  persistentSettings.getUIState().then((uiState) => {
     useGroupUIStore.setState({
       isSidebarCollapsed: uiState.groupSidebarCollapsed,
     });

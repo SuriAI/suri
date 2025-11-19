@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { attendanceManager } from "../../../services";
-import { appStore } from "../../../services/AppStore";
+import { persistentSettings } from "../../../services/PersistentSettingsService";
 import { getLocalDateString } from "../../../utils";
 import type {
   AttendanceGroup,
@@ -51,9 +51,13 @@ export const useGroupStore = create<GroupState>((set, get) => ({
   setSelectedGroup: (group) => {
     set({ selectedGroup: group });
     if (group) {
-      appStore.setUIState({ selectedGroupId: group.id }).catch(console.error);
+      persistentSettings
+        .setUIState({ selectedGroupId: group.id })
+        .catch(console.error);
     } else {
-      appStore.setUIState({ selectedGroupId: null }).catch(console.error);
+      persistentSettings
+        .setUIState({ selectedGroupId: null })
+        .catch(console.error);
       set({ members: [] });
     }
   },
