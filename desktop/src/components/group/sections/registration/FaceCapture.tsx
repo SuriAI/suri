@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { attendanceManager } from "../../../../services/AttendanceManager";
-import { backendService } from "../../../../services/BackendService";
-import { generateDisplayNames } from "../../../../utils/displayNameUtils";
+import { attendanceManager, backendService } from "../../../../services";
+import { generateDisplayNames } from "../../../../utils";
 import type {
   AttendanceGroup,
   AttendanceMember,

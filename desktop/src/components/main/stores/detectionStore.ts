@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { DetectionResult, TrackedFace } from "../types";
-import type { ExtendedFaceRecognitionResponse } from "../utils/recognitionHelpers";
+import type { ExtendedFaceRecognitionResponse } from "../utils";
 
 interface DetectionState {
   // Detection state

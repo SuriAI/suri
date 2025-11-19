@@ -2,7 +2,7 @@
  * Member cache helper functions to eliminate code duplication
  */
 
-import { attendanceManager } from "../../../services/AttendanceManager";
+import { attendanceManager } from "../../../services";
 import type { AttendanceGroup, AttendanceMember } from "../../../types/recognition";
 
 /**

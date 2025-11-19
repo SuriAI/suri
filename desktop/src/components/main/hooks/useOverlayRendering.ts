@@ -1,10 +1,12 @@
 import { useRef, useCallback } from "react";
 import type { DetectionResult } from "../types";
-import { drawOverlays } from "../utils/overlayRenderer";
-import { useDetectionStore } from "../stores/detectionStore";
-import { useCameraStore } from "../stores/cameraStore";
-import { useAttendanceStore } from "../stores/attendanceStore";
-import { useUIStore } from "../stores/uiStore";
+import { drawOverlays } from "../utils";
+import {
+  useDetectionStore,
+  useCameraStore,
+  useAttendanceStore,
+  useUIStore,
+} from "../stores";
 
 interface UseOverlayRenderingOptions {
   videoRef: React.RefObject<HTMLVideoElement | null>;

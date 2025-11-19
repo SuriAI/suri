@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { startTransition } from "react";
-import { useAttendanceStore } from "../stores/attendanceStore";
+import { useAttendanceStore } from "../stores";
 
 export function useAttendanceCooldown() {
   const { persistentCooldowns, setPersistentCooldowns, attendanceCooldownSeconds } = useAttendanceStore();

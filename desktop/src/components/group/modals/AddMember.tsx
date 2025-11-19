@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { attendanceManager } from "../../../services/AttendanceManager.js";
+import { attendanceManager } from "../../../services";
 import type { AttendanceGroup } from "../../../types/recognition.js";
 
 interface AddMemberProps {

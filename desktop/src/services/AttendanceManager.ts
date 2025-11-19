@@ -8,7 +8,7 @@ import type {
   AttendanceSettings,
   AttendanceEvent,
 } from "../types/recognition.js";
-import { getLocalDateString } from "../utils/dateUtils.js";
+import { getLocalDateString } from "../utils";
 
 // API Configuration
 const API_BASE_URL = "http://127.0.0.1:8700";
