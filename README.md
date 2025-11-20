@@ -1,6 +1,6 @@
 <h3 align="center"><img width="80" alt="Suri AI Attendance Tracker: Real-time face recognition attendance tracking that runs 100% offline" src="desktop/public/icons/icon-1024.png"></h3>
 
-<h3 align="center">AI-Powered Attendance Tracking. 100% Offline, Zero Cloud</h3>
+<h3 align="center">AI-Powered Attendance Tracking. Local-First, Privacy-Focused</h3>
 
 Suri is a desktop application for automated attendance tracking using Artificial Intelligence. Built for classrooms, offices, and events.
 
@@ -23,9 +23,9 @@ Suri is a desktop application for automated attendance tracking using Artificial
 - **Bulk Operations**: Mass face registration and member import
 
 ### Privacy & Security
-- **100% Offline**: All processing happens locally, zero cloud dependency
-- **Local Storage**: SQLite databases for face data and attendance records
-- **No Telemetry**: Your data never leaves your machine
+- **Local-First Architecture**: Core face recognition and attendance tracking run entirely on your machine
+- **Local Storage**: SQLite databases for face data and attendance records stored locally
+- **Privacy-Focused**: No telemetry or usage analytics collected by default
 - **ULID-based IDs**: Cryptographically secure, collision-resistant identifiers
 
 ---
