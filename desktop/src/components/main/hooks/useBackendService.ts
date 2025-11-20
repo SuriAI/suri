@@ -90,10 +90,26 @@ export function useBackendService(options: UseBackendServiceOptions) {
   const waitForBackendReady = useCallback(
     async (
       maxWaitTime: number = 60000,
-      pollInterval: number = 500,
+      pollInterval: number = 100,
     ): Promise<{ ready: boolean; modelsLoaded: boolean; error?: string }> => {
       const startTime = Date.now();
       let lastError: string | undefined;
+
+      // Check immediately first (no delay)
+      try {
+        if (window.electronAPI?.backend) {
+          const readinessCheck =
+            await window.electronAPI.backend.checkReadiness();
+          if (readinessCheck?.ready && readinessCheck?.modelsLoaded) {
+            return {
+              ready: true,
+              modelsLoaded: true,
+            };
+          }
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : "Unknown error";
+      }
 
       while (Date.now() - startTime < maxWaitTime) {
         try {
@@ -126,7 +142,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
             continue;
           }
 
-          const waitTime = Math.min(pollInterval * 2, 2000);
+          const waitTime = Math.min(pollInterval * 2, 500);
           await new Promise((resolve) => setTimeout(resolve, waitTime));
         } catch (error) {
           lastError = error instanceof Error ? error.message : "Unknown error";
@@ -351,7 +367,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       if (currentStatus === "connecting") {
         let attempts = 0;
         while (attempts < 50) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           const status = backendServiceRef.current.getWebSocketStatus();
           if (status === "connected") {
             registerWebSocketHandlers();
@@ -521,7 +537,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       }
     };
 
-    const statusInterval = setInterval(pollWebSocketStatus, 1000);
+    const statusInterval = setInterval(pollWebSocketStatus, 200);
 
     return () => {
       clearInterval(statusInterval);
