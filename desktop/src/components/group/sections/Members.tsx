@@ -77,9 +77,11 @@ export function Members({
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold">Members</h2>
         </div>
-        <div className="flex items-center">
-          <RegistrationStatus members={members} />
-        </div>
+        {members.length > 0 && (
+          <div className="flex items-center">
+            <RegistrationStatus members={members} />
+          </div>
+        )}
       </div>
 
       {members.length > 0 ? (
