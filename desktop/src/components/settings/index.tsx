@@ -131,31 +131,69 @@ export const Settings: React.FC<SettingsProps> = ({
     }
   }, [currentGroup, groups]);
 
-  // Fetch members when showing registration or members section
-  useEffect(() => {
-    const fetchMembers = async () => {
-      if (
-        activeSection === "group" &&
-        (groupInitialSection === "registration" ||
-          groupInitialSection === "members") &&
-        currentGroup
-      ) {
-        try {
-          const groupMembers = await attendanceManager.getGroupMembers(
-            currentGroup.id,
-          );
-          setMembers(groupMembers);
-        } catch (error) {
-          console.error("Failed to load members:", error);
-          setMembers([]);
-        }
-      } else {
-        setMembers([]);
-      }
-    };
+  // Get groups and members from store to ensure we have the latest state
+  const storeGroups = useGroupStore((state) => state.groups);
+  const storeSelectedGroup = useGroupStore((state) => state.selectedGroup);
+  const storeMembers = useGroupStore((state) => state.members);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
+  const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails);
 
-    fetchMembers();
-  }, [activeSection, groupInitialSection, currentGroup]);
+  // Sync members from store when currentGroup changes or store members update
+  useEffect(() => {
+    if (currentGroup) {
+      // If store's selected group matches currentGroup, use store members
+      // This ensures we get updates when members are added/removed via the store
+      if (storeSelectedGroup?.id === currentGroup.id) {
+        setMembers(storeMembers);
+      } else {
+        // Fetch members directly if store doesn't have them for this group
+        const fetchMembers = async () => {
+          try {
+            const groupMembers = await attendanceManager.getGroupMembers(
+              currentGroup.id,
+            );
+            setMembers(groupMembers);
+          } catch (error) {
+            console.error("Failed to load members:", error);
+            setMembers([]);
+          }
+        };
+        fetchMembers();
+      }
+    } else {
+      setMembers([]);
+    }
+  }, [currentGroup, storeMembers, storeSelectedGroup]);
+
+  // Also fetch members when showing registration or members section to ensure fresh data
+  useEffect(() => {
+    if (
+      activeSection === "group" &&
+      (groupInitialSection === "registration" ||
+        groupInitialSection === "members") &&
+      currentGroup
+    ) {
+      // Refresh members from store or fetch if needed
+      if (storeSelectedGroup?.id === currentGroup.id) {
+        // If store has the group selected, refresh from store
+        fetchGroupDetails(currentGroup.id);
+      } else {
+        // Otherwise fetch directly
+        const fetchMembers = async () => {
+          try {
+            const groupMembers = await attendanceManager.getGroupMembers(
+              currentGroup.id,
+            );
+            setMembers(groupMembers);
+          } catch (error) {
+            console.error("Failed to load members:", error);
+            setMembers([]);
+          }
+        };
+        fetchMembers();
+      }
+    }
+  }, [activeSection, groupInitialSection, currentGroup, storeSelectedGroup, fetchGroupDetails]);
 
   // Reset reports state when switching away from reports section
   useEffect(() => {
@@ -164,12 +202,13 @@ export const Settings: React.FC<SettingsProps> = ({
     }
   }, [activeSection, groupInitialSection]);
 
-  // Reset add member handler when switching away from members section
+  // Keep add member handler available as long as there's a currentGroup
+  // Only clear it when there's no group or no members
   useEffect(() => {
-    if (activeSection !== "group" || groupInitialSection !== "members") {
+    if (!currentGroup || members.length === 0) {
       setAddMemberHandler(null);
     }
-  }, [activeSection, groupInitialSection]);
+  }, [currentGroup, members.length]);
 
   const handleClearDatabase = async () => {
     if (
@@ -208,11 +247,7 @@ export const Settings: React.FC<SettingsProps> = ({
     { id: "database", label: "Database", icon: "fa-solid fa-database" },
   ];
 
-  // Get groups from store to ensure we have the latest state
   // Use a selector that only updates when the groups list actually changes (by IDs)
-  const storeGroups = useGroupStore((state) => state.groups);
-  const storeSelectedGroup = useGroupStore((state) => state.selectedGroup);
-  const fetchGroups = useGroupStore((state) => state.fetchGroups);
   const storeGroupsIds = useMemo(
     () => new Set(storeGroups.map((g) => g.id)),
     [storeGroups],
@@ -261,6 +296,8 @@ export const Settings: React.FC<SettingsProps> = ({
       );
       if (stillExists && storeSelectedGroup?.id !== validInitialGroup.id) {
         groupStore.setSelectedGroup(validInitialGroup);
+        // Also fetch members for the synced group
+        fetchGroupDetails(validInitialGroup.id);
       }
     } else if (storeSelectedGroup && storeGroupsLoaded) {
       // Clear selection if group was deleted
@@ -269,7 +306,7 @@ export const Settings: React.FC<SettingsProps> = ({
         groupStore.setSelectedGroup(null);
       }
     }
-  }, [validInitialGroup, storeSelectedGroup, storeGroupsLoaded]);
+  }, [validInitialGroup, storeSelectedGroup, storeGroupsLoaded, fetchGroupDetails]);
 
   // Memoize callbacks to prevent unnecessary re-renders of GroupPanel
   const handleGroupBack = useCallback(() => {
@@ -327,16 +364,13 @@ export const Settings: React.FC<SettingsProps> = ({
       // If a new group was created, automatically select it
       if (newGroup && onGroupSelect) {
         onGroupSelect(newGroup);
-        // Refresh members if showing registration or members section with the new group
+        // Refresh members from store if showing registration or members section with the new group
         if (
           groupInitialSection === "registration" ||
           groupInitialSection === "members"
         ) {
           try {
-            const groupMembers = await attendanceManager.getGroupMembers(
-              newGroup.id,
-            );
-            setMembers(groupMembers);
+            await fetchGroupDetails(newGroup.id);
           } catch (error) {
             console.error("Failed to refresh members:", error);
           }
@@ -346,12 +380,9 @@ export const Settings: React.FC<SettingsProps> = ({
           groupInitialSection === "members") &&
         currentGroup
       ) {
-        // Refresh members if showing registration or members section with current group
+        // Refresh members from store if showing registration or members section with current group
         try {
-          const groupMembers = await attendanceManager.getGroupMembers(
-            currentGroup.id,
-          );
-          setMembers(groupMembers);
+          await fetchGroupDetails(currentGroup.id);
         } catch (error) {
           console.error("Failed to refresh members:", error);
         }
@@ -363,6 +394,7 @@ export const Settings: React.FC<SettingsProps> = ({
       loadSystemData,
       onGroupsChanged,
       onGroupSelect,
+      fetchGroupDetails,
     ],
   );
 
