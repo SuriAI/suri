@@ -284,10 +284,49 @@ export default function Main() {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
+      // Validate and get the correct camera device ID
+      let deviceIdToUse: string | undefined = undefined;
+      if (selectedCamera && cameraDevices.length > 0) {
+        // Check if the selected camera still exists in the available devices
+        // Also check that deviceId is not empty (can happen in some browsers)
+        const deviceExists = cameraDevices.some(
+          (device) => device.deviceId && device.deviceId === selectedCamera,
+        );
+        if (deviceExists) {
+          deviceIdToUse = selectedCamera;
+        } else {
+          // Selected camera doesn't exist, fall back to first available
+          console.warn(
+            `Selected camera (${selectedCamera}) not found. Falling back to first available camera.`,
+          );
+          // Find first device with a valid (non-empty) deviceId
+          const validDevice = cameraDevices.find(
+            (device) => device.deviceId && device.deviceId.trim() !== "",
+          );
+          if (validDevice) {
+            deviceIdToUse = validDevice.deviceId;
+            setSelectedCamera(validDevice.deviceId);
+          }
+        }
+      } else if (cameraDevices.length > 0 && !selectedCamera) {
+        // No camera selected, use first available with valid deviceId
+        const validDevice = cameraDevices.find(
+          (device) => device.deviceId && device.deviceId.trim() !== "",
+        );
+        if (validDevice) {
+          deviceIdToUse = validDevice.deviceId;
+          setSelectedCamera(validDevice.deviceId);
+        }
+      }
+
+      if (cameraDevices.length === 0) {
+        throw new Error("No camera detected. Please make sure your camera is connected and try again.");
+      }
+
       const constraints: MediaStreamConstraints = {
-        video: {
-          deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
-        },
+        video: deviceIdToUse
+          ? { deviceId: { ideal: deviceIdToUse } }
+          : undefined,
         audio: false,
       };
 
@@ -343,7 +382,63 @@ export default function Main() {
       }
     } catch (err) {
       console.error("Error starting camera:", err);
-      setError("Failed to start camera. Please check permissions.");
+      
+      // Provide user-friendly error messages based on error type
+      let errorMessage = "Unable to access your camera. Please make sure your camera is connected and try again.";
+      if (err instanceof Error) {
+        const errorName = err.name;
+        if (errorName === "NotAllowedError" || errorName === "PermissionDeniedError") {
+          // Detect operating system for platform-specific instructions using userAgent
+          const userAgent = navigator.userAgent.toLowerCase();
+          let instructions = "";
+          
+          if (userAgent.includes("win")) {
+            instructions = "Go to Settings → Privacy → Camera → Turn ON 'Allow apps to access your camera'";
+          } else if (userAgent.includes("mac")) {
+            instructions = "Go to System Settings → Privacy & Security → Camera → Turn ON for this app";
+          } else {
+            instructions = "Go to your system settings and allow camera access for this application";
+          }
+          
+          errorMessage = `Camera access was blocked. ${instructions}. Then close and reopen this app.`;
+        } else if (errorName === "NotFoundError" || errorName === "DevicesNotFoundError") {
+          errorMessage = "No camera detected. Please make sure your camera is connected and try again.";
+        } else if (errorName === "NotReadableError" || errorName === "TrackStartError") {
+          errorMessage = "Your camera is being used by another app. Please close other apps (like Zoom, Teams, or your web browser) that might be using the camera, then try again.";
+        } else if (errorName === "OverconstrainedError" || errorName === "ConstraintNotSatisfiedError") {
+          errorMessage = "Switching to a different camera...";
+          // Try again with default camera (no deviceId specified)
+          try {
+            const fallbackConstraints: MediaStreamConstraints = {
+              video: true,
+              audio: false,
+            };
+            const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+            streamRef.current = fallbackStream;
+            if (videoRef.current) {
+              videoRef.current.srcObject = fallbackStream;
+              await videoRef.current.play();
+              setIsVideoLoading(false);
+              setCameraActive(true);
+              isStreamingRef.current = true;
+              setIsStreaming(true);
+              isScanningRef.current = true;
+              backendServiceReadyRef.current = true;
+              setError(null);
+              isStartingRef.current = false;
+              return;
+            }
+          } catch (fallbackErr) {
+            console.error("Fallback camera start also failed:", fallbackErr);
+            errorMessage = "Unable to start camera. Please check if your camera is working and not being used by another app.";
+          }
+        } else {
+          // For any other error, provide a friendly generic message
+          errorMessage = "Unable to start camera. Please make sure your camera is connected and not being used by another app.";
+        }
+      }
+      
+      setError(errorMessage);
       isStreamingRef.current = false;
       isScanningRef.current = false;
       setIsStreaming(false);
@@ -354,12 +449,14 @@ export default function Main() {
     }
   }, [
     selectedCamera,
+    cameraDevices,
     getCameraDevices,
     initializeWebSocket,
     setIsStreaming,
     setIsVideoLoading,
     setCameraActive,
     setError,
+    setSelectedCamera,
   ]);
 
   // Set the ref after stopCamera is defined
