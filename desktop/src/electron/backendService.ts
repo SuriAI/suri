@@ -348,11 +348,16 @@ export class BackendService {
     const startTime = Date.now();
     const timeout = this.config.timeout;
 
+    // Check immediately first (no delay)
+    if (await this.healthCheck()) {
+      return;
+    }
+
     while (Date.now() - startTime < timeout) {
+      await sleep(100);
       if (await this.healthCheck()) {
         return;
       }
-      await sleep(1000);
     }
 
     throw new Error(`Backend failed to start within ${timeout}ms`);
@@ -387,7 +392,7 @@ export class BackendService {
         for (let i = 0; i < 3; i++) {
           try {
             await execAsync("taskkill /F /IM server.exe /T");
-            await sleep(200); // Wait between attempts
+            await sleep(50);
           } catch (error: unknown) {
             // Process not found = all killed
             if (
@@ -413,7 +418,7 @@ export class BackendService {
 
             // Kill all
             await execAsync("pkill -9 server");
-            await sleep(200);
+            await sleep(50);
           } catch {
             // pgrep error = no processes = success
             break;
@@ -697,7 +702,7 @@ export class BackendService {
    */
   async restart(): Promise<void> {
     await this.stop();
-    await sleep(1000);
+    await sleep(100);
     await this.start();
   }
 

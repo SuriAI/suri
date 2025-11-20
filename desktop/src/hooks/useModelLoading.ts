@@ -46,7 +46,7 @@ export function useModelLoading(): ModelLoadingState {
 
         // Add timeout to the IPC call to prevent hanging
         const timeoutPromise = new Promise<boolean>((resolve) => {
-          setTimeout(() => resolve(false), 10000); // 10 second timeout per check
+          setTimeout(() => resolve(false), 5000);
         });
 
         const readyPromise = window.electronAPI.backend_ready
@@ -88,7 +88,7 @@ export function useModelLoading(): ModelLoadingState {
     // Initial check
     checkBackendReady();
 
-    // Poll backend readiness every 500ms until ready
+    // Poll backend readiness every 100ms until ready
     const pollInterval = setInterval(async () => {
       if (!isMountedRef.current || modelsReadyRef.current) {
         clearInterval(pollInterval);
@@ -99,7 +99,7 @@ export function useModelLoading(): ModelLoadingState {
       if (ready) {
         clearInterval(pollInterval);
       }
-    }, 500);
+    }, 100);
 
     // Cleanup timeout - stop checking after max wait time
     const timeoutId = setTimeout(() => {

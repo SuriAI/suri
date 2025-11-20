@@ -104,8 +104,24 @@ export class AttendanceManager {
     // Wait for backend to be ready (check via backend_ready API)
     // Increased timeout to 60 seconds to match WebSocket initialization timeout
     const maxWaitTime = 60000; // 60 seconds max wait (models can take time to load)
-    const checkInterval = 500; // Check every 500ms
+    const checkInterval = 100; // Check every 100ms
     const startTime = Date.now();
+
+    // Check immediately first (no delay)
+    try {
+      if (window.electronAPI && "backend_ready" in window.electronAPI) {
+        const ready = await window.electronAPI.backend_ready.isReady();
+        if (ready) {
+          await this.loadSettings();
+          return;
+        }
+      }
+    } catch (error) {
+      console.debug(
+        "[AttendanceManager] Error checking backend readiness:",
+        error,
+      );
+    }
 
     while (Date.now() - startTime < maxWaitTime) {
       try {

@@ -418,7 +418,7 @@ ipcMain.handle("backend:is-ready", async () => {
   try {
     // Add timeout to prevent hanging
     const timeoutPromise = new Promise<boolean>((resolve) => {
-      setTimeout(() => resolve(false), 15000); // 15 second timeout
+      setTimeout(() => resolve(false), 5000);
     });
 
     const readinessPromise = backendService.checkReadiness().then((result) => {
@@ -571,7 +571,7 @@ function createWindow(): void {
     mainWindow.setResizable(true);
     mainWindow.webContents.send("window:unmaximized");
     // Restore rounded shape when unmaximized
-    setTimeout(updateWindowShape, 100);
+    updateWindowShape();
   });
 
   // Update shape on resize
