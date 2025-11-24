@@ -29,18 +29,16 @@ class FaceTracker:
         match_thresh: float = 0.8,
         track_buffer: int = 30,
         frame_rate: int = 30,
-        max_iou_distance: float = 0.7,
     ):
         """
         Initialize face tracker.
 
         Args:
             model_path: Path to tracker model file (for consistency with other models)
-            track_thresh: Detection confidence threshold
-            match_thresh: Matching threshold for association
-            track_buffer: Buffer size for lost tracks
+            track_thresh: Detection confidence threshold (ByteTrack default: 0.5)
+            match_thresh: Matching threshold for association (ByteTrack default: 0.8)
+            track_buffer: Buffer size for lost tracks (ByteTrack default: 30)
             frame_rate: Frame rate for tracking (can be updated dynamically)
-            max_iou_distance: Maximum IoU distance for matching tracks to detections
         """
         self.model_path = model_path
         self.args = ByteTrackArgs(
@@ -51,7 +49,9 @@ class FaceTracker:
         )
         self.tracker = BYTETracker(self.args, frame_rate=frame_rate)
         self.frame_rate = frame_rate
-        self.max_iou_distance = max_iou_distance
+        # Derive minimum IoU from match_thresh: match_thresh is IoU distance (1 - IoU)
+        # So min_iou = 1.0 - match_thresh (e.g., 0.8 -> 0.2 minimum IoU)
+        self.min_iou = 1.0 - match_thresh
 
     def update_frame_rate(self, frame_rate: int):
         """
@@ -144,7 +144,8 @@ class FaceTracker:
                     best_det_idx = np.argmax(iou_matrix[track_idx])
                     best_iou = iou_matrix[track_idx, best_det_idx]
 
-                    if best_iou > (1.0 - self.max_iou_distance) and best_det_idx < len(
+                    # Use ByteTrack's match_thresh logic: IoU must be >= (1.0 - match_thresh)
+                    if best_iou >= self.min_iou and best_det_idx < len(
                         face_detections
                     ):
                         face_result = face_detections[best_det_idx].copy()

@@ -187,11 +187,10 @@ MODEL_CONFIGS = {
     },
     "face_tracker": {
         "model_path": WEIGHTS_DIR / "tracker.onnx",
-        "track_thresh": 0.5,  # Detection confidence threshold
-        "match_thresh": 0.8,  # Matching threshold for association
-        "track_buffer": 30,  # Buffer size for lost tracks
+        "track_thresh": 0.5,  # Detection confidence threshold (ByteTrack default)
+        "match_thresh": 0.8,  # Matching threshold for association (ByteTrack default)
+        "track_buffer": 30,  # Buffer size for lost tracks (ByteTrack default)
         "frame_rate": 30,  # Default frame rate (auto-detected per client)
-        "max_iou_distance": 0.7,  # Maximum IoU distance for matching tracks to detections
     },
 }
 
