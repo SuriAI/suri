@@ -13,8 +13,8 @@ if not exist "server" (
     exit /b 1
 )
 
-if not exist "desktop" (
-    echo Error: desktop directory not found. Please run this script from the project root.
+if not exist "app" (
+    echo Error: app directory not found. Please run this script from the project root.
     pause
     exit /b 1
 )
@@ -31,7 +31,7 @@ timeout /t 3 /nobreak > nul
 
 :: Start frontend
 echo Starting Electron frontend...
-cd desktop
+cd app
 call pnpm dev
 
 echo.

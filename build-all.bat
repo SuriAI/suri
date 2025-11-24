@@ -13,8 +13,8 @@ if not exist "backend" (
     exit /b 1
 )
 
-if not exist "desktop" (
-    echo Error: desktop directory not found. Please run this script from the project root.
+if not exist "app" (
+    echo Error: app directory not found. Please run this script from the project root.
     pause
     exit /b 1
 )
@@ -36,7 +36,7 @@ echo.
 :: Build Frontend
 echo [2/3] Building Electron Frontend...
 echo ===================================
-cd desktop
+cd app
 echo Installing dependencies...
 call pnpm install
 if !errorlevel! neq 0 (
@@ -60,7 +60,7 @@ echo.
 :: Package Application
 echo [3/3] Packaging Application...
 echo ==============================
-cd desktop
+cd app
 call pnpm dist:win
 if !errorlevel! neq 0 (
     echo Error: Application packaging failed!
@@ -76,7 +76,7 @@ echo    Build Complete!
 echo ========================================
 echo.
 echo The packaged application can be found in:
-echo   desktop/dist/
+echo   app/dist/
 echo.
 echo Backend executable location:
 echo   backend/dist/server.exe

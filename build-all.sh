@@ -13,8 +13,8 @@ if [ ! -d "backend" ]; then
     exit 1
 fi
 
-if [ ! -d "desktop" ]; then
-    echo "Error: desktop directory not found. Please run this script from the project root."
+if [ ! -d "app" ]; then
+    echo "Error: app directory not found. Please run this script from the project root."
     exit 1
 fi
 
@@ -50,7 +50,7 @@ echo
 # Build Frontend
 echo "[2/3] Building Electron Frontend..."
 echo "==================================="
-cd desktop
+cd app
 echo "Installing dependencies..."
 pnpm install
 
@@ -62,7 +62,7 @@ echo
 # Package Application
 echo "[3/3] Packaging Application..."
 echo "=============================="
-cd desktop
+cd app
 pnpm $DIST_COMMAND
 cd ..
 
@@ -72,7 +72,7 @@ echo "    Build Complete!"
 echo "========================================"
 echo
 echo "The packaged application can be found in:"
-echo "  desktop/dist/"
+echo "  app/dist/"
 echo
 echo "Backend executable location:"
 echo "  backend/dist/server"

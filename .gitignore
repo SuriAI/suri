@@ -9,10 +9,10 @@ node_modules/
 # BUILD OUTPUTS
 # ===================================
 # Electron
-desktop/dist/
-desktop/dist-electron/
-desktop/dist-react/
-desktop/out/
+app/dist/
+app/dist-electron/
+app/dist-react/
+app/out/
 
 # Backend
 backend/dist/
