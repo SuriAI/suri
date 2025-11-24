@@ -505,7 +505,7 @@ export function Reports({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `attendance-view-${group.name}-${reportStartDate}-to-${reportEndDate}.csv`;
+      anchor.download = `${group.name}(${reportStartDate} to ${reportEndDate}).csv`;
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
