@@ -204,10 +204,11 @@ export const AttendancePanel = memo(function AttendancePanel({
             </div>
             <button
               onClick={() => setShowGroupManagement(true)}
-              className="text-lg px-2 py-1 flex-shrink-0 border-none bg-none"
-              title="Create New Group"
+              className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+              title="Create new group"
+              aria-label="Create new group"
             >
-              +
+              <i className="fa-solid fa-plus text-sm"></i>
             </button>
           </div>
         </div>

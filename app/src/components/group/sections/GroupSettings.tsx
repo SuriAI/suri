@@ -35,8 +35,6 @@ export function GroupSettings({
     <section className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 p-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          {/* Group Information Card - Enhanced */}
-          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-white/[0.01] p-6 backdrop-blur-sm">
             <div className="flex items-start justify-between mb-6">
               <div className="flex-1 min-w-0">
                 <h2 className="text-2xl font-semibold text-white mb-2 truncate">
@@ -73,9 +71,8 @@ export function GroupSettings({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                     <svg
-                      className="w-5 h-5 text-cyan-400"
+                      className="w-5 h-5 text-white/70"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -87,7 +84,7 @@ export function GroupSettings({
                         strokeWidth={2}
                       />
                     </svg>
-                  </div>
+
                   <div>
                     <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
                       Total Members
@@ -101,7 +98,6 @@ export function GroupSettings({
 
               <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-white/70"
                       fill="none"
@@ -115,7 +111,7 @@ export function GroupSettings({
                         strokeWidth={2}
                       />
                     </svg>
-                  </div>
+
                   <div>
                     <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
                       Created
@@ -127,7 +123,7 @@ export function GroupSettings({
                 </div>
               </div>
             </div>
-          </div>
+
 
           {/* Danger Zone - Enhanced */}
           <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/[0.05] to-red-500/[0.02] p-6 backdrop-blur-sm">
@@ -151,7 +147,7 @@ export function GroupSettings({
                 <h3 className="text-lg font-semibold text-white mb-2">
                   Danger Zone
                 </h3>
-                <p className="text-sm text-white/70 leading-relaxed mb-4">
+                <p className="text-xs text-white/70 leading-relaxed mb-4">
                   Deleting this group will permanently remove all members and
                   attendance records. This action cannot be undone.
                 </p>
