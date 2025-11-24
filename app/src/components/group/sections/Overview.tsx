@@ -13,6 +13,7 @@ import type {
 interface OverviewProps {
   group: AttendanceGroup;
   members: AttendanceMember[];
+  onAddMember?: () => void;
 }
 
 const toDate = (value: Date | string): Date =>
@@ -37,17 +38,20 @@ const formatDate = (value: Date | string): string => {
   return `${month} ${day}, ${year}`;
 };
 
-export function Overview({ group, members }: OverviewProps) {
+export function Overview({ group, members, onAddMember }: OverviewProps) {
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [recentRecords, setRecentRecords] = useState<AttendanceRecord[]>([]);
   const [activeNow, setActiveNow] = useState<number>(0);
 
-  // Create display name map for members
   const displayNameMap = useMemo(() => {
     return createDisplayNameMap(members);
   }, [members]);
 
   const loadOverviewData = useCallback(async () => {
+    if (members.length === 0) {
+      return;
+    }
+
     try {
       const todayStr = getLocalDateString();
       const [groupStats, records, sessions] = await Promise.all([
@@ -72,11 +76,34 @@ export function Overview({ group, members }: OverviewProps) {
     } catch (err) {
       console.error("Error loading overview data:", err);
     }
-  }, [group.id]);
+  }, [group.id, members.length]);
 
   useEffect(() => {
     loadOverviewData();
   }, [loadOverviewData]);
+
+  if (members.length === 0) {
+    return (
+      <section className="h-full flex flex-col overflow-hidden p-6">
+        <div className="flex-1 flex items-center justify-center min-h-0">
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="text-white/40 text-xs text-center">
+              No members in this group yet
+            </div>
+            {onAddMember && (
+              <button
+                onClick={onAddMember}
+                className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
+              >
+                <i className="fa-solid fa-user-plus text-xs"></i>
+                Add Member
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!stats) {
     return (

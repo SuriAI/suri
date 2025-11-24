@@ -31,6 +31,7 @@ interface GroupUIState {
   // Actions - Modals
   openAddMember: () => void;
   closeAddMember: () => void;
+  openAddMemberWithNavigation: () => void; // Navigate to members section and open modal
   openEditMember: (member: AttendanceMember) => void;
   closeEditMember: () => void;
   openCreateGroup: () => void;
@@ -85,6 +86,9 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
   // Modals
   openAddMember: () => set({ showAddMemberModal: true }),
   closeAddMember: () => set({ showAddMemberModal: false }),
+  openAddMemberWithNavigation: () => {
+    set({ showAddMemberModal: true });
+  },
 
   openEditMember: (member) =>
     set({ editingMember: member, showEditMemberModal: true }),

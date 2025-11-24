@@ -445,7 +445,7 @@ export const Settings: React.FC<SettingsProps> = ({
       <div className="w-56 flex-shrink-0 border-r border-white/10 flex flex-col">
         {/* Header */}
         <div className="px-4 py-4 border-b border-white/10 flex items-center justify-between">
-          <h1 className="text-sm font-semibold uppercase tracking-wider text-white/60">
+          <h1 className="text-sm font-semibold uppercase tracking-wider text-white">
             Settings
           </h1>
           {onToggleFullScreen && (

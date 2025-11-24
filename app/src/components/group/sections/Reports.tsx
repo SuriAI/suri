@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { attendanceManager } from "../../../services";
 import { persistentSettings } from "../../../services/PersistentSettingsService";
+import { useGroupStore } from "../stores";
 import {
   getLocalDateString,
   generateDateRange,
@@ -20,19 +21,23 @@ interface ReportsProps {
     exportCSV: () => void;
     print: () => void;
   }) => void;
+  onAddMember?: () => void;
 }
 
 export function Reports({
   group,
   onDaysTrackedChange,
   onExportHandlersReady,
+  onAddMember,
 }: ReportsProps) {
+  const storeMembers = useGroupStore((state) => state.members);
+
   const [report, setReport] = useState<AttendanceReport | null>(null);
   const [reportStartDate, setReportStartDate] =
     useState<string>(getLocalDateString());
   const [reportEndDate, setReportEndDate] =
     useState<string>(getLocalDateString());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => storeMembers.length > 0);
   const [error, setError] = useState<string | null>(null);
 
   // Advanced, offline-first editable reports (field picker, filters, grouping, saved views)
@@ -84,7 +89,16 @@ export function Reports({
   const [search, setSearch] = useState<string>("");
 
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
-  const [members, setMembers] = useState<AttendanceMember[]>([]);
+  const [members, setMembers] = useState<AttendanceMember[]>(storeMembers);
+
+  useEffect(() => {
+    if (storeMembers.length >= 0) {
+      setMembers(storeMembers);
+      if (storeMembers.length === 0) {
+        setLoading(false);
+      }
+    }
+  }, [storeMembers]);
 
   // Saved views in store (per group)
   const [views, setViews] = useState<SavedViewConfig[]>([]);
@@ -92,6 +106,11 @@ export function Reports({
   const [defaultViewName, setDefaultViewName] = useState<string | null>(null);
 
   const generateReport = useCallback(async () => {
+    if (members.length === 0) {
+      setLoading(false);
+      return;
+    }
+
     const startDate = new Date(reportStartDate);
     const endDate = new Date(reportEndDate);
 
@@ -108,7 +127,6 @@ export function Reports({
     setLoading(true);
     try {
       setError(null);
-      // Load everything in parallel for faster response
       const [generatedReport, loadedSessions, loadedMembers] =
         await Promise.all([
           attendanceManager.generateReport(group.id, startDate, endDate),
@@ -130,7 +148,7 @@ export function Reports({
     } finally {
       setLoading(false);
     }
-  }, [group.id, reportStartDate, reportEndDate]);
+  }, [group.id, reportStartDate, reportEndDate, members.length]);
 
   // Debounce report generation to avoid spamming API on date changes
   useEffect(() => {
@@ -141,14 +159,13 @@ export function Reports({
     return () => clearTimeout(timer);
   }, [generateReport]);
 
-  // Reset state when group changes
   useEffect(() => {
-    setLoading(true);
     setReport(null);
     setSessions([]);
-    setMembers([]);
+    setMembers(storeMembers);
     setError(null);
-  }, [group.id]);
+    setLoading(storeMembers.length > 0);
+  }, [group.id, storeMembers]);
 
   // Load saved views on mount or group change
   useEffect(() => {
@@ -505,24 +522,25 @@ export function Reports({
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      
+
       // Format dates to "Month Day, Year" format
       const formatDateForFilename = (dateString: string): string => {
         const date = new Date(dateString);
-        const month = date.toLocaleString('en-US', { month: 'long' });
+        const month = date.toLocaleString("en-US", { month: "long" });
         const day = date.getDate();
         const year = date.getFullYear();
         return `${month} ${day}, ${year}`;
       };
-      
+
       const formattedStartDate = formatDateForFilename(reportStartDate);
       const formattedEndDate = formatDateForFilename(reportEndDate);
-      
+
       // If same date, only show one date
-      const dateRange = reportStartDate === reportEndDate 
-        ? formattedStartDate 
-        : `${formattedStartDate} to ${formattedEndDate}`;
-      
+      const dateRange =
+        reportStartDate === reportEndDate
+          ? formattedStartDate
+          : `${formattedStartDate} to ${formattedEndDate}`;
+
       anchor.download = `${group.name} (${dateRange}).csv`;
       document.body.appendChild(anchor);
       anchor.click();
@@ -546,15 +564,43 @@ export function Reports({
     window.print();
   }, []);
 
-  // Expose export handlers to parent
   useEffect(() => {
-    if (onExportHandlersReady) {
+    if (onExportHandlersReady && members.length > 0 && !loading) {
       onExportHandlersReady({
         exportCSV: handleExportCSV,
         print: handlePrint,
       });
     }
-  }, [onExportHandlersReady, handleExportCSV, handlePrint]);
+  }, [
+    onExportHandlersReady,
+    handleExportCSV,
+    handlePrint,
+    members.length,
+    loading,
+  ]);
+
+  if (!loading && members.length === 0) {
+    return (
+      <section className="h-full flex flex-col overflow-hidden p-6">
+        <div className="flex-1 flex items-center justify-center min-h-0">
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="text-white/40 text-xs text-center">
+              No members in this group yet
+            </div>
+            {onAddMember && (
+              <button
+                onClick={onAddMember}
+                className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
+              >
+                <i className="fa-solid fa-user-plus text-xs"></i>
+                Add Member
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="h-full flex flex-col overflow-hidden space-y-4 p-6">

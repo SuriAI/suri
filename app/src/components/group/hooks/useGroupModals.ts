@@ -22,6 +22,9 @@ export function useGroupModals() {
   );
   const editingMember = useGroupUIStore((state) => state.editingMember);
   const openAddMember = useGroupUIStore((state) => state.openAddMember);
+  const openAddMemberWithNavigation = useGroupUIStore(
+    (state) => state.openAddMemberWithNavigation,
+  );
   const openEditMember = useGroupUIStore((state) => state.openEditMember);
   const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup);
   const openEditGroup = useGroupUIStore((state) => state.openEditGroup);
@@ -39,6 +42,7 @@ export function useGroupModals() {
       showEditGroupModal,
       editingMember,
       openAddMember,
+      openAddMemberWithNavigation,
       openEditMember,
       openCreateGroup,
       openEditGroup,
@@ -54,6 +58,7 @@ export function useGroupModals() {
       showEditGroupModal,
       editingMember,
       openAddMember,
+      openAddMemberWithNavigation,
       openEditMember,
       openCreateGroup,
       openEditGroup,
