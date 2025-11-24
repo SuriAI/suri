@@ -166,14 +166,14 @@ MODEL_CONFIGS = {
         "score_threshold": 0.9,
         "nms_threshold": 0.3,
         "top_k": 10000,
-        "min_face_size": 64,  # Faces smaller are marked as "too_small" for UI feedback.
+        "min_face_size": 80,  # Faces smaller are marked as "too_small" for UI feedback.
     },
     "liveness_detector": {
         "model_path": WEIGHTS_DIR / "liveness.onnx",
         "confidence_threshold": 0.60,
         "bbox_inc": 1.5,
         "model_img_size": 128,
-        "min_face_size": 64,  # Faces smaller than this are skipped from anti-spoof processing.
+        "min_face_size": 80,  # Faces smaller than this are skipped from anti-spoof processing.
     },
     "face_recognizer": {
         "model_path": WEIGHTS_DIR / "recognizer.onnx",
