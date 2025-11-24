@@ -1,4 +1,4 @@
-<h3 align="center"><img width="80" alt="Suri AI Attendance Tracker: Real-time face recognition attendance tracking that runs 100% offline" src="desktop/public/icons/icon-1024.png"></h3>
+<h3 align="center"><img width="80" alt="Suri AI Attendance Tracker: Real-time face recognition attendance tracking that runs 100% offline" src="app/public/icons/icon-1024.png"></h3>
 
 <h3 align="center">AI-Powered Attendance Tracking. Local-First, Privacy-Focused</h3>
 
@@ -162,7 +162,7 @@ pip install -r requirements.txt
 
 **3. Setup Frontend (Electron + React)**
 ```bash
-cd desktop
+cd app
 pnpm install
 ```
 
@@ -183,7 +183,7 @@ cd server
 python run.py
 
 # Terminal 2 - Frontend
-cd desktop
+cd app
 pnpm dev
 ```
 
@@ -194,13 +194,13 @@ cd server
 python build_backend.py
 
 # Build Electron app
-cd desktop
+cd app
 pnpm dist:win   # Windows
 pnpm dist:mac   # macOS
 pnpm dist:linux # Linux
 ```
 
-Installer will be created in `desktop/dist/`
+Installer will be created in `app/dist/`
 
 ---
 

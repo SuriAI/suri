@@ -11,8 +11,8 @@ if [ ! -d "server" ]; then
     exit 1
 fi
 
-if [ ! -d "desktop" ]; then
-    echo "Error: desktop directory not found. Please run this script from the project root."
+if [ ! -d "app" ]; then
+    echo "Error: app directory not found. Please run this script from the project root."
     exit 1
 fi
 
@@ -44,7 +44,7 @@ sleep 3
 
 # Start frontend (this will block)
 echo "Starting Electron frontend..."
-cd desktop
+cd app
 pnpm dev
 
 # If we get here, frontend was stopped
