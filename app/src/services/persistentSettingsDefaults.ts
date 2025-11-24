@@ -47,7 +47,7 @@ export const defaultSettings: PersistentSettingsSchema = {
   },
   ui: {
     sidebarCollapsed: false,
-    sidebarWidth: 320,
+    sidebarWidth: 360, // Middle value between MIN_EXPANDED_WIDTH (240) and MAX_WIDTH (480)
     selectedGroupId: null,
     groupSidebarCollapsed: false,
     selectedCamera: "",
