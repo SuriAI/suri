@@ -72,7 +72,6 @@ async def lifespan(app: FastAPI):
             match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
             track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
             frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
-            max_iou_distance=FACE_TRACKER_CONFIG["max_iou_distance"],
         )
 
         attendance_database = AttendanceDatabaseManager(str(DATA_DIR / "attendance.db"))
