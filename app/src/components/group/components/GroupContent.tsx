@@ -78,7 +78,11 @@ function GroupContentComponent({
   return (
     <>
       {activeSection === "overview" && (
-        <Overview group={selectedGroup} members={members} />
+        <Overview
+          group={selectedGroup}
+          members={members}
+          onAddMember={openAddMember}
+        />
       )}
 
       {activeSection === "reports" && (
@@ -86,6 +90,7 @@ function GroupContentComponent({
           group={selectedGroup}
           onDaysTrackedChange={onDaysTrackedChange}
           onExportHandlersReady={onExportHandlersReady}
+          onAddMember={openAddMember}
         />
       )}
 
@@ -110,6 +115,7 @@ function GroupContentComponent({
           registrationMode={registrationMode}
           deselectMemberTrigger={deselectMemberTrigger}
           onHasSelectedMemberChange={onHasSelectedMemberChange}
+          onAddMember={openAddMember}
         />
       )}
 

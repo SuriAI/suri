@@ -17,6 +17,7 @@ interface RegistrationProps {
   registrationMode?: "single" | "bulk" | "queue" | null;
   deselectMemberTrigger?: number;
   onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
+  onAddMember?: () => void;
 }
 
 type SourceType = "upload" | "camera" | null;
@@ -32,6 +33,7 @@ export function Registration({
   registrationMode,
   deselectMemberTrigger,
   onHasSelectedMemberChange,
+  onAddMember,
 }: RegistrationProps) {
   const [source, setSource] = useState<SourceType>(registrationSource || null);
   const [mode, setMode] = useState<RegistrationMode>(registrationMode || null);
@@ -109,6 +111,27 @@ export function Registration({
         deselectMemberTrigger={deselectMemberTrigger}
         onSelectedMemberChange={onHasSelectedMemberChange}
       />
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center px-6">
+        <div className="flex flex-col items-center justify-center space-y-3">
+          <div className="text-white/40 text-xs text-center">
+            No members in this group yet
+          </div>
+          {onAddMember && (
+            <button
+              onClick={onAddMember}
+              className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
+            >
+              <i className="fa-solid fa-user-plus text-xs"></i>
+              Add Member
+            </button>
+          )}
+        </div>
+      </div>
     );
   }
 

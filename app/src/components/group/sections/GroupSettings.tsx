@@ -35,23 +35,44 @@ export function GroupSettings({
     <section className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 p-6">
         <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-semibold text-white mb-2 truncate">
-                  {group.name}
-                </h2>
-                {group.description && (
-                  <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
-                    {group.description}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={onEdit}
-                className="ml-4 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 text-white/90 text-sm font-medium transition-all duration-200 flex items-center gap-2 flex-shrink-0"
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-semibold text-white mb-2 truncate">
+                {group.name}
+              </h2>
+              {group.description && (
+                <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
+                  {group.description}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onEdit}
+              className="ml-4 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 text-white/90 text-sm font-medium transition-all duration-200 flex items-center gap-2 flex-shrink-0"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                  strokeWidth={2}
+                />
+              </svg>
+              Edit Group
+            </button>
+          </div>
+
+          {/* Stats Grid - Enhanced */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+            <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
+              <div className="flex items-center gap-3 mb-2">
                 <svg
-                  className="w-4 h-4"
+                  className="w-5 h-5 text-white/70"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -59,71 +80,49 @@ export function GroupSettings({
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
                     strokeWidth={2}
                   />
                 </svg>
-                Edit Group
-              </button>
-            </div>
 
-            {/* Stats Grid - Enhanced */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-              <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
-                <div className="flex items-center gap-3 mb-2">
-                    <svg
-                      className="w-5 h-5 text-white/70"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
-                        strokeWidth={2}
-                      />
-                    </svg>
-
-                  <div>
-                    <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
-                      Total Members
-                    </div>
-                    <div className="text-3xl font-light text-white mt-1">
-                      {memberCount}
-                    </div>
+                <div>
+                  <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                    Total Members
                   </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
-                <div className="flex items-center gap-3 mb-2">
-                    <svg
-                      className="w-5 h-5 text-white/70"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-                        strokeWidth={2}
-                      />
-                    </svg>
-
-                  <div>
-                    <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
-                      Created
-                    </div>
-                    <div className="text-sm font-medium text-white/90 mt-1">
-                      {groupCreatedAt ? formatDate(groupCreatedAt) : "—"}
-                    </div>
+                  <div className="text-3xl font-light text-white mt-1">
+                    {memberCount}
                   </div>
                 </div>
               </div>
             </div>
 
+            <div className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/[0.07] transition-colors duration-200">
+              <div className="flex items-center gap-3 mb-2">
+                <svg
+                  className="w-5 h-5 text-white/70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                    strokeWidth={2}
+                  />
+                </svg>
+
+                <div>
+                  <div className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                    Created
+                  </div>
+                  <div className="text-sm font-medium text-white/90 mt-1">
+                    {groupCreatedAt ? formatDate(groupCreatedAt) : "—"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Danger Zone - Enhanced */}
           <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/[0.05] to-red-500/[0.02] p-6 backdrop-blur-sm">

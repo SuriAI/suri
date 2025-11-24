@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { attendanceManager } from "../../../services";
 import type { AttendanceGroup } from "../../../types/recognition.js";
 
@@ -21,6 +21,7 @@ export function AddMember({ group, onClose, onSuccess }: AddMemberProps) {
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setNewMemberName("");
@@ -29,6 +30,24 @@ export function AddMember({ group, onClose, onSuccess }: AddMemberProps) {
     setBulkResults(null);
     setIsBulkMode(false);
   };
+
+  useEffect(() => {
+    if (!isBulkMode && nameInputRef.current) {
+      const focusInput = () => {
+        if (nameInputRef.current) {
+          nameInputRef.current.focus();
+          nameInputRef.current.select();
+          nameInputRef.current.click();
+        }
+      };
+
+      requestAnimationFrame(() => {
+        focusInput();
+        setTimeout(focusInput, 50);
+        setTimeout(focusInput, 150);
+      });
+    }
+  }, [isBulkMode]);
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -170,6 +189,7 @@ export function AddMember({ group, onClose, onSuccess }: AddMemberProps) {
             <label className="text-sm">
               <span className="text-white/60 block mb-2">Full name *</span>
               <input
+                ref={nameInputRef}
                 type="text"
                 value={newMemberName}
                 onChange={(event) => setNewMemberName(event.target.value)}
