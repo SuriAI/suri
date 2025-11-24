@@ -33,7 +33,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       {!isSidebarCollapsed && (
         <div className="px-4 py-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Dropdown
                 options={groups.map((group) => ({
                   value: group.id,

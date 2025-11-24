@@ -464,7 +464,7 @@ export const Settings: React.FC<SettingsProps> = ({
         {/* Group Selector - Top Context Switcher (Discord/Slack Pattern) */}
         <div className="px-3 py-3 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <div className="flex-1" key={storeGroups.length}>
+            <div className="flex-1 min-w-0" key={storeGroups.length}>
               <Dropdown
                 options={dropdownGroups.map((group) => ({
                   value: group.id,

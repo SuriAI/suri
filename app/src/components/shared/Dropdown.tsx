@@ -114,7 +114,7 @@ export function Dropdown<T extends string | number = string>({
   };
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative min-w-0 ${className}`} ref={dropdownRef}>
       {/* Dropdown Button */}
       <button
         type="button"
@@ -125,11 +125,11 @@ export function Dropdown<T extends string | number = string>({
           w-full bg-white/5 border border-white/10 rounded-md pl-3 pr-2 py-2 text-sm text-white
           focus:outline-none focus:border-white/20 transition-all cursor-pointer text-left
           flex items-center justify-between hover:bg-white/8
-          disabled:opacity-50 disabled:cursor-not-allowed
+          disabled:opacity-50 disabled:cursor-not-allowed min-w-0
           ${buttonClassName}
         `}
       >
-        <span className="truncate flex-1 text-left">{displayText}</span>
+        <span className="truncate flex-1 min-w-0 text-left">{displayText}</span>
         {/* Chevron Icon - Right Aligned */}
         <i
           className={`fa-solid fa-chevron-down text-white/50 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${
