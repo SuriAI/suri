@@ -4,7 +4,12 @@ from typing import List, Dict, Tuple, Optional
 
 
 def preprocess_image(img: np.ndarray, model_img_size: int) -> np.ndarray:
-    """Preprocess image for model inference."""
+    """
+    Preprocess single image for model inference.
+    
+    Returns:
+        np.ndarray: Preprocessed image with shape [3, H, W] (no batch dimension)
+    """
     new_size = model_img_size
     old_size = img.shape[:2]
 
@@ -24,10 +29,35 @@ def preprocess_image(img: np.ndarray, model_img_size: int) -> np.ndarray:
 
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_REFLECT_101)
 
+    # Convert to CHW format and normalize: [H, W, 3] -> [3, H, W]
     img = img.transpose(2, 0, 1).astype(np.float32) / 255.0
-    img_batch = np.expand_dims(img, axis=0)
 
-    return img_batch
+    return img
+
+
+def preprocess_batch(face_crops: List[np.ndarray], model_img_size: int) -> np.ndarray:
+    """
+    Preprocess multiple face crops into a batch tensor for batch inference.
+    
+    Args:
+        face_crops: List of face crop images (each is [H, W, 3] RGB)
+        model_img_size: Target image size for the model
+        
+    Returns:
+        np.ndarray: Batch tensor with shape [N, 3, H, W] where N is the number of faces
+    """
+    if not face_crops:
+        raise ValueError("face_crops list cannot be empty")
+    
+    preprocessed_images = []
+    for face_crop in face_crops:
+        preprocessed = preprocess_image(face_crop, model_img_size)
+        preprocessed_images.append(preprocessed)
+    
+    # Stack all preprocessed images into a batch: [N, 3, H, W]
+    batch_tensor = np.stack(preprocessed_images, axis=0)
+    
+    return batch_tensor
 
 
 def crop_with_margin(img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarray:

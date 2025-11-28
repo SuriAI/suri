@@ -3,7 +3,6 @@ import numpy as np
 from typing import List, Dict, Optional
 from .session_utils import init_onnx_session
 from .preprocess import (
-    preprocess_image,
     crop_with_margin,
     extract_face_crops_from_detections,
 )
@@ -53,12 +52,16 @@ class LivenessDetector:
         """Initialize ONNX Runtime session"""
         return init_onnx_session(onnx_model_path)
 
-    def preprocessing(self, img: np.ndarray) -> np.ndarray:
-        """Preprocess image for model inference"""
-        return preprocess_image(img, self.model_img_size)
-
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
-        """Apply softmax to prediction (expects batch size 1: [1, 3])"""
+        """
+        Apply softmax to batch predictions.
+        
+        Args:
+            prediction: Raw logits with shape [N, 3] where N is batch size
+            
+        Returns:
+            np.ndarray: Softmax probabilities with shape [N, 3]
+        """
         return softmax(prediction)
 
     def increased_crop(
@@ -123,13 +126,13 @@ class LivenessDetector:
             # Return results (should never be empty, but fail-safe if it is)
             return results
 
-        # Run batch inference
+        # Run batch inference (processes all faces in a single batch for better performance)
         raw_predictions = run_batch_inference(
             face_crops,
             self.ort_session,
             self.input_name,
-            self.preprocessing,
             self.postprocessing,
+            self.model_img_size,
         )
 
         # Assemble liveness results with temporal smoothing

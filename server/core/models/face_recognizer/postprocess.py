@@ -20,7 +20,7 @@ def normalize_embedding(embedding: np.ndarray) -> np.ndarray:
 
 def normalize_embeddings_batch(embeddings: np.ndarray) -> List[np.ndarray]:
     """
-    Normalize a batch of embeddings.
+    Normalize a batch of embeddings using vectorized operations.
 
     Args:
         embeddings: Batch of embeddings [N, embedding_dim]
@@ -28,11 +28,10 @@ def normalize_embeddings_batch(embeddings: np.ndarray) -> List[np.ndarray]:
     Returns:
         List of normalized embeddings
     """
-    normalized_embeddings = []
-    for embedding in embeddings:
-        normalized = normalize_embedding(embedding)
-        normalized_embeddings.append(normalized)
-    return normalized_embeddings
+    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+    norms = np.where(norms > 0, norms, 1.0)
+    normalized = embeddings / norms
+    return [normalized[i].astype(np.float32) for i in range(len(embeddings))]
 
 
 def compute_similarity(
