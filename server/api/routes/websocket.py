@@ -5,11 +5,15 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from config.settings import FACE_DETECTOR_CONFIG
 from utils import serialize_faces
-from hooks import process_face_tracking, process_liveness_detection
+from hooks import (
+    process_face_detection,
+    process_face_tracking,
+    process_liveness_detection,
+)
 from utils.websocket_manager import manager
 
 if not logging.getLogger().handlers:
@@ -34,25 +38,27 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
             "message_count": 0,
             "streaming": False,
         }
+        if client_id not in manager.fps_tracking:
+            manager.fps_tracking[client_id] = {
+                "timestamps": [],
+                "max_samples": 30,
+                "last_update": datetime.now(),
+                "current_fps": 30,
+            }
+        from core.models import FaceTracker
+        from config.settings import FACE_TRACKER_CONFIG
 
-    # Store enable_liveness_detection per client (default to True)
+        if client_id not in manager.face_trackers:
+            manager.face_trackers[client_id] = FaceTracker(
+                model_path=str(FACE_TRACKER_CONFIG["model_path"]),
+                track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
+                match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
+                track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
+                frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
+            )
+            logger.info(f"[WebSocket] Created face tracker for client {client_id}")
+
     enable_liveness_detection = True
-
-    # Initialize min_face_size based on default enable_liveness_detection state
-    # This ensures correct face size limiting from the first frame
-    # Using config as single source of truth
-    from core.lifespan import face_detector, face_tracker
-
-    if face_detector:
-        default_min_size = FACE_DETECTOR_CONFIG["min_face_size"]
-        face_detector.set_min_face_size(default_min_size)
-
-    # Reset face tracker on new WebSocket connection
-    if face_tracker:
-        logger.info(
-            f"[WebSocket] Resetting face tracker for client {client_id} (fresh tracking state)"
-        )
-        face_tracker.reset()
 
     try:
         await websocket.send_text(
@@ -104,20 +110,6 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                             enable_liveness_detection = message.get(
                                 "enable_liveness_detection", True
                             )
-                            # When liveness detection is disabled, remove minimum face size limit
-                            # When enabled, restore default minimum face size from config (single source of truth)
-                            from core.lifespan import face_detector
-
-                            if face_detector:
-                                if not enable_liveness_detection:
-                                    face_detector.set_min_face_size(
-                                        0
-                                    )  # No limit when spoof detection is off
-                                else:
-                                    default_min_size = FACE_DETECTOR_CONFIG[
-                                        "min_face_size"
-                                    ]
-                                    face_detector.set_min_face_size(default_min_size)
 
                         await websocket.send_text(
                             json.dumps(
@@ -153,27 +145,21 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         )
                         continue
 
-                    from core.lifespan import face_detector
+                    min_face_size = (
+                        0
+                        if not enable_liveness_detection
+                        else FACE_DETECTOR_CONFIG["min_face_size"]
+                    )
 
-                    if not face_detector:
-                        raise HTTPException(
-                            status_code=500, detail="Face detector model not available"
-                        )
-
-                    # When liveness detection is disabled, remove minimum face size limit
-                    # When enabled, restore default minimum face size from config (single source of truth)
-                    if not enable_liveness_detection:
-                        face_detector.set_min_face_size(
-                            0
-                        )  # No limit when spoof detection is off
-                    else:
-                        default_min_size = FACE_DETECTOR_CONFIG["min_face_size"]
-                        face_detector.set_min_face_size(default_min_size)
-
-                    faces = face_detector.detect_faces(image)
+                    faces = await process_face_detection(
+                        image,
+                        min_face_size=min_face_size,
+                    )
 
                     current_fps = manager.update_fps(client_id)
-                    faces = await process_face_tracking(faces, image, current_fps)
+                    faces = await process_face_tracking(
+                        faces, image, current_fps, client_id
+                    )
                     faces = await process_liveness_detection(
                         faces, image, enable_liveness_detection
                     )

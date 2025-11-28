@@ -9,6 +9,8 @@ from typing import Dict, Set, Optional
 from datetime import datetime
 
 from fastapi import WebSocket
+from core.models import FaceTracker
+from config.settings import FACE_TRACKER_CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,7 @@ class ConnectionManager:
         self.connection_metadata: Dict[str, dict] = {}
         self.streaming_tasks: Dict[str, asyncio.Task] = {}
         self.fps_tracking: Dict[str, dict] = {}
+        self.face_trackers: Dict[str, FaceTracker] = {}
 
     async def connect(self, websocket: WebSocket, client_id: str) -> bool:
         """
@@ -48,6 +51,15 @@ class ConnectionManager:
                 "last_update": datetime.now(),
                 "current_fps": 30,
             }
+
+            # Create per-client face tracker
+            self.face_trackers[client_id] = FaceTracker(
+                model_path=str(FACE_TRACKER_CONFIG["model_path"]),
+                track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
+                match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
+                track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
+                frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
+            )
 
             # Send welcome message
             await self.send_personal_message(
@@ -93,6 +105,8 @@ class ConnectionManager:
                 del self.connection_metadata[client_id]
             if client_id in self.fps_tracking:
                 del self.fps_tracking[client_id]
+            if client_id in self.face_trackers:
+                del self.face_trackers[client_id]
 
     async def send_personal_message(self, message: dict, client_id: str) -> bool:
         """
@@ -330,6 +344,18 @@ class ConnectionManager:
                 tracking["last_update"] = now
 
         return tracking["current_fps"]
+
+    def get_face_tracker(self, client_id: str) -> Optional[FaceTracker]:
+        """
+        Get face tracker instance for a client.
+
+        Args:
+            client_id: Client identifier
+
+        Returns:
+            FaceTracker instance or None if not found
+        """
+        return self.face_trackers.get(client_id)
 
     def get_fps(self, client_id: str) -> int:
         """

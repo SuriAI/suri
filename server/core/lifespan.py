@@ -9,18 +9,15 @@ from config.settings import (
     FACE_DETECTOR_MODEL_PATH,
     FACE_RECOGNIZER_CONFIG,
     FACE_RECOGNIZER_MODEL_PATH,
-    FACE_TRACKER_CONFIG,
-    FACE_TRACKER_MODEL_PATH,
     LIVENESS_DETECTOR_CONFIG,
 )
 from core.models import (
     LivenessDetector,
     FaceDetector,
     FaceRecognizer,
-    FaceTracker,
 )
 from database.attendance import AttendanceDatabaseManager
-from hooks import set_model_references
+from hooks import set_model_references, init_model_executor, shutdown_model_executor
 
 if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO)
@@ -30,16 +27,18 @@ logger = logging.getLogger(__name__)
 face_detector = None
 liveness_detector = None
 face_recognizer = None
-face_tracker = None
 attendance_database = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global face_detector, liveness_detector, face_recognizer, face_tracker, attendance_database
+    global face_detector, liveness_detector, face_recognizer, attendance_database
 
     try:
         logger.info("Starting up backend server...")
+
+        init_model_executor(max_workers=4)
+
         face_detector = FaceDetector(
             model_path=str(FACE_DETECTOR_MODEL_PATH),
             input_size=FACE_DETECTOR_CONFIG["input_size"],
@@ -72,18 +71,9 @@ async def lifespan(app: FastAPI):
             session_options=FACE_RECOGNIZER_CONFIG["session_options"],
         )
 
-        face_tracker = FaceTracker(
-            model_path=str(FACE_TRACKER_MODEL_PATH),
-            track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
-            match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
-            track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
-            frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
-        )
-
         attendance_database = AttendanceDatabaseManager(str(DATA_DIR / "attendance.db"))
 
-        # Set model references for hooks
-        set_model_references(liveness_detector, face_tracker, face_recognizer)
+        set_model_references(liveness_detector, None, face_recognizer, face_detector)
 
         # Set model references for attendance routes
         from api.routes import attendance as attendance_routes
@@ -100,4 +90,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    logger.info("Shutting down...")
+    shutdown_model_executor()
     logger.info("Shutdown complete")

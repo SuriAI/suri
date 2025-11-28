@@ -55,10 +55,10 @@ class LivenessDetector:
     def postprocessing(self, prediction: np.ndarray) -> np.ndarray:
         """
         Apply softmax to batch predictions.
-        
+
         Args:
             prediction: Raw logits with shape [N, 3] where N is batch size
-            
+
         Returns:
             np.ndarray: Softmax probabilities with shape [N, 3]
         """

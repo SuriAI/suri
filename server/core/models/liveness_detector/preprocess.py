@@ -6,7 +6,7 @@ from typing import List, Dict, Tuple, Optional
 def preprocess_image(img: np.ndarray, model_img_size: int) -> np.ndarray:
     """
     Preprocess single image for model inference.
-    
+
     Returns:
         np.ndarray: Preprocessed image with shape [3, H, W] (no batch dimension)
     """
@@ -38,25 +38,25 @@ def preprocess_image(img: np.ndarray, model_img_size: int) -> np.ndarray:
 def preprocess_batch(face_crops: List[np.ndarray], model_img_size: int) -> np.ndarray:
     """
     Preprocess multiple face crops into a batch tensor for batch inference.
-    
+
     Args:
         face_crops: List of face crop images (each is [H, W, 3] RGB)
         model_img_size: Target image size for the model
-        
+
     Returns:
         np.ndarray: Batch tensor with shape [N, 3, H, W] where N is the number of faces
     """
     if not face_crops:
         raise ValueError("face_crops list cannot be empty")
-    
+
     preprocessed_images = []
     for face_crop in face_crops:
         preprocessed = preprocess_image(face_crop, model_img_size)
         preprocessed_images.append(preprocessed)
-    
+
     # Stack all preprocessed images into a batch: [N, 3, H, W]
     batch_tensor = np.stack(preprocessed_images, axis=0)
-    
+
     return batch_tensor
 
 

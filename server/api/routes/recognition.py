@@ -34,7 +34,6 @@ async def recognize_face(request: FaceRecognitionRequest):
         if not face_recognizer:
             raise HTTPException(status_code=500, detail="Face recognizer not available")
 
-        # OPTIMIZATION: Keep BGR format (no conversion needed)
         image = decode_base64_image(request.image)
 
         # Check liveness detection
@@ -59,14 +58,11 @@ async def recognize_face(request: FaceRecognitionRequest):
                 detail="Landmarks required for face recognition",
             )
 
-        # Get person_ids for group filtering (if group_id provided)
         allowed_person_ids = None
         if request.group_id and attendance_database:
             allowed_person_ids = attendance_database.get_group_person_ids(
                 request.group_id
             )
-
-        # Perform recognition
         result = await face_recognizer.recognize_face(
             image, landmarks_5, allowed_person_ids
         )
@@ -106,7 +102,6 @@ async def register_person(request: FaceRegistrationRequest):
         if not face_recognizer:
             raise HTTPException(status_code=500, detail="Face recognizer not available")
 
-        # OPTIMIZATION: Keep BGR format (no conversion needed)
         image = decode_base64_image(request.image)
 
         # Check liveness detection
