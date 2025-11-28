@@ -65,12 +65,12 @@ def preprocess_image(
         input_std: Standard deviation for normalization
 
     Returns:
-        Preprocessed tensor ready for model input [1, C, H, W]
+        Preprocessed tensor with shape [C, H, W] (no batch dimension)
     """
     rgb_image = cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB)
     normalized = (rgb_image.astype(np.float32) - input_mean) / input_std
     input_tensor = np.transpose(normalized, (2, 0, 1))
-    return np.expand_dims(input_tensor, axis=0)
+    return input_tensor
 
 
 def align_faces_batch(
@@ -122,6 +122,6 @@ def preprocess_batch(
         return np.array([])
 
     batch_tensors = [
-        preprocess_image(face, input_mean, input_std)[0] for face in aligned_faces
+        preprocess_image(face, input_mean, input_std) for face in aligned_faces
     ]
     return np.stack(batch_tensors, axis=0)

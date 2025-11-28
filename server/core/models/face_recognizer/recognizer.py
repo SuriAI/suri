@@ -75,7 +75,8 @@ class FaceRecognizer:
 
         # Preprocessing Layer: Align and preprocess
         aligned_face = align_face(image, landmarks, self.input_size)
-        input_tensor = preprocess_image(aligned_face, self.INPUT_MEAN, self.INPUT_STD)
+        preprocessed = preprocess_image(aligned_face, self.INPUT_MEAN, self.INPUT_STD)
+        input_tensor = np.expand_dims(preprocessed, axis=0)
 
         # Inference Layer: Run model
         feeds = {self.input_name: input_tensor}

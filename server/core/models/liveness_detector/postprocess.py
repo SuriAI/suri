@@ -1,9 +1,18 @@
 import numpy as np
 from typing import Dict, List, Tuple, Optional
+from .preprocess import preprocess_batch
 
 
 def softmax(prediction: np.ndarray) -> np.ndarray:
-    """Apply numerically stable softmax to prediction."""
+    """
+    Apply numerically stable softmax to batch predictions.
+    
+    Args:
+        prediction: Input logits with shape [N, 3] where N is batch size
+        
+    Returns:
+        np.ndarray: Softmax probabilities with shape [N, 3]
+    """
     exp_pred = np.exp(prediction - np.max(prediction, axis=-1, keepdims=True))
     return exp_pred / np.sum(exp_pred, axis=-1, keepdims=True)
 
@@ -76,34 +85,47 @@ def run_batch_inference(
     face_crops: List[np.ndarray],
     ort_session,
     input_name: str,
-    preprocess_fn,
     postprocess_fn,
-) -> List[Optional[np.ndarray]]:
-    """Run inference on face crops (one at a time since model expects batch size 1)."""
+    model_img_size: int,
+) -> List[np.ndarray]:
+    """
+    Run batch inference on multiple face crops simultaneously.
+    
+    Args:
+        face_crops: List of face crop images (each is [H, W, 3] RGB)
+        ort_session: ONNX Runtime inference session
+        input_name: Name of the input tensor
+        postprocess_fn: Function to apply softmax postprocessing
+        model_img_size: Target image size for preprocessing
+        
+    Returns:
+        List of raw predictions, each with shape [3] (live, print, replay scores).
+    """
     if not face_crops:
         return []
 
-    raw_predictions = []
     if not ort_session:
-        return [None] * len(face_crops)
+        raise RuntimeError("ONNX session is not available")
 
-    for face_crop in face_crops:
-        try:
-            single_input = preprocess_fn(face_crop)
-            onnx_results = ort_session.run([], {input_name: single_input})
-            logits = onnx_results[0]
-            prediction = postprocess_fn(logits)
-            raw_pred = prediction[0]
-            raw_predictions.append(raw_pred)
-        except Exception:
-            raw_predictions.append(None)
-
+    # Preprocess all face crops into a single batch tensor: [N, 3, H, W]
+    batch_input = preprocess_batch(face_crops, model_img_size)
+    
+    # Run batch inference
+    onnx_results = ort_session.run([], {input_name: batch_input})
+    logits = onnx_results[0]  # Shape: [N, 3]
+    
+    # Apply softmax to all predictions at once
+    predictions = postprocess_fn(logits)  # Shape: [N, 3]
+    
+    # Convert batch predictions to list of individual predictions
+    raw_predictions = [predictions[i] for i in range(len(face_crops))]
+    
     return raw_predictions
 
 
 def assemble_liveness_results(
     valid_detections: List[Dict],
-    raw_predictions: List[Optional[np.ndarray]],
+    raw_predictions: List[np.ndarray],
     confidence_threshold: float,
     results: List[Dict],
     temporal_smoother=None,
@@ -114,24 +136,13 @@ def assemble_liveness_results(
 
     Args:
         valid_detections: List of valid face detections
-        raw_predictions: List of raw model predictions
+        raw_predictions: List of raw model predictions, each with shape [3]
         confidence_threshold: Threshold for liveness classification
         results: List to append results to
         temporal_smoother: Optional TemporalSmoother instance
         frame_number: Current video frame number (for proper frame tracking)
     """
     for detection, raw_pred in zip(valid_detections, raw_predictions):
-        if raw_pred is None:
-            detection["liveness"] = {
-                "is_real": False,
-                "live_score": 0.0,
-                "spoof_score": 1.0,
-                "confidence": 0.0,
-                "status": "error",
-            }
-            results.append(detection)
-            continue
-
         prediction = process_prediction(raw_pred, confidence_threshold)
 
         # Apply temporal smoothing if enabled
