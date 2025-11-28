@@ -35,10 +35,10 @@ class TemporalSmoother:
         """
         if frame_number < 0:
             frame_number = 0
-            
+
         if frame_number < self.current_frame:
             frame_number = self.current_frame
-            
+
         self.current_frame = frame_number
         state = self.track_states[track_id]
 
@@ -82,9 +82,7 @@ class TemporalSmoother:
 
         # Also remove any negative track IDs (untracked faces shouldn't use temporal smoothing)
         negative_tracks = [
-            track_id
-            for track_id in self.track_states.keys()
-            if track_id < 0
+            track_id for track_id in self.track_states.keys() if track_id < 0
         ]
         stale_tracks.extend(negative_tracks)
 

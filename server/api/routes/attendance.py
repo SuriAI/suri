@@ -1399,7 +1399,9 @@ async def bulk_detect_faces(group_id: str, request: dict):
                 image = decode_base64_image(image_base64)
 
                 # Detect faces
-                detections = face_detector.detect_faces(image)
+                from hooks import process_face_detection
+
+                detections = await process_face_detection(image)
 
                 if not detections or len(detections) == 0:
                     results.append(

@@ -101,7 +101,9 @@ class FaceTracker:
             height = bbox.get("height", 0)
 
             if width <= 0 or height <= 0:
-                logger.warning(f"Invalid bbox dimensions: width={width}, height={height}")
+                logger.warning(
+                    f"Invalid bbox dimensions: width={width}, height={height}"
+                )
                 continue
 
             x1, y1 = x, y
@@ -142,7 +144,9 @@ class FaceTracker:
             if len(track_bboxes) > 0 and len(det_bboxes) > 0:
                 iou_matrix = iou_batch(track_bboxes, det_bboxes)
 
-                if iou_matrix.shape[0] != len(output_stracks) or iou_matrix.shape[1] != len(face_detections):
+                if iou_matrix.shape[0] != len(output_stracks) or iou_matrix.shape[
+                    1
+                ] != len(face_detections):
                     logger.warning(
                         f"IoU matrix shape mismatch: {iou_matrix.shape} vs "
                         f"expected ({len(output_stracks)}, {len(face_detections)})"
@@ -152,10 +156,10 @@ class FaceTracker:
                         if track_idx >= iou_matrix.shape[0]:
                             continue
                         best_det_idx = np.argmax(iou_matrix[track_idx])
-                        
+
                         if best_det_idx >= len(face_detections) or best_det_idx < 0:
                             continue
-                            
+
                         best_iou = iou_matrix[track_idx, best_det_idx]
 
                         if best_iou >= self.min_iou:

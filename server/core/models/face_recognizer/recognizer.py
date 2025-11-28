@@ -153,13 +153,16 @@ class FaceRecognizer:
 
         Full pipeline: Extract Embedding -> Find Match -> Return Result
         """
+        from hooks import get_model_executor
+
         loop = asyncio.get_event_loop()
+        executor = get_model_executor()
 
         def _recognize():
             try:
                 face_data = [{"landmarks_5": landmarks_5}]
                 embeddings = self._extract_embeddings(image, face_data)
-                
+
                 if not embeddings:
                     return {
                         "person_id": None,
@@ -167,17 +170,19 @@ class FaceRecognizer:
                         "success": False,
                         "error": "Failed to extract embedding",
                     }
-                
+
                 embedding = embeddings[0]
                 person_id, similarity = self._find_best_match(
                     embedding, allowed_person_ids
                 )
 
-                return {
+                result = {
                     "person_id": person_id,
                     "similarity": similarity,
-                    "success": True,
+                    "success": person_id is not None,
                 }
+
+                return result
 
             except Exception as e:
                 logger.error(f"Face recognition error: {e}")
@@ -188,7 +193,7 @@ class FaceRecognizer:
                     "error": str(e),
                 }
 
-        return await loop.run_in_executor(None, _recognize)
+        return await loop.run_in_executor(executor, _recognize)
 
     async def register_person(
         self, person_id: str, image: np.ndarray, landmarks_5: List
@@ -198,20 +203,23 @@ class FaceRecognizer:
 
         Pipeline: Extract Embedding -> Save to Database -> Refresh Cache
         """
+        from hooks import get_model_executor
+
         loop = asyncio.get_event_loop()
+        executor = get_model_executor()
 
         def _register():
             try:
                 face_data = [{"landmarks_5": landmarks_5}]
                 embeddings = self._extract_embeddings(image, face_data)
-                
+
                 if not embeddings:
                     return {
                         "success": False,
                         "error": "Failed to extract embedding",
                         "person_id": person_id,
                     }
-                
+
                 embedding = embeddings[0]
 
                 if self.db_manager:
@@ -235,7 +243,7 @@ class FaceRecognizer:
                 logger.error(f"Person registration failed: {e}")
                 return {"success": False, "error": str(e), "person_id": person_id}
 
-        return await loop.run_in_executor(None, _register)
+        return await loop.run_in_executor(executor, _register)
 
     def remove_person(self, person_id: str) -> Dict:
         """Remove a person from the database"""

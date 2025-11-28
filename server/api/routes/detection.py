@@ -11,7 +11,10 @@ from api.schemas import (
     OptimizationRequest,
 )
 from config.settings import FACE_DETECTOR_CONFIG
-from hooks import process_face_tracking, process_liveness_detection
+from hooks import (
+    process_face_detection,
+    process_liveness_detection,
+)
 from utils import serialize_faces
 from utils.image_utils import decode_base64_image
 
@@ -72,34 +75,26 @@ async def detect_faces(request: DetectionRequest):
     start_time = time.time()
 
     try:
-        from core.lifespan import face_detector
 
-        # OPTIMIZATION: Keep BGR format throughout (OpenCV native format)
-        image = decode_base64_image(request.image)  # Returns BGR
+        image = decode_base64_image(request.image)
 
         if request.model_type == "face_detector":
-            if not face_detector:
-                raise HTTPException(
-                    status_code=500, detail="Face detector model not available"
-                )
+            min_face_size = (
+                0
+                if not request.enable_liveness_detection
+                else FACE_DETECTOR_CONFIG["min_face_size"]
+            )
 
-            face_detector.set_confidence_threshold(request.confidence_threshold)
-            face_detector.set_nms_threshold(request.nms_threshold)
+            faces = await process_face_detection(
+                image,
+                confidence_threshold=request.confidence_threshold,
+                nms_threshold=request.nms_threshold,
+                min_face_size=min_face_size,
+            )
 
-            # When liveness detection is disabled, remove minimum face size limit
-            # When enabled, restore default minimum face size from config (single source of truth)
-            if not request.enable_liveness_detection:
-                face_detector.set_min_face_size(
-                    0
-                )  # No limit when spoof detection is off
-            else:
-                default_min_size = FACE_DETECTOR_CONFIG["min_face_size"]
-                face_detector.set_min_face_size(default_min_size)
-
-            faces = face_detector.detect_faces(image)
-
-            # CRITICAL: Add face tracking for consistent track_id
-            faces = await process_face_tracking(faces, image)
+            for face in faces:
+                if "track_id" not in face:
+                    face["track_id"] = -1
 
             faces = await process_liveness_detection(
                 faces, image, request.enable_liveness_detection
@@ -148,8 +143,6 @@ async def detect_faces_upload(
     start_time = time.time()
 
     try:
-        from core.lifespan import face_detector
-
         contents = await file.read()
 
         nparr = np.frombuffer(contents, np.uint8)
@@ -158,32 +151,25 @@ async def detect_faces_upload(
         if image_bgr is None:
             raise HTTPException(status_code=400, detail="Invalid image file")
 
-        # OPTIMIZATION: Keep BGR format (no conversion needed)
         image = image_bgr
 
         if model_type == "face_detector":
-            if not face_detector:
-                raise HTTPException(
-                    status_code=500, detail="Face detector model not available"
-                )
+            min_face_size = (
+                0
+                if not enable_liveness_detection
+                else FACE_DETECTOR_CONFIG["min_face_size"]
+            )
 
-            face_detector.set_confidence_threshold(confidence_threshold)
-            face_detector.set_nms_threshold(nms_threshold)
+            faces = await process_face_detection(
+                image,
+                confidence_threshold=confidence_threshold,
+                nms_threshold=nms_threshold,
+                min_face_size=min_face_size,
+            )
 
-            # When liveness detection is disabled, remove minimum face size limit
-            # When enabled, restore default minimum face size from config (single source of truth)
-            if not enable_liveness_detection:
-                face_detector.set_min_face_size(
-                    0
-                )  # No limit when spoof detection is off
-            else:
-                default_min_size = FACE_DETECTOR_CONFIG["min_face_size"]
-                face_detector.set_min_face_size(default_min_size)
-
-            faces = face_detector.detect_faces(image)
-
-            # CRITICAL: Add face tracking for consistent track_id
-            faces = await process_face_tracking(faces, image)
+            for face in faces:
+                if "track_id" not in face:
+                    face["track_id"] = -1
 
             faces = await process_liveness_detection(
                 faces, image, enable_liveness_detection

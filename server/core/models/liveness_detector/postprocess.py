@@ -6,10 +6,10 @@ from .preprocess import preprocess_batch
 def softmax(prediction: np.ndarray) -> np.ndarray:
     """
     Apply numerically stable softmax to batch predictions.
-    
+
     Args:
         prediction: Input logits with shape [N, 3] where N is batch size
-        
+
     Returns:
         np.ndarray: Softmax probabilities with shape [N, 3]
     """
@@ -90,14 +90,14 @@ def run_batch_inference(
 ) -> List[np.ndarray]:
     """
     Run batch inference on multiple face crops simultaneously.
-    
+
     Args:
         face_crops: List of face crop images (each is [H, W, 3] RGB)
         ort_session: ONNX Runtime inference session
         input_name: Name of the input tensor
         postprocess_fn: Function to apply softmax postprocessing
         model_img_size: Target image size for preprocessing
-        
+
     Returns:
         List of raw predictions, each with shape [3] (live, print, replay scores).
     """
@@ -109,28 +109,28 @@ def run_batch_inference(
 
     # Preprocess all face crops into a single batch tensor: [N, 3, H, W]
     batch_input = preprocess_batch(face_crops, model_img_size)
-    
+
     # Run batch inference
     onnx_results = ort_session.run([], {input_name: batch_input})
     logits = onnx_results[0]  # Shape: [N, 3]
-    
+
     if len(logits.shape) != 2 or logits.shape[1] != 3:
         raise ValueError(
             f"Model output has invalid shape: {logits.shape}, expected [N, 3]"
         )
-    
+
     if logits.shape[0] != len(face_crops):
         raise ValueError(
             f"Model output batch size mismatch: got {logits.shape[0]} predictions "
             f"for {len(face_crops)} face crops"
         )
-    
+
     # Apply softmax to all predictions at once
     predictions = postprocess_fn(logits)  # Shape: [N, 3]
-    
+
     # Convert batch predictions to list of individual predictions
     raw_predictions = [predictions[i] for i in range(len(face_crops))]
-    
+
     return raw_predictions
 
 
@@ -158,7 +158,7 @@ def assemble_liveness_results(
             f"Length mismatch: {len(valid_detections)} detections but "
             f"{len(raw_predictions)} predictions. This indicates a bug in the pipeline."
         )
-    
+
     for detection, raw_pred in zip(valid_detections, raw_predictions):
         prediction = process_prediction(raw_pred, confidence_threshold)
 
