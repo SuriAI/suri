@@ -41,17 +41,20 @@ async def process_liveness_detection(
         return faces_with_liveness
 
     except Exception as e:
-        logger.warning(f"Liveness detection failed: {e}")
-        # Mark ALL faces as SPOOF on error
+        logger.error(f"Liveness detection failed: {e}", exc_info=True)
         for face in faces:
-            face["liveness"] = {
-                "is_real": False,
-                "live_score": 0.0,
-                "spoof_score": 1.0,
-                "confidence": 0.0,
-                "status": "error",
-                "message": f"Liveness detection error: {str(e)}",
-            }
+            if "liveness" not in face:
+                face["liveness"] = {
+                    "is_real": False,
+                    "live_score": 0.0,
+                    "spoof_score": 1.0,
+                    "confidence": 0.0,
+                    "status": "error",
+                    "message": f"Liveness detection error: {str(e)}",
+                }
+            elif face["liveness"].get("status") not in ["live", "spoof"]:
+                face["liveness"]["status"] = "error"
+                face["liveness"]["message"] = f"Liveness detection error: {str(e)}"
 
     return faces
 

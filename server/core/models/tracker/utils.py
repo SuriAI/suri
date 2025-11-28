@@ -20,4 +20,7 @@ def iou_batch(bb_test: np.ndarray, bb_gt: np.ndarray) -> np.ndarray:
     )
     area_gt = (bb_gt[..., 2] - bb_gt[..., 0]) * (bb_gt[..., 3] - bb_gt[..., 1])
 
-    return wh / (area_test + area_gt - wh)
+    union = area_test + area_gt - wh
+    union = np.maximum(union, 1e-6)
+    
+    return wh / union

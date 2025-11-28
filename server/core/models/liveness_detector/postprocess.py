@@ -114,6 +114,17 @@ def run_batch_inference(
     onnx_results = ort_session.run([], {input_name: batch_input})
     logits = onnx_results[0]  # Shape: [N, 3]
     
+    if len(logits.shape) != 2 or logits.shape[1] != 3:
+        raise ValueError(
+            f"Model output has invalid shape: {logits.shape}, expected [N, 3]"
+        )
+    
+    if logits.shape[0] != len(face_crops):
+        raise ValueError(
+            f"Model output batch size mismatch: got {logits.shape[0]} predictions "
+            f"for {len(face_crops)} face crops"
+        )
+    
     # Apply softmax to all predictions at once
     predictions = postprocess_fn(logits)  # Shape: [N, 3]
     
@@ -142,6 +153,12 @@ def assemble_liveness_results(
         temporal_smoother: Optional TemporalSmoother instance
         frame_number: Current video frame number (for proper frame tracking)
     """
+    if len(valid_detections) != len(raw_predictions):
+        raise ValueError(
+            f"Length mismatch: {len(valid_detections)} detections but "
+            f"{len(raw_predictions)} predictions. This indicates a bug in the pipeline."
+        )
+    
     for detection, raw_pred in zip(valid_detections, raw_predictions):
         prediction = process_prediction(raw_pred, confidence_threshold)
 
@@ -151,9 +168,6 @@ def assemble_liveness_results(
 
         if temporal_smoother:
             track_id = detection.get("track_id")
-            # Only apply temporal smoothing to positive track IDs (tracked faces)
-            # Negative track IDs are temporary and change per frame - using them
-            # would cause state leakage between different faces
             if track_id is not None and track_id > 0:
                 live_score, spoof_score = temporal_smoother.smooth(
                     track_id, live_score, spoof_score, frame_number

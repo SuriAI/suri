@@ -166,14 +166,14 @@ MODEL_CONFIGS = {
         "score_threshold": 0.9,
         "nms_threshold": 0.3,
         "top_k": 10000,
-        "min_face_size": 64,  # Faces smaller are marked as "too_small" for UI feedback.
+        "min_face_size": 70,  # Faces smaller are marked as "too_small" for UI feedback.
     },
     "liveness_detector": {
         "model_path": WEIGHTS_DIR / "liveness.onnx",
         "confidence_threshold": 0.65,
         "bbox_inc": 1.5,
         "model_img_size": 128,
-        "min_face_size": 64,  # Faces smaller than this are skipped from anti-spoof processing.
+        "min_face_size": 70,  # Faces smaller than this are skipped from anti-spoof processing.
         "temporal_alpha": 0.5,  # EMA smoothing factor (0-1). Lower = more smoothing.
         "enable_temporal_smoothing": True,  # Enable temporal smoothing to prevent sudden flips.
     },
