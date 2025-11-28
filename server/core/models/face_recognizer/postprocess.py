@@ -2,22 +2,6 @@ import numpy as np
 from typing import List, Dict, Optional, Tuple
 
 
-def normalize_embedding(embedding: np.ndarray) -> np.ndarray:
-    """
-    L2 normalize embedding vector.
-
-    Args:
-        embedding: Raw embedding vector
-
-    Returns:
-        Normalized embedding vector
-    """
-    norm = np.linalg.norm(embedding)
-    if norm > 0:
-        embedding = embedding / norm
-    return embedding.astype(np.float32)
-
-
 def normalize_embeddings_batch(embeddings: np.ndarray) -> List[np.ndarray]:
     """
     Normalize a batch of embeddings using vectorized operations.

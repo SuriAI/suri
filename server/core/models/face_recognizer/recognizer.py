@@ -8,13 +8,10 @@ import numpy as np
 from database.face import FaceDatabaseManager
 from .session_utils import init_face_recognizer_session
 from .preprocess import (
-    align_face,
-    preprocess_image,
     align_faces_batch,
     preprocess_batch,
 )
 from .postprocess import (
-    normalize_embedding,
     normalize_embeddings_batch,
     find_best_match,
 )
@@ -65,53 +62,33 @@ class FaceRecognizer:
         self._cache_timestamp = 0
         self._cache_ttl = 1.0
 
-    def _extract_embedding(self, image: np.ndarray, landmarks_5: List) -> np.ndarray:
-        """
-        Extract embedding from a single face.
-
-        Pipeline: Align -> Preprocess -> Infer -> Normalize
-        """
-        landmarks = np.array(landmarks_5, dtype=np.float32)
-
-        # Preprocessing Layer: Align and preprocess
-        aligned_face = align_face(image, landmarks, self.input_size)
-        preprocessed = preprocess_image(aligned_face, self.INPUT_MEAN, self.INPUT_STD)
-        input_tensor = np.expand_dims(preprocessed, axis=0)
-
-        # Inference Layer: Run model
-        feeds = {self.input_name: input_tensor}
-        outputs = self.session.run(None, feeds)
-        embedding = outputs[0][0]
-
-        # Postprocessing Layer: Normalize embedding
-        return normalize_embedding(embedding)
-
-    def _extract_embeddings_batch(
+    def _extract_embeddings(
         self, image: np.ndarray, face_data_list: List[Dict]
     ) -> List[np.ndarray]:
         """
-        Extract embeddings for multiple faces in batch.
+        Extract embeddings for faces using batch processing.
 
-        Pipeline: Batch Align -> Batch Preprocess -> Batch Infer -> Batch Normalize
+        Args:
+            image: Input image (BGR format)
+            face_data_list: List of face data dicts with 'landmarks_5' key
+
+        Returns:
+            List of normalized embeddings
         """
         if not face_data_list:
             return []
 
-        # Preprocessing Layer: Batch alignment
         aligned_faces = align_faces_batch(image, face_data_list, self.input_size)
 
         if not aligned_faces:
             return []
 
-        # Preprocessing Layer: Batch preprocessing
         batch_input = preprocess_batch(aligned_faces, self.INPUT_MEAN, self.INPUT_STD)
 
-        # Inference Layer: Batch inference
         feeds = {self.input_name: batch_input}
         outputs = self.session.run(None, feeds)
         embeddings = outputs[0]
 
-        # Postprocessing Layer: Batch normalization
         return normalize_embeddings_batch(embeddings)
 
     def _get_database(self) -> Dict[str, np.ndarray]:
@@ -180,7 +157,18 @@ class FaceRecognizer:
 
         def _recognize():
             try:
-                embedding = self._extract_embedding(image, landmarks_5)
+                face_data = [{"landmarks_5": landmarks_5}]
+                embeddings = self._extract_embeddings(image, face_data)
+                
+                if not embeddings:
+                    return {
+                        "person_id": None,
+                        "similarity": 0.0,
+                        "success": False,
+                        "error": "Failed to extract embedding",
+                    }
+                
+                embedding = embeddings[0]
                 person_id, similarity = self._find_best_match(
                     embedding, allowed_person_ids
                 )
@@ -214,7 +202,17 @@ class FaceRecognizer:
 
         def _register():
             try:
-                embedding = self._extract_embedding(image, landmarks_5)
+                face_data = [{"landmarks_5": landmarks_5}]
+                embeddings = self._extract_embeddings(image, face_data)
+                
+                if not embeddings:
+                    return {
+                        "success": False,
+                        "error": "Failed to extract embedding",
+                        "person_id": person_id,
+                    }
+                
+                embedding = embeddings[0]
 
                 if self.db_manager:
                     save_success = self.db_manager.add_person(person_id, embedding)
