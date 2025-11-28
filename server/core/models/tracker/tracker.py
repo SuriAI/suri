@@ -138,22 +138,31 @@ class FaceTracker:
             if len(track_bboxes) > 0 and len(det_bboxes) > 0:
                 iou_matrix = iou_batch(track_bboxes, det_bboxes)
 
-                for track_idx, track in enumerate(output_stracks):
-                    if track_idx >= iou_matrix.shape[0]:
-                        continue
-                    best_det_idx = np.argmax(iou_matrix[track_idx])
-                    best_iou = iou_matrix[track_idx, best_det_idx]
+                if iou_matrix.shape[0] != len(output_stracks) or iou_matrix.shape[1] != len(face_detections):
+                    logger.warning(
+                        f"IoU matrix shape mismatch: {iou_matrix.shape} vs "
+                        f"expected ({len(output_stracks)}, {len(face_detections)})"
+                    )
+                else:
+                    for track_idx, track in enumerate(output_stracks):
+                        if track_idx >= iou_matrix.shape[0]:
+                            continue
+                        best_det_idx = np.argmax(iou_matrix[track_idx])
+                        
+                        if best_det_idx >= len(face_detections) or best_det_idx < 0:
+                            continue
+                            
+                        best_iou = iou_matrix[track_idx, best_det_idx]
 
-                    # Use ByteTrack's match_thresh logic: IoU must be >= (1.0 - match_thresh)
-                    if best_iou >= self.min_iou and best_det_idx < len(face_detections):
-                        face_result = face_detections[best_det_idx].copy()
-                        face_result["track_id"] = int(track.track_id)
+                        if best_iou >= self.min_iou:
+                            face_result = face_detections[best_det_idx].copy()
+                            face_result["track_id"] = int(track.track_id)
 
-                        result.append(face_result)
-                        matched_detection_indices.add(best_det_idx)
+                            result.append(face_result)
+                            matched_detection_indices.add(best_det_idx)
 
-                        # Mark this detection as used
-                        iou_matrix[:, best_det_idx] = 0
+                            # Mark this detection as used
+                            iou_matrix[:, best_det_idx] = 0
 
         # Add unmatched detections with negative track IDs
         for det_idx, face in enumerate(face_detections):
