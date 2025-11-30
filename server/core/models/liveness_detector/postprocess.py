@@ -60,8 +60,8 @@ def validate_detection(
     if not isinstance(bbox, dict):
         return False, None
 
-    w = int(bbox.get("width", 0))
-    h = int(bbox.get("height", 0))
+    w = float(bbox.get("width", 0))
+    h = float(bbox.get("height", 0))
 
     if w <= 0 or h <= 0:
         return False, None

@@ -20,13 +20,13 @@ def process_detection(
     face_width_orig = x2_orig - x1_orig
     face_height_orig = y2_orig - y1_orig
 
-    # Convert to int at final step to preserve precision
+    # Keep float precision - no conversion to int
     detection = {
         "bbox": {
-            "x": int(x1_orig),
-            "y": int(y1_orig),
-            "width": int(face_width_orig),
-            "height": int(face_height_orig),
+            "x": x1_orig,
+            "y": y1_orig,
+            "width": face_width_orig,
+            "height": face_height_orig,
         },
         "confidence": conf,
         "landmarks_5": landmarks_5.tolist(),

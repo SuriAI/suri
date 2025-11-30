@@ -65,7 +65,6 @@ export const drawLandmarks = (
   color: string,
   bbox?: { x: number; y: number; width: number; height: number },
   displayWidth?: number,
-  displayHeight?: number,
 ) => {
   if (!bbox || landmarks.length < 4) {
     landmarks.forEach((point) => {
@@ -77,33 +76,18 @@ export const drawLandmarks = (
 
         if (!isFinite(x) || !isFinite(y)) return;
 
-        if (displayWidth !== undefined && displayHeight !== undefined) {
-          const largeMargin = Math.max(
-            20,
-            Math.min(100, Math.max(displayWidth, displayHeight) * 0.05),
-          );
-          if (
-            x < -largeMargin ||
-            x > displayWidth + largeMargin ||
-            y < -largeMargin ||
-            y > displayHeight + largeMargin
-          ) {
-            return;
-          }
+        // Draw landmarks - removed display bounds filtering to allow raw coordinates
+        ctx.save();
 
-          // Simple landmarks with glow matching bbox color
-          ctx.save();
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8; // Stronger glow to match bounding box
 
-          ctx.fillStyle = color;
-          ctx.shadowColor = color;
-          ctx.shadowBlur = 8; // Stronger glow to match bounding box
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
 
-          ctx.beginPath();
-          ctx.arc(x, y, 3, 0, 2 * Math.PI);
-          ctx.fill();
-
-          ctx.restore();
-        }
+        ctx.restore();
       }
     });
     return;
@@ -157,13 +141,6 @@ export const drawLandmarks = (
   }
 
   const margin = Math.max(bboxW, bboxH) * 0.5;
-  const largeMargin =
-    displayWidth !== undefined && displayHeight !== undefined
-      ? Math.max(
-          20,
-          Math.min(100, Math.max(displayWidth, displayHeight) * 0.05),
-        )
-      : 50;
 
   transformedLandmarks.forEach((lm) => {
     const { x, y } = lm;
@@ -184,29 +161,18 @@ export const drawLandmarks = (
       }
     }
 
-    if (displayWidth !== undefined && displayHeight !== undefined) {
-      if (
-        x < -largeMargin ||
-        x > displayWidth + largeMargin ||
-        y < -largeMargin ||
-        y > displayHeight + largeMargin
-      ) {
-        return;
-      }
+    // Draw landmarks - removed display bounds filtering to allow raw coordinates
+    ctx.save();
 
-      // Simple landmarks with glow matching bbox color
-      ctx.save();
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8; // Stronger glow to match bounding box
 
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 8; // Stronger glow to match bounding box
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
 
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
-      ctx.fill();
-
-      ctx.restore();
-    }
+    ctx.restore();
   });
 };
 
@@ -339,19 +305,14 @@ export const drawOverlays = ({
     if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2))
       return;
 
-    const clampedX1 = Math.max(0, Math.min(displayWidth, x1));
-    const clampedY1 = Math.max(0, Math.min(displayHeight, y1));
-    const clampedX2 = Math.max(0, Math.min(displayWidth, x2));
-    const clampedY2 = Math.max(0, Math.min(displayHeight, y2));
-
-    if (clampedX2 <= clampedX1 || clampedY2 <= clampedY1) return;
+    if (x2 <= x1 || y2 <= y1) return;
 
     const trackId = face.track_id!;
     const recognitionResult = currentRecognitionResults.get(trackId);
     const color = getFaceColor(recognitionResult || null, recognitionEnabled);
 
     setupCanvasContext(ctx, color);
-    drawBoundingBox(ctx, clampedX1, clampedY1, clampedX2, clampedY2);
+    drawBoundingBox(ctx, x1, y1, x2, y2);
 
     if (
       quickSettings.showLandmarks &&
@@ -369,7 +330,6 @@ export const drawOverlays = ({
         color,
         bbox,
         quickSettings.cameraMirrored ? displayWidth : undefined,
-        displayHeight,
       );
     }
 
@@ -394,8 +354,8 @@ export const drawOverlays = ({
     if (shouldShowLabel) {
       ctx.save();
 
-      const labelX = Math.max(4, Math.min(displayWidth - 100, clampedX1 + 4));
-      const labelY = Math.max(13, Math.min(displayHeight - 4, clampedY1 - 6));
+      const labelX = x1 + 4;
+      const labelY = y1 - 6;
 
       ctx.font = "600 13px system-ui, -apple-system, sans-serif";
       ctx.fillStyle = color;
@@ -430,8 +390,8 @@ export const drawOverlays = ({
         if (timeSinceStart < cooldownMs && remainingCooldownSeconds > 0) {
           ctx.save();
 
-          const centerX = (clampedX1 + clampedX2) / 2;
-          const centerY = (clampedY1 + clampedY2) / 2;
+          const centerX = (x1 + x2) / 2;
+          const centerY = (y1 + y2) / 2;
 
           ctx.fillStyle = "#FFFFFF";
           ctx.font = "500 40px system-ui, -apple-system, sans-serif";

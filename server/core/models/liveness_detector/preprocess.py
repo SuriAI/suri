@@ -75,34 +75,30 @@ def crop_with_margin(img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarra
     xc = x + w / 2
     yc = y + h / 2
 
-    if xc < -real_w or xc > real_w * 2 or yc < -real_h or yc > real_h * 2:
-        raise ValueError(
-            f"Bbox center completely outside reasonable bounds: "
-            f"center=({xc}, {yc}), image_size=({real_w}, {real_h})"
-        )
-
     x = int(xc - max_dim * bbox_inc / 2)
     y = int(yc - max_dim * bbox_inc / 2)
+    crop_size = int(max_dim * bbox_inc)
 
-    x1 = 0 if x < 0 else x
-    y1 = 0 if y < 0 else y
-    x2 = real_w if x + max_dim * bbox_inc > real_w else x + int(max_dim * bbox_inc)
-    y2 = real_h if y + max_dim * bbox_inc > real_h else y + int(max_dim * bbox_inc)
+    # Calculate actual crop region within image bounds
+    crop_x1 = max(0, x)
+    crop_y1 = max(0, y)
+    crop_x2 = min(real_w, x + crop_size)
+    crop_y2 = min(real_h, y + crop_size)
 
-    if x1 >= real_w or y1 >= real_h or x2 <= x1 or y2 <= y1:
-        raise ValueError(
-            f"Invalid crop region: x1={x1}, y1={y1}, x2={x2}, y2={y2}, "
-            f"image_size=({real_w}, {real_h})"
-        )
+    # Calculate padding needed
+    top_pad = max(0, -y)
+    left_pad = max(0, -x)
+    bottom_pad = max(0, (y + crop_size) - real_h)
+    right_pad = max(0, (x + crop_size) - real_w)
 
-    img = img[y1:y2, x1:x2, :]
+    # Crop the available region from image
+    if crop_x2 > crop_x1 and crop_y2 > crop_y1:
+        img = img[crop_y1:crop_y2, crop_x1:crop_x2, :]
+    else:
+        # If crop region is completely outside bounds, create empty image of correct size
+        img = np.zeros((0, 0, 3), dtype=img.dtype)
 
-    top_pad = y1 - y
-    bottom_pad = int(max_dim * bbox_inc - y2 + y)
-    left_pad = x1 - x
-    right_pad = int(max_dim * bbox_inc) - x2 + x
-
-    max_pad = int(max_dim * bbox_inc * 2)
+    max_pad = crop_size * 2
     if (
         abs(top_pad) > max_pad
         or abs(bottom_pad) > max_pad
@@ -133,16 +129,16 @@ def crop_with_margin(img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarra
     return img
 
 
-def extract_bbox_coordinates(detection: Dict) -> Optional[Tuple[int, int, int, int]]:
-    """Extract bbox coordinates from detection (expects dict format)."""
+def extract_bbox_coordinates(detection: Dict) -> Optional[Tuple[float, float, float, float]]:
+    """Extract bbox coordinates from detection (expects dict format). Preserves float precision."""
     bbox = detection.get("bbox", {})
     if not isinstance(bbox, dict):
         return None
 
-    x = int(bbox.get("x", 0))
-    y = int(bbox.get("y", 0))
-    w = int(bbox.get("width", 0))
-    h = int(bbox.get("height", 0))
+    x = float(bbox.get("x", 0))
+    y = float(bbox.get("y", 0))
+    w = float(bbox.get("width", 0))
+    h = float(bbox.get("height", 0))
 
     if w <= 0 or h <= 0:
         return None
