@@ -249,18 +249,11 @@ LOGGING_CONFIG = {
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "level": "DEBUG",
-            "formatter": "detailed",
-            "filename": "backend.log",
-            "mode": "a",
-        },
     },
     "loggers": {
         "": {
             "level": "INFO",
-            "handlers": ["console", "file"],
+            "handlers": ["console"],
         },
         "uvicorn": {
             "level": "INFO",
