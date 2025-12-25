@@ -10,7 +10,7 @@ from datetime import datetime
 
 from fastapi import WebSocket
 from core.models import FaceTracker
-from config.settings import FACE_TRACKER_CONFIG
+from config.models import FACE_TRACKER_CONFIG
 
 logger = logging.getLogger(__name__)
 

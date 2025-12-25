@@ -8,7 +8,13 @@ from pathlib import Path
 
 import uvicorn
 
-from config.settings import config, validate_model_paths, validate_directories
+from config.models import validate_model_paths, validate_directories
+from config.logging_config import LOGGING_CONFIG
+from config.server import get_server_config
+config = {
+    "server": get_server_config(),
+    "logging": LOGGING_CONFIG,
+}
 
 # Add the backend directory to Python path
 backend_dir = Path(__file__).parent
