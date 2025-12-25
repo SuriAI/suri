@@ -20,7 +20,7 @@ export interface DetectionResult {
     liveness?: {
       is_real: boolean | null;
       confidence?: number;
-      live_score?: number;
+      real_score?: number;
       spoof_score?: number;
       status: "live" | "spoof" | "error" | "too_small";
       attack_type?: string;
@@ -38,7 +38,7 @@ export interface WebSocketFaceData {
   liveness?: {
     is_real?: boolean | null;
     confidence?: number;
-    live_score?: number;
+    real_score?: number;
     spoof_score?: number;
     status?: "live" | "spoof" | "error" | "too_small";
     attack_type?: string;

@@ -102,7 +102,7 @@ export interface FaceWithRecognition {
   track_id?: number; // ByteTrack tracker ID for consistent face tracking across frames
   liveness?: {
     is_real: boolean | null;
-    live_score?: number;
+    real_score?: number;
     spoof_score?: number;
     confidence?: number;
     status: "real" | "fake" | "error" | "too_small";

@@ -263,7 +263,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
                     return {
                       is_real: face.liveness.is_real,
                       confidence: face.liveness.confidence,
-                      live_score: face.liveness.live_score,
+                      real_score: face.liveness.real_score,
                       spoof_score: face.liveness.spoof_score,
                       status: face.liveness.status,
                       attack_type: face.liveness.attack_type,

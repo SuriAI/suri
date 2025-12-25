@@ -59,7 +59,7 @@ def process_liveness_detection(
             if "liveness" not in face:
                 face["liveness"] = {
                     "is_real": False,
-                    "live_score": 0.0,
+                    "real_score": 0.0,
                     "spoof_score": 1.0,
                     "confidence": 0.0,
                     "status": "error",
