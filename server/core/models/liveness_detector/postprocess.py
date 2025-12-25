@@ -9,21 +9,15 @@ def softmax(prediction: np.ndarray) -> np.ndarray:
 
 
 def process_prediction(raw_pred: np.ndarray, confidence_threshold: float) -> Dict:
-    """Process raw prediction into liveness result."""
-    if len(raw_pred) < 3:
-        raise ValueError(f"Expected 3-class prediction, got {len(raw_pred)} classes")
+    real_score = float(raw_pred[0])
+    spoof_score = float(raw_pred[1])
 
-    live_score = float(raw_pred[0])
-    print_score = float(raw_pred[1])
-    replay_score = float(raw_pred[2])
-
-    spoof_score = print_score + replay_score
-    max_confidence = max(live_score, spoof_score)
-    is_real = live_score >= confidence_threshold
+    max_confidence = max(real_score, spoof_score)
+    is_real = real_score >= confidence_threshold
 
     result = {
         "is_real": bool(is_real),
-        "live_score": float(live_score),
+        "real_score": float(real_score),
         "spoof_score": float(spoof_score),
         "confidence": float(max_confidence),
         "status": "live" if is_real else "spoof",
@@ -68,11 +62,6 @@ def run_batch_inference(
     onnx_results = ort_session.run([], {input_name: batch_input})
     logits = onnx_results[0]
 
-    if len(logits.shape) != 2 or logits.shape[1] != 3:
-        raise ValueError(
-            f"Model output has invalid shape: {logits.shape}, expected [N, 3]"
-        )
-
     if logits.shape[0] != len(face_crops):
         raise ValueError(
             f"Model output batch size mismatch: got {logits.shape[0]} predictions "
@@ -102,22 +91,22 @@ def assemble_liveness_results(
     for detection, raw_pred in zip(valid_detections, raw_predictions):
         prediction = process_prediction(raw_pred, confidence_threshold)
 
-        live_score = prediction["live_score"]
+        real_score = prediction["real_score"]
         spoof_score = prediction["spoof_score"]
 
         if temporal_smoother:
             track_id = detection.get("track_id")
             if track_id is not None and track_id > 0:
-                live_score, spoof_score = temporal_smoother.smooth(
-                    track_id, live_score, spoof_score, frame_number
+                real_score, spoof_score = temporal_smoother.smooth(
+                    track_id, real_score, spoof_score, frame_number
                 )
 
-        max_confidence = max(live_score, spoof_score)
-        is_real = live_score >= confidence_threshold
+        max_confidence = max(real_score, spoof_score)
+        is_real = real_score >= confidence_threshold
 
         detection["liveness"] = {
             "is_real": is_real,
-            "live_score": live_score,
+            "real_score": real_score,
             "spoof_score": spoof_score,
             "confidence": max_confidence,
             "status": "live" if is_real else "spoof",

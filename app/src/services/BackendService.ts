@@ -58,7 +58,7 @@ interface IPCMessage {
     confidence?: number;
     liveness?: {
       is_real?: boolean | null;
-      live_score?: number;
+      real_score?: number;
       spoof_score?: number;
       confidence?: number;
       status?: "live" | "spoof" | "error" | "too_small";

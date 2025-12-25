@@ -19,19 +19,19 @@ class TemporalSmoother:
         )
 
     def smooth(
-        self, track_id: int, live_score: float, spoof_score: float, frame_number: int
+        self, track_id: int, real_score: float, spoof_score: float, frame_number: int
     ) -> Tuple[float, float]:
         """
         Apply temporal smoothing to scores for a given track_id.
 
         Args:
             track_id: Unique identifier for the tracked face
-            live_score: Current raw live score
+            real_score: Current raw live score
             spoof_score: Current raw spoof score
             frame_number: Current video frame number (global frame counter)
 
         Returns:
-            Tuple of (smoothed_live_score, smoothed_spoof_score)
+            Tuple of (smoothed_real_score, smoothed_spoof_score)
         """
         if frame_number < 0:
             frame_number = 0
@@ -44,11 +44,11 @@ class TemporalSmoother:
 
         # First observation: initialize with current scores
         if state["live"] is None or state["spoof"] is None:
-            smoothed_live = live_score
+            smoothed_live = real_score
             smoothed_spoof = spoof_score
         else:
             # Apply EMA
-            smoothed_live = self.alpha * live_score + (1 - self.alpha) * state["live"]
+            smoothed_live = self.alpha * real_score + (1 - self.alpha) * state["live"]
             smoothed_spoof = (
                 self.alpha * spoof_score + (1 - self.alpha) * state["spoof"]
             )
