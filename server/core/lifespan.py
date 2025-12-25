@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from config.settings import (
-    DATA_DIR,
+from config.paths import DATA_DIR
+from config.models import (
     FACE_DETECTOR_CONFIG,
     FACE_DETECTOR_MODEL_PATH,
     FACE_RECOGNIZER_CONFIG,

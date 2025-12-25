@@ -10,7 +10,7 @@ from api.schemas import (
     DetectionResponse,
     OptimizationRequest,
 )
-from config.settings import FACE_DETECTOR_CONFIG
+from config.models import FACE_DETECTOR_CONFIG
 from hooks import (
     process_face_detection,
     process_liveness_detection,

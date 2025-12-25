@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from config.settings import FACE_DETECTOR_CONFIG
+from config.models import FACE_DETECTOR_CONFIG
 from utils import serialize_faces
 from hooks import (
     process_face_detection,
@@ -46,7 +46,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 "current_fps": 30,
             }
         from core.models import FaceTracker
-        from config.settings import FACE_TRACKER_CONFIG
+        from config.models import FACE_TRACKER_CONFIG
 
         if client_id not in manager.face_trackers:
             manager.face_trackers[client_id] = FaceTracker(

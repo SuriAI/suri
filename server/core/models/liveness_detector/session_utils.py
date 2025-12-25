@@ -17,9 +17,9 @@ def init_onnx_session(
     if providers is None:
         try:
             try:
-                from config.settings import OPTIMIZED_PROVIDERS
+                from config.onnx import OPTIMIZED_PROVIDERS
             except ImportError:
-                from server.config.settings import OPTIMIZED_PROVIDERS
+                from server.config.onnx import OPTIMIZED_PROVIDERS
             providers = [
                 p[0] if isinstance(p, tuple) else p for p in OPTIMIZED_PROVIDERS
             ]
@@ -30,9 +30,9 @@ def init_onnx_session(
     if session_options is None:
         try:
             try:
-                from config.settings import OPTIMIZED_SESSION_OPTIONS
+                from config.onnx import OPTIMIZED_SESSION_OPTIONS
             except ImportError:
-                from server.config.settings import OPTIMIZED_SESSION_OPTIONS
+                from server.config.onnx import OPTIMIZED_SESSION_OPTIONS
             sess_opts = ort.SessionOptions()
             for key, value in OPTIMIZED_SESSION_OPTIONS.items():
                 if hasattr(sess_opts, key):
