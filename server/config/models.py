@@ -5,10 +5,10 @@ MODEL_CONFIGS = {
     "face_detector": {
         "model_path": WEIGHTS_DIR / "detector.onnx",
         "input_size": (640, 640),
-        "score_threshold": 0.9,
+        "score_threshold": 0.8,
         "nms_threshold": 0.3,
-        "top_k": 10000,
-        "min_face_size": 64,
+        "top_k": 5000,
+        "min_face_size": 60,
         "edge_margin": 5,
     },
     "liveness_detector": {
