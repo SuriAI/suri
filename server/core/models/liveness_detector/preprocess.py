@@ -16,7 +16,8 @@ def preprocess_image(img: np.ndarray, model_img_size: int) -> np.ndarray:
     ratio = float(new_size) / max(old_size)
     scaled_shape = tuple([int(x * ratio) for x in old_size])
 
-    img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]))
+    interpolation = cv2.INTER_LANCZOS4 if ratio > 1.0 else cv2.INTER_AREA
+    img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]), interpolation=interpolation)
 
     delta_w = new_size - scaled_shape[1]
     delta_h = new_size - scaled_shape[0]
