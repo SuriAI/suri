@@ -174,7 +174,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       {attendanceGroups.length > 0 ? (
         <div className="p-2 pb-2 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-[120px]">
               <Dropdown
                 options={attendanceGroups.map((group) => ({
                   value: group.id,
@@ -182,7 +182,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
+                    attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -241,7 +241,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             />
 
             <div className="flex items-center space-x-2">
-              <div className="flex-1">
+              <div className="min-w-[100px]">
                 <Dropdown
                   options={[
                     { value: "time", label: "Time (Newest)" },

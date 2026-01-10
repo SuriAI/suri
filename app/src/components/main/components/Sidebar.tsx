@@ -31,6 +31,7 @@ interface SidebarProps {
   recognitionEnabled: boolean;
   trackedFaces: Map<string, TrackedFace>;
   trackingMode: "auto" | "manual";
+  isStreaming: boolean;
 
   // Cooldown props
   persistentCooldowns: Map<string, CooldownInfo>;
@@ -61,6 +62,7 @@ export const Sidebar = memo(function Sidebar({
   recognitionEnabled,
   trackedFaces,
   trackingMode,
+  isStreaming,
   persistentCooldowns,
   attendanceCooldownSeconds,
   attendanceEnabled,
@@ -268,7 +270,7 @@ export const Sidebar = memo(function Sidebar({
       {/* Sidebar Container */}
       <div
         ref={sidebarRef}
-        className={`relative bg-white/[0.02] border-l border-b border-white/[0.08] flex flex-col max-h-full ${isInitialized ? "transition-all duration-300 ease-in-out" : ""}`}
+        className={`relative z-50 h-full overflow-hidden bg-black/80 border-l border-white/10 shadow-[-8px_0_32px_rgba(0,0,0,0.5)] flex flex-col ${isInitialized ? "transition-all duration-300 ease-in-out" : ""}`}
         style={{
           width: `${currentWidth}px`,
           minWidth: `${currentWidth}px`,
@@ -288,11 +290,10 @@ export const Sidebar = memo(function Sidebar({
             }}
           >
             <div
-              className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r transition-all ${
-                isResizing
-                  ? "bg-blue-500/70 h-16"
-                  : "bg-white/10 group-hover:bg-blue-500/50"
-              }`}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r transition-all ${isResizing
+                ? "bg-blue-500/70 h-16"
+                : "bg-white/10 group-hover:bg-blue-500/50"
+                }`}
             />
           </div>
         )}
@@ -336,7 +337,7 @@ export const Sidebar = memo(function Sidebar({
 
         {/* Content Area */}
         <div
-          className={`sidebar h-screen max-h-screen flex flex-col overflow-hidden transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          className={`sidebar flex-1 flex flex-col overflow-hidden transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
           {/* Attendance Management or Recent Logs - Using AttendancePanel Component */}
           <AttendancePanel
@@ -367,6 +368,7 @@ export const Sidebar = memo(function Sidebar({
                   recognitionEnabled={recognitionEnabled}
                   trackedFaces={trackedFaces}
                   groupMembers={groupMembers}
+                  isStreaming={isStreaming}
                 />
               </div>
             </div>
