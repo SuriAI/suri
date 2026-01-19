@@ -33,6 +33,7 @@ export function BulkRegistration({
     handleAssignMember,
     handleUnassign,
     handleBulkRegister,
+    handleClearFiles,
   } = useBulkRegistration(group, members, onRefresh);
 
   const assignedCount = detectedFaces.filter((f) => f.assignedPersonId).length;
@@ -71,6 +72,7 @@ export function BulkRegistration({
             uploadedCount={uploadedFiles.length}
             isDetecting={isDetecting}
             onFilesSelected={handleFilesSelected}
+            onClear={handleClearFiles}
           />
         )}
 

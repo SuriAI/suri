@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { RowData, ColumnKey } from "../types";
 
 interface ReportTableProps {
@@ -40,7 +41,7 @@ export function ReportTable({
           {Object.entries(groupedRows).map(([groupInfo, rows]) => {
             if (rows.length === 0) return null;
             return (
-              <>
+              <Fragment key={groupInfo}>
                 {groupInfo !== "__all__" && (
                   <tr className="bg-white/[0.02]">
                     <td
@@ -130,7 +131,7 @@ export function ReportTable({
                     })}
                   </tr>
                 ))}
-              </>
+              </Fragment>
             );
           })}
         </tbody>
