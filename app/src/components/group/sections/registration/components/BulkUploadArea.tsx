@@ -2,12 +2,14 @@ interface BulkUploadAreaProps {
   uploadedCount: number;
   isDetecting: boolean;
   onFilesSelected: (files: FileList | null) => void;
+  onClear: () => void;
 }
 
 export function BulkUploadArea({
   uploadedCount,
   isDetecting,
   onFilesSelected,
+  onClear,
 }: BulkUploadAreaProps) {
   if (uploadedCount > 0) {
     return (
@@ -68,29 +70,48 @@ export function BulkUploadArea({
             </div>
           </div>
 
-          <label className="cursor-pointer px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-white border border-white/10 transition flex items-center gap-2">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => onFilesSelected(e.target.files)}
-            />
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-2">
+            {/* Clear Button */}
+            <button
+              onClick={onClear}
+              disabled={isDetecting}
+              className="h-9 w-9 flex items-center justify-center rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Clear all files"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
+              <i className="fa-solid fa-trash text-sm"></i>
+            </button>
+
+            <label className="cursor-pointer px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-white border border-white/10 transition flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={isDetecting}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    onFilesSelected(e.target.files);
+                    // Reset input value to allow selecting same files again if needed
+                    e.target.value = "";
+                  }
+                }}
               />
-            </svg>
-            <span>Add More</span>
-          </label>
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span>Add More</span>
+            </label>
+          </div>
         </div>
       </div>
     );

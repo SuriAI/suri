@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+// Hook for bulk registration logic
 import type {
   AttendanceGroup,
   AttendanceMember,
@@ -185,30 +186,27 @@ export function useBulkRegistration(
 
   const handleFilesSelected = useCallback(
     async (files: FileList | null) => {
-      if (!files || files.length === 0) return;
+      if (!files) return;
 
-      const imageFiles = Array.from(files).filter((f) =>
-        f.type.startsWith("image/"),
+      const newFiles = Array.from(files).filter((file) =>
+        file.type.startsWith("image/"),
       );
-      if (imageFiles.length === 0) {
-        setError("No valid image files selected");
-        return;
-      }
 
-      if (imageFiles.length > 50) {
-        setError("Maximum 50 images allowed");
-        return;
-      }
+      if (newFiles.length === 0) return;
 
-      setUploadedFiles(imageFiles);
-      setDetectedFaces([]);
-      setRegistrationResults(null);
-      setError(null);
-
-      await handleDetectFaces(imageFiles);
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
+      // Append new files faces detection
+      await handleDetectFaces(newFiles);
     },
     [handleDetectFaces],
   );
+
+  const handleClearFiles = useCallback(() => {
+    setUploadedFiles([]);
+    setDetectedFaces([]);
+    setError(null);
+    setRegistrationResults(null);
+  }, []);
 
   const handleAssignMember = useCallback((faceId: string, personId: string) => {
     setDetectedFaces((prev) =>
@@ -304,5 +302,6 @@ export function useBulkRegistration(
     handleAssignMember,
     handleUnassign,
     handleBulkRegister,
+    handleClearFiles,
   };
 }

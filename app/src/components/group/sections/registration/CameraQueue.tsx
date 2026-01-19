@@ -388,22 +388,34 @@ export function CameraQueue({ group, members, onRefresh }: CameraQueueProps) {
                         checked={isInQueue}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setupQueue([
-                              ...memberQueue
-                                .map(
-                                  (m) =>
-                                    members.find(
-                                      (mem) => mem.person_id === m.personId,
-                                    )!,
-                                )
-                                .filter(Boolean),
-                              member,
-                            ]);
+                            // Add member to queue without resetting others
+                            const newMember: QueuedMember = {
+                              personId: member.person_id,
+                              name: member.name,
+                              role: member.role,
+                              status: "pending",
+                              capturedAngles: [],
+                            };
+                            setMemberQueue((prev) => [...prev, newMember]);
                           } else {
-                            const newQueue = memberQueue.filter(
-                              (m) => m.personId !== member.person_id,
+                            // Remove member from queue
+                            const memberIndex = memberQueue.findIndex(
+                              (m) => m.personId === member.person_id,
                             );
-                            setMemberQueue(newQueue);
+
+                            setMemberQueue((prev) =>
+                              prev.filter(
+                                (m) => m.personId !== member.person_id,
+                              ),
+                            );
+
+                            // Adjust index if we removed a member before the current one
+                            if (
+                              memberIndex !== -1 &&
+                              memberIndex < currentIndex
+                            ) {
+                              setCurrentIndex((prev) => Math.max(0, prev - 1));
+                            }
                           }
                         }}
                         className="w-4 h-4"
