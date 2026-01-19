@@ -54,7 +54,7 @@ interface SidebarProps {
 
 const MIN_WIDTH = 50; // Collapsed width (icon only)
 const MIN_EXPANDED_WIDTH = 240; // Minimum width when expanded (prevents resizing too small)
-const MAX_WIDTH = 480; // Maximum expanded width
+const MAX_WIDTH = 340; // Maximum expanded width
 const DEFAULT_WIDTH = (MIN_EXPANDED_WIDTH + MAX_WIDTH) / 2; // Default expanded width
 
 export const Sidebar = memo(function Sidebar({
