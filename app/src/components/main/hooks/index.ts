@@ -7,3 +7,4 @@ export { useFaceRecognition } from "./useFaceRecognition";
 export { useFaceTracking } from "./useFaceTracking";
 export { useAttendanceGroups } from "./useAttendanceGroups";
 export { useBackendService } from "./useBackendService";
+export { useCameraControl } from "./useCameraControl";

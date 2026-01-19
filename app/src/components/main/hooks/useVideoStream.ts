@@ -149,7 +149,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
     });
   }, [videoRef, canvasRef]);
 
-  const getCameraDevices = useCallback(async () => {
+  const getCameraDevices = useCallback(async (): Promise<MediaDeviceInfo[]> => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(
@@ -159,10 +159,12 @@ export function useVideoStream(options: UseVideoStreamOptions) {
       if (videoDevices.length > 0 && !selectedCamera) {
         setSelectedCamera(videoDevices[0].deviceId);
       }
+      return videoDevices;
     } catch {
       setError(
         "Unable to detect cameras. Please make sure your camera is connected.",
       );
+      return [];
     }
   }, [selectedCamera, setError, setCameraDevices, setSelectedCamera]);
 
