@@ -1051,25 +1051,13 @@ async def cleanup_old_data(
 ):
     """Clean up old attendance data"""
     try:
-        # Note: cleanup_old_data implementation in repository is likely not async in my initial repo.
-        # I need to verify that repository has this method.
-        # Wait, I didn't add cleanup_old_data to AttendanceRepository definition in step 80!
-        # I should add it.
-        # For now, I'll return success dummy or throw NotImplemented
-        # I'll better just skip calling it if not implemented or implement it now.
-        # I will comment it out or implementing it in repo is better.
-        # I'll implement it in the file.
+        days = cleanup_data.days_to_keep or 30
+        results = await repo.cleanup_old_data(days)
 
-        # NOTE: I am adding a TODO here or assuming I added it.
-        # Re-check Step 80 content... it ends with get_stats. It does NOT have cleanup_old_data.
-        # I will add cleanup_old_data to repository.py later.
-        # For now I will comment out the call or raise Error.
-        raise HTTPException(
-            status_code=501, detail="Cleanup not implemented in new architecture yet"
+        return SuccessResponse(
+            message=f"Cleanup successful: {results['records_deleted']} records and {results['sessions_deleted']} sessions deleted."
         )
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Error cleaning up old data: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
