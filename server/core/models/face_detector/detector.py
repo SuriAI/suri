@@ -33,7 +33,9 @@ class FaceDetector:
             top_k,
         )
 
-    def detect_faces(self, image: np.ndarray, enable_liveness: bool = False) -> List[dict]:
+    def detect_faces(
+        self, image: np.ndarray, enable_liveness: bool = False
+    ) -> List[dict]:
         if not self.detector or image is None or image.size == 0:
             logger.warning("Invalid image provided to face detector")
             return []

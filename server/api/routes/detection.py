@@ -173,9 +173,7 @@ async def detect_faces_upload(
                 if "track_id" not in face:
                     face["track_id"] = -1
 
-            faces = process_liveness_detection(
-                faces, image, enable_liveness_detection
-            )
+            faces = process_liveness_detection(faces, image, enable_liveness_detection)
 
         else:
             raise HTTPException(

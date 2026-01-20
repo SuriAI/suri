@@ -1,10 +1,8 @@
-"""
-Consolidated API schemas for all request/response models
-"""
+"""API Schemas"""
 
 from datetime import datetime
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 from enum import Enum
 
 
@@ -14,7 +12,7 @@ from enum import Enum
 
 
 class DetectionRequest(BaseModel):
-    image: str  # Base64 encoded image
+    image: str  # Base64
     model_type: str = "face_detector"
     confidence_threshold: float = 0.6
     nms_threshold: float = 0.3
@@ -47,17 +45,11 @@ class StreamingRequest(BaseModel):
 
 
 class FaceRecognitionRequest(BaseModel):
-    image: str  # Base64 encoded image
-    bbox: List[float]  # Face bounding box [x, y, width, height]
-    landmarks_5: Optional[List[List[float]]] = (
-        None  # Optional 5-point landmarks from face detector (FAST!)
-    )
-    group_id: Optional[str] = (
-        None  # Optional group ID to filter recognition to specific group members
-    )
-    enable_liveness_detection: bool = (
-        True  # Enable/disable liveness detection for spoof protection
-    )
+    image: str  # Base64
+    bbox: List[float]  # [x, y, w, h]
+    landmarks_5: Optional[List[List[float]]] = None
+    group_id: Optional[str] = None
+    enable_liveness_detection: bool = True
 
 
 class FaceRecognitionResponse(BaseModel):
@@ -70,14 +62,10 @@ class FaceRecognitionResponse(BaseModel):
 
 class FaceRegistrationRequest(BaseModel):
     person_id: str
-    image: str  # Base64 encoded image
-    bbox: List[float]  # Face bounding box [x, y, width, height]
-    enable_liveness_detection: bool = (
-        True  # Enable/disable liveness detection for spoof protection
-    )
-    landmarks_5: Optional[List[List[float]]] = (
-        None  # Optional 5-point landmarks from face detector (FAST!)
-    )
+    image: str  # Base64
+    bbox: List[float]  # [x, y, w, h]
+    enable_liveness_detection: bool = True
+    landmarks_5: Optional[List[List[float]]] = None
 
 
 class FaceRegistrationResponse(BaseModel):
@@ -114,8 +102,8 @@ class AttendanceStatus(str, Enum):
 # Group Models
 class GroupSettings(BaseModel):
     late_threshold_minutes: Optional[int] = 15
-    late_threshold_enabled: bool = False  # OFF by default
-    class_start_time: Optional[str] = "08:00"  # HH:MM format
+    late_threshold_enabled: bool = False
+    class_start_time: Optional[str] = "08:00"  # HH:MM
 
 
 class AttendanceGroupCreate(BaseModel):
@@ -139,6 +127,8 @@ class AttendanceGroupResponse(BaseModel):
     is_active: bool
     settings: GroupSettings
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Member Models
 class AttendanceMemberCreate(BaseModel):
@@ -146,7 +136,7 @@ class AttendanceMemberCreate(BaseModel):
         None,
         min_length=1,
         max_length=100,
-        description="Optional - will be auto-generated if not provided",
+        description="Auto-generated if empty",
     )
     group_id: str = Field(..., min_length=1)
     name: str = Field(..., min_length=1, max_length=100)
@@ -170,6 +160,8 @@ class AttendanceMemberResponse(BaseModel):
     email: Optional[str]
     joined_at: datetime
     is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Record Models
@@ -207,6 +199,8 @@ class AttendanceSessionResponse(BaseModel):
     late_minutes: Optional[int]
     notes: Optional[str]
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Event Models
 class AttendanceEventCreate(BaseModel):
@@ -225,6 +219,8 @@ class AttendanceEventResponse(BaseModel):
     processed: bool
     error: Optional[str]
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Settings Models
 class AttendanceSettingsUpdate(BaseModel):
@@ -239,6 +235,8 @@ class AttendanceSettingsResponse(BaseModel):
     enable_location_tracking: bool
     confidence_threshold: float
     attendance_cooldown_seconds: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Statistics Models

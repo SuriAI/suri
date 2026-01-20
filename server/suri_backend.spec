@@ -56,7 +56,7 @@ a = Analysis(
     datas=onnx_datas + [
         ('core/models', 'core/models'),  # Models moved to core/models
         ('config', 'config'),  # Config package (includes settings.py)
-        ('database', 'database'),  # Database managers (attendance.py, face.py)
+        ('database', 'database'),  # Database managers (repository.py, face.py)
         ('utils', 'utils'),
         ('weights', 'weights'),  # Bundle model weights from server/weights
         ('api', 'api'),  # API package (includes routes, schemas, endpoints)

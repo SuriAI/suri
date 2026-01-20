@@ -11,6 +11,7 @@ import uvicorn
 from config.models import validate_model_paths, validate_directories
 from config.logging_config import LOGGING_CONFIG
 from config.server import get_server_config
+
 config = {
     "server": get_server_config(),
     "logging": LOGGING_CONFIG,

@@ -160,9 +160,7 @@ class FaceRecognizer:
                 }
 
             embedding = embeddings[0]
-            person_id, similarity = self._find_best_match(
-                embedding, allowed_person_ids
-            )
+            person_id, similarity = self._find_best_match(embedding, allowed_person_ids)
 
             result = {
                 "person_id": person_id,

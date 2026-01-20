@@ -32,3 +32,8 @@ pywin32-ctypes; sys_platform == 'win32'
 
 # Multipart dependencies
 python-multipart
+
+# Database dependencies
+sqlalchemy[asyncio]
+alembic
+aiosqlite

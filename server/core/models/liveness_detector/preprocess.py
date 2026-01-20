@@ -11,7 +11,9 @@ def preprocess(img: np.ndarray, model_img_size: int) -> np.ndarray:
     scaled_shape = tuple([int(x * ratio) for x in old_size])
 
     interpolation = cv2.INTER_LANCZOS4 if ratio > 1.0 else cv2.INTER_AREA
-    img = cv2.resize(img, (scaled_shape[1], scaled_shape[0]), interpolation=interpolation)
+    img = cv2.resize(
+        img, (scaled_shape[1], scaled_shape[0]), interpolation=interpolation
+    )
 
     delta_w = new_size - scaled_shape[1]
     delta_h = new_size - scaled_shape[0]
@@ -28,10 +30,12 @@ def preprocess_batch(face_crops: List[np.ndarray], model_img_size: int) -> np.nd
     if not face_crops:
         raise ValueError("face_crops list cannot be empty")
 
-    batch = np.zeros((len(face_crops), 3, model_img_size, model_img_size), dtype=np.float32)
+    batch = np.zeros(
+        (len(face_crops), 3, model_img_size, model_img_size), dtype=np.float32
+    )
     for i, face_crop in enumerate(face_crops):
         batch[i] = preprocess(face_crop, model_img_size)
-    
+
     return batch
 
 
@@ -78,12 +82,16 @@ def crop(img: np.ndarray, bbox: tuple, bbox_inc: float) -> np.ndarray:
     )
 
     if result.shape[0] != crop_size or result.shape[1] != crop_size:
-        raise ValueError(f"Crop size mismatch: expected {crop_size}x{crop_size}, got {result.shape[0]}x{result.shape[1]}")
+        raise ValueError(
+            f"Crop size mismatch: expected {crop_size}x{crop_size}, got {result.shape[0]}x{result.shape[1]}"
+        )
 
     return result
 
 
-def extract_bbox_coordinates(detection: Dict) -> Optional[Tuple[float, float, float, float]]:
+def extract_bbox_coordinates(
+    detection: Dict,
+) -> Optional[Tuple[float, float, float, float]]:
     bbox = detection.get("bbox", {})
     if not isinstance(bbox, dict):
         return None
