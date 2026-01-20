@@ -1,8 +1,10 @@
 import logging
 import time
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
+from api.deps import get_repository
+from database.repository import AttendanceRepository
 from api.schemas import (
     FaceRecognitionRequest,
     FaceRecognitionResponse,
@@ -22,14 +24,17 @@ router = APIRouter()
 
 
 @router.post("/face/recognize", response_model=FaceRecognitionResponse)
-async def recognize_face(request: FaceRecognitionRequest):
+async def recognize_face(
+    request: FaceRecognitionRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
     """
     Recognize a face using face recognizer with liveness detection validation
     """
     start_time = time.time()
 
     try:
-        from core.lifespan import face_recognizer, attendance_database
+        from core.lifespan import face_recognizer
 
         if not face_recognizer:
             raise HTTPException(status_code=500, detail="Face recognizer not available")
@@ -59,13 +64,9 @@ async def recognize_face(request: FaceRecognitionRequest):
             )
 
         allowed_person_ids = None
-        if request.group_id and attendance_database:
-            allowed_person_ids = attendance_database.get_group_person_ids(
-                request.group_id
-            )
-        result = face_recognizer.recognize_face(
-            image, landmarks_5, allowed_person_ids
-        )
+        if request.group_id:
+            allowed_person_ids = await repo.get_group_person_ids(request.group_id)
+        result = face_recognizer.recognize_face(image, landmarks_5, allowed_person_ids)
 
         processing_time = time.time() - start_time
 
@@ -126,9 +127,7 @@ async def register_person(request: FaceRegistrationRequest):
                 detail="Landmarks required for face recognition",
             )
 
-        result = face_recognizer.register_person(
-            request.person_id, image, landmarks_5
-        )
+        result = face_recognizer.register_person(request.person_id, image, landmarks_5)
 
         processing_time = time.time() - start_time
 

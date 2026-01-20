@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from config.paths import DATA_DIR
 from config.models import (
     FACE_DETECTOR_CONFIG,
     FACE_DETECTOR_MODEL_PATH,
@@ -16,7 +15,6 @@ from core.models import (
     FaceDetector,
     FaceRecognizer,
 )
-from database.attendance import AttendanceDatabaseManager
 from hooks import set_model_references
 
 if not logging.getLogger().handlers:
@@ -27,12 +25,12 @@ logger = logging.getLogger(__name__)
 face_detector = None
 liveness_detector = None
 face_recognizer = None
-attendance_database = None
+face_recognizer = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global face_detector, liveness_detector, face_recognizer, attendance_database
+    global face_detector, liveness_detector, face_recognizer
 
     try:
         logger.info("Starting up backend server...")
@@ -69,14 +67,11 @@ async def lifespan(app: FastAPI):
             session_options=FACE_RECOGNIZER_CONFIG["session_options"],
         )
 
-        attendance_database = AttendanceDatabaseManager(str(DATA_DIR / "attendance.db"))
-
         set_model_references(liveness_detector, None, face_recognizer, face_detector)
 
-        # Set model references for attendance routes
+        # Set model references for attendance routes - DB is now handled via Dependency Injection
         from api.routes import attendance as attendance_routes
 
-        attendance_routes.attendance_db = attendance_database
         attendance_routes.face_detector = face_detector
         attendance_routes.face_recognizer = face_recognizer
 

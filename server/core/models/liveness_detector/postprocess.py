@@ -10,7 +10,7 @@ def process_with_logits(raw_logits: np.ndarray, threshold: float) -> Dict:
     is_real = logit_diff >= threshold
     confidence = abs(logit_diff)
 
-    return {            
+    return {
         "is_real": bool(is_real),
         "status": "real" if is_real else "spoof",
         "logit_diff": float(logit_diff),
@@ -20,9 +20,7 @@ def process_with_logits(raw_logits: np.ndarray, threshold: float) -> Dict:
     }
 
 
-def validate_detection(
-    detection: Dict
-) -> Tuple[bool, Optional[Dict]]:
+def validate_detection(detection: Dict) -> Tuple[bool, Optional[Dict]]:
     if "liveness" in detection and detection["liveness"].get("status") == "move_closer":
         return False, None
 

@@ -158,9 +158,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                     )
 
                     current_fps = manager.update_fps(client_id)
-                    faces = process_face_tracking(
-                        faces, image, current_fps, client_id
-                    )
+                    faces = process_face_tracking(faces, image, current_fps, client_id)
                     faces = process_liveness_detection(
                         faces, image, enable_liveness_detection
                     )
