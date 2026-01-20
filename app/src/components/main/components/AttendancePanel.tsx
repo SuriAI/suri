@@ -3,19 +3,13 @@ import { createDisplayNameMap } from "../../../utils";
 import { Dropdown } from "../../shared";
 import type {
   AttendanceGroup,
-  AttendanceMember,
   AttendanceRecord,
 } from "../types";
 
+import { useAttendanceStore, useUIStore } from "../stores";
+
 interface AttendancePanelProps {
-  attendanceEnabled: boolean;
-  attendanceGroups: AttendanceGroup[];
-  currentGroup: AttendanceGroup | null;
-  recentAttendance: AttendanceRecord[];
-  groupMembers: AttendanceMember[];
   handleSelectGroup: (group: AttendanceGroup) => void;
-  setShowGroupManagement: (show: boolean) => void;
-  onOpenSettingsForRegistration?: () => void;
 }
 
 type SortField = "time" | "name";
@@ -53,15 +47,25 @@ const AttendanceRecordItem = memo(
 AttendanceRecordItem.displayName = "AttendanceRecordItem";
 
 export const AttendancePanel = memo(function AttendancePanel({
-  attendanceEnabled,
-  attendanceGroups,
-  currentGroup,
-  recentAttendance,
-  groupMembers,
   handleSelectGroup,
-  setShowGroupManagement,
-  onOpenSettingsForRegistration,
 }: AttendancePanelProps) {
+  const {
+    attendanceGroups,
+    currentGroup,
+    recentAttendance,
+    groupMembers,
+    setShowGroupManagement,
+  } = useAttendanceStore();
+
+  const { setShowSettings, setGroupInitialSection } = useUIStore();
+
+  const handleOpenSettingsForRegistration = useCallback(() => {
+    setGroupInitialSection("members");
+    setShowSettings(true);
+  }, [setGroupInitialSection, setShowSettings]);
+
+  // Hardcoded as it was in Main
+  const attendanceEnabled = true;
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("time");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -182,7 +186,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
+                    attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -304,9 +308,9 @@ export const AttendancePanel = memo(function AttendancePanel({
                 <div className="text-white/40 text-xs text-center">
                   No members in this group yet
                 </div>
-                {onOpenSettingsForRegistration && (
+                {handleOpenSettingsForRegistration && (
                   <button
-                    onClick={onOpenSettingsForRegistration}
+                    onClick={handleOpenSettingsForRegistration}
                     className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
                   >
                     <i className="fa-solid fa-user-plus text-xs"></i>
