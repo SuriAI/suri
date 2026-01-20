@@ -26,3 +26,19 @@ export interface BulkRegisterResponseItem {
   error?: string;
   quality_warning?: string;
 }
+
+export interface CapturedFrame {
+  id: string;
+  dataUrl: string;
+  width: number;
+  height: number;
+  bbox?: [number, number, number, number];
+  landmarks_5?: number[][];
+  status: "processing" | "success" | "error" | "ready" | "registered";
+  error?: string;
+  label?: string;
+  file?: File;
+  angle?: string;
+}
+
+export type CaptureSource = "live" | "upload";

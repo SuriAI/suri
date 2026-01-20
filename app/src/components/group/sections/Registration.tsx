@@ -145,19 +145,7 @@ export function Registration({
               onClick={() => handleSourceChange("upload")}
               className="flex flex-col items-center gap-4 p-8 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all"
             >
-              <svg
-                className="w-12 h-12 text-white/80"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
+              <i className="fa-solid fa-cloud-arrow-up text-5xl text-white/80 mb-2"></i>
               <span className="text-base font-medium text-white">Upload</span>
             </button>
 
@@ -165,19 +153,7 @@ export function Registration({
               onClick={() => handleSourceChange("camera")}
               className="flex flex-col items-center gap-4 p-8 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all"
             >
-              <svg
-                className="w-12 h-12 text-white/80"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
+              <i className="fa-solid fa-video text-5xl text-white/80 mb-2"></i>
               <span className="text-base font-medium text-white">Camera</span>
             </button>
           </div>

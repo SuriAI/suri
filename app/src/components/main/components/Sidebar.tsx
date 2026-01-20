@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import type {
   AttendanceGroup,
-  AttendanceMember,
-  AttendanceRecord,
   DetectionResult,
   TrackedFace,
   CooldownInfo,
@@ -24,6 +22,10 @@ const getAssetPath = (assetName: string): string => {
 const sidebarCollapseIcon = getAssetPath("sidebar-collapse.svg");
 const sidebarExpandIcon = getAssetPath("sidebar-expand.svg");
 
+import { useAttendanceStore, useUIStore } from "../stores";
+
+// ... existing imports ...
+
 interface SidebarProps {
   // Detection props
   currentDetections: DetectionResult | null;
@@ -38,18 +40,7 @@ interface SidebarProps {
   persistentCooldowns: Map<string, CooldownInfo>;
   attendanceCooldownSeconds: number;
 
-  // Attendance props
-  attendanceEnabled: boolean;
-  attendanceGroups: AttendanceGroup[];
-  currentGroup: AttendanceGroup | null;
-  recentAttendance: AttendanceRecord[];
-  groupMembers: AttendanceMember[];
   handleSelectGroup: (group: AttendanceGroup) => void;
-  setShowGroupManagement: (show: boolean) => void;
-
-  // Settings
-  setShowSettings: (show: boolean) => void;
-  onOpenSettingsForRegistration?: () => void;
 }
 
 const MIN_WIDTH = 50; // Collapsed width (icon only)
@@ -67,16 +58,12 @@ export const Sidebar = memo(function Sidebar({
   isVideoLoading,
   persistentCooldowns,
   attendanceCooldownSeconds,
-  attendanceEnabled,
-  attendanceGroups,
-  currentGroup,
-  recentAttendance,
-  groupMembers,
   handleSelectGroup,
-  setShowGroupManagement,
-  setShowSettings,
-  onOpenSettingsForRegistration,
 }: SidebarProps) {
+  // Zustand Stores
+  const { groupMembers } = useAttendanceStore();
+  const { setShowSettings } = useUIStore();
+
   // Persistent state from store
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH);
@@ -292,11 +279,10 @@ export const Sidebar = memo(function Sidebar({
             }}
           >
             <div
-              className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r transition-all ${
-                isResizing
-                  ? "bg-blue-500/70 h-16"
-                  : "bg-white/10 group-hover:bg-blue-500/50"
-              }`}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r transition-all ${isResizing
+                ? "bg-blue-500/70 h-16"
+                : "bg-white/10 group-hover:bg-blue-500/50"
+                }`}
             />
           </div>
         )}
@@ -344,14 +330,7 @@ export const Sidebar = memo(function Sidebar({
         >
           {/* Attendance Management or Recent Logs - Using AttendancePanel Component */}
           <AttendancePanel
-            attendanceEnabled={attendanceEnabled}
-            attendanceGroups={attendanceGroups}
-            currentGroup={currentGroup}
-            recentAttendance={recentAttendance}
-            groupMembers={groupMembers}
             handleSelectGroup={handleSelectGroup}
-            setShowGroupManagement={setShowGroupManagement}
-            onOpenSettingsForRegistration={onOpenSettingsForRegistration}
           />
 
           {/* Face Detection Display - Half of remaining space */}

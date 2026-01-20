@@ -3,7 +3,7 @@ import type {
   AttendanceMember,
 } from "../../../../types/recognition";
 import { useBulkRegistration } from "./hooks/useBulkRegistration";
-import { BulkUploadArea } from "./components/BulkUploadArea";
+import { BulkUploadArea } from "../../shared";
 import { FaceAssignmentGrid } from "./components/FaceAssignmentGrid";
 import { RegistrationResults } from "./components/RegistrationResults";
 
@@ -60,11 +60,10 @@ export function BulkRegistration({
 
       {/* Main Content */}
       <div
-        className={`flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent ${
-          !registrationResults && uploadedFiles.length === 0
-            ? "flex flex-col justify-center"
-            : ""
-        }`}
+        className={`flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent ${!registrationResults && uploadedFiles.length === 0
+          ? "flex flex-col justify-center"
+          : ""
+          }`}
       >
         {/* Step 1: Upload Files */}
         {!registrationResults && (
