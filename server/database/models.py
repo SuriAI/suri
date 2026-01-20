@@ -91,6 +91,7 @@ class AttendanceRecord(Base):
 
     __table_args__ = (
         Index("ix_record_group_id", "group_id"),
+        Index("ix_record_person_id", "person_id"),
         Index("ix_record_timestamp", "timestamp"),
         Index("ix_record_group_timestamp", "group_id", "timestamp"),
     )
@@ -119,8 +120,10 @@ class AttendanceSession(Base):
 
     __table_args__ = (
         Index("ix_session_group_id", "group_id"),
+        Index("ix_session_person_id", "person_id"),
         Index("ix_session_date", "date"),
         Index("ix_session_group_date", "group_id", "date"),
+        Index("ix_session_person_date", "person_id", "date"),
     )
 
 

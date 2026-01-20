@@ -288,3 +288,33 @@ class AttendanceRepository:
             "database_size_bytes": db_size,
             "database_size_mb": round(db_size / (1024 * 1024), 2),
         }
+
+    async def cleanup_old_data(self, days: int) -> Dict[str, int]:
+        """Delete records and sessions older than X days"""
+        cutoff_date = datetime.now() - timedelta(days=days)
+        cutoff_date_str = cutoff_date.strftime("%Y-%m-%d")
+
+        # Delete records
+        record_query = select(AttendanceRecord).where(
+            AttendanceRecord.timestamp < cutoff_date
+        )
+        records_result = await self.session.execute(record_query)
+        records_to_delete = records_result.scalars().all()
+        for r in records_to_delete:
+            await self.session.delete(r)
+
+        # Delete sessions
+        session_query = select(AttendanceSession).where(
+            AttendanceSession.date < cutoff_date_str
+        )
+        sessions_result = await self.session.execute(session_query)
+        sessions_to_delete = sessions_result.scalars().all()
+        for s in sessions_to_delete:
+            await self.session.delete(s)
+
+        await self.session.commit()
+
+        return {
+            "records_deleted": len(records_to_delete),
+            "sessions_deleted": len(sessions_to_delete),
+        }
