@@ -12,6 +12,11 @@ interface RegistrationProps {
   deselectMemberTrigger?: number;
   onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
   onAddMember?: () => void;
+  // Controlled state props
+  registrationSource?: "upload" | "camera" | null;
+  onRegistrationSourceChange?: (source: "upload" | "camera" | null) => void;
+  registrationMode?: "single" | "bulk" | "queue" | null;
+  onRegistrationModeChange?: (mode: "single" | "bulk" | "queue" | null) => void;
 }
 
 type SourceType = "upload" | "camera" | null;
@@ -24,46 +29,71 @@ export function Registration({
   deselectMemberTrigger,
   onHasSelectedMemberChange,
   onAddMember,
+  registrationSource,
+  onRegistrationSourceChange,
+  registrationMode,
+  onRegistrationModeChange,
 }: RegistrationProps) {
   // Store integration
-  // Store integration
-  const source = useGroupUIStore((state) => state.lastRegistrationSource);
-  const mode = useGroupUIStore((state) => state.lastRegistrationMode);
+  const storeSource = useGroupUIStore((state) => state.lastRegistrationSource);
+  const storeMode = useGroupUIStore((state) => state.lastRegistrationMode);
   const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId);
   const setRegistrationState = useGroupUIStore(
     (state) => state.setRegistrationState,
   );
 
+  // Derive effective state (prefer props if defined)
+  const source = registrationSource !== undefined ? registrationSource : storeSource;
+  const mode = registrationMode !== undefined ? registrationMode : storeMode;
+
   // Handle Deep Linking / Pre-selection
   useEffect(() => {
     if (preSelectedId && !source && !mode) {
-      setRegistrationState("camera", "single");
+      if (onRegistrationSourceChange && onRegistrationModeChange) {
+        onRegistrationSourceChange("camera");
+        onRegistrationModeChange("single");
+      } else {
+        setRegistrationState("camera", "single");
+      }
     }
-  }, [preSelectedId, source, mode, setRegistrationState]);
+  }, [preSelectedId, source, mode, setRegistrationState, onRegistrationSourceChange, onRegistrationModeChange]);
 
   const handleSourceChange = useCallback(
     (newSource: SourceType) => {
-      setRegistrationState(newSource, mode);
+      if (onRegistrationSourceChange) {
+        onRegistrationSourceChange(newSource);
+      } else {
+        setRegistrationState(newSource, mode);
+      }
     },
-    [mode, setRegistrationState],
+    [mode, setRegistrationState, onRegistrationSourceChange],
   );
 
   const handleModeChange = useCallback(
     (newMode: RegistrationMode) => {
-      setRegistrationState(source, newMode);
+      if (onRegistrationModeChange) {
+        onRegistrationModeChange(newMode);
+      } else {
+        setRegistrationState(source, newMode);
+      }
     },
-    [source, setRegistrationState],
+    [source, setRegistrationState, onRegistrationModeChange],
   );
 
   const handleBack = useCallback(() => {
     if (mode) {
-      setRegistrationState(source, null);
+      if (onRegistrationModeChange) onRegistrationModeChange(null);
+      else setRegistrationState(source, null);
     } else {
-      setRegistrationState(null, null);
+      if (onRegistrationSourceChange) onRegistrationSourceChange(null);
+      if (onRegistrationModeChange) onRegistrationModeChange(null);
+      if (!onRegistrationSourceChange && !onRegistrationModeChange) {
+        setRegistrationState(null, null);
+      }
     }
     // Also clear pre-selection when going back
     useGroupUIStore.setState({ preSelectedMemberId: null });
-  }, [mode, source, setRegistrationState]);
+  }, [mode, source, setRegistrationState, onRegistrationSourceChange, onRegistrationModeChange]);
 
   // --- Sub-View Routing ---
 
@@ -98,9 +128,9 @@ export function Registration({
         initialSource={source === "camera" ? "live" : source}
         deselectMemberTrigger={deselectMemberTrigger}
         onSelectedMemberChange={onHasSelectedMemberChange}
-        // preSelectedMemberId is handled internally by FaceCapture reading from store if needed
-        // but it's better if we just use FaceCapture's internal selection logic.
-        // Let's ensure FaceCapture picks up the preSelectedId.
+      // preSelectedMemberId is handled internally by FaceCapture reading from store if needed
+      // but it's better if we just use FaceCapture's internal selection logic.
+      // Let's ensure FaceCapture picks up the preSelectedId.
       />
     );
   }
