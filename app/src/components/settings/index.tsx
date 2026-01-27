@@ -559,12 +559,11 @@ export const Settings: React.FC<SettingsProps> = ({
                       // Reset trigger when switching subsections to prevent accidental modal opening
                       setTriggerCreateGroup(0);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
-                      activeSection === "group" &&
-                      groupInitialSection === subsection.id
+                    className={`w-full text-left px-3 py-2 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${activeSection === "group" &&
+                        groupInitialSection === subsection.id
                         ? "bg-white/10 text-white"
                         : "text-white/50 hover:bg-white/5 hover:text-white/70"
-                    }`}
+                      }`}
                   >
                     <i className={`${subsection.icon} text-xs w-4`}></i>
                     {subsection.label}
@@ -579,11 +578,10 @@ export const Settings: React.FC<SettingsProps> = ({
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-                activeSection === section.id
+              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeSection === section.id
                   ? "bg-white/10 text-white"
                   : "text-white/60 hover:bg-white/5 hover:text-white/80"
-              }`}
+                }`}
             >
               {section.icon && (
                 <i className={`${section.icon} text-sm w-4`}></i>
@@ -658,39 +656,37 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
               )}
             {activeSection === "group" &&
-              groupInitialSection === "registration" &&
-              registrationSource && (
+              groupInitialSection === "registration" && (
                 <button
                   onClick={() => {
+                    // Update store for consistent state across components
+                    const uiStore = useGroupUIStore.getState();
+
                     // If in FaceCapture (single mode) and a member is selected, deselect member first
                     if (registrationMode === "single" && hasSelectedMember) {
                       setDeselectMemberTrigger(Date.now());
                       return;
                     }
+
                     if (registrationMode) {
                       // If in a mode (Individual/Batch/Queue), go back to mode selection
                       setRegistrationMode(null);
-                    } else {
+                      uiStore.setRegistrationState(registrationSource, null);
+                    } else if (registrationSource) {
                       // If in mode selection, go back to source selection
                       setRegistrationSource(null);
+                      uiStore.setRegistrationState(null, null);
+                    } else {
+                      // If in source selection, go back to members list
+                      setActiveSection("group");
+                      setGroupInitialSection("members");
+                      uiStore.setActiveSection("members");
                     }
                   }}
-                  className="flex items-center gap-2 text-white/60 hover:text-white/80 transition-colors text-sm"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  <span>Back</span>
+                  <i className="fa-solid fa-arrow-left text-[10px]"></i>
+                  Back
                 </button>
               )}
           </div>
