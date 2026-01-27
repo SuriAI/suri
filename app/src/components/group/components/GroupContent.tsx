@@ -96,7 +96,6 @@ function GroupContentComponent({
 
       {activeSection === "members" && (
         <Members
-          group={selectedGroup}
           members={members}
           onMembersChange={handleMembersChange}
           onEdit={openEditMember}
