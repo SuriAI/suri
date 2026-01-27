@@ -205,13 +205,6 @@ export function Registration({
     <div className="h-full flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-lg space-y-8">
         <div className="text-center space-y-2 relative">
-          <button
-            onClick={handleBack}
-            className="absolute -left-12 top-1 text-white/20 hover:text-white transition-colors p-2"
-            title="Go Back"
-          >
-            <i className="fa-solid fa-arrow-left"></i>
-          </button>
           <h2 className="text-2xl font-black text-white/90 tracking-tight">
             Registration Method
           </h2>
