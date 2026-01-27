@@ -165,69 +165,81 @@ export function MemberSidebar({
 
         {filteredMembers.map((member) => {
           const isSelected = selectedMemberId === member.person_id;
-          const hasEmbeddings = memberStatus.get(member.person_id) ?? false;
+          const isRegistered = memberStatus.get(member.person_id) ?? false;
           return (
-            <button
+            <div
               key={member.person_id}
               onClick={() => onSelectMember(member.person_id)}
-              className={`group relative w-full rounded-2xl border transition-all px-4 py-4 flex flex-col gap-3 ${
+              className={`group relative w-full rounded-2xl border transition-all duration-300 px-4 py-4 flex items-center justify-between gap-4 overflow-hidden cursor-pointer ${
                 isSelected
                   ? "border-cyan-500/50 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.1)]"
-                  : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/5"
+                  : "border-white/5 bg-white/[0.02] hover:bg-cyan-500/[0.02] hover:border-cyan-500/20"
               }`}
             >
-              <div className="flex items-center justify-between gap-4 w-full relative z-10">
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={`text-[15px] font-bold tracking-tight mb-1 transition-colors ${
-                      isSelected ? "text-cyan-100" : "text-white"
-                    }`}
-                  >
-                    {member.displayName}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    {member.role ? (
-                      <div
-                        className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${
-                          isSelected ? "text-cyan-300/50" : "text-white/40"
-                        }`}
-                      >
-                        <i className="fa-solid fa-briefcase text-[9px]"></i>
-                        {member.role}
-                      </div>
-                    ) : (
-                      <div
-                        className={`text-[11px] font-bold uppercase tracking-wider italic ${
-                          isSelected ? "text-cyan-300/20" : "text-white/20"
-                        }`}
-                      >
-                        Member
-                      </div>
-                    )}
-                  </div>
+              {/* Hover/Selection Glow Effect */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-r from-cyan-500/[0.01] to-transparent transition-opacity duration-500 ${
+                  isSelected
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100"
+                }`}
+              />
+
+              <div className="flex-1 min-w-0 relative z-10 text-left">
+                <div
+                  className={`text-[15px] font-bold tracking-tight mb-1 transition-colors ${
+                    isSelected ? "text-cyan-100" : "text-white"
+                  }`}
+                >
+                  {member.displayName}
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {hasEmbeddings && (
-                    <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5">
-                      Registered
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {member.role ? (
+                    <div
+                      className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${
+                        isSelected ? "text-cyan-300/50" : "text-white/40"
+                      }`}
+                    >
+                      <i className="fa-solid fa-briefcase text-[9px]"></i>
+                      {member.role}
+                    </div>
+                  ) : (
+                    <div
+                      className={`text-[11px] font-bold uppercase tracking-wider italic ${
+                        isSelected ? "text-cyan-300/20" : "text-white/20"
+                      }`}
+                    >
+                      Member
                     </div>
                   )}
                 </div>
               </div>
 
-              {hasEmbeddings && isSelected && (
+              <div className="flex items-center gap-3 flex-shrink-0 relative z-10">
+                {!isRegistered ? (
+                  <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(34,211,238,0.1)] group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40">
+                    Register Face
+                  </div>
+                ) : (
+                  <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 flex items-center gap-1.5">
+                    Registered
+                  </div>
+                )}
+              </div>
+
+              {isRegistered && isSelected && (
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
                     onRemoveFaceData(member);
                   }}
-                  className="w-full rounded-xl bg-red-500/10 border border-red-500/20 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all text-center relative z-20"
+                  className="absolute bottom-0 left-0 right-0 py-1 bg-red-500/20 text-[8px] font-black uppercase tracking-widest text-red-300 text-center hover:bg-red-500/30 transition-all z-20"
                 >
                   Remove Face Data
                 </div>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
