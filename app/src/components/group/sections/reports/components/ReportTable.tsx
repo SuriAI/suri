@@ -5,12 +5,20 @@ interface ReportTableProps {
   groupedRows: Record<string, RowData[]>;
   visibleColumns: ColumnKey[];
   allColumns: ReadonlyArray<{ key: ColumnKey; label: string; align?: string }>;
+  search?: string;
+  statusFilter?: string;
+  onResetSearch?: () => void;
+  onResetFilter?: () => void;
 }
 
 export function ReportTable({
   groupedRows,
   visibleColumns,
   allColumns,
+  search,
+  statusFilter,
+  onResetSearch,
+  onResetFilter,
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) =>
     visibleColumns.includes(c.key),
@@ -40,15 +48,58 @@ export function ReportTable({
           {Object.keys(groupedRows).length === 0 ||
             Object.values(groupedRows).every(rows => rows.length === 0) ? (
             <tr>
-              <td colSpan={visibleColDefs.length} className="py-20">
-                <div className="flex flex-col items-center justify-center text-center px-4">
-                  <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-4">
-                    <i className="fa-solid fa-magnifying-glass-chart text-2xl text-white/10"></i>
+              <td colSpan={visibleColDefs.length} className="py-24">
+                <div className="flex flex-col items-center justify-center text-center px-6">
+                  {/* Icon with contextual pulse */}
+                  <div className="relative mb-6">
+                    <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/5 flex items-center justify-center shadow-inner">
+                      <i className={`fa-solid ${search ? 'fa-magnifying-glass-slash' : 'fa-calendar-xmark'} text-3xl text-white/10`}></i>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-semibold text-white/60 mb-1">No matching records</h3>
-                  <p className="text-xs text-white/30 max-w-[240px]">
-                    Try adjusting your filters, date range, or search query to find what you're looking for.
+
+                  <h3 className="text-base font-bold text-white/80 mb-2">
+                    {search
+                      ? `No matches for "${search}"`
+                      : statusFilter !== 'all'
+                        ? `No records found for "${statusFilter}"`
+                        : "No records found"}
+                  </h3>
+
+                  <p className="text-xs text-white/30 max-w-[280px] mb-8 leading-relaxed">
+                    {search
+                      ? "We couldn't find any members or notes matching your search term. Try a different keyword."
+                      : statusFilter !== 'all'
+                        ? `None of the records in this date range are currently marked as ${statusFilter}.`
+                        : "There is no attendance data recorded for the selected group during this time period."}
                   </p>
+
+                  <div className="flex items-center gap-3">
+                    {search && (
+                      <button
+                        onClick={onResetSearch}
+                        className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all text-xs font-bold uppercase tracking-wider"
+                      >
+                        Clear Search
+                      </button>
+                    )}
+                    {(statusFilter !== 'all') && (
+                      <button
+                        onClick={onResetFilter}
+                        className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-xs font-bold uppercase tracking-wider"
+                      >
+                        Reset Filter
+                      </button>
+                    )}
+                    {!search && statusFilter === 'all' && (
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="text-[10px] text-white/20 font-black uppercase tracking-[0.2em] mb-2">Suggestions</span>
+                        <div className="flex gap-2">
+                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-bold">Try Previous Week</span>
+                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-bold">Expand Range</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </td>
             </tr>
@@ -64,7 +115,6 @@ export function ReportTable({
                         className="px-4 py-3 bg-white/[0.03] border-b border-white/5"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
                           <span className="text-xs font-bold text-cyan-100/90 tracking-wide">{groupInfo}</span>
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-white/40 font-medium">
                             {rows.length} {rows.length === 1 ? 'record' : 'records'}
@@ -93,8 +143,7 @@ export function ReportTable({
                             <div
                               className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] uppercase tracking-wider font-bold border ${badgeClass} transition-transform group-hover:scale-105`}
                             >
-                              <div className={`w-1 h-1 rounded-full mr-1.5 ${s === 'present' ? 'bg-emerald-400' : s === 'absent' ? 'bg-rose-400' : 'bg-current opacity-30'}`} />
-                              {s === "no_records" ? "No Data" : s}
+                              {s === "no_records" ? "N/A" : s}
                             </div>
                           );
                         } else if (c.key === "is_late") {
