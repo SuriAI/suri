@@ -124,7 +124,7 @@ export function MemberSidebar({
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               registrationFilter === "non-registered"
                 ? "bg-amber-500/20 text-amber-200 border border-amber-500/30"
-                : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/88 hover:text-white/80"
+                : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:text-white/80"
             }`}
           >
             Unregistered
