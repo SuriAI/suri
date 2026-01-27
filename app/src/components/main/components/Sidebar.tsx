@@ -264,6 +264,7 @@ export const Sidebar = memo(function Sidebar({
           width: `${currentWidth}px`,
           minWidth: `${currentWidth}px`,
           maxWidth: `${currentWidth}px`,
+          willChange: "width",
         }}
       >
         {/* Resize Handle - Left side of sidebar */}
@@ -291,6 +292,7 @@ export const Sidebar = memo(function Sidebar({
         {/* Header - Minimal Design */}
         <div
           className={`px-3 py-1 border-b border-white/[0.08] transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          style={{ minWidth: isResizing ? undefined : sidebarWidth }}
         >
           <div className="flex items-center justify-between gap-2">
             {/* Collapse Button - Top Left */}
@@ -328,6 +330,7 @@ export const Sidebar = memo(function Sidebar({
         {/* Content Area */}
         <div
           className={`sidebar flex-1 flex flex-col overflow-hidden transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          style={{ minWidth: isResizing ? undefined : sidebarWidth }}
         >
           {/* Attendance Management or Recent Logs - Using AttendancePanel Component */}
           <AttendancePanel handleSelectGroup={handleSelectGroup} />
