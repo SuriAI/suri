@@ -226,6 +226,10 @@ export function Reports({
               groupedRows={groupedRows}
               visibleColumns={visibleColumns}
               allColumns={allColumns}
+              search={search}
+              statusFilter={statusFilter}
+              onResetSearch={() => setSearch("")}
+              onResetFilter={() => setStatusFilter("all")}
             />
           </div>
         )}

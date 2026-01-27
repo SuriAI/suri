@@ -210,7 +210,7 @@ export function ReportToolbar({
                   : "text-white/20 hover:text-white/40 hover:bg-white/5"
                   }`}
               >
-                {st === "all" ? "All" : st === "no_records" ? "No Data" : st}
+                {st === "all" ? "All" : st === "no_records" ? "N/A" : st}
               </button>
             );
           })}
