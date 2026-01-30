@@ -11,6 +11,7 @@ import uvicorn
 from config.models import validate_model_paths, validate_directories
 from config.logging_config import LOGGING_CONFIG
 from config.server import get_server_config
+from database.migrate import run_migrations
 
 config = {
     "server": get_server_config(),
@@ -83,6 +84,8 @@ def main():
     if not validate_setup():
         print("Setup validation failed. Please check the configuration.")
         sys.exit(1)
+
+    run_migrations()
 
     # Server configuration
     server_config = config["server"].copy()

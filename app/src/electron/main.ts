@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, protocol, shell } from "electron";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import isDev from "./util.js";
@@ -459,7 +459,7 @@ function createWindow(): void {
     maxHeight: 2160, // 4K height limit
     show: false, // Prevent flash, show after ready
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
       webgl: true,
@@ -625,6 +625,28 @@ function createWindow(): void {
     }
   });
 
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      shell.openExternal(url).catch(() => {});
+    }
+
+    return { action: "deny" };
+  });
+
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    const allowedPrefixes = isDev()
+      ? ["http://localhost:3000", "http://127.0.0.1:3000"]
+      : ["file://", "app://"];
+
+    const isAllowed = allowedPrefixes.some((prefix) => url.startsWith(prefix));
+    if (!isAllowed) {
+      event.preventDefault();
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        shell.openExternal(url).catch(() => {});
+      }
+    }
+  });
+
   // Handle window close
   mainWindow.on("closed", () => {
     mainWindowRef = null;
@@ -651,15 +673,29 @@ app.whenReady().then(async () => {
   // Register custom protocol for direct static file access
   protocol.registerFileProtocol("app", (request, callback) => {
     const url = request.url.replace("app://", ""); // Remove 'app://' prefix
-    let filePath: string;
+    const relativeUrl = url.replace(/^\/+/, "");
+
+    let baseDir: string;
     if (isDev()) {
-      filePath = path.join(__dirname, "../../public", url);
+      baseDir = path.join(__dirname, "../../public");
     } else {
       // In production, use app.getAppPath() which correctly resolves to the asar location
       const appPath = app.getAppPath();
-      filePath = path.join(appPath, "dist-react", url);
+      baseDir = path.join(appPath, "dist-react");
     }
-    callback(filePath);
+
+    const resolvedBaseDir = path.resolve(baseDir);
+    const resolvedFilePath = path.resolve(resolvedBaseDir, relativeUrl);
+
+    if (
+      resolvedFilePath !== resolvedBaseDir &&
+      !resolvedFilePath.startsWith(resolvedBaseDir + path.sep)
+    ) {
+      callback({ error: -6 });
+      return;
+    }
+
+    callback({ path: resolvedFilePath });
   });
 
   console.log("[Main] Starting backend service...");

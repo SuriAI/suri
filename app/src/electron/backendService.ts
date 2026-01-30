@@ -292,8 +292,14 @@ export class BackendService {
       }
       if (this.process.stderr) {
         this.process.stderr.on("data", (data) => {
-          // Always log errors
-          console.error(`[Backend Error] ${data.toString().trim()}`);
+          const msg = data.toString().trim();
+          const looksLikeError =
+            /(\bERROR\b|\bCRITICAL\b|Traceback|Exception)/.test(msg);
+          if (looksLikeError) {
+            console.error(`[Backend Error] ${msg}`);
+          } else {
+            console.log(`[Backend] ${msg}`);
+          }
         });
       }
 

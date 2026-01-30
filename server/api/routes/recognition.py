@@ -280,6 +280,28 @@ async def set_similarity_threshold(request: SimilarityThresholdRequest):
         raise HTTPException(status_code=500, detail=f"Failed to update threshold: {e}")
 
 
+@router.post("/face/cache/invalidate")
+async def invalidate_face_cache():
+    try:
+        from core.lifespan import face_recognizer
+
+        if not face_recognizer:
+            raise HTTPException(status_code=500, detail="Face recognizer not available")
+
+        if hasattr(face_recognizer, "_invalidate_cache"):
+            face_recognizer._invalidate_cache()
+
+        return {"success": True, "message": "Face recognizer cache invalidated"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Cache invalidation error: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to invalidate face cache: {e}"
+        )
+
+
 @router.delete("/face/database")
 async def clear_database():
     """

@@ -547,18 +547,16 @@ export class BackendService {
 
   async clearCache(): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/recognize`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${this.config.baseUrl}/face/cache/invalidate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          signal: AbortSignal.timeout(this.config.timeout),
         },
-        body: JSON.stringify({
-          image: "",
-          clear_cache: true,
-          cache_duration: 0.0,
-        }),
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -567,9 +565,10 @@ export class BackendService {
       const result = await response.json();
       return {
         success: true,
-        message: result.cache_cleared
-          ? "Cache cleared successfully"
-          : "Cache clear requested",
+        message:
+          typeof result?.message === "string"
+            ? result.message
+            : "Cache invalidated",
       };
     } catch (error) {
       console.error("Failed to clear cache:", error);
