@@ -22,6 +22,7 @@ body {
   height: 100%;
   background: #000000;
   overflow: hidden;
+  border-radius: 24px;
 }
 
 .logo-wrapper {
@@ -46,17 +47,16 @@ body {
 .logo-glow {
   position: absolute;
   inset: -25px;
-  background: radial-gradient(
-    circle at center,
-    rgba(34, 211, 238, 0.12) 0%,
-    rgba(34, 211, 238, 0.04) 50%,
-    transparent 70%
-  );
+  background: radial-gradient(circle at center,
+      rgba(34, 211, 238, 0.12) 0%,
+      rgba(34, 211, 238, 0.04) 50%,
+      transparent 70%);
   filter: blur(15px);
   animation: glowBreath 3s ease-in-out infinite;
 }
 
 @keyframes glowBreath {
+
   0%,
   100% {
     opacity: 0.5;
@@ -86,8 +86,7 @@ body {
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px #22d3ee)
-    drop-shadow(0 0 12px rgba(34, 211, 238, 0.7));
+  filter: drop-shadow(0 0 4px #22d3ee) drop-shadow(0 0 12px rgba(34, 211, 238, 0.7));
   opacity: 0;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
@@ -169,6 +168,7 @@ body {
 }
 
 @keyframes electricPulse {
+
   0%,
   100% {
     filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.2));
@@ -180,6 +180,7 @@ body {
 }
 
 @keyframes logoFlicker {
+
   0%,
   23%,
   27%,
