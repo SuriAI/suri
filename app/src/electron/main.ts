@@ -562,10 +562,10 @@ function createWindow(): void {
       if (y >= height - radius) {
         const offset = Math.ceil(
           radius -
-            Math.sqrt(
-              radius * radius -
-                (y - (height - radius)) * (y - (height - radius)),
-            ),
+          Math.sqrt(
+            radius * radius -
+            (y - (height - radius)) * (y - (height - radius)),
+          ),
         );
         startX = offset;
       }
@@ -574,10 +574,10 @@ function createWindow(): void {
       if (y >= height - radius) {
         const offset = Math.ceil(
           radius -
-            Math.sqrt(
-              radius * radius -
-                (y - (height - radius)) * (y - (height - radius)),
-            ),
+          Math.sqrt(
+            radius * radius -
+            (y - (height - radius)) * (y - (height - radius)),
+          ),
         );
         endX = width - offset;
       }
@@ -604,7 +604,14 @@ function createWindow(): void {
 
   // Load the app
   if (isDev()) {
-    mainWindow.loadURL("http://localhost:3000");
+    // Retry loading URL until Vite is ready prevents white screen/crash
+    const loadVite = () => {
+      mainWindow.loadURL("http://localhost:3000").catch(() => {
+        console.log("Waiting for Vite server...");
+        setTimeout(loadVite, 500);
+      });
+    };
+    loadVite();
   } else {
     mainWindow.loadFile(path.join(__dirname, "../../dist-react/index.html"));
   }
@@ -680,7 +687,7 @@ function createWindow(): void {
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("http://") || url.startsWith("https://")) {
-      shell.openExternal(url).catch(() => {});
+      shell.openExternal(url).catch(() => { });
     }
 
     return { action: "deny" };
@@ -695,7 +702,7 @@ function createWindow(): void {
     if (!isAllowed) {
       event.preventDefault();
       if (url.startsWith("http://") || url.startsWith("https://")) {
-        shell.openExternal(url).catch(() => {});
+        shell.openExternal(url).catch(() => { });
       }
     }
   });
