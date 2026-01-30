@@ -34,14 +34,19 @@ class HttpClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
-    const defaultOptions: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+    const method = (options.method || "GET").toUpperCase();
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
     };
 
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    if (
+      (method === "POST" || method === "PUT" || method === "PATCH") &&
+      !headers["Content-Type"]
+    ) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(url, { ...options, headers });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -95,7 +100,7 @@ export class AttendanceManager {
 
   private async loadSettingsWhenReady(): Promise<void> {
     const maxWaitTime = 60000;
-    const checkInterval = 100;
+    const checkInterval = 500;
     const startTime = Date.now();
 
     try {

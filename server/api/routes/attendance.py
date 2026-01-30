@@ -34,7 +34,7 @@ from api.schemas import (
 )
 from api.deps import get_repository
 from database.repository import AttendanceRepository
-from utils.websocket_manager import manager as ws_manager
+from utils.websocket_manager import notification_manager as ws_manager
 from services.attendance_service import AttendanceService
 
 logger = logging.getLogger(__name__)
@@ -552,12 +552,12 @@ async def process_attendance_event(
         settings = await repo.get_settings()
 
         service = AttendanceService(
-            repo, 
-            face_detector=face_detector, 
-            face_recognizer=face_recognizer, 
-            ws_manager=ws_manager
+            repo,
+            face_detector=face_detector,
+            face_recognizer=face_recognizer,
+            ws_manager=ws_manager,
         )
-        
+
         return await service.process_event(event_data, member, settings)
 
     except HTTPException:
@@ -835,7 +835,6 @@ async def cleanup_old_data(
 # Helper Functions
 
 
-
 # Bulk Operations and rest of endpoints...
 # Note: I omitted bulk_detect_faces and bulk_register_faces implementation for brevity in this scratchpad,
 # KEY: I must include them or they will be lost.
@@ -854,9 +853,7 @@ async def bulk_detect_faces(
         if not images_data:
             raise HTTPException(status_code=400, detail="No images provided")
 
-        service = AttendanceService(
-            repo, face_detector=face_detector
-        )
+        service = AttendanceService(repo, face_detector=face_detector)
         return await service.bulk_detect_faces_in_images(group_id, images_data)
 
     except ValueError as e:

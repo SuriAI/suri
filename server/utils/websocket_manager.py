@@ -25,7 +25,9 @@ class ConnectionManager:
         self.fps_tracking: Dict[str, dict] = {}
         self.face_trackers: Dict[str, FaceTracker] = {}
 
-    async def connect(self, websocket: WebSocket, client_id: str) -> bool:
+    async def connect(
+        self, websocket: WebSocket, client_id: str, *, enable_tracking: bool = True
+    ) -> bool:
         """
         Accept a new WebSocket connection
 
@@ -45,21 +47,23 @@ class ConnectionManager:
                 "message_count": 0,
                 "streaming": False,
             }
-            self.fps_tracking[client_id] = {
-                "timestamps": [],
-                "max_samples": 30,
-                "last_update": datetime.now(),
-                "current_fps": 30,
-            }
 
-            # Create per-client face tracker
-            self.face_trackers[client_id] = FaceTracker(
-                model_path=str(FACE_TRACKER_CONFIG["model_path"]),
-                track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
-                match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
-                track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
-                frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
-            )
+            if enable_tracking:
+                self.fps_tracking[client_id] = {
+                    "timestamps": [],
+                    "max_samples": 30,
+                    "last_update": datetime.now(),
+                    "current_fps": 30,
+                }
+
+                # Create per-client face tracker
+                self.face_trackers[client_id] = FaceTracker(
+                    model_path=str(FACE_TRACKER_CONFIG["model_path"]),
+                    track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
+                    match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
+                    track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
+                    frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
+                )
 
             # Send welcome message
             await self.send_personal_message(
@@ -395,11 +399,13 @@ class ConnectionManager:
                 inactive_clients.append(client_id)
 
         for client_id in inactive_clients:
-            self.disconnect(client_id)
+            await self.disconnect(client_id)
 
 
 # Global connection manager instance
 manager = ConnectionManager()
+
+notification_manager = ConnectionManager()
 
 
 async def handle_websocket_message(websocket: WebSocket, client_id: str, message: dict):

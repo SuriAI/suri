@@ -16,6 +16,7 @@ export function useModelLoading(): ModelLoadingState {
   const modelsReadyRef = useRef(false);
   const maxWaitTime = 120000; // 2 minutes max wait time
   const startTimeRef = useRef(Date.now());
+  const pollIntervalMs = 500;
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -99,7 +100,7 @@ export function useModelLoading(): ModelLoadingState {
       if (ready) {
         clearInterval(pollInterval);
       }
-    }, 100);
+    }, pollIntervalMs);
 
     // Cleanup timeout - stop checking after max wait time
     const timeoutId = setTimeout(() => {

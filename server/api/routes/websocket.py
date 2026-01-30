@@ -14,7 +14,7 @@ from hooks import (
     process_face_tracking,
     process_liveness_detection,
 )
-from utils.websocket_manager import manager
+from utils.websocket_manager import manager, notification_manager
 
 if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO)
@@ -29,8 +29,14 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
     await websocket.accept()
     logger.info(f"[WebSocket] Client {client_id} connected successfully")
 
-    if client_id not in manager.active_connections:
-        manager.active_connections[client_id] = websocket
+    existing_ws = manager.active_connections.get(client_id)
+    if existing_ws is not None and existing_ws is not websocket:
+        try:
+            await existing_ws.close(code=1000)
+        except Exception:
+            pass
+
+    manager.active_connections[client_id] = websocket
     if client_id not in manager.connection_metadata:
         manager.connection_metadata[client_id] = {
             "connected_at": datetime.now(),
@@ -38,25 +44,30 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
             "message_count": 0,
             "streaming": False,
         }
-        if client_id not in manager.fps_tracking:
-            manager.fps_tracking[client_id] = {
-                "timestamps": [],
-                "max_samples": 30,
-                "last_update": datetime.now(),
-                "current_fps": 30,
-            }
-        from core.models import FaceTracker
-        from config.models import FACE_TRACKER_CONFIG
+    else:
+        manager.connection_metadata[client_id]["connected_at"] = datetime.now()
+        manager.connection_metadata[client_id]["last_activity"] = datetime.now()
 
-        if client_id not in manager.face_trackers:
-            manager.face_trackers[client_id] = FaceTracker(
-                model_path=str(FACE_TRACKER_CONFIG["model_path"]),
-                track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
-                match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
-                track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
-                frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
-            )
-            logger.info(f"[WebSocket] Created face tracker for client {client_id}")
+    if client_id not in manager.fps_tracking:
+        manager.fps_tracking[client_id] = {
+            "timestamps": [],
+            "max_samples": 30,
+            "last_update": datetime.now(),
+            "current_fps": 30,
+        }
+
+    from core.models import FaceTracker
+    from config.models import FACE_TRACKER_CONFIG
+
+    if client_id not in manager.face_trackers:
+        manager.face_trackers[client_id] = FaceTracker(
+            model_path=str(FACE_TRACKER_CONFIG["model_path"]),
+            track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
+            match_thresh=FACE_TRACKER_CONFIG["match_thresh"],
+            track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
+            frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
+        )
+        logger.info(f"[WebSocket] Created face tracker for client {client_id}")
 
     enable_liveness_detection = True
 
@@ -242,30 +253,24 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 f"[WebSocket] Client {client_id} disconnected due to exception: {e}"
             )
     finally:
-        if client_id in manager.active_connections:
+        if manager.active_connections.get(client_id) is websocket:
             await manager.disconnect(client_id)
         logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")
 
 
 async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
     """Handle WebSocket notifications endpoint"""
-    await manager.connect(websocket, client_id)
+    existing_ws = notification_manager.active_connections.get(client_id)
+    if existing_ws is not None and existing_ws is not websocket:
+        try:
+            await existing_ws.close(code=1000)
+        except Exception:
+            pass
+
+    await notification_manager.connect(websocket, client_id, enable_tracking=False)
     # Notification client connected
 
     try:
-        import asyncio
-
-        await websocket.send_text(
-            json.dumps(
-                {
-                    "type": "connection",
-                    "status": "connected",
-                    "client_id": client_id,
-                    "timestamp": asyncio.get_event_loop().time(),
-                }
-            )
-        )
-
         while True:
             message_data = await websocket.receive()
 
@@ -273,22 +278,26 @@ async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
                 message = json.loads(message_data["text"])
 
                 if message.get("type") == "ping":
-                    await websocket.send_text(
-                        json.dumps(
-                            {
-                                "type": "pong",
-                                "client_id": client_id,
-                                "timestamp": asyncio.get_event_loop().time(),
-                            }
-                        )
+                    await notification_manager.send_personal_message(
+                        {
+                            "type": "pong",
+                            "client_id": client_id,
+                            "timestamp": time.time(),
+                        },
+                        client_id,
                     )
+
+                if message.get("type") == "disconnect":
+                    break
 
     except WebSocketDisconnect:
         # Notification client disconnected
-        await manager.disconnect(client_id)
+        pass
     except Exception as e:
         logger.error(f"WebSocket notification error: {e}")
-        await manager.disconnect(client_id)
+    finally:
+        if notification_manager.active_connections.get(client_id) is websocket:
+            await notification_manager.disconnect(client_id)
 
 
 @router.websocket("/ws/detect/{client_id}")
