@@ -7,11 +7,11 @@ import { persistentStore } from "./persistentStore.js";
 // Set consistent app name across all platforms for userData directory
 app.setName("Suri");
 
-// Prevent multiple instances - ensure only one instance runs at a time
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-  // Another instance is already running, quit this one
+  // Show a message before quitting to explain why it's closing (useful for dev)
+  console.warn("[Main] Another instance is already running. Quitting...");
   app.quit();
   process.exit(0);
 }
