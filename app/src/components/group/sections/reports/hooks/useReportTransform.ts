@@ -164,14 +164,16 @@ export function useReportTransform(
     filteredRows,
     groupedRows,
     daysTracked,
-    allColumns: [
-      { key: "name", label: "Name", align: "left" },
-      { key: "date", label: "Date", align: "left" },
-      { key: "status", label: "Status", align: "center" },
-      { key: "check_in_time", label: "Time In", align: "center" },
-      { key: "is_late", label: "Late", align: "center" },
-      { key: "late_minutes", label: "Minutes Late", align: "center" },
-      { key: "notes", label: "Notes", align: "left" },
-    ] as const,
+    allColumns: ALL_COLUMNS,
   };
 }
+
+const ALL_COLUMNS = [
+  { key: "name", label: "Name", align: "left" },
+  { key: "date", label: "Date", align: "left" },
+  { key: "status", label: "Status", align: "center" },
+  { key: "check_in_time", label: "Time In", align: "center" },
+  { key: "is_late", label: "Late", align: "center" },
+  { key: "late_minutes", label: "Minutes Late", align: "center" },
+  { key: "notes", label: "Notes", align: "left" },
+] as const;
