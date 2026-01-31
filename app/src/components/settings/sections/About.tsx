@@ -50,10 +50,11 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
               Your data stays local
             </h3>
             <p className="text-xs text-white/50 leading-relaxed">
-              Suri runs entirely on your device. Face recognition data (including
-              biometric templates), attendance records, and settings are stored
-              locally on your computer. Nothing is uploaded to external servers
-              unless you explicitly choose to enable cloud sync features.
+              Suri runs entirely on your device. Face recognition data
+              (including biometric templates), attendance records, and settings
+              are stored locally on your computer. Nothing is uploaded to
+              external servers unless you explicitly choose to enable cloud sync
+              features.
             </p>
           </section>
 
@@ -225,10 +226,11 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
       <button
         onClick={onCheck}
         disabled={isChecking || showSuccess}
-        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${showSuccess
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+          showSuccess
             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
             : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border-white/5"
-          } disabled:opacity-50`}
+        } disabled:opacity-50`}
       >
         {isChecking
           ? "Checking..."
