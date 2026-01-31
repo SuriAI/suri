@@ -57,7 +57,7 @@ export default function Main() {
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => { });
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
@@ -397,6 +397,38 @@ export default function Main() {
       );
     };
   }, [setShowSettings, setGroupInitialSection, setSettingsInitialSection]);
+
+  // Handle auto-pause on minimize
+  const wasStreamingBeforeMinimize = useRef(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const electron = (window as any).suriElectron;
+    if (!electron) return;
+
+    const cleanupMinimize = electron.onMinimize(() => {
+      if (isStreamingRef.current) {
+        wasStreamingBeforeMinimize.current = true;
+        stopCamera(false); // Pause tracking
+        console.log("App minimized: Pausing tracking...");
+      } else {
+        wasStreamingBeforeMinimize.current = false;
+      }
+    });
+
+    const cleanupRestore = electron.onRestore(() => {
+      if (wasStreamingBeforeMinimize.current) {
+        console.log("App restored: Resuming tracking...");
+        startCamera();
+        wasStreamingBeforeMinimize.current = false;
+      }
+    });
+
+    return () => {
+      if (cleanupMinimize) cleanupMinimize();
+      if (cleanupRestore) cleanupRestore();
+    };
+  }, [stopCamera, startCamera]);
 
   // ===== RENDER =====
   return (

@@ -151,6 +151,16 @@ contextBridge.exposeInMainWorld("suriElectron", {
     ipcRenderer.on("window:unmaximized", listener);
     return () => ipcRenderer.removeListener("window:unmaximized", listener);
   },
+  onMinimize: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on("window:minimized", listener);
+    return () => ipcRenderer.removeListener("window:minimized", listener);
+  },
+  onRestore: (callback: () => void) => {
+    const listener = () => callback();
+    ipcRenderer.on("window:restored", listener);
+    return () => ipcRenderer.removeListener("window:restored", listener);
+  },
   getSystemStats: () => ipcRenderer.invoke("system:get-stats"),
   // Shorthand for getting current app version
   getVersion: () => ipcRenderer.invoke("updater:get-version"),

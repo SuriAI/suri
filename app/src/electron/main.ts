@@ -708,6 +708,15 @@ function createWindow(): void {
     updateWindowShape();
   });
 
+  // Handle minimize/restore for auto-pause tracking
+  mainWindow.on("minimize", () => {
+    mainWindow.webContents.send("window:minimized");
+  });
+
+  mainWindow.on("restore", () => {
+    mainWindow.webContents.send("window:restored");
+  });
+
   // Update shape on resize
   mainWindow.on("resize", () => {
     if (!mainWindow.isMaximized()) {
