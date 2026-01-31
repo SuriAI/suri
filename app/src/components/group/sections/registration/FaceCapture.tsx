@@ -112,6 +112,11 @@ export function FaceCapture({
     canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    // Flip the capture to match the mirrored video preview
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+
     ctx.drawImage(videoRef.current, 0, 0);
     const url = canvas.toDataURL("image/jpeg", 0.95);
     captureProcessedFrame("Front", url, canvas.width, canvas.height);
