@@ -23,11 +23,11 @@ graph LR
 - **Framework**: [React 19](https://react.dev/)
 - **Bundler**: [Vite](https://vitejs.dev/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **State**: Zustand
+- **State**: [Zustand](https://github.com/pmndrs/zustand)
 - **Runtime**: [Electron](https://www.electronjs.org/)
 
 ### Backend
-- **Runtime**: Python 3.10+
+- **Runtime**: [Python 3.10+](https://www.python.org/)
 - **API**: [FastAPI](https://fastapi.tiangolo.com/)
 - **Database**: [SQLAlchemy](https://www.sqlalchemy.org/) + [Alembic](https://alembic.sqlalchemy.org/)
 - **AI Runtime**: [ONNX Runtime](https://onnxruntime.ai/)
@@ -37,29 +37,21 @@ graph LR
 The application executes the computer vision pipeline sequentially on the local device.
 
 ### 1. Face Detection
-- **Model**: RetinaFace variant.
 - **Function**: Locates bounding boxes for faces.
-- **Format**: INT8 Quantized.
 
 ### 2. Alignment
 - **Method**: 5-Point Landmark Estimation.
 - **Function**: Rotates and scales faces to a standard position.
 
 ### 3. Liveness Check
-- **Model**: MiniFASNet (Silent-Face-Anti-Spoofing).
 - **Function**: Classifies input as Real or Spoof (Photo/Screen).
-- **Reference**: [GitHub](https://github.com/minivision-ai/Silent-Face-Anti-Spoofing)
 
 ### 4. Recognition
-- **Model**: MobileFaceNet / ArcFace (ResNet Backbone).
 - **Function**: Generates a **512-d embeddings** from pixel data.
 - **Comparison**: Cosine Similarity.
-- **Reference**: [CVPR 2019](https://openaccess.thecvf.com/content_CVPR_2019/html/Deng_ArcFace_Additive_Angular_Margin_Loss_for_Deep_Face_Recognition_CVPR_2019_paper.html)
 
 ### 5. Tracking
-- **Algorithm**: ByteTrack.
 - **Function**: Associates detections across frames by matching both high and low scoring boxes to recover lost objects.
-- **Reference**: [ECCV 2022](https://arxiv.org/abs/2110.06864)
 
 ## Database
 

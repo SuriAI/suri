@@ -53,7 +53,7 @@ Unlike cloud-based services, Suri executes all processing on the local hardware 
 
 | **Local Performance** | **Data Privacy** | **Smart Tracking** |
 |:---|:---|:---|
-| Uses refined **ONNX Runtime** inference. Delivers **sub-millisecond recognition** by removing network dependency. Works offline. | **Local-First** architecture. Biometric data is stored only on the device's encrypted database. No external telemetry. | Uses **ByteTrack** and **Passive Liveness** to track identities across video frames. Prevents spoofing with photo/video attacks. |
+| Uses refined **ONNX Runtime** inference. Delivers **sub-millisecond recognition** by removing network dependency. Works offline. | **Local-First** architecture. Biometric data is stored only on the device's encrypted database. No external telemetry. | Uses **Re-ID Association** and **Passive Liveness** to track identities across video frames. Prevents spoofing with photo/video attacks. |
 
 <div align="center">
   <br/>
