@@ -148,6 +148,22 @@ class PersistentSettingsService {
     await this.set("reportViews", { ...allViews, [groupId]: views });
   }
 
+  /**
+   * Report Scratchpad (Transient tweaks)
+   */
+  async getReportScratchpad(groupId: string): Promise<unknown> {
+    const scratchpad =
+      (await this.get<Record<string, unknown>>("reportScratchpad")) || {};
+    return scratchpad[groupId];
+  }
+
+  async setReportScratchpad(groupId: string, config: unknown): Promise<void> {
+    const scratchpad =
+      (await this.get<Record<string, unknown>>("reportScratchpad")) || {};
+    scratchpad[groupId] = config;
+    await this.set("reportScratchpad", scratchpad);
+  }
+
   async getReportDefaultViewName(groupId: string): Promise<string | null> {
     const names = await this.get<Record<string, string>>(
       "reportDefaultViewNames",
@@ -187,6 +203,20 @@ class PersistentSettingsService {
   ): Promise<void> {
     const current = await this.getUpdaterInfo();
     await this.set("updater", { ...current, ...info });
+  }
+
+  /**
+   * Attendance Cooldowns
+   */
+  async getCooldowns(): Promise<Record<string, unknown>> {
+    const cooldowns = await this.get<Record<string, unknown>>(
+      "attendanceCooldowns",
+    );
+    return cooldowns || {};
+  }
+
+  async setCooldowns(cooldowns: Record<string, unknown>): Promise<void> {
+    await this.set("attendanceCooldowns", cooldowns);
   }
 }
 

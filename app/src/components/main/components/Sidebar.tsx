@@ -7,7 +7,6 @@ import type {
 import type { ExtendedFaceRecognitionResponse } from "@/components/main/utils";
 import { AttendancePanel } from "@/components/main/components/AttendancePanel";
 import { DetectionPanel } from "@/components/main/components/DetectionPanel";
-import { persistentSettings } from "@/services/PersistentSettingsService";
 
 // Get asset path that works in both dev and production (Electron)
 // In Electron with loadFile, we need to use paths relative to the HTML file
@@ -39,7 +38,6 @@ interface SidebarProps {
 const MIN_WIDTH = 50; // Collapsed width (icon only)
 const MIN_EXPANDED_WIDTH = 240; // Minimum width when expanded (prevents resizing too small)
 const MAX_WIDTH = 340; // Maximum expanded width
-const DEFAULT_WIDTH = (MIN_EXPANDED_WIDTH + MAX_WIDTH) / 2; // Default expanded width
 
 export const Sidebar = memo(function Sidebar({
   currentDetections,
@@ -52,12 +50,14 @@ export const Sidebar = memo(function Sidebar({
 }: SidebarProps) {
   // Zustand Stores
   const { groupMembers } = useAttendanceStore();
-  const { setShowSettings } = useUIStore();
-
-  // Persistent state from store
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {
+    setShowSettings,
+    sidebarCollapsed: isCollapsed,
+    setSidebarCollapsed: setIsCollapsed,
+    sidebarWidth,
+    setSidebarWidth,
+    isHydrated,
+  } = useUIStore();
 
   const [isResizing, setIsResizing] = useState(false);
   const isResizingRef = useRef(false);
@@ -67,57 +67,13 @@ export const Sidebar = memo(function Sidebar({
   const currentResizeWidth = useRef(0);
   const originalTransition = useRef<string>("");
 
-  // Load initial state from store (disable transition on initial load)
-  useEffect(() => {
-    persistentSettings.getUIState().then((uiState) => {
-      setIsCollapsed(uiState.sidebarCollapsed);
-      const width = Math.max(
-        MIN_EXPANDED_WIDTH,
-        Math.min(MAX_WIDTH, uiState.sidebarWidth),
-      );
-      setSidebarWidth(width);
-
-      // Set width immediately without transition on initial load
-      if (sidebarRef.current) {
-        const expectedWidth = uiState.sidebarCollapsed ? MIN_WIDTH : width;
-        // Disable transition for initial load
-        sidebarRef.current.style.transition = "none";
-        sidebarRef.current.style.width = `${expectedWidth}px`;
-        sidebarRef.current.style.minWidth = `${expectedWidth}px`;
-        sidebarRef.current.style.maxWidth = `${expectedWidth}px`;
-
-        // Re-enable transition after a brief moment
-        requestAnimationFrame(() => {
-          if (sidebarRef.current) {
-            sidebarRef.current.style.transition = "";
-          }
-          setIsInitialized(true);
-        });
-      } else {
-        setIsInitialized(true);
-      }
-    });
-  }, []);
+  // No local state initialization or manual state sync needed - handled by store
+  const isInitialized = isHydrated;
 
   // Sync isResizing ref with state
   useEffect(() => {
     isResizingRef.current = isResizing;
   }, [isResizing]);
-
-  // Save state to store
-  useEffect(() => {
-    persistentSettings
-      .setUIState({ sidebarCollapsed: isCollapsed })
-      .catch(console.error);
-  }, [isCollapsed]);
-
-  useEffect(() => {
-    if (!isResizing) {
-      persistentSettings
-        .setUIState({ sidebarWidth: sidebarWidth })
-        .catch(console.error);
-    }
-  }, [sidebarWidth, isResizing]);
 
   // Toggle collapse/expand (with transition for manual toggles)
   const toggleSidebar = useCallback(() => {
@@ -125,8 +81,8 @@ export const Sidebar = memo(function Sidebar({
       // Ensure transition is enabled for manual toggles
       sidebarRef.current.style.transition = "";
     }
-    setIsCollapsed((prev) => !prev);
-  }, [isInitialized]);
+    setIsCollapsed(!isCollapsed);
+  }, [isInitialized, isCollapsed, setIsCollapsed]);
 
   // Handle resize start
   const handleResizeStart = useCallback(
@@ -193,7 +149,7 @@ export const Sidebar = memo(function Sidebar({
     if (sidebarRef.current) {
       sidebarRef.current.style.transition = originalTransition.current;
     }
-  }, [sidebarWidth]);
+  }, [sidebarWidth, setSidebarWidth]);
 
   // Setup resize event listeners
   useEffect(() => {

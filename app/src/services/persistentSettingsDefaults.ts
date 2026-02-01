@@ -27,7 +27,18 @@ export interface PersistentSettingsSchema {
     lastRegistrationSource: string | null;
     lastRegistrationMode: string | null;
     hasSeenIntro: boolean;
+    activeGroupSection: string | null;
   };
+
+  // Report Scratchpad (unsaved tweaks)
+  reportScratchpad: Record<
+    string,
+    {
+      columns: string[];
+      groupBy: string;
+      statusFilter: string;
+    }
+  >;
 
   // Report Views (per group)
   reportViews: Record<string, unknown>;
@@ -64,7 +75,9 @@ export const defaultSettings: PersistentSettingsSchema = {
     lastRegistrationSource: null,
     lastRegistrationMode: null,
     hasSeenIntro: false,
+    activeGroupSection: null,
   },
+  reportScratchpad: {},
   reportViews: {},
   reportDefaultViewNames: {},
   updater: {
