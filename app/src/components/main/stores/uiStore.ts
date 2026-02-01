@@ -12,6 +12,8 @@ interface UIState {
   isSettingsFullScreen: boolean;
   groupInitialSection: GroupSection | undefined;
   settingsInitialSection: string | undefined;
+  hasSeenIntro: boolean;
+  isHydrated: boolean;
 
   // Quick settings
   quickSettings: QuickSettings;
@@ -22,14 +24,17 @@ interface UIState {
   setIsSettingsFullScreen: (fullScreen: boolean) => void;
   setGroupInitialSection: (section: GroupSection | undefined) => void;
   setSettingsInitialSection: (section: string | undefined) => void;
+  setHasSeenIntro: (seen: boolean) => void;
   setQuickSettings: (
     settings: QuickSettings | ((prev: QuickSettings) => QuickSettings),
   ) => void;
 }
 
 // Load initial QuickSettings from store
-const loadInitialQuickSettings = async (): Promise<QuickSettings> => {
-  return await persistentSettings.getQuickSettings();
+const loadInitialSettings = async () => {
+  const quickSettings = await persistentSettings.getQuickSettings();
+  const uiState = await persistentSettings.getUIState();
+  return { quickSettings, hasSeenIntro: uiState.hasSeenIntro };
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -39,6 +44,9 @@ export const useUIStore = create<UIState>((set) => ({
   isSettingsFullScreen: false,
   groupInitialSection: undefined,
   settingsInitialSection: undefined,
+  hasSeenIntro: false, // Default to false
+  isHydrated: false, // Wait for hydration before rendering decisions
+
   quickSettings: {
     cameraMirrored: true,
     showFPS: false,
@@ -54,6 +62,10 @@ export const useUIStore = create<UIState>((set) => ({
   setGroupInitialSection: (section) => set({ groupInitialSection: section }),
   setSettingsInitialSection: (section) =>
     set({ settingsInitialSection: section }),
+  setHasSeenIntro: (seen) => {
+    set({ hasSeenIntro: seen });
+    persistentSettings.setUIState({ hasSeenIntro: seen }).catch(console.error);
+  },
   setQuickSettings: (settings) => {
     const newSettings =
       typeof settings === "function"
@@ -65,9 +77,9 @@ export const useUIStore = create<UIState>((set) => ({
   },
 }));
 
-// Load QuickSettings from store on initialization
+// Load Settings from store on initialization
 if (typeof window !== "undefined") {
-  loadInitialQuickSettings().then((settings) => {
-    useUIStore.setState({ quickSettings: settings });
+  loadInitialSettings().then(({ quickSettings, hasSeenIntro }) => {
+    useUIStore.setState({ quickSettings, hasSeenIntro, isHydrated: true });
   });
 }

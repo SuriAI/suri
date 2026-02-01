@@ -25,6 +25,7 @@ export interface PersistentSettingsSchema {
     selectedCamera: string;
     lastRegistrationSource: string | null;
     lastRegistrationMode: string | null;
+    hasSeenIntro: boolean;
   };
 
   // Report Views (per group)
@@ -61,6 +62,7 @@ export const defaultSettings: PersistentSettingsSchema = {
     selectedCamera: "",
     lastRegistrationSource: null,
     lastRegistrationMode: null,
+    hasSeenIntro: false,
   },
   reportViews: {},
   reportDefaultViewNames: {},
