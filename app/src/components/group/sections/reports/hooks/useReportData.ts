@@ -71,7 +71,7 @@ export function useReportData(
             group_id: group.id,
             start_date: startDate.toISOString(),
             end_date: endDate.toISOString(),
-            limit: 10000, // Fetch up to 10k records for the report period to ensure accuracy
+            limit: 1000, // Fetch up to 1k records for the report period to ensure accuracy
           }),
         ]);
       setReport(generatedReport);
