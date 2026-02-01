@@ -40,13 +40,10 @@ class AttendanceRepository:
         return group
 
     async def get_groups(self, active_only: bool = True) -> List[AttendanceGroup]:
-        query = (
-            select(AttendanceGroup)
-            .where(AttendanceGroup.is_deleted.is_(False))
-        )
+        query = select(AttendanceGroup).where(AttendanceGroup.is_deleted.is_(False))
         if self.organization_id:
             query = query.where(AttendanceGroup.organization_id == self.organization_id)
-        
+
         query = query.order_by(AttendanceGroup.name)
         if active_only:
             query = query.where(AttendanceGroup.is_active)
@@ -105,32 +102,30 @@ class AttendanceRepository:
         return member
 
     async def get_member(self, person_id: str) -> Optional[AttendanceMember]:
-        query = (
-            select(AttendanceMember)
-            .where(
-                AttendanceMember.person_id == person_id,
-                AttendanceMember.is_active,
-                AttendanceMember.is_deleted.is_(False),
-            )
+        query = select(AttendanceMember).where(
+            AttendanceMember.person_id == person_id,
+            AttendanceMember.is_active,
+            AttendanceMember.is_deleted.is_(False),
         )
         if self.organization_id:
-            query = query.where(AttendanceMember.organization_id == self.organization_id)
-            
+            query = query.where(
+                AttendanceMember.organization_id == self.organization_id
+            )
+
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
     async def get_group_members(self, group_id: str) -> List[AttendanceMember]:
-        query = (
-            select(AttendanceMember)
-            .where(
-                AttendanceMember.group_id == group_id,
-                AttendanceMember.is_active,
-                AttendanceMember.is_deleted.is_(False),
-            )
+        query = select(AttendanceMember).where(
+            AttendanceMember.group_id == group_id,
+            AttendanceMember.is_active,
+            AttendanceMember.is_deleted.is_(False),
         )
         if self.organization_id:
-            query = query.where(AttendanceMember.organization_id == self.organization_id)
-            
+            query = query.where(
+                AttendanceMember.organization_id == self.organization_id
+            )
+
         query = query.order_by(AttendanceMember.name)
         result = await self.session.execute(query)
         return result.scalars().all()

@@ -21,7 +21,11 @@ logger = logging.getLogger(__name__)
 class FaceDatabaseManager:
     """Async wrapper for Face database operations using SQLAlchemy"""
 
-    def __init__(self, legacy_database_path: Optional[str] = None, organization_id: Optional[str] = None):
+    def __init__(
+        self,
+        legacy_database_path: Optional[str] = None,
+        organization_id: Optional[str] = None,
+    ):
         """
         Initialize the database manager.
 
