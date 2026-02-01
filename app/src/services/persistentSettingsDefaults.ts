@@ -24,6 +24,7 @@ export interface PersistentSettingsSchema {
     selectedGroupId: string | null;
     groupSidebarCollapsed: boolean;
     selectedCamera: string;
+    selectedCameraLabel: string | null;
     lastRegistrationSource: string | null;
     lastRegistrationMode: string | null;
     hasSeenIntro: boolean;
@@ -72,6 +73,7 @@ export const defaultSettings: PersistentSettingsSchema = {
     selectedGroupId: null,
     groupSidebarCollapsed: false,
     selectedCamera: "",
+    selectedCameraLabel: null,
     lastRegistrationSource: null,
     lastRegistrationMode: null,
     hasSeenIntro: false,

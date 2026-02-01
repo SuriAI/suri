@@ -12,6 +12,7 @@ interface CameraState {
   cameraDevices: MediaDeviceInfo[];
   selectedCamera: string; // The ACTIVE camera
   preferredCameraId: string | null; // The USER'S CHOICE (persisted)
+  preferredCameraLabel: string | null; // SECONDARY MATCH (persisted)
   isPreferredCameraMissing: boolean;
 
   // Actions
@@ -34,6 +35,7 @@ export const useCameraStore = create<CameraState>((set, get) => ({
   cameraDevices: [],
   selectedCamera: "",
   preferredCameraId: null,
+  preferredCameraLabel: null,
   isPreferredCameraMissing: false,
 
   // Actions
@@ -42,7 +44,7 @@ export const useCameraStore = create<CameraState>((set, get) => ({
   setCameraActive: (value) => set({ cameraActive: value }),
   setWebsocketStatus: (status) => set({ websocketStatus: status }),
   setCameraDevices: (devices) => {
-    const { preferredCameraId, selectedCamera } = get();
+    const { preferredCameraId, preferredCameraLabel, selectedCamera } = get();
     set({ cameraDevices: devices });
 
     if (devices.length === 0) {
@@ -50,13 +52,13 @@ export const useCameraStore = create<CameraState>((set, get) => ({
       return;
     }
 
-    // Goal: Use preferred if available. Otherwise fallback.
-    const preferredExists = devices.some(
+    // Goal: Use preferred ID if available.
+    const preferredIdExists = devices.some(
       (d) => d.deviceId === preferredCameraId,
     );
 
-    if (preferredCameraId && preferredExists) {
-      // PREFERRED IS BACK (Auto-Recovery)
+    if (preferredCameraId && preferredIdExists) {
+      // EXACT ID MATCH (Auto-Recovery)
       if (selectedCamera !== preferredCameraId) {
         set({
           selectedCamera: preferredCameraId,
@@ -65,8 +67,29 @@ export const useCameraStore = create<CameraState>((set, get) => ({
       } else {
         set({ isPreferredCameraMissing: false });
       }
-    } else if (preferredCameraId && !preferredExists) {
-      // PREFERRED IS MISSING (Fallback)
+      return;
+    }
+
+    // Tier 2: Search by LABEL if ID missing (Handles Device ID rotation)
+    if (preferredCameraLabel) {
+      const labelMatch = devices.find((d) => d.label === preferredCameraLabel);
+      if (labelMatch) {
+        // FOUND BY LABEL! Auto-Update the ID choice
+        const newId = labelMatch.deviceId;
+        set({
+          selectedCamera: newId,
+          preferredCameraId: newId,
+          isPreferredCameraMissing: false,
+        });
+        persistentSettings
+          .setUIState({ selectedCamera: newId })
+          .catch(console.error);
+        return;
+      }
+    }
+
+    // Tier 3: PREFERRED IS MISSING (Fallback)
+    if (preferredCameraId) {
       const fallbackId = devices[0].deviceId;
       if (selectedCamera !== fallbackId) {
         set({
@@ -76,7 +99,7 @@ export const useCameraStore = create<CameraState>((set, get) => ({
       } else {
         set({ isPreferredCameraMissing: true });
       }
-    } else if (!preferredCameraId) {
+    } else {
       // NO PREFERENCE (Fresh Start)
       if (!selectedCamera && devices.length > 0) {
         const firstId = devices[0].deviceId;
@@ -86,15 +109,23 @@ export const useCameraStore = create<CameraState>((set, get) => ({
   },
   setSelectedCamera: (deviceId) => {
     if (!deviceId) return;
+    const { cameraDevices } = get();
+    const device = cameraDevices.find((d) => d.deviceId === deviceId);
+    const label = device?.label || null;
+
     // Explicit selection sets the PREFERRED choice
     set({
       selectedCamera: deviceId,
       preferredCameraId: deviceId,
+      preferredCameraLabel: label,
       isPreferredCameraMissing: false,
     });
     // Save preference to store
     persistentSettings
-      .setUIState({ selectedCamera: deviceId })
+      .setUIState({
+        selectedCamera: deviceId,
+        selectedCameraLabel: label,
+      })
       .catch(console.error);
   },
 }));
@@ -106,6 +137,7 @@ if (typeof window !== "undefined") {
       useCameraStore.setState({
         selectedCamera: uiState.selectedCamera,
         preferredCameraId: uiState.selectedCamera,
+        preferredCameraLabel: uiState.selectedCameraLabel,
       });
     }
   });
