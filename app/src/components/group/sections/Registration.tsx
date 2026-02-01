@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { EmptyState } from "@/components/group/shared/EmptyState";
 import { CameraQueue } from "@/components/group/sections/registration/CameraQueue";
 import { BulkRegistration } from "@/components/group/sections/registration/BulkRegistration";
 import { FaceCapture } from "@/components/group/sections";
@@ -153,29 +154,17 @@ export function Registration({
 
   if (members.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 max-w-sm text-center">
-          <div className="w-16 h-16 rounded-3xl bg-white/[0.02] border border-white/5 flex items-center justify-center mb-2">
-            <i className="fa-solid fa-user-plus text-2xl text-white/10"></i>
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-white/80 mb-1">
-              Add your first member
-            </h3>
-            <p className="text-xs text-white/30 leading-relaxed">
-              Create a member profile first so we can attach face data to it.
-            </p>
-          </div>
-          {onAddMember && (
-            <button
-              onClick={onAddMember}
-              className="px-6 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 rounded-xl text-cyan-400 text-xs font-black uppercase tracking-widest transition-all active:scale-95"
-            >
-              Get Started
-            </button>
-          )}
-        </div>
-      </div>
+      <EmptyState
+        title="No members in this group yet"
+        action={
+          onAddMember
+            ? {
+                label: "Add Member",
+                onClick: onAddMember,
+              }
+            : undefined
+        }
+      />
     );
   }
 

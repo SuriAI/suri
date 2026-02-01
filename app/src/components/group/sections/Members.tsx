@@ -3,6 +3,7 @@ import { attendanceManager } from "@/services";
 import { useGroupUIStore } from "@/components/group/stores";
 import { generateDisplayNames } from "@/utils";
 import type { AttendanceMember } from "@/types/recognition";
+import { EmptyState } from "@/components/group/shared/EmptyState";
 import { DeleteMemberModal } from "./DeleteMemberModal";
 
 interface MembersProps {
@@ -80,20 +81,17 @@ export function Members({
 
   if (members.length === 0) {
     return (
-      <section className="h-full flex flex-col items-center justify-center p-6 text-center space-y-3">
-        <div className="text-white/70 text-sm font-medium">No members yet</div>
-        <div className="text-white/40 text-xs max-w-xs">
-          Add members first so they can be registered and tracked for
-          attendance.
-        </div>
-        <button
-          onClick={onAdd}
-          className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
-        >
-          <i className="fa-solid fa-user-plus text-xs"></i>
-          Add Member
-        </button>
-      </section>
+      <EmptyState
+        title="No members in this group yet"
+        action={
+          onAdd
+            ? {
+                label: "Add Member",
+                onClick: onAdd,
+              }
+            : undefined
+        }
+      />
     );
   }
 

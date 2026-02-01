@@ -11,6 +11,7 @@ import { ReportHeader } from "@/components/group/sections/reports/components/Rep
 import { ReportToolbar } from "@/components/group/sections/reports/components/ReportToolbar";
 import { ReportTable } from "@/components/group/sections/reports/components/ReportTable";
 import { exportReportToCSV } from "@/components/group/sections/reports/utils/exportUtils";
+import { EmptyState } from "@/components/group/shared/EmptyState";
 
 import type { ColumnKey } from "@/components/group/sections/reports/types";
 
@@ -149,31 +150,17 @@ export function Reports({
   // Empty State
   if (!loading && members.length === 0) {
     return (
-      <section className="h-full flex flex-col overflow-hidden p-6">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center justify-center p-12 rounded-3xl border border-white/5 bg-white/[0.02] shadow-2xl max-w-sm text-center">
-            <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
-              <i className="fa-solid fa-users-slash text-3xl text-cyan-400/60"></i>
-            </div>
-            <h2 className="text-lg font-bold text-white mb-2">
-              No members found
-            </h2>
-            <p className="text-sm text-white/40 mb-8 leading-relaxed">
-              This group doesn't have any members registered yet. Add some
-              members to start tracking attendance.
-            </p>
-            {onAddMember && (
-              <button
-                onClick={onAddMember}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-100 hover:bg-cyan-500/30 transition-all font-bold text-sm"
-              >
-                <i className="fa-solid fa-plus-circle"></i>
-                Register Members
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+      <EmptyState
+        title="No members in this group yet"
+        action={
+          onAddMember
+            ? {
+                label: "Add Member",
+                onClick: onAddMember,
+              }
+            : undefined
+        }
+      />
     );
   }
 
