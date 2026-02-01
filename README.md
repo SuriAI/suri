@@ -59,7 +59,7 @@ Unlike cloud-based services, Suri executes all processing on the local hardware 
 
 | **Local Performance** | **Data Privacy** | **Smart Tracking** |
 |:---|:---|:---|
-| Uses refined **ONNX Runtime** inference. Delivers **sub-millisecond recognition** by removing network dependency. Works offline. | **Local-First** architecture. Biometric data is stored only on the device's encrypted database. No external telemetry. | Uses **Re-ID Association** and **Passive Liveness** to track identities across video frames. Prevents spoofing with photo/video attacks. |
+| Uses refined **ONNX Runtime** inference. Delivers **sub-millisecond recognition** by removing network dependency. Works offline. | **Local-First** architecture. Biometric data is stored only on the device's local database. No external telemetry. | Uses **Re-ID Association** and **Passive Liveness** to track identities across video frames. Prevents spoofing with photo/video attacks. |
 
 <div align="center">
   <br/>
@@ -88,9 +88,7 @@ Detailed technical documentation is organized into dedicated guides.
 Suri uses a modern, high-performance stack to deliver a native experience.
 
 <div align="center">
-  <a href="https://skillicons.dev">
-    <img src="https://skillicons.dev/icons?i=electron,react,vite,tailwindcss,python,fastapi,sqlite,pytorch,opencv&theme=dark" />
-  </a>
+    <img src="https://skillicons.dev/icons?i=electron,react,vite,tailwindcss,python,fastapi,sqlite,opencv&theme=dark" />
 </div>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -129,7 +127,7 @@ Contributions are what make the open source community such an amazing place to l
 
 Distributed under the **AGPL-3.0 License**. See `LICENSE.txt` for more information.
 
-This project relies on open source software. See [Third Party Licenses](docs/THIRD_PARTY_LICENSES.md) for details.
+This project relies on open source software. See [Third Party Licenses](THIRD_PARTY_LICENSES.md) for details.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

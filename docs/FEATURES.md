@@ -28,4 +28,3 @@ Maintains identity consistency across video frames.
 ## Data Export
 
 - **CSV Export**: Download raw attendance logs for external processing (Excel, ERPS).
-- **PDF Reports**: Generate printable audit logs.
