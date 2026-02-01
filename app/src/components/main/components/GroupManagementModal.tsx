@@ -129,10 +129,11 @@ export function GroupManagementModal({
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleSelectGroup(group)}
-                        className={`px-3 py-1 rounded text-sm ${currentGroup?.id === group.id
+                        className={`px-3 py-1 rounded text-sm ${
+                          currentGroup?.id === group.id
                             ? "btn-accent"
                             : "btn-secondary"
-                          }`}
+                        }`}
                       >
                         {currentGroup?.id === group.id ? "Active" : "Select"}
                       </button>
