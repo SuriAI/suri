@@ -211,9 +211,8 @@ export function ReportToolbar({
           </div>
         </div>
 
-        {/* Center: Status Pills */}
         <div className="flex bg-white/5 border border-white/5 rounded-lg p-0.5 gap-0.5">
-          {(["all", "present", "absent", "no_records"] as const).map((st) => {
+          {(["all", "present", "late", "absent"] as const).map((st) => {
             const active = statusFilter === st;
             return (
               <button
@@ -225,7 +224,9 @@ export function ReportToolbar({
                     : "text-white/20 hover:text-white/40 hover:bg-white/5"
                 }`}
               >
-                {st === "all" ? "All" : st === "no_records" ? "N/A" : st}
+                {st === "all"
+                  ? "All"
+                  : st.charAt(0).toUpperCase() + st.slice(1)}
               </button>
             );
           })}

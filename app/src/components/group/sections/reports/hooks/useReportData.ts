@@ -6,6 +6,7 @@ import type {
   AttendanceReport,
   AttendanceSession,
   AttendanceMember,
+  AttendanceRecord,
 } from "@/types/recognition";
 
 export function useReportData(
@@ -16,6 +17,9 @@ export function useReportData(
 ) {
   const [report, setReport] = useState<AttendanceReport | null>(null);
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<
+    AttendanceRecord[]
+  >([]);
   const [members, setMembers] = useState<AttendanceMember[]>(initialMembers);
   const [loading, setLoading] = useState(initialMembers.length > 0);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +28,7 @@ export function useReportData(
     // Reset if group changes
     setReport(null);
     setSessions([]);
+    setAttendanceRecords([]);
     setMembers(initialMembers);
     setError(null);
     setLoading(initialMembers.length > 0);
@@ -53,7 +58,7 @@ export function useReportData(
     setLoading(true);
     try {
       setError(null);
-      const [generatedReport, loadedSessions, loadedMembers] =
+      const [generatedReport, loadedSessions, loadedMembers, loadedRecords] =
         await Promise.all([
           attendanceManager.generateReport(group.id, startDate, endDate),
           attendanceManager.getSessions({
@@ -62,10 +67,17 @@ export function useReportData(
             end_date: getLocalDateString(endDate),
           }),
           attendanceManager.getGroupMembers(group.id),
+          attendanceManager.getRecords({
+            group_id: group.id,
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            limit: 10000, // Fetch up to 10k records for the report period to ensure accuracy
+          }),
         ]);
       setReport(generatedReport);
       setSessions(loadedSessions);
       setMembers(loadedMembers);
+      setAttendanceRecords(loadedRecords);
     } catch (err) {
       console.error("Error generating report:", err);
       setError(
@@ -79,6 +91,7 @@ export function useReportData(
   return {
     report,
     sessions,
+    attendanceRecords,
     members,
     loading,
     error,

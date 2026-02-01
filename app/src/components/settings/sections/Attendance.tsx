@@ -182,10 +182,10 @@ export function Attendance({
             <div className="flex items-center py-3 border-b border-white/5 gap-4">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white/90">
-                  Start Time
+                  Scheduled Start
                 </div>
                 <div className="text-xs text-white/50 mt-0.5">
-                  Session begins at
+                  Official start time for the session
                 </div>
               </div>
 
@@ -202,10 +202,10 @@ export function Attendance({
             <div className="flex items-center py-3 border-b border-white/5 gap-4">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white/90">
-                  Late Time
+                  Grace Period
                 </div>
                 <div className="text-xs text-white/50 mt-0.5">
-                  Late from {lateTime}
+                  Marked as Late after {lateTime}
                 </div>
               </div>
 

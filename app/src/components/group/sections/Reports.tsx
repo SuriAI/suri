@@ -29,7 +29,8 @@ const DEFAULT_COLUMNS = [
   "date",
   "status",
   "check_in_time",
-  "is_late",
+  "check_out_time",
+  "total_hours",
 ] as unknown as ColumnKey[];
 
 export function Reports({
@@ -47,8 +48,15 @@ export function Reports({
     useState<string>(getLocalDateString());
 
   // --- Data Hook ---
-  const { report, sessions, members, loading, error, generateReport } =
-    useReportData(group, storeMembers, reportStartDate, reportEndDate);
+  const {
+    report,
+    sessions,
+    attendanceRecords,
+    members,
+    loading,
+    error,
+    generateReport,
+  } = useReportData(group, storeMembers, reportStartDate, reportEndDate);
 
   // --- Views Hook ---
   const {
@@ -72,8 +80,10 @@ export function Reports({
 
   // --- Transform Hook ---
   const { groupedRows, daysTracked, allColumns } = useReportTransform(
+    group,
     members,
     sessions,
+    attendanceRecords || [],
     report,
     reportStartDate,
     reportEndDate,

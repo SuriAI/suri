@@ -93,6 +93,7 @@ interface DrawOverlaysParams {
     offsetX: number;
     offsetY: number;
   } | null;
+  currentGroupId?: string;
 }
 
 export const drawOverlays = ({
@@ -106,6 +107,7 @@ export const drawOverlays = ({
   quickSettings,
   getVideoRect,
   calculateScaleFactors,
+  currentGroupId,
 }: DrawOverlaysParams) => {
   const video = videoRef.current;
   const overlayCanvas = overlayCanvasRef.current;
@@ -233,8 +235,8 @@ export const drawOverlays = ({
       ctx.restore();
     }
 
-    if (isRecognized && recognitionResult?.person_id) {
-      const cooldownKey = recognitionResult.person_id;
+    if (isRecognized && recognitionResult?.person_id && currentGroupId) {
+      const cooldownKey = `${recognitionResult.person_id}-${currentGroupId}`;
       const cooldownInfo = persistentCooldowns.get(cooldownKey);
       if (cooldownInfo) {
         if (cooldownInfo) {
