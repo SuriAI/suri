@@ -121,6 +121,7 @@ export interface AttendanceGroup {
   id: string;
   name: string;
   description?: string;
+  recognizer_model?: string;
   created_at: Date;
   is_active: boolean;
   settings: {

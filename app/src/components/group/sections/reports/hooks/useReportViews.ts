@@ -19,6 +19,9 @@ export function useReportViews(groupId: string, defaultColumns: ColumnKey[]) {
   const [statusFilter, setStatusFilter] = useState<ReportStatusFilter>("all");
   const [search, setSearch] = useState<string>("");
 
+  // Track if we are currently loading state to avoid overwriting during init
+  const [isInitializing, setIsInitializing] = useState(true);
+
   useEffect(() => {
     const loadViews = async () => {
       try {
@@ -62,10 +65,47 @@ export function useReportViews(groupId: string, defaultColumns: ColumnKey[]) {
       } catch {
         setViews([]);
         setActiveViewIndex(null);
+      } finally {
+        setIsInitializing(false);
       }
     };
     loadViews();
   }, [groupId, defaultColumns]);
+
+  // Load Scratchpad (Unsaved tweaks)
+  useEffect(() => {
+    if (activeViewIndex === null) {
+      persistentSettings.getReportScratchpad(groupId).then((scratch) => {
+        if (scratch) {
+          if (scratch.columns)
+            setVisibleColumns(scratch.columns as ColumnKey[]);
+          if (scratch.groupBy) setGroupBy(scratch.groupBy as GroupByKey);
+          if (scratch.statusFilter)
+            setStatusFilter(scratch.statusFilter as ReportStatusFilter);
+        }
+      });
+    }
+  }, [groupId, activeViewIndex]);
+
+  // Save Scratchpad
+  useEffect(() => {
+    if (!isInitializing && activeViewIndex === null) {
+      persistentSettings
+        .setReportScratchpad(groupId, {
+          columns: visibleColumns,
+          groupBy,
+          statusFilter,
+        })
+        .catch(console.error);
+    }
+  }, [
+    groupId,
+    activeViewIndex,
+    visibleColumns,
+    groupBy,
+    statusFilter,
+    isInitializing,
+  ]);
 
   const saveViewsToStorage = (next: SavedViewConfig[]) => {
     setViews(next);

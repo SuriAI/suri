@@ -15,6 +15,10 @@ interface UIState {
   hasSeenIntro: boolean;
   isHydrated: boolean;
 
+  // Sidebar state
+  sidebarCollapsed: boolean;
+  sidebarWidth: number;
+
   // Quick settings
   quickSettings: QuickSettings;
 
@@ -25,6 +29,8 @@ interface UIState {
   setGroupInitialSection: (section: GroupSection | undefined) => void;
   setSettingsInitialSection: (section: string | undefined) => void;
   setHasSeenIntro: (seen: boolean) => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  setSidebarWidth: (width: number) => void;
   setQuickSettings: (
     settings: QuickSettings | ((prev: QuickSettings) => QuickSettings),
   ) => void;
@@ -35,7 +41,12 @@ interface UIState {
 const loadInitialSettings = async () => {
   const quickSettings = await persistentSettings.getQuickSettings();
   const uiState = await persistentSettings.getUIState();
-  return { quickSettings, hasSeenIntro: uiState.hasSeenIntro };
+  return {
+    quickSettings,
+    hasSeenIntro: uiState.hasSeenIntro,
+    sidebarCollapsed: uiState.sidebarCollapsed,
+    sidebarWidth: uiState.sidebarWidth,
+  };
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -47,6 +58,9 @@ export const useUIStore = create<UIState>((set) => ({
   settingsInitialSection: undefined,
   hasSeenIntro: false, // Default to false
   isHydrated: false, // Wait for hydration before rendering decisions
+
+  sidebarCollapsed: false,
+  sidebarWidth: 300,
 
   quickSettings: {
     cameraMirrored: true,
@@ -67,6 +81,16 @@ export const useUIStore = create<UIState>((set) => ({
     set({ hasSeenIntro: seen });
     persistentSettings.setUIState({ hasSeenIntro: seen }).catch(console.error);
   },
+  setSidebarCollapsed: (collapsed) => {
+    set({ sidebarCollapsed: collapsed });
+    persistentSettings
+      .setUIState({ sidebarCollapsed: collapsed })
+      .catch(console.error);
+  },
+  setSidebarWidth: (width) => {
+    set({ sidebarWidth: width });
+    persistentSettings.setUIState({ sidebarWidth: width }).catch(console.error);
+  },
   setQuickSettings: (settings) => {
     const newSettings =
       typeof settings === "function"
@@ -81,7 +105,15 @@ export const useUIStore = create<UIState>((set) => ({
 
 // Load Settings from store on initialization
 if (typeof window !== "undefined") {
-  loadInitialSettings().then(({ quickSettings, hasSeenIntro }) => {
-    useUIStore.setState({ quickSettings, hasSeenIntro, isHydrated: true });
-  });
+  loadInitialSettings().then(
+    ({ quickSettings, hasSeenIntro, sidebarCollapsed, sidebarWidth }) => {
+      useUIStore.setState({
+        quickSettings,
+        hasSeenIntro,
+        sidebarCollapsed: sidebarCollapsed ?? false,
+        sidebarWidth: sidebarWidth ?? 300,
+        isHydrated: true,
+      });
+    },
+  );
 }

@@ -75,6 +75,9 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
     const current = get().activeSection;
     if (current !== section) {
       set({ activeSection: section });
+      persistentSettings
+        .setUIState({ activeGroupSection: section })
+        .catch(console.error);
     }
   },
 
@@ -144,6 +147,7 @@ if (typeof window !== "undefined") {
   persistentSettings.getUIState().then((uiState) => {
     useGroupUIStore.setState({
       isSidebarCollapsed: uiState.groupSidebarCollapsed,
+      activeSection: (uiState.activeGroupSection as GroupSection) || "overview",
       lastRegistrationSource: uiState.lastRegistrationSource as
         | "upload"
         | "camera"
