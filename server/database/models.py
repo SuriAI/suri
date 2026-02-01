@@ -85,7 +85,10 @@ class AttendanceMember(Base, SyncMixin):
     records: Mapped[List["AttendanceRecord"]] = relationship(back_populates="member")
     sessions: Mapped[List["AttendanceSession"]] = relationship(back_populates="member")
 
-    __table_args__ = (Index("ix_member_group_id", "group_id"),)
+    __table_args__ = (
+        Index("ix_member_group_id", "group_id"),
+        Index("ix_member_person_org", "person_id", "organization_id", unique=True),
+    )
 
 
 class AttendanceRecord(Base, SyncMixin):
@@ -142,7 +145,13 @@ class AttendanceSession(Base, SyncMixin):
         Index("ix_session_person_id", "person_id"),
         Index("ix_session_date", "date"),
         Index("ix_session_group_date", "group_id", "date"),
-        Index("ix_session_person_date", "person_id", "date"),
+        Index(
+            "ix_session_person_date_org",
+            "person_id",
+            "date",
+            "organization_id",
+            unique=True,
+        ),
     )
 
 

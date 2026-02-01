@@ -113,7 +113,7 @@ class AttendanceRepository:
             )
 
         result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def get_group_members(self, group_id: str) -> List[AttendanceMember]:
         query = select(AttendanceMember).where(
@@ -234,8 +234,12 @@ class AttendanceRepository:
         query = select(AttendanceSession).where(
             AttendanceSession.person_id == person_id, AttendanceSession.date == date
         )
+        if self.organization_id:
+            query = query.where(
+                AttendanceSession.organization_id == self.organization_id
+            )
         result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def get_sessions(
         self,
@@ -383,7 +387,7 @@ class FaceRepository:
         if self.organization_id:
             query = query.where(Face.organization_id == self.organization_id)
         result = await self.session.execute(query)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def get_all_faces(self) -> List[Face]:
         query = select(Face).where(Face.is_deleted.is_(False))
