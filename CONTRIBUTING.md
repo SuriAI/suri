@@ -38,13 +38,9 @@ Nothing fancy or bureaucratic here. I'm a student, not a big tech company.
 - **Think about performance** - Every millisecond counts on older hardware
 - **Test on low-end devices** - If you can, test on something other than your beefy dev machine
 
-## Model Training
+## Model & Training
 
-If you're looking to retrain or improve the model:
-
-- The training logs and process are documented in `experiments/detection/README.md`
-- You'll need datasets from WIDERFACE, FDDB, DARKFACE, and MAFA (links in the docs)
-- Google Colab free tier works, but it's a pain with the session timeouts
+Details regarding the AI models and the development process can be found in the [Architecture Guide](docs/ARCHITECTURE.md).
 
 ## Local Development Setup
 

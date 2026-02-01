@@ -125,7 +125,7 @@ Contributions are what make the open source community such an amazing place to l
 <!-- LICENSE -->
 ## License
 
-Distributed under the **AGPL-3.0 License**. See `LICENSE.txt` for more information.
+Distributed under the **AGPL-3.0 License**. See `LICENSE` for more information.
 
 This project relies on open source software. See [Third Party Licenses](THIRD_PARTY_LICENSES.md) for details.
 
@@ -155,7 +155,7 @@ This project relies on open source software. See [Third Party Licenses](THIRD_PA
 [issues-shield]: https://img.shields.io/github/issues/suriAI/suri.svg?style=for-the-badge&color=000000
 [issues-url]: https://github.com/suriAI/suri/issues
 [license-shield]: https://img.shields.io/github/license/suriAI/suri.svg?style=for-the-badge&color=000000
-[license-url]: https://github.com/suriAI/suri/blob/master/LICENSE.txt
+[license-url]: https://github.com/suriAI/suri/blob/master/LICENSE
 
 [Electron.js]: https://img.shields.io/badge/Electron-2B2E3A?style=for-the-badge&logo=electron&logoColor=9FEAF9
 [Electron-url]: https://www.electronjs.org/
