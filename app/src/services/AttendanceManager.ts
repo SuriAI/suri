@@ -9,6 +9,7 @@ import type {
   AttendanceEvent,
 } from "../types/recognition";
 import { getLocalDateString } from "../utils/index";
+import { fetchWithRetry } from "../utils/http";
 
 const API_BASE_URL = "http://127.0.0.1:8700";
 const API_ENDPOINTS = {
@@ -23,15 +24,60 @@ const API_ENDPOINTS = {
 
 class HttpClient {
   private baseUrl: string;
+  private readinessPromise: Promise<void> | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Gatekeeper: Blocks until backend is confirmed ready via IPC.
+   * Prevents "Connection Refused" errors by ensuring we never call fetch() too early.
+   */
+  private async ensureBackendReady(): Promise<void> {
+    // If we already have a promise (pending or resolved), return it
+    if (this.readinessPromise) {
+      return this.readinessPromise;
+    }
+
+    this.readinessPromise = (async () => {
+      const maxWaitTime = 300000; // 5 minutes safety
+      const checkInterval = 250;
+      const startTime = Date.now();
+
+      // Check for Electron API availability first
+      if (!window.electronAPI || !window.electronAPI.backend_ready) {
+        console.warn(
+          "[AttendanceManager] Electron API not found, skipping strict readiness check.",
+        );
+        return;
+      }
+
+      while (Date.now() - startTime < maxWaitTime) {
+        try {
+          const ready = await window.electronAPI.backend_ready.isReady();
+          if (ready) {
+            return;
+          }
+        } catch {
+          // Ignore IPC errors and keep retrying
+        }
+        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      }
+
+      console.error("[AttendanceManager] Backend readiness check timed out.");
+    })();
+
+    return this.readinessPromise;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
+    // BLOCK HERE: Wait for backend before making any network request
+    await this.ensureBackendReady();
+
     const url = `${this.baseUrl}${endpoint}`;
 
     const method = (options.method || "GET").toUpperCase();
@@ -46,24 +92,8 @@ class HttpClient {
       headers["Content-Type"] = "application/json";
     }
 
-    const makeRequest = async (attempt = 1): Promise<Response> => {
-      try {
-        return await fetch(url, { ...options, headers });
-      } catch (error) {
-        if (
-          error instanceof TypeError &&
-          error.message === "Failed to fetch" &&
-          attempt <= 5
-        ) {
-          const delay = 500 * Math.pow(1.5, attempt - 1);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          return makeRequest(attempt + 1);
-        }
-        throw error;
-      }
-    };
-
-    const response = await makeRequest();
+    // Use shared utility for robust retries
+    const response = await fetchWithRetry(url, { ...options, headers });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

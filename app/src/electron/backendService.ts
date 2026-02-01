@@ -94,7 +94,7 @@ export class BackendService {
     this.config = {
       port: 8700,
       host: "127.0.0.1",
-      timeout: 60000, // Increased to 60s for slower machines
+      timeout: 120000, // Increased to 120s to ensure splash screen stays up until ready
       maxRetries: 3,
       healthCheckInterval: 10000,
       ...config,
@@ -375,21 +375,35 @@ export class BackendService {
    */
   private async waitForBackendReady(): Promise<void> {
     const startTime = Date.now();
-    const timeout = this.config.timeout;
+    // Safety timeout: 5 minutes (to prevent infinite hangs in zombie states)
+    // The real "timeout" is effectively the process dying.
+    const safetyTimeout = 300000;
 
     // Check immediately first (no delay)
     if (await this.healthCheck()) {
       return;
     }
 
-    while (Date.now() - startTime < timeout) {
-      await sleep(100);
+    while (Date.now() - startTime < safetyTimeout) {
+      // 1. Fast Fail: Check if process has already exited
+      if (this.process && this.process.exitCode !== null) {
+        throw new Error(
+          `Backend process exited unexpectedly with code ${this.process.exitCode}`,
+        );
+      }
+
+      // 2. Check health
       if (await this.healthCheck()) {
         return;
       }
+
+      // 3. Wait a bit
+      await sleep(250);
     }
 
-    throw new Error(`Backend failed to start within ${timeout}ms`);
+    throw new Error(
+      `Backend failed to start within safety timeout (${safetyTimeout}ms)`,
+    );
   }
 
   /**
