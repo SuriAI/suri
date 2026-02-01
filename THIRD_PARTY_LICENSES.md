@@ -1,6 +1,26 @@
 # Third-Party Licenses
 
-This document contains the licenses for third-party AI models and algorithms used in Suri.
+This document contains the licenses for third-party AI models, frameworks, and runtimes used in Suri.
+
+---
+
+## Core Frameworks & Runtimes
+
+### Electronh
+- **License**: MIT
+- **Copyright**: (c) OpenJS Foundation and Electron contributors
+
+### React
+- **License**: MIT
+- **Copyright**: (c) Meta Platforms, Inc. and affiliates.
+
+### FastAPI
+- **License**: MIT
+- **Copyright**: (c) Sebastián Ramírez
+
+### ONNX Runtime
+- **License**: MIT
+- **Copyright**: (c) Microsoft Corporation
 
 ---
 
