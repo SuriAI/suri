@@ -4,6 +4,8 @@ export type ColumnKey =
   | "name"
   | "date"
   | "check_in_time"
+  | "check_out_time"
+  | "total_hours"
   | "status"
   | "is_late"
   | "late_minutes"
@@ -11,7 +13,12 @@ export type ColumnKey =
 
 export type GroupByKey = "none" | "person" | "date";
 
-export type ReportStatusFilter = "all" | "present" | "absent" | "no_records";
+export type ReportStatusFilter =
+  | "all"
+  | "present"
+  | "late"
+  | "absent"
+  | "no_records";
 
 export interface SavedViewConfig {
   name: string;
@@ -26,6 +33,8 @@ export interface RowData {
   name: string;
   date: string;
   check_in_time?: Date;
+  check_out_time?: Date;
+  total_hours?: number;
   status: ReportStatusFilter;
   is_late: boolean;
   late_minutes: number;

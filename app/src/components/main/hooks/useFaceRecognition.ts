@@ -211,7 +211,10 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
 
                     if (trackingMode === "auto") {
                       const currentTime = Date.now();
-                      const cooldownKey = response.person_id;
+                      // Scoped Cooldown Key: personId + groupId
+                      // This ensures a student is only "blocked" for this specific class.
+                      // If they go to another class (different Group ID), they are fresh.
+                      const cooldownKey = `${response.person_id}-${currentGroupValue.id}`;
                       const cooldownInfo =
                         persistentCooldownsRef.current.get(cooldownKey);
                       const authoritativeTimestamp =

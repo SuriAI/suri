@@ -198,6 +198,33 @@ export function ReportTable({
                           } else {
                             content = <span className="text-white/10">-</span>;
                           }
+                        } else if (c.key === "check_out_time") {
+                          if (row.check_out_time) {
+                            content = (
+                              <div className="flex flex-col">
+                                <span className="text-white/90 font-medium">
+                                  {new Date(
+                                    row.check_out_time,
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+                            );
+                          } else {
+                            content = <span className="text-white/10">-</span>;
+                          }
+                        } else if (c.key === "total_hours") {
+                          if (row.total_hours) {
+                            content = (
+                              <span className="text-cyan-400 font-bold">
+                                {row.total_hours.toFixed(2)}h
+                              </span>
+                            );
+                          } else {
+                            content = <span className="text-white/10">-</span>;
+                          }
                         } else if (c.key === "late_minutes") {
                           content =
                             row.late_minutes > 0 ? (

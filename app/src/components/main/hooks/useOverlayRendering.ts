@@ -28,7 +28,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
   // Zustand stores
   const { currentDetections, currentRecognitionResults } = useDetectionStore();
   const { isStreaming } = useCameraStore();
-  const { persistentCooldowns } = useAttendanceStore();
+  const { persistentCooldowns, currentGroup } = useAttendanceStore();
   const { quickSettings } = useUIStore();
 
   const recognitionEnabled = true;
@@ -135,6 +135,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
       quickSettings,
       getVideoRect,
       calculateScaleFactors,
+      currentGroupId: currentGroup?.id,
     });
   }, [
     currentDetections,
@@ -142,6 +143,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     currentRecognitionResults,
     recognitionEnabled,
     persistentCooldowns,
+    currentGroup,
     quickSettings,
     getVideoRect,
     calculateScaleFactors,
