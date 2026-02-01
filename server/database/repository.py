@@ -40,7 +40,7 @@ class AttendanceRepository:
     async def get_groups(self, active_only: bool = True) -> List[AttendanceGroup]:
         query = (
             select(AttendanceGroup)
-            .where(not AttendanceGroup.is_deleted)
+            .where(AttendanceGroup.is_deleted.is_(False))
             .order_by(AttendanceGroup.name)
         )
         if active_only:
@@ -103,7 +103,7 @@ class AttendanceRepository:
         query = select(AttendanceMember).where(
             AttendanceMember.person_id == person_id,
             AttendanceMember.is_active,
-            not AttendanceMember.is_deleted,
+            AttendanceMember.is_deleted.is_(False),
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
@@ -114,7 +114,7 @@ class AttendanceRepository:
             .where(
                 AttendanceMember.group_id == group_id,
                 AttendanceMember.is_active,
-                not AttendanceMember.is_deleted,
+                AttendanceMember.is_deleted.is_(False),
             )
             .order_by(AttendanceMember.name)
         )
@@ -125,7 +125,7 @@ class AttendanceRepository:
         query = select(AttendanceMember.person_id).where(
             AttendanceMember.group_id == group_id,
             AttendanceMember.is_active,
-            not AttendanceMember.is_deleted,
+            AttendanceMember.is_deleted.is_(False),
         )
         result = await self.session.execute(query)
         return list(result.scalars().all())
@@ -366,12 +366,14 @@ class FaceRepository:
         return face
 
     async def get_face(self, person_id: str) -> Optional[Face]:
-        query = select(Face).where(Face.person_id == person_id, not Face.is_deleted)
+        query = select(Face).where(
+            Face.person_id == person_id, Face.is_deleted.is_(False)
+        )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
     async def get_all_faces(self) -> List[Face]:
-        query = select(Face).where(not Face.is_deleted)
+        query = select(Face).where(Face.is_deleted.is_(False))
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -408,6 +410,6 @@ class FaceRepository:
 
     async def get_stats(self) -> Dict[str, Any]:
         count = await self.session.scalar(
-            select(func.count()).select_from(Face).where(not Face.is_deleted)
+            select(func.count()).select_from(Face).where(Face.is_deleted.is_(False))
         )
         return {"total_faces": count}
