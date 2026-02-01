@@ -17,69 +17,39 @@ interface DetectionPanelProps {
 // Memoized individual detection card - compact border-status design with enhanced spoof UI
 const DetectionCard = memo(
   ({
-    face,
     index,
     recognitionResult,
     isRecognized,
     displayName,
     trackedFace,
   }: {
-    face: DetectionResult["faces"][0];
     index: number;
     recognitionResult: ExtendedFaceRecognitionResponse | undefined;
     isRecognized: boolean;
     displayName: string;
     trackedFace: TrackedFace | undefined;
   }) => {
-    // Get status styles with enhanced spoof visibility
+    // Simplified status styles - Silent Failure approach
+    // We only highlight SUCCESS (Recognized + Real). Everything else is neutral.
     const getStatusStyles = () => {
-      if (!face.liveness) {
+      // If recognized, show success visuals
+      if (isRecognized) {
         return {
-          borderColor: "border-white/20",
-          bgColor: "",
-          statusText: "UNKNOWN",
-          statusColor: "text-white/60",
+          borderColor: "border-green-500/60",
+          bgColor: "bg-green-950/10", // Very subtle tint
+          textColor: "text-green-400",
         };
       }
 
-      const status = face.liveness.status;
-
-      switch (status) {
-        case "real":
-          return {
-            borderColor: "border-green-500/60",
-            bgColor: "",
-            statusText: "REAL",
-            statusColor: "text-green-400",
-          };
-        case "spoof":
-          return {
-            borderColor: "border-red-500/90",
-            bgColor: "bg-red-950/30",
-            statusText: "SPOOF",
-            statusColor: "text-red-300 font-semibold",
-          };
-        case "move_closer":
-          return {
-            borderColor: "border-yellow-500/90",
-            bgColor: "bg-yellow-950/30",
-            statusText: "MOVE CLOSER",
-            statusColor: "text-yellow-300 font-semibold",
-          };
-        default:
-          return {
-            borderColor: "border-white/20",
-            bgColor: "",
-            statusText: "UNKNOWN",
-            statusColor: "text-white/60",
-          };
-      }
+      // Default/Unknown/Spoof - All look the same (Neutral)
+      return {
+        borderColor: "border-white/10",
+        bgColor: "",
+        textColor: "text-white/60",
+      };
     };
 
     const statusStyles = getStatusStyles();
-    const isSpoof =
-      face.liveness?.status === "spoof" ||
-      face.liveness?.status === "move_closer";
     const hasName = isRecognized && recognitionResult?.person_id && displayName;
 
     return (
@@ -90,7 +60,6 @@ const DetectionCard = memo(
         ${statusStyles.borderColor}
         ${statusStyles.bgColor}
         ${trackedFace?.isLocked ? "border-cyan-500/50 bg-gradient-to-br from-cyan-500/10 to-transparent" : ""}
-        ${isSpoof ? "ring-1 ring-red-500/20" : ""}
         ${hasName ? "shadow-md" : ""}
       `}
       >
@@ -100,37 +69,17 @@ const DetectionCard = memo(
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {hasName ? (
               <span
-                className={`font-semibold text-sm truncate ${
-                  isSpoof ? "text-red-200" : "text-white"
-                }`}
+                className={`font-semibold text-sm truncate ${statusStyles.textColor}`}
               >
                 {displayName}
               </span>
             ) : (
-              <span
-                className={`text-xs italic ${
-                  isSpoof ? "text-red-300/70" : "text-white/40"
-                }`}
-              >
-                {isSpoof ? "Spoofed Face" : "Unknown"}
-              </span>
+              <span className="text-xs italic text-white/40">Unknown</span>
             )}
           </div>
 
-          {/* Right: Status Text Only (No score display) */}
-          {face.liveness && (
-            <div
-              className={`flex items-center gap-1.5 shrink-0 ${statusStyles.statusColor}`}
-            >
-              <span
-                className={`text-xs ${
-                  isSpoof ? "font-bold tracking-wide" : "font-medium"
-                }`}
-              >
-                {statusStyles.statusText}
-              </span>
-            </div>
-          )}
+          {/* Right: Removed Status Text Badge completely.
+              Silent failure means we don't tell them why it failed. */}
         </div>
       </div>
     );
@@ -280,7 +229,6 @@ export function DetectionPanel({
             return (
               <DetectionCard
                 key={trackId}
-                face={face}
                 index={index}
                 recognitionResult={recognitionResult}
                 isRecognized={isRecognized}
