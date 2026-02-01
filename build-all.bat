@@ -7,8 +7,8 @@ echo ========================================
 echo.
 
 :: Check if we're in the correct directory
-if not exist "backend" (
-    echo Error: backend directory not found. Please run this script from the project root.
+if not exist "server" (
+    echo Error: server directory not found. Please run this script from the project root.
     pause
     exit /b 1
 )
@@ -22,7 +22,7 @@ if not exist "app" (
 :: Build Backend
 echo [1/3] Building Python Backend...
 echo =====================================
-cd backend
+cd server
 call build_windows.bat
 if !errorlevel! neq 0 (
     echo Error: Backend build failed!
@@ -79,6 +79,6 @@ echo The packaged application can be found in:
 echo   app/dist/
 echo.
 echo Backend executable location:
-echo   backend/dist/server.exe
+echo   server/dist/server.exe
 echo.
 pause

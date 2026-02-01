@@ -11,6 +11,9 @@ Ensure you have the following installed:
 - **Git**: Latest version
 - **Hardware**: Webcam required. Dedicated GPU (NVIDIA) recommended for high-traffic environments.
 
+> [!NOTE]
+> For GPU acceleration, ensure you install `onnxruntime-gpu` instead of the default `onnxruntime` in `server/requirements.txt`.
+
 ## System Specifications
 
 Suri is optimized for efficiency but scales with hardware capabilities.

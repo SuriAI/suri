@@ -8,8 +8,8 @@ echo "========================================"
 echo
 
 # Check if we're in the correct directory
-if [ ! -d "backend" ]; then
-    echo "Error: backend directory not found. Please run this script from the project root."
+if [ ! -d "server" ]; then
+    echo "Error: server directory not found. Please run this script from the project root."
     exit 1
 fi
 
@@ -41,7 +41,7 @@ echo
 # Build Backend
 echo "[1/3] Building Python Backend..."
 echo "====================================="
-cd backend
+cd server
 chmod +x build_unix.sh
 ./build_unix.sh
 cd ..
@@ -75,5 +75,5 @@ echo "The packaged application can be found in:"
 echo "  app/dist/"
 echo
 echo "Backend executable location:"
-echo "  backend/dist/server"
+echo "  server/dist/server"
 echo
