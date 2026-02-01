@@ -157,7 +157,7 @@ This project relies on open source software. See [Third Party Licenses](THIRD_PA
 [issues-shield]: https://img.shields.io/github/issues/suriAI/suri.svg?style=for-the-badge&color=000000
 [issues-url]: https://github.com/suriAI/suri/issues
 [license-shield]: https://img.shields.io/github/license/suriAI/suri.svg?style=for-the-badge&color=000000
-[license-url]: https://github.com/suriAI/suri/blob/master/LICENSE
+[license-url]: https://github.com/suriAI/suri/blob/main/LICENSE
 
 [Electron.js]: https://img.shields.io/badge/Electron-2B2E3A?style=for-the-badge&logo=electron&logoColor=9FEAF9
 [Electron-url]: https://www.electronjs.org/
