@@ -14,7 +14,7 @@ from .models import (
     validate_model_paths,
     validate_directories,
 )
-from .logging_config import LOGGING_CONFIG, get_logging_config
+from .logging_config import get_logging_config
 
 __all__ = [
     "BASE_DIR",
@@ -36,6 +36,5 @@ __all__ = [
     "FACE_TRACKER_CONFIG",
     "validate_model_paths",
     "validate_directories",
-    "LOGGING_CONFIG",
     "get_logging_config",
 ]
