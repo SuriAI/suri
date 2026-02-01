@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { attendanceManager } from "@/services";
 import { getLocalDateString, createDisplayNameMap } from "@/utils";
-import { StatsCard } from "@/components/group/shared";
+import { StatsCard, EmptyState } from "@/components/group/shared";
 import type {
   AttendanceGroup,
   AttendanceMember,
@@ -84,27 +84,17 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
   if (members.length === 0) {
     return (
-      <section className="h-full flex flex-col overflow-hidden p-6">
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          <div className="flex flex-col items-center justify-center space-y-3 max-w-md text-center">
-            <div className="text-white/70 text-sm font-medium">
-              No members yet
-            </div>
-            <div className="text-white/40 text-xs">
-              Add members to start seeing live attendance stats and activity.
-            </div>
-            {onAddMember && (
-              <button
-                onClick={onAddMember}
-                className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
-              >
-                <i className="fa-solid fa-user-plus text-xs"></i>
-                Add Member
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+      <EmptyState
+        title="No members in this group yet"
+        action={
+          onAddMember
+            ? {
+                label: "Add Member",
+                onClick: onAddMember,
+              }
+            : undefined
+        }
+      />
     );
   }
 
