@@ -6,7 +6,7 @@ interface CameraState {
   isStreaming: boolean;
   isVideoLoading: boolean;
   cameraActive: boolean;
-  websocketStatus: "disconnected" | "connecting" | "connected";
+  websocketStatus: "disconnected" | "connecting" | "connected" | "error";
 
   // Camera devices
   cameraDevices: MediaDeviceInfo[];
@@ -17,7 +17,7 @@ interface CameraState {
   setIsVideoLoading: (value: boolean) => void;
   setCameraActive: (value: boolean) => void;
   setWebsocketStatus: (
-    status: "disconnected" | "connecting" | "connected",
+    status: "disconnected" | "connecting" | "connected" | "error",
   ) => void;
   setCameraDevices: (devices: MediaDeviceInfo[]) => void;
   setSelectedCamera: (deviceId: string) => void;
