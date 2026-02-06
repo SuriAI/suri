@@ -143,6 +143,36 @@ class HttpClient {
 }
 
 export class AttendanceManager {
+  private readonly clockCheckStorageKey = "suri:lastSystemTimeMs";
+  private readonly clockBackwardWarnThresholdMs = 60 * 1000; // 60 seconds
+
+  private warnIfSystemClockWentBackwards(): void {
+    try {
+      const now = Date.now();
+      const lastRaw = localStorage.getItem(this.clockCheckStorageKey);
+      const last = lastRaw ? Number(lastRaw) : NaN;
+
+      if (
+        Number.isFinite(last) &&
+        now + this.clockBackwardWarnThresholdMs < last
+      ) {
+        const diffMs = last - now;
+        const diffMinutes = Math.max(1, Math.round(diffMs / 60000));
+        window.dispatchEvent(
+          new CustomEvent("suri:clock-warning", {
+            detail: {
+              message: `System clock appears to have moved backwards by more than 1 minute (~${diffMinutes} minute(s)). Please check your OS Date/Time settings to avoid incorrect attendance timestamps.`,
+            },
+          }),
+        );
+      }
+
+      localStorage.setItem(this.clockCheckStorageKey, String(now));
+    } catch {
+      // Ignore storage/event issues (warning is best-effort)
+    }
+  }
+
   private toLocalDateTimeParam(date: Date): string {
     const pad = (n: number, len: number = 2) => String(n).padStart(len, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
@@ -430,6 +460,8 @@ export class AttendanceManager {
     livenessConfidence?: number,
   ): Promise<AttendanceEvent | null> {
     try {
+      this.warnIfSystemClockWentBackwards();
+
       const eventData: Record<string, unknown> = {
         person_id: personId,
         confidence,

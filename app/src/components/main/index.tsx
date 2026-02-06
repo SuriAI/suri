@@ -37,6 +37,7 @@ import { GroupManagementModal } from "@/components/main/components/GroupManageme
 import { DeleteConfirmationModal } from "@/components/main/components/DeleteConfirmationModal";
 import { CooldownOverlay } from "@/components/main/components/CooldownOverlay";
 import type { DetectionResult } from "@/components/main/types";
+import { colorClasses } from "@/constants/colors";
 
 export default function Main() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -113,6 +114,8 @@ export default function Main() {
   const {
     error,
     setError,
+    warning,
+    setWarning,
     showSettings,
     setShowSettings,
     isSettingsFullScreen,
@@ -426,6 +429,28 @@ export default function Main() {
     };
   }, [setShowSettings, setGroupInitialSection, setSettingsInitialSection]);
 
+  // Listen for system clock warnings emitted by AttendanceManager
+  useEffect(() => {
+    const handleClockWarning = (event: CustomEvent<{ message?: string }>) => {
+      const message = event.detail?.message;
+      if (message) {
+        setWarning(message);
+      }
+    };
+
+    window.addEventListener(
+      "suri:clock-warning",
+      handleClockWarning as unknown as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "suri:clock-warning",
+        handleClockWarning as unknown as EventListener,
+      );
+    };
+  }, [setWarning]);
+
   // Handle auto-pause on minimize
   const wasStreamingBeforeMinimize = useRef(false);
 
@@ -461,6 +486,28 @@ export default function Main() {
   // ===== RENDER =====
   return (
     <div className="h-full bg-black text-white flex flex-col overflow-hidden">
+      {warning && (
+        <div
+          className={`mx-4 mt-3 ${colorClasses.warningBg} border ${colorClasses.warningBorder} p-3 rounded-lg flex items-start justify-between gap-4`}
+        >
+          <div className="text-sm leading-relaxed">
+            <span className={`${colorClasses.warning} font-semibold`}>
+              Warning:
+            </span>{" "}
+            <span className="text-white/80">{warning}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWarning(null)}
+            className="text-white/60 hover:text-white/90 transition-colors"
+            aria-label="Dismiss warning"
+            title="Dismiss"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="mx-4 mt-3 bg-red-900/60 border border-red-600/70 p-3 rounded-lg text-red-100 flex items-start justify-between gap-4">
           <div className="text-sm leading-relaxed">{error}</div>
