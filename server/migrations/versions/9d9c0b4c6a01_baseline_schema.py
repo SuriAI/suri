@@ -1,7 +1,7 @@
 """baseline schema
 
 Revision ID: 9d9c0b4c6a01
-Revises: 
+Revises:
 Create Date: 2026-02-06 00:00:00.000000
 
 """
@@ -28,7 +28,9 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("created_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_active", sa.Boolean(), server_default=sa.text("1"), nullable=False),
+        sa.Column(
+            "is_active", sa.Boolean(), server_default=sa.text("1"), nullable=False
+        ),
         sa.Column("late_threshold_minutes", sa.Integer(), nullable=True),
         sa.Column(
             "late_threshold_enabled",
@@ -46,7 +48,9 @@ def upgrade() -> None:
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     op.create_table(
@@ -86,7 +90,9 @@ def upgrade() -> None:
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     op.create_table(
@@ -102,12 +108,16 @@ def upgrade() -> None:
         sa.Column("role", sa.String(), nullable=True),
         sa.Column("email", sa.String(), nullable=True),
         sa.Column("joined_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_active", sa.Boolean(), server_default=sa.text("1"), nullable=False),
+        sa.Column(
+            "is_active", sa.Boolean(), server_default=sa.text("1"), nullable=False
+        ),
         sa.Column("organization_id", sa.String(), nullable=True),
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     op.create_table(
@@ -129,13 +139,17 @@ def upgrade() -> None:
         sa.Column("confidence", sa.Float(), nullable=False),
         sa.Column("location", sa.String(), nullable=True),
         sa.Column("notes", sa.String(), nullable=True),
-        sa.Column("is_manual", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_manual", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
         sa.Column("created_by", sa.String(), nullable=True),
         sa.Column("organization_id", sa.String(), nullable=True),
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     op.create_table(
@@ -156,7 +170,9 @@ def upgrade() -> None:
         sa.Column("date", sa.String(), nullable=False),
         sa.Column("check_in_time", sa.DateTime(), nullable=True),
         sa.Column("total_hours", sa.Float(), nullable=True),
-        sa.Column("status", sa.String(), server_default=sa.text("'absent'"), nullable=False),
+        sa.Column(
+            "status", sa.String(), server_default=sa.text("'absent'"), nullable=False
+        ),
         sa.Column("is_late", sa.Boolean(), server_default=sa.text("0"), nullable=False),
         sa.Column("late_minutes", sa.Integer(), nullable=True),
         sa.Column("notes", sa.String(), nullable=True),
@@ -164,7 +180,9 @@ def upgrade() -> None:
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     op.create_table(
@@ -178,7 +196,9 @@ def upgrade() -> None:
         sa.Column("cloud_id", sa.String(), nullable=True),
         sa.Column("version", sa.Integer(), server_default=sa.text("1"), nullable=False),
         sa.Column("last_modified_at", sa.DateTime(), server_default=now, nullable=True),
-        sa.Column("is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False),
+        sa.Column(
+            "is_deleted", sa.Boolean(), server_default=sa.text("0"), nullable=False
+        ),
     )
 
     # Indexes (including SyncMixin indexes)
@@ -208,7 +228,9 @@ def upgrade() -> None:
         unique=False,
     )
 
-    op.create_index("ix_member_group_id", "attendance_members", ["group_id"], unique=False)
+    op.create_index(
+        "ix_member_group_id", "attendance_members", ["group_id"], unique=False
+    )
     op.create_index(
         "ix_member_person_org",
         "attendance_members",
@@ -228,9 +250,15 @@ def upgrade() -> None:
         unique=False,
     )
 
-    op.create_index("ix_record_group_id", "attendance_records", ["group_id"], unique=False)
-    op.create_index("ix_record_person_id", "attendance_records", ["person_id"], unique=False)
-    op.create_index("ix_record_timestamp", "attendance_records", ["timestamp"], unique=False)
+    op.create_index(
+        "ix_record_group_id", "attendance_records", ["group_id"], unique=False
+    )
+    op.create_index(
+        "ix_record_person_id", "attendance_records", ["person_id"], unique=False
+    )
+    op.create_index(
+        "ix_record_timestamp", "attendance_records", ["timestamp"], unique=False
+    )
     op.create_index(
         "ix_record_group_timestamp",
         "attendance_records",
@@ -250,8 +278,12 @@ def upgrade() -> None:
         unique=False,
     )
 
-    op.create_index("ix_session_group_id", "attendance_sessions", ["group_id"], unique=False)
-    op.create_index("ix_session_person_id", "attendance_sessions", ["person_id"], unique=False)
+    op.create_index(
+        "ix_session_group_id", "attendance_sessions", ["group_id"], unique=False
+    )
+    op.create_index(
+        "ix_session_person_id", "attendance_sessions", ["person_id"], unique=False
+    )
     op.create_index("ix_session_date", "attendance_sessions", ["date"], unique=False)
     op.create_index(
         "ix_session_group_date",
@@ -280,7 +312,9 @@ def upgrade() -> None:
 
     op.create_index("ix_face_person_id", "faces", ["person_id"], unique=False)
     op.create_index("ix_faces_hash", "faces", ["hash"], unique=False)
-    op.create_index("ix_faces_organization_id", "faces", ["organization_id"], unique=False)
+    op.create_index(
+        "ix_faces_organization_id", "faces", ["organization_id"], unique=False
+    )
     op.create_index("ix_faces_cloud_id", "faces", ["cloud_id"], unique=False)
 
 
