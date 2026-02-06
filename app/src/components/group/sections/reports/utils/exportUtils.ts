@@ -2,6 +2,7 @@ import type {
   RowData,
   ColumnKey,
 } from "@/components/group/sections/reports/types";
+import { parseLocalDate } from "@/utils";
 
 export function exportReportToCSV(
   groupedRows: Record<string, RowData[]>,
@@ -12,6 +13,11 @@ export function exportReportToCSV(
   endDate: string,
 ) {
   try {
+    const pad = (n: number, len: number = 2) => String(n).padStart(len, "0");
+    const formatLocalDateTime = (d: Date): string => {
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+
     const cols = allColumns.filter((c) => visibleColumns.includes(c.key));
     const header = cols.map((c) => c.label);
     const rows: string[][] = [];
@@ -21,7 +27,7 @@ export function exportReportToCSV(
           const v = (r as RowData)[c.key];
           if (typeof v === "boolean") return v ? "true" : "false";
           if (typeof v === "number") return String(v);
-          if (v instanceof Date) return v.toISOString();
+          if (v instanceof Date) return formatLocalDateTime(v);
           return v ?? "";
         });
         rows.push(row);
@@ -40,7 +46,7 @@ export function exportReportToCSV(
     anchor.href = url;
 
     const formatDateForFilename = (dateString: string): string => {
-      const date = new Date(dateString);
+      const date = parseLocalDate(dateString);
       const month = date.toLocaleString("en-US", { month: "long" });
       const day = date.getDate();
       const year = date.getFullYear();
