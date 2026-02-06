@@ -51,21 +51,21 @@ export function exportReportToCSV(
     try {
       anchor.href = url;
 
-    const formatDateForFilename = (dateString: string): string => {
-      const date = parseLocalDate(dateString);
-      const month = date.toLocaleString("en-US", { month: "long" });
-      const day = date.getDate();
-      const year = date.getFullYear();
-      return `${month} ${day}, ${year}`;
-    };
+      const formatDateForFilename = (dateString: string): string => {
+        const date = parseLocalDate(dateString);
+        const month = date.toLocaleString("en-US", { month: "long" });
+        const day = date.getDate();
+        const year = date.getFullYear();
+        return `${month} ${day}, ${year}`;
+      };
 
-    const formattedStartDate = formatDateForFilename(startDate);
-    const formattedEndDate = formatDateForFilename(endDate);
+      const formattedStartDate = formatDateForFilename(startDate);
+      const formattedEndDate = formatDateForFilename(endDate);
 
-    const dateRange =
-      startDate === endDate
-        ? formattedStartDate
-        : `${formattedStartDate} to ${formattedEndDate}`;
+      const dateRange =
+        startDate === endDate
+          ? formattedStartDate
+          : `${formattedStartDate} to ${formattedEndDate}`;
 
       anchor.download = sanitizeFilename(`${groupName} (${dateRange}).csv`);
       document.body.appendChild(anchor);

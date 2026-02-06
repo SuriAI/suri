@@ -7,6 +7,9 @@ interface UIState {
   // Error state
   error: string | null;
 
+  // Warning state (non-blocking)
+  warning: string | null;
+
   // Settings UI
   showSettings: boolean;
   isSettingsFullScreen: boolean;
@@ -24,6 +27,7 @@ interface UIState {
 
   // Actions
   setError: (error: string | null) => void;
+  setWarning: (warning: string | null) => void;
   setShowSettings: (show: boolean) => void;
   setIsSettingsFullScreen: (fullScreen: boolean) => void;
   setGroupInitialSection: (section: GroupSection | undefined) => void;
@@ -52,6 +56,7 @@ const loadInitialSettings = async () => {
 export const useUIStore = create<UIState>((set) => ({
   // Initial state
   error: null,
+  warning: null,
   showSettings: false,
   isSettingsFullScreen: false,
   groupInitialSection: undefined,
@@ -71,6 +76,7 @@ export const useUIStore = create<UIState>((set) => ({
 
   // Actions
   setError: (error) => set({ error }),
+  setWarning: (warning) => set({ warning }),
   setShowSettings: (show) => set({ showSettings: show }),
   setIsSettingsFullScreen: (fullScreen) =>
     set({ isSettingsFullScreen: fullScreen }),
