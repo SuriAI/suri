@@ -54,6 +54,20 @@ export interface GitHubRelease {
   }[];
 }
 
+function extractSemverLikeVersion(input: string): string | null {
+  const trimmed = (input || "").trim();
+  if (!trimmed) return null;
+
+  // Look for a semver-ish token anywhere in the string.
+  // Examples matched: "2.0.0", "v2.0.0", "2.0.0-beta.1", "Release v2.0.0"
+  const match = trimmed.match(
+    /v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/,
+  );
+  if (!match) return null;
+
+  return match[0].replace(/^v/, "");
+}
+
 /**
  * Parse semantic version string into comparable parts
  */
@@ -223,7 +237,29 @@ export async function checkForUpdates(force = false): Promise<UpdateInfo> {
     return noUpdateInfo;
   }
 
-  const latestVersion = release.tag_name.replace(/^v/, "");
+  const latestVersion = extractSemverLikeVersion(release.tag_name);
+
+  if (!latestVersion) {
+    const unknownVersionInfo: UpdateInfo = {
+      currentVersion,
+      latestVersion: currentVersion,
+      hasUpdate: false,
+      releaseUrl: release.html_url,
+      releaseNotes: release.body || "",
+      publishedAt: release.published_at,
+      downloadUrl: getDownloadUrl(release.assets),
+      error:
+        "Latest release tag did not contain a semantic version (expected something like v2.0.0)",
+    };
+
+    cachedUpdateInfo = unknownVersionInfo;
+    lastCheckTime = now;
+    console.log(
+      `[Updater] Latest release tag has no semver (tag: ${release.tag_name})`,
+    );
+    return unknownVersionInfo;
+  }
+
   const hasUpdate = compareVersions(latestVersion, currentVersion) > 0;
 
   const updateInfo: UpdateInfo = {
