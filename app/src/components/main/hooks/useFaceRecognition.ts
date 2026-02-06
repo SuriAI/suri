@@ -107,7 +107,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
             const response = await backendServiceRef.current.recognizeFace(
               frameData,
               bbox,
-              currentGroupValue?.id,
+              currentGroupValue.id,
               face.landmarks_5,
             );
 
@@ -169,7 +169,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                         },
                       ],
                       isLocked: trackingMode === "auto",
-                      personId: response.person_id,
+                      personId: response.person_id ?? undefined,
                       occlusionCount: 0,
                       angleConsistency: 1.0,
                       livenessStatus: currentLivenessStatus,
@@ -201,12 +201,6 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
 
                 if (!shouldSkipAttendanceLogging) {
                   try {
-                    if (
-                      response.similarity === undefined ||
-                      response.similarity === null
-                    ) {
-                      return null;
-                    }
                     const actualConfidence = response.similarity;
 
                     if (trackingMode === "auto") {
@@ -475,8 +469,9 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
               if (result.face.track_id !== undefined) {
                 newRecognitionResults.set(result.face.track_id, {
                   success: false,
-                  person_id: undefined,
+                  person_id: null,
                   similarity: 0,
+                  processing_time: 0,
                   error: "Spoofed face - recognition skipped",
                 });
               }

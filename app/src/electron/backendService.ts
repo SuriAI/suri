@@ -10,6 +10,7 @@ import fs from "fs";
 import { promisify } from "util";
 import { fileURLToPath } from "node:url";
 import isDev from "./util.js";
+import type { FaceRecognitionResponse } from "../types/recognition";
 
 const sleep = promisify(setTimeout);
 const execAsync = promisify(exec);
@@ -65,13 +66,6 @@ export interface DetectionOptions {
   model_type?: string;
   confidence_threshold?: number;
   nms_threshold?: number;
-}
-
-export interface FaceRecognitionResponse {
-  success: boolean;
-  person_id?: string;
-  similarity?: number;
-  error?: string;
 }
 
 export interface DetectionResponse {
@@ -933,13 +927,14 @@ export class BackendService {
   async recognizeFace(
     imageBase64: string,
     bbox: number[],
-    _groupId?: string,
-    landmarks_5?: number[][],
-    enableLivenessDetection: boolean = true,
+    groupId: string,
+    landmarks_5: number[][],
+    enableLivenessDetection: boolean,
   ): Promise<FaceRecognitionResponse> {
     const request = {
       image: imageBase64,
       bbox: bbox,
+      group_id: groupId,
       landmarks_5: landmarks_5,
       enable_liveness_detection: enableLivenessDetection,
     };

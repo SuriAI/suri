@@ -204,9 +204,9 @@ ipcMain.handle(
     _event,
     imageData: string,
     bbox: number[],
-    groupId?: string,
-    landmarks_5?: number[][],
-    enableLivenessDetection: boolean = true,
+    groupId: string,
+    landmarks_5: number[][],
+    enableLivenessDetection: boolean,
   ) => {
     try {
       const url = `${backendService.getUrl()}/face/recognize`;
@@ -239,6 +239,7 @@ ipcMain.handle(
         success: false,
         person_id: null,
         similarity: 0.0,
+        processing_time: 0.0,
         error: error instanceof Error ? error.message : String(error),
       };
     }
@@ -253,8 +254,9 @@ ipcMain.handle(
     imageData: string,
     personId: string,
     bbox: number[],
-    groupId?: string,
-    enableLivenessDetection: boolean = true,
+    groupId: string,
+    landmarks_5: number[][],
+    enableLivenessDetection: boolean,
   ) => {
     try {
       const url = `${backendService.getUrl()}/face/register`;
@@ -264,6 +266,7 @@ ipcMain.handle(
         person_id: personId,
         bbox: bbox,
         group_id: groupId,
+        landmarks_5: landmarks_5,
         enable_liveness_detection: enableLivenessDetection,
       };
 
@@ -287,6 +290,7 @@ ipcMain.handle(
         success: false,
         person_id: personId,
         total_persons: 0,
+        processing_time: 0.0,
         error: error instanceof Error ? error.message : String(error),
       };
     }

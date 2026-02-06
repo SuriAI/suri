@@ -244,6 +244,14 @@ export function useBackendService(options: UseBackendServiceOptions) {
 
                 const bbox = face.bbox;
 
+                if (
+                  !face.landmarks_5 ||
+                  !Array.isArray(face.landmarks_5) ||
+                  face.landmarks_5.length !== 5
+                ) {
+                  return null;
+                }
+
                 return {
                   bbox: {
                     x: bbox[0],

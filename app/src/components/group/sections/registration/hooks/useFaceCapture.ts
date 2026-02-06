@@ -79,6 +79,12 @@ export function useFaceCapture(
           throw new Error("Face detected but bounding box missing.");
         }
 
+        if (!bestFace.landmarks_5 || bestFace.landmarks_5.length !== 5) {
+          throw new Error(
+            "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
+          );
+        }
+
         updateFrame(id, (frame) => ({
           ...frame,
           status: "ready",
@@ -129,6 +135,13 @@ export function useFaceCapture(
 
       try {
         const payload = toBase64Payload(frame.dataUrl);
+
+        if (!frame.landmarks_5 || frame.landmarks_5.length !== 5) {
+          throw new Error(
+            "Cannot register: landmarks missing. Please re-capture the face.",
+          );
+        }
+
         const result = await attendanceManager.registerFaceForGroupPerson(
           group.id,
           selectedMemberId,

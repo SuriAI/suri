@@ -4,7 +4,7 @@ import type { QuickSettings } from "@/components/settings";
 
 export const getFaceColor = (
   recognitionResult: {
-    person_id?: string;
+    person_id: string | null;
     confidence?: number;
     name?: string;
   } | null,

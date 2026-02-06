@@ -55,17 +55,10 @@ async def recognize_face(
                 error=error_msg,
             )
 
-        # Get landmarks_5 for face_recognizer (required for face alignment)
+        # Landmarks are required for alignment in this pipeline.
         landmarks_5 = request.landmarks_5
-        if landmarks_5 is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Landmarks required for face recognition",
-            )
 
-        allowed_person_ids = None
-        if request.group_id:
-            allowed_person_ids = await repo.get_group_person_ids(request.group_id)
+        allowed_person_ids = await repo.get_group_person_ids(request.group_id)
         result = await face_recognizer.recognize_face(
             image, landmarks_5, allowed_person_ids
         )
@@ -121,13 +114,8 @@ async def register_person(request: FaceRegistrationRequest):
                 error=error_msg,
             )
 
-        # Get landmarks_5 for face_recognizer (required for face alignment)
+        # Landmarks are required for alignment in this pipeline.
         landmarks_5 = request.landmarks_5
-        if landmarks_5 is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Landmarks required for face recognition",
-            )
 
         result = await face_recognizer.register_person(
             request.person_id, image, landmarks_5

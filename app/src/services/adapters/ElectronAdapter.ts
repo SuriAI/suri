@@ -12,9 +12,9 @@ export class ElectronAdapter {
   async recognizeFace(
     base64Image: string,
     bbox: number[],
-    groupId?: string,
-    landmarks_5?: number[][],
-    enableLivenessDetection?: boolean,
+    groupId: string,
+    landmarks_5: number[][],
+    enableLivenessDetection: boolean,
   ): Promise<FaceRecognitionResponse> {
     return window.electronAPI.backend.recognizeFace(
       base64Image,
@@ -29,14 +29,16 @@ export class ElectronAdapter {
     imageData: string,
     personId: string,
     bbox: number[],
-    groupId?: string,
-    enableLivenessDetection?: boolean,
+    groupId: string,
+    landmarks_5: number[][],
+    enableLivenessDetection: boolean,
   ): Promise<FaceRegistrationResponse> {
     return window.electronAPI.backend.registerFace(
       imageData,
       personId,
       bbox,
       groupId,
+      landmarks_5,
       enableLivenessDetection,
     );
   }

@@ -328,9 +328,9 @@ export class BackendService {
 
   async recognizeFace(
     imageData: ArrayBuffer,
-    bbox?: number[],
-    groupId?: string,
-    landmarks_5?: number[][],
+    bbox: number[],
+    groupId: string,
+    landmarks_5: number[][],
   ): Promise<FaceRecognitionResponse> {
     try {
       const blob = new Blob([imageData], { type: "image/jpeg" });
@@ -343,7 +343,7 @@ export class BackendService {
 
       return await this.adapter.recognizeFace(
         base64Image,
-        bbox || [],
+        bbox,
         groupId,
         landmarks_5,
         this.enableLivenessDetection,
@@ -357,15 +357,17 @@ export class BackendService {
   async registerFace(
     imageData: string,
     personId: string,
-    bbox?: number[],
-    groupId?: string,
+    bbox: number[],
+    groupId: string,
+    landmarks_5: number[][],
   ): Promise<FaceRegistrationResponse> {
     try {
       return await this.adapter.registerFace(
         imageData,
         personId,
-        bbox || [],
+        bbox,
         groupId,
+        landmarks_5,
         this.enableLivenessDetection,
       );
     } catch (error) {

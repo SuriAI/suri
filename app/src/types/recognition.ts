@@ -1,29 +1,35 @@
 export interface FaceRecognitionRequest {
   image: string;
-  bbox?: number[];
-  group_id?: string;
+  bbox: number[];
+  group_id: string;
+  landmarks_5: number[][];
+  enable_liveness_detection: boolean;
 }
 
 export interface FaceRecognitionResponse {
   success: boolean;
-  person_id?: string;
+  person_id: string | null;
   name?: string;
-  similarity?: number;
-  error?: string;
+  similarity: number;
+  processing_time: number;
+  error: string | null;
 }
 
 export interface FaceRegistrationRequest {
   image: string;
   person_id: string;
-  bbox?: number[];
-  group_id?: string;
+  bbox: number[];
+  group_id: string;
+  landmarks_5: number[][];
+  enable_liveness_detection: boolean;
 }
 
 export interface FaceRegistrationResponse {
   success: boolean;
   person_id: string;
-  total_persons?: number;
-  error?: string;
+  total_persons: number;
+  processing_time: number;
+  error: string | null;
 }
 
 export interface PersonRemovalRequest {

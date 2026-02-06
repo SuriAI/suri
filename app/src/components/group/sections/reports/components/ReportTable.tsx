@@ -3,6 +3,7 @@ import type {
   RowData,
   ColumnKey,
 } from "@/components/group/sections/reports/types";
+import { parseLocalDate } from "@/utils";
 
 interface ReportTableProps {
   groupedRows: Record<string, RowData[]>;
@@ -237,7 +238,7 @@ export function ReportTable({
                         } else if (c.key === "date") {
                           content = (
                             <span className="text-white/60 font-medium">
-                              {new Date(row.date).toLocaleDateString(
+                              {parseLocalDate(row.date).toLocaleDateString(
                                 undefined,
                                 {
                                   month: "short",
