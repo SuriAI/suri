@@ -79,7 +79,6 @@ export default function Main() {
     cameraDevices,
     selectedCamera,
     setSelectedCamera,
-    isPreferredCameraMissing,
   } = useCameraStore();
 
   const {
@@ -497,7 +496,6 @@ export default function Main() {
               handleManualLog={handleManualLog}
               getVideoRect={getVideoRect}
               calculateScaleFactors={calculateScaleFactors}
-              isPreferredCameraMissing={isPreferredCameraMissing}
             />
 
             {/* New Cooldown Overlay */}
