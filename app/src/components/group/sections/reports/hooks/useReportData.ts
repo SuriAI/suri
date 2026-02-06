@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { attendanceManager } from "@/services";
-import { getLocalDateString } from "@/utils";
+import { getLocalDateString, parseLocalDate } from "@/utils";
 import type {
   AttendanceGroup,
   AttendanceReport,
@@ -40,8 +40,8 @@ export function useReportData(
       return;
     }
 
-    const startDate = new Date(startDateStr);
-    const endDate = new Date(endDateStr);
+    const startDate = parseLocalDate(startDateStr);
+    const endDate = parseLocalDate(endDateStr);
 
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
       setError("Please select valid report dates.");
@@ -58,6 +58,18 @@ export function useReportData(
     setLoading(true);
     try {
       setError(null);
+
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+
+      const toLocalDateTimeParam = (d: Date) => {
+        const pad = (n: number, len: number = 2) =>
+          String(n).padStart(len, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
+      };
+
       const [generatedReport, loadedSessions, loadedMembers, loadedRecords] =
         await Promise.all([
           attendanceManager.generateReport(group.id, startDate, endDate),
@@ -69,8 +81,8 @@ export function useReportData(
           attendanceManager.getGroupMembers(group.id),
           attendanceManager.getRecords({
             group_id: group.id,
-            start_date: startDate.toISOString(),
-            end_date: endDate.toISOString(),
+            start_date: toLocalDateTimeParam(startDateTime),
+            end_date: toLocalDateTimeParam(endDateTime),
             limit: 1000, // Fetch up to 1k records for the report period to ensure accuracy
           }),
         ]);

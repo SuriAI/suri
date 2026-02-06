@@ -25,7 +25,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     },
     detectFaces: (
       imageBase64: string,
-      options?: { threshold?: number; max_faces?: number },
+      options?: {
+        model_type?: string;
+        confidence_threshold?: number;
+        nms_threshold?: number;
+      },
     ) => {
       return ipcRenderer.invoke("backend:detect-faces", imageBase64, options);
     },
@@ -33,9 +37,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     recognizeFace: (
       imageData: string,
       bbox: number[],
-      groupId?: string,
-      landmarks_5?: number[][],
-      enableLivenessDetection?: boolean,
+      groupId: string,
+      landmarks_5: number[][],
+      enableLivenessDetection: boolean,
     ) => {
       return ipcRenderer.invoke(
         "backend:recognize-face",
@@ -50,8 +54,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
       imageData: string,
       personId: string,
       bbox: number[],
-      groupId?: string,
-      enableLivenessDetection?: boolean,
+      groupId: string,
+      landmarks_5: number[][],
+      enableLivenessDetection: boolean,
     ) => {
       return ipcRenderer.invoke(
         "backend:register-face",
@@ -59,6 +64,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
         personId,
         bbox,
         groupId,
+        landmarks_5,
         enableLivenessDetection,
       );
     },

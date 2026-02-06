@@ -8,7 +8,7 @@ import type {
   AttendanceSettings,
   AttendanceEvent,
 } from "../types/recognition";
-import { getLocalDateString } from "../utils/index";
+import { getLocalDateString, parseLocalDate } from "../utils/index";
 import { fetchWithRetry } from "../utils/http";
 
 const API_BASE_URL = "http://127.0.0.1:8700";
@@ -136,6 +136,11 @@ class HttpClient {
 }
 
 export class AttendanceManager {
+  private toLocalDateTimeParam(date: Date): string {
+    const pad = (n: number, len: number = 2) => String(n).padStart(len, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+  }
+
   private httpClient: HttpClient;
   private settings: AttendanceSettings | null = null;
   private eventQueue: AttendanceEvent[] = [];
@@ -418,13 +423,20 @@ export class AttendanceManager {
     livenessConfidence?: number,
   ): Promise<AttendanceEvent | null> {
     try {
-      const eventData = {
+      const eventData: Record<string, unknown> = {
         person_id: personId,
         confidence,
-        location,
-        liveness_status: livenessStatus,
-        liveness_confidence: livenessConfidence,
       };
+
+      if (location) {
+        eventData.location = location;
+      }
+      if (livenessStatus) {
+        eventData.liveness_status = livenessStatus;
+      }
+      if (typeof livenessConfidence === "number") {
+        eventData.liveness_confidence = livenessConfidence;
+      }
 
       const event = await this.httpClient.post<AttendanceEvent>(
         API_ENDPOINTS.events,
@@ -472,13 +484,18 @@ export class AttendanceManager {
     endDate: Date,
   ): Promise<AttendanceReport> {
     try {
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(0, 0, 0, 0);
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(23, 59, 59, 999);
+
       const [group, members, , sessions] = await Promise.all([
         this.getGroup(groupId),
         this.getGroupMembers(groupId),
         this.getRecords({
           group_id: groupId,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
+          start_date: this.toLocalDateTimeParam(startDateTime),
+          end_date: this.toLocalDateTimeParam(endDateTime),
         }),
         this.getSessions({
           group_id: groupId,
@@ -519,7 +536,7 @@ export class AttendanceManager {
 
         const memberSessions = sessions.filter((s) => {
           if (s.person_id !== member.person_id) return false;
-          const sessionDate = new Date(s.date);
+          const sessionDate = parseLocalDate(s.date);
           sessionDate.setHours(0, 0, 0, 0);
           const joinedDate = new Date(memberJoinedAt);
           joinedDate.setHours(0, 0, 0, 0);
@@ -780,7 +797,7 @@ export class AttendanceManager {
     personId: string,
     imageData: string,
     bbox: number[],
-    landmarks_5?: number[][],
+    landmarks_5: number[][],
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
       const result = await this.httpClient.post<{

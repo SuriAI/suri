@@ -135,8 +135,8 @@ class AttendanceService:
             # Sort records by timestamp (ascending)
             person_records.sort(key=lambda r: r.timestamp)
 
-            last_record = person_records[-1]
-            timestamp = last_record.timestamp  # datetime object
+            first_record = person_records[0]
+            timestamp = first_record.timestamp  # earliest check-in for the day
 
             if late_threshold_enabled:
                 day_start = timestamp.replace(
@@ -267,6 +267,16 @@ class AttendanceService:
 
         existing_session = await self.repo.get_session(event_data.person_id, today_str)
 
+        # Preserve the earliest check-in time for the day.
+        # Re-logs should create additional records but must not push check-in later.
+        check_in_time = timestamp
+        if existing_session and existing_session.check_in_time:
+            try:
+                check_in_time = min(existing_session.check_in_time, timestamp)
+            except TypeError:
+                # Defensive: if timezone/naive mismatch ever happens, prefer the stored value.
+                check_in_time = existing_session.check_in_time
+
         if late_threshold_enabled:
             try:
                 time_parts = class_start_time.split(":")
@@ -276,11 +286,11 @@ class AttendanceService:
                 day_start_hour = 8
                 day_start_minute = 0
 
-            # Calculate if late
-            day_start = timestamp.replace(
+            # Calculate if late (based on earliest check-in)
+            day_start = check_in_time.replace(
                 hour=day_start_hour, minute=day_start_minute, second=0, microsecond=0
             )
-            time_diff_minutes = (timestamp - day_start).total_seconds() / 60
+            time_diff_minutes = (check_in_time - day_start).total_seconds() / 60
             is_late = time_diff_minutes >= late_threshold_minutes
             late_minutes = (
                 int(time_diff_minutes - late_threshold_minutes) if is_late else 0
@@ -294,7 +304,7 @@ class AttendanceService:
             "person_id": event_data.person_id,
             "group_id": member.group_id,
             "date": today_str,
-            "check_in_time": timestamp,
+            "check_in_time": check_in_time,
             "status": "present",
             "is_late": is_late,
             "late_minutes": late_minutes if is_late else None,
@@ -545,6 +555,18 @@ class AttendanceService:
                     continue
 
                 landmarks_5 = reg_data.get("landmarks_5")
+                if landmarks_5 is None:
+                    failed_count += 1
+                    results.append(
+                        {
+                            "index": idx,
+                            "person_id": person_id,
+                            "success": False,
+                            "error": "Landmarks required from frontend face detection",
+                        }
+                    )
+                    continue
+
                 result = await self.face_recognizer.register_person(
                     person_id, image, landmarks_5
                 )

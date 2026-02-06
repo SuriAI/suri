@@ -1,5 +1,9 @@
 import { useMemo } from "react";
-import { generateDateRange, createDisplayNameMap } from "@/utils";
+import {
+  generateDateRange,
+  createDisplayNameMap,
+  parseLocalDate,
+} from "@/utils";
 import type {
   AttendanceSession,
   AttendanceMember,
@@ -98,7 +102,7 @@ export function useReportTransform(
       }
 
       for (const date of allDates) {
-        const dateObj = new Date(date);
+        const dateObj = parseLocalDate(date);
         dateObj.setHours(0, 0, 0, 0);
         const isBeforeJoined = memberJoinedAt && dateObj < memberJoinedAt;
 
@@ -255,8 +259,8 @@ export function useReportTransform(
     if (report?.summary?.total_working_days !== undefined) {
       return report.summary.total_working_days;
     }
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
+    const start = parseLocalDate(startDateStr);
+    const end = parseLocalDate(endDateStr);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return diffDays;

@@ -47,9 +47,11 @@ class StreamingRequest(BaseModel):
 class FaceRecognitionRequest(BaseModel):
     image: str  # Base64
     bbox: List[float]  # [x, y, w, h]
-    landmarks_5: Optional[List[List[float]]] = None
-    group_id: Optional[str] = None
-    enable_liveness_detection: bool = True
+    landmarks_5: List[List[float]]
+    group_id: str = Field(..., min_length=1)
+    enable_liveness_detection: bool
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class FaceRecognitionResponse(BaseModel):
@@ -64,8 +66,11 @@ class FaceRegistrationRequest(BaseModel):
     person_id: str
     image: str  # Base64
     bbox: List[float]  # [x, y, w, h]
-    enable_liveness_detection: bool = True
-    landmarks_5: Optional[List[List[float]]] = None
+    group_id: str = Field(..., min_length=1)
+    landmarks_5: List[List[float]]
+    enable_liveness_detection: bool
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class FaceRegistrationResponse(BaseModel):
@@ -207,6 +212,13 @@ class AttendanceEventCreate(BaseModel):
     person_id: str = Field(..., min_length=1)
     confidence: float = Field(..., ge=0.0, le=1.0)
     location: Optional[str] = Field(None, max_length=255)
+
+    # Optional metadata from recognition pipeline.
+    # Not persisted today, but accepted for forward compatibility.
+    liveness_status: Optional[str] = Field(None, max_length=50)
+    liveness_confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class AttendanceEventResponse(BaseModel):

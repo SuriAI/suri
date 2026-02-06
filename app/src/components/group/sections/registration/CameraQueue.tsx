@@ -188,6 +188,12 @@ export function CameraQueue({
         throw new Error("Face detected but bounding box missing.");
       }
 
+      if (!bestFace.landmarks_5 || bestFace.landmarks_5.length !== 5) {
+        throw new Error(
+          "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
+        );
+      }
+
       // Update status
       setMemberQueue((prev) =>
         prev.map((m, idx) =>
