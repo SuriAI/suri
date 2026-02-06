@@ -140,6 +140,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
         ipcRenderer.removeListener("updater:update-available", listener);
     },
   },
+
+  // Assets API (public/dist-react)
+  assets: {
+    listRecognitionSounds: () => {
+      return ipcRenderer.invoke("assets:list-recognition-sounds");
+    },
+  },
 });
 
 // Window control functions

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { backendService, attendanceManager } from "@/services";
 import { Display } from "@/components/settings/sections/Display";
+import { Notifications } from "@/components/settings/sections/Notifications";
 import { Database } from "@/components/settings/sections/Database";
 import { Attendance } from "@/components/settings/sections/Attendance";
 import { About } from "@/components/settings/sections/About";
@@ -11,11 +12,13 @@ import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
 import type {
   QuickSettings,
   AttendanceSettings,
+  AudioSettings,
   SettingsOverview,
 } from "@/components/settings/types";
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
 
 export type { QuickSettings, AttendanceSettings };
+export type { AudioSettings } from "@/components/settings/types";
 
 interface SettingsProps {
   onBack: () => void;
@@ -24,6 +27,8 @@ interface SettingsProps {
   onToggleFullScreen?: () => void;
   quickSettings: QuickSettings;
   onQuickSettingsChange: (settings: QuickSettings) => void;
+  audioSettings: AudioSettings;
+  onAudioSettingsChange: (settings: Partial<AudioSettings>) => void;
   attendanceSettings: AttendanceSettings;
   onAttendanceSettingsChange: (settings: Partial<AttendanceSettings>) => void;
   isStreaming?: boolean;
@@ -45,6 +50,8 @@ export const Settings: React.FC<SettingsProps> = ({
   onToggleFullScreen,
   quickSettings,
   onQuickSettingsChange,
+  audioSettings,
+  onAudioSettingsChange,
   attendanceSettings,
   onAttendanceSettingsChange,
   isStreaming = false,
@@ -93,6 +100,10 @@ export const Settings: React.FC<SettingsProps> = ({
   const toggleQuickSetting = (key: keyof QuickSettings) => {
     const newSettings = { ...quickSettings, [key]: !quickSettings[key] };
     onQuickSettingsChange(newSettings);
+  };
+
+  const updateAudioSetting = (updates: Partial<AudioSettings>) => {
+    onAudioSettingsChange(updates);
   };
 
   const updateAttendanceSetting = (updates: Partial<AttendanceSettings>) => {
@@ -270,6 +281,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const sections = [
     { id: "attendance", label: "Attendance", icon: "fa-solid fa-user-check" },
     { id: "display", label: "Display", icon: "fa-solid fa-desktop" },
+    { id: "notifications", label: "Notifications", icon: "fa-solid fa-bell" },
     { id: "database", label: "Database", icon: "fa-solid fa-database" },
     { id: "about", label: "About", icon: "fa-solid fa-circle-info" },
   ];
@@ -744,6 +756,12 @@ export const Settings: React.FC<SettingsProps> = ({
             <Display
               quickSettings={quickSettings}
               toggleQuickSetting={toggleQuickSetting}
+            />
+          )}
+          {activeSection === "notifications" && (
+            <Notifications
+              audioSettings={audioSettings}
+              onAudioSettingsChange={updateAudioSetting}
             />
           )}
           {activeSection === "attendance" && (

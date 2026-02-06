@@ -17,8 +17,13 @@ const CooldownCard = memo(
         layout
         initial={{ opacity: 0, x: 20, scale: 0.95 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        exit={{
+          opacity: 0,
+          x: 20,
+          scale: 0.97,
+          transition: { duration: 0.22, ease: "easeInOut" },
+        }}
+        transition={{ type: "spring", stiffness: 520, damping: 34, mass: 0.7 }}
         className="group flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 pr-4 shadow-lg hover:bg-black/80 hover:border-white/20"
         style={{ minWidth: "180px" }}
       >
@@ -63,13 +68,14 @@ export const CooldownOverlay = memo(function CooldownOverlay({
   const activeItems = useMemo(() => {
     // Filter and prepare items
     const items: Array<{
+      id: string;
       info: CooldownInfo;
       duration: number;
       remaining: number;
     }> = [];
     const now = currentTime;
 
-    for (const info of persistentCooldowns.values()) {
+    for (const [cooldownId, info] of persistentCooldowns.entries()) {
       const durationSeconds =
         info.cooldownDurationSeconds ?? attendanceCooldownSeconds;
       const durationMs = durationSeconds * 1000;
@@ -80,6 +86,7 @@ export const CooldownOverlay = memo(function CooldownOverlay({
       // (Visuals will effectively hide < 0)
       if (remainingMs > 0) {
         items.push({
+          id: cooldownId,
           info,
           duration: durationSeconds,
           remaining: remainingMs / 1000, // Keep precise for smooth animation
@@ -97,18 +104,27 @@ export const CooldownOverlay = memo(function CooldownOverlay({
     return items;
   }, [persistentCooldowns, attendanceCooldownSeconds, currentTime]);
 
-  if (trackingMode !== "auto" || activeItems.length === 0) {
-    return null;
-  }
-
+  // Keep the overlay mounted via AnimatePresence so exit animations play
+  // (including when the last item disappears).
   return (
-    <div className="absolute top-6 right-6 z-40 flex flex-col gap-3 pointer-events-auto select-none max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scroll p-2">
-      {/* pointer-events-auto to allow scrolling */}
-      <AnimatePresence mode="popLayout">
-        {activeItems.map((item) => (
-          <CooldownCard key={item.info.personId} cooldownInfo={item.info} />
-        ))}
-      </AnimatePresence>
-    </div>
+    <AnimatePresence>
+      {trackingMode === "auto" && activeItems.length > 0 ? (
+        <motion.div
+          key="cooldown-overlay"
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6, transition: { duration: 0.18 } }}
+          transition={{ type: "spring", stiffness: 520, damping: 38, mass: 0.8 }}
+          className="absolute top-6 right-6 z-40 flex flex-col gap-3 pointer-events-auto select-none max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scroll p-2"
+        >
+          {/* pointer-events-auto to allow scrolling */}
+          <AnimatePresence mode="popLayout">
+            {activeItems.map((item) => (
+              <CooldownCard key={item.id} cooldownInfo={item.info} />
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 });

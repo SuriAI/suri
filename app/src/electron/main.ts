@@ -10,6 +10,7 @@ import {
   nativeImage,
 } from "electron";
 import path from "path";
+import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import isDev from "./util.js";
 import { backendService, type DetectionOptions } from "./backendService.js";
@@ -498,6 +499,35 @@ ipcMain.handle("store:getAll", () => {
 ipcMain.handle("store:reset", () => {
   persistentStore.clear();
   return true;
+});
+
+// =============================================================================
+// ASSETS IPC HANDLERS
+// =============================================================================
+
+ipcMain.handle("assets:list-recognition-sounds", async () => {
+  const soundsDir = isDev()
+    ? path.join(__dirname, "../../public/assets/sounds")
+    : path.join(__dirname, "../../dist-react/assets/sounds");
+
+  try {
+    const entries = await fs.readdir(soundsDir, { withFileTypes: true });
+    const allowedExt = new Set([".mp3", ".wav", ".ogg", ".m4a"]);
+
+    const files = entries
+      .filter((e) => e.isFile())
+      .map((e) => e.name)
+      .filter((name) => allowedExt.has(path.extname(name).toLowerCase()))
+      .sort((a, b) => a.localeCompare(b));
+
+    return files.map((fileName) => {
+      // URL served by Vite (dev) or from dist-react (prod)
+      const url = `/assets/sounds/${encodeURIComponent(fileName)}`;
+      return { fileName, url };
+    });
+  } catch {
+    return [];
+  }
 });
 
 // System Stats IPC Handler

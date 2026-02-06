@@ -84,11 +84,39 @@ class PersistentSettingsService {
    */
   async getQuickSettings(): Promise<QuickSettings> {
     const settings = await this.get<QuickSettings>("quickSettings");
-    return settings || defaultSettings.quickSettings;
+
+    if (!settings) {
+      await this.set("quickSettings", defaultSettings.quickSettings);
+      return defaultSettings.quickSettings;
+    }
+
+    // Merge for forward-compat when new fields are added
+    return { ...defaultSettings.quickSettings, ...settings };
   }
 
   async setQuickSettings(settings: QuickSettings): Promise<void> {
     await this.set("quickSettings", settings);
+  }
+
+  /**
+   * Audio Settings
+   */
+  async getAudioSettings(): Promise<PersistentSettingsSchema["audio"]> {
+    const settings = await this.get<PersistentSettingsSchema["audio"]>("audio");
+
+    if (!settings) {
+      await this.set("audio", defaultSettings.audio);
+      return defaultSettings.audio;
+    }
+
+    return { ...defaultSettings.audio, ...settings };
+  }
+
+  async setAudioSettings(
+    settings: Partial<PersistentSettingsSchema["audio"]>,
+  ): Promise<void> {
+    const current = await this.getAudioSettings();
+    await this.set("audio", { ...current, ...settings });
   }
 
   /**

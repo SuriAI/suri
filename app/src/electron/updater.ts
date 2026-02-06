@@ -60,9 +60,7 @@ function extractSemverLikeVersion(input: string): string | null {
 
   // Look for a semver-ish token anywhere in the string.
   // Examples matched: "2.0.0", "v2.0.0", "2.0.0-beta.1", "Release v2.0.0"
-  const match = trimmed.match(
-    /v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/,
-  );
+  const match = trimmed.match(/v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/);
   if (!match) return null;
 
   return match[0].replace(/^v/, "");
