@@ -30,7 +30,7 @@ export function ControlBar({
   const canStartTracking =
     (isCameraSelected || hasCameraDevices) && !isStreaming && hasSelectedGroup;
   // Button should be enabled if streaming (to allow stop) OR if ready to start
-  const isButtonEnabled = isStreaming || canStartTracking || !hasSelectedGroup;
+  const isButtonEnabled = isStreaming || canStartTracking;
 
   const handlePrimaryAction = () => {
     if (isStreaming) {
@@ -81,30 +81,26 @@ export function ControlBar({
           <button
             onClick={handlePrimaryAction}
             disabled={!isButtonEnabled}
-            className={`min-w-[140px] px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 ${
+            className={`min-w-[140px] px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
               isStreaming
                 ? "bg-red-500/20 border border-red-400/40 text-red-200 hover:bg-red-500/30"
-                : hasSelectedGroup && canStartTracking
+                : canStartTracking
                   ? "bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 shadow-lg shadow-cyan-500/10"
                   : "bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
             }`}
             title={
-              !hasCameraDevices
-                ? "No camera detected"
+              isStreaming
+                ? "Stop tracking attendance"
                 : !hasSelectedGroup
-                  ? "Select a group to start tracking"
-                  : !isCameraSelected
-                    ? "Select a camera or use the first available"
-                    : isStreaming
-                      ? "Stop tracking attendance"
+                  ? "Create or select a group to start tracking"
+                  : !hasCameraDevices
+                    ? "No camera detected"
+                    : !isCameraSelected
+                      ? "Select a camera or use the first available"
                       : "Start tracking attendance"
             }
           >
-            {isStreaming
-              ? "Stop Tracking"
-              : hasSelectedGroup
-                ? "Start Tracking"
-                : "Select Group"}
+            {isStreaming ? "Stop Tracking" : "Start Tracking"}
           </button>
         </div>
       </div>

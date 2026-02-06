@@ -192,7 +192,7 @@ export const VideoCanvas = memo(function VideoCanvas({
             <div className="text-xs text-white/60 max-w-sm">
               {hasSelectedGroup
                 ? "Select a camera, then press Start Tracking to begin attendance."
-                : "Create or select a group to start tracking attendance."}
+                : "Create a group or choose one to start tracking attendance."}
             </div>
           </div>
         </div>

@@ -305,7 +305,7 @@ export const AttendancePanel = memo(function AttendancePanel({
           ) : !currentGroup ? (
             <div className="flex-1 flex items-center justify-center min-h-0">
               <div className="text-white/40 text-xs text-center">
-                Select a group to see today&apos;s attendance logs
+                Choose a group to see today&apos;s attendance logs
               </div>
             </div>
           ) : groupMembers.length === 0 ? (
