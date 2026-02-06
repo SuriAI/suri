@@ -1,10 +1,16 @@
-import type { QuickSettings } from "../components/settings/types";
+import type {
+  AudioSettings,
+  QuickSettings,
+} from "../components/settings/types";
 import type { UpdateInfo } from "../types/global";
 
 // Define the persistent settings schema (shared between main and renderer)
 export interface PersistentSettingsSchema {
   // Display Settings (QuickSettings)
   quickSettings: QuickSettings;
+
+  // Audio / Sound effects
+  audio: AudioSettings;
 
   // Attendance Settings
   attendance: {
@@ -58,6 +64,11 @@ export const defaultSettings: PersistentSettingsSchema = {
     showFPS: false,
     showRecognitionNames: true,
     cameraMirrored: true,
+  },
+  audio: {
+    // Default ON on first start (can still be toggled off by user)
+    recognitionSoundEnabled: true,
+    recognitionSoundUrl: null,
   },
   attendance: {
     enableSpoofDetection: true,

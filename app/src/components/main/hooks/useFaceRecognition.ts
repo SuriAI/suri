@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { startTransition } from "react";
 import { attendanceManager } from "@/services";
 import type { BackendService } from "@/services";
@@ -16,6 +16,7 @@ import {
   useAttendanceStore,
   useUIStore,
 } from "@/components/main/stores";
+import { soundEffects } from "@/services/SoundEffectsService";
 
 interface UseFaceRecognitionOptions {
   backendServiceRef: React.RefObject<BackendService | null>;
@@ -55,6 +56,41 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
   const { trackingMode, attendanceCooldownSeconds, setPersistentCooldowns } =
     useAttendanceStore();
   const { setError } = useUIStore();
+
+  // Prevent sound spam: person+group throttling
+  const lastSoundAtRef = useRef<Map<string, number>>(new Map());
+
+  const maybePlayRecognitionSound = useCallback(
+    (personId: string, groupId: string) => {
+      // If this person is already "Done" (i.e., has an active cooldown entry), do not play sound.
+      // This matches the UI overlay behavior and prevents repeat sounds.
+      const cooldownKey = `${personId}-${groupId}`;
+      const existing = persistentCooldownsRef.current?.get(cooldownKey);
+      if (existing?.startTime) {
+        const { reLogCooldownSeconds } = useAttendanceStore.getState();
+        const reLogCooldownMs = (reLogCooldownSeconds ?? 1800) * 1000;
+        const now = Date.now();
+        if (now - existing.startTime < reLogCooldownMs) {
+          return;
+        }
+      }
+
+      const { audioSettings } = useUIStore.getState();
+      if (!audioSettings.recognitionSoundEnabled) return;
+      if (!audioSettings.recognitionSoundUrl) return;
+
+      const soundKey = cooldownKey;
+      const now = Date.now();
+      const lastAt = lastSoundAtRef.current.get(soundKey) ?? 0;
+
+      // ~1.2s throttle feels instant but avoids per-frame repeats
+      if (now - lastAt <= 1200) return;
+      lastSoundAtRef.current.set(soundKey, now);
+
+      soundEffects.play(audioSettings.recognitionSoundUrl).catch(() => {});
+    },
+    [persistentCooldownsRef],
+  );
 
   const attendanceEnabled = true;
 
@@ -112,6 +148,13 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
             );
 
             if (response.success && response.person_id) {
+              // Fire sound ASAP: do not wait on member fetch / attendance logging
+              // (spoofed faces are already filtered earlier)
+              maybePlayRecognitionSound(
+                response.person_id,
+                currentGroupValue.id,
+              );
+
               const memberResult = await getMemberFromCache(
                 response.person_id,
                 currentGroupValue,

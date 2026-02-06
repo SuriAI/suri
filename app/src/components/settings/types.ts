@@ -4,6 +4,13 @@ export interface QuickSettings {
   showFPS: boolean;
   showRecognitionNames: boolean;
   cameraMirrored: boolean;
+  // Present in UI store; kept optional to avoid breaking older saved settings
+  showLandmarks?: boolean;
+}
+
+export interface AudioSettings {
+  recognitionSoundEnabled: boolean;
+  recognitionSoundUrl: string | null;
 }
 
 export interface AttendanceSettings {

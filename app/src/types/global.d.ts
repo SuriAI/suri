@@ -163,6 +163,12 @@ declare global {
     reset: () => Promise<boolean>;
   }
 
+  interface AssetsAPI {
+    listRecognitionSounds: () => Promise<
+      Array<{ fileName: string; url: string }>
+    >;
+  }
+
   interface BackendServiceAPI {
     saveFaceDatabase: (
       databaseData: Record<string, number[]>,
@@ -175,6 +181,7 @@ declare global {
     backend: BackendAPI;
     store: StoreAPI;
     updater: UpdaterAPI;
+    assets: AssetsAPI;
   }
 
   interface Window {

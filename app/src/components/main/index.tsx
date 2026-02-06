@@ -38,6 +38,7 @@ import { DeleteConfirmationModal } from "@/components/main/components/DeleteConf
 import { CooldownOverlay } from "@/components/main/components/CooldownOverlay";
 import type { DetectionResult } from "@/components/main/types";
 import { colorClasses } from "@/constants/colors";
+import { soundEffects } from "@/services/SoundEffectsService";
 
 export default function Main() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -127,10 +128,25 @@ export default function Main() {
     setSettingsInitialSection,
     quickSettings,
     setQuickSettings,
+    audioSettings,
+    setAudioSettings,
     setSidebarCollapsed,
   } = useUIStore();
 
   const recognitionEnabled = true;
+
+  // Preload sound to minimize delay on first recognition
+  useEffect(() => {
+    if (
+      audioSettings.recognitionSoundEnabled &&
+      audioSettings.recognitionSoundUrl
+    ) {
+      soundEffects.preload(audioSettings.recognitionSoundUrl);
+    }
+  }, [
+    audioSettings.recognitionSoundEnabled,
+    audioSettings.recognitionSoundUrl,
+  ]);
 
   const currentRecognitionResults =
     rawCurrentRecognitionResults instanceof Map
@@ -312,7 +328,7 @@ export default function Main() {
             backendServiceRef.current.disconnect();
           }
         } catch {
-          // Ignore cleanup errors
+          // Ignore disconnect errors
         }
       }
 
@@ -617,6 +633,8 @@ export default function Main() {
             isModal={true}
             quickSettings={quickSettings}
             onQuickSettingsChange={setQuickSettings}
+            audioSettings={audioSettings}
+            onAudioSettingsChange={setAudioSettings}
             attendanceSettings={{
               trackingMode: trackingMode,
               lateThresholdEnabled:

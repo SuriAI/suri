@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { QuickSettings } from "@/components/settings";
+import type { AudioSettings, QuickSettings } from "@/components/settings";
 import type { GroupSection } from "@/components/group";
 import { persistentSettings } from "@/services/PersistentSettingsService";
 
@@ -25,6 +25,9 @@ interface UIState {
   // Quick settings
   quickSettings: QuickSettings;
 
+  // Audio settings
+  audioSettings: AudioSettings;
+
   // Actions
   setError: (error: string | null) => void;
   setWarning: (warning: string | null) => void;
@@ -38,15 +41,25 @@ interface UIState {
   setQuickSettings: (
     settings: QuickSettings | ((prev: QuickSettings) => QuickSettings),
   ) => void;
+  setAudioSettings: (
+    settings:
+      | AudioSettings
+      | ((prev: AudioSettings) => AudioSettings)
+      | Partial<AudioSettings>,
+  ) => void;
   setIsHydrated: (isHydrated: boolean) => void;
 }
 
 // Load initial QuickSettings from store
 const loadInitialSettings = async () => {
-  const quickSettings = await persistentSettings.getQuickSettings();
-  const uiState = await persistentSettings.getUIState();
+  const [quickSettings, audioSettings, uiState] = await Promise.all([
+    persistentSettings.getQuickSettings(),
+    persistentSettings.getAudioSettings(),
+    persistentSettings.getUIState(),
+  ]);
   return {
     quickSettings,
+    audioSettings,
     hasSeenIntro: uiState.hasSeenIntro,
     sidebarCollapsed: uiState.sidebarCollapsed,
     sidebarWidth: uiState.sidebarWidth,
@@ -72,6 +85,11 @@ export const useUIStore = create<UIState>((set) => ({
     showFPS: false,
     showRecognitionNames: true,
     showLandmarks: true,
+  },
+
+  audioSettings: {
+    recognitionSoundEnabled: true,
+    recognitionSoundUrl: null,
   },
 
   // Actions
@@ -106,15 +124,34 @@ export const useUIStore = create<UIState>((set) => ({
     // Save to store asynchronously (don't block)
     persistentSettings.setQuickSettings(newSettings).catch(console.error);
   },
+
+  setAudioSettings: (settings) => {
+    const prev = useUIStore.getState().audioSettings;
+
+    const merged: AudioSettings =
+      typeof settings === "function"
+        ? settings(prev)
+        : { ...prev, ...(settings as Partial<AudioSettings>) };
+
+    set({ audioSettings: merged });
+    persistentSettings.setAudioSettings(merged).catch(console.error);
+  },
   setIsHydrated: (isHydrated: boolean) => set({ isHydrated }),
 }));
 
 // Load Settings from store on initialization
 if (typeof window !== "undefined") {
   loadInitialSettings().then(
-    ({ quickSettings, hasSeenIntro, sidebarCollapsed, sidebarWidth }) => {
+    ({
+      quickSettings,
+      audioSettings,
+      hasSeenIntro,
+      sidebarCollapsed,
+      sidebarWidth,
+    }) => {
       useUIStore.setState({
         quickSettings,
+        audioSettings,
         hasSeenIntro,
         sidebarCollapsed: sidebarCollapsed ?? false,
         sidebarWidth: sidebarWidth ?? 300,
