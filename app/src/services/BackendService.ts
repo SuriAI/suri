@@ -112,6 +112,16 @@ export class BackendService {
             status: "connected",
             message: "Connected to detector",
           });
+
+          // Send initial configuration
+          if (this.ws) {
+            this.ws.send(
+              JSON.stringify({
+                type: "config",
+                enable_liveness_detection: this.enableLivenessDetection,
+              }),
+            );
+          }
           resolve();
         };
 
@@ -324,6 +334,14 @@ export class BackendService {
 
   setLivenessDetection(enabled: boolean): void {
     this.enableLivenessDetection = enabled;
+    if (this.isWebSocketReady()) {
+      this.ws!.send(
+        JSON.stringify({
+          type: "config",
+          enable_liveness_detection: enabled,
+        }),
+      );
+    }
   }
 
   async recognizeFace(
