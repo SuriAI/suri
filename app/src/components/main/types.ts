@@ -90,6 +90,7 @@ export interface TrackedFace {
   occlusionCount: number;
   angleConsistency: number;
   livenessStatus?: "real" | "spoof" | "error" | "move_closer";
+  unknownFramesCount?: number;
 }
 
 export interface CooldownInfo {
