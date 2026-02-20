@@ -1,4 +1,9 @@
 @font-face {
+  font-family: "Segoe MDL2 Assets";
+  src: local("Segoe MDL2 Assets");
+}
+
+@font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 100 900;
