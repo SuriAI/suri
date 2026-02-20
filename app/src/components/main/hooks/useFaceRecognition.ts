@@ -195,6 +195,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                         existingTrack.trackingHistory,
                       ) ?? 1.0;
                     existingTrack.livenessStatus = currentLivenessStatus;
+                    existingTrack.unknownFramesCount = 0; // Reset consecutive misses since we recognized them again
 
                     // RE-BIND IDENTITY (Just in case it was lost/reset, though unlikely here)
                     existingTrack.personId = response.person_id ?? undefined;
@@ -218,6 +219,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                       occlusionCount: 0,
                       angleConsistency: 1.0,
                       livenessStatus: currentLivenessStatus,
+                      unknownFramesCount: 0,
                     });
                   }
 
@@ -499,6 +501,18 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                         confidence: face.confidence,
                       });
                       track.trackingHistory = trimTrackingHistory(track.trackingHistory);
+
+                      // Confidence Decay Logic
+                      track.unknownFramesCount = (track.unknownFramesCount || 0) + 1;
+
+                      if (track.unknownFramesCount > 30 && track.isLocked) {
+                        // Drop the lock if it has been unknown for too long (~1 to 2 seconds of frames)
+                        track.isLocked = false;
+                        track.personId = undefined;
+                        track.unknownFramesCount = 0;
+                        recoveredPersonId = null; // Prevent UI from rendering the old name
+                      }
+
                       // Keep occlusion/angle logic...
                       newTracked.set(trackIdStr, track);
                     }
@@ -506,20 +520,22 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                   });
                 });
 
-                // Return SUCCESS result to UI so it stays Green
-                // (We can optionally mark it as "memory" if we want UI to know)
-                return {
-                  trackId,
-                  result: {
-                    success: true,
-                    person_id: recoveredPersonId,
-                    similarity: 0.99, // Fake high similarity to keep it solid
-                    processing_time: 0,
-                    name: recoveredMemberName,
-                    memberName: recoveredMemberName,
-                    error: null,
-                  },
-                };
+                if (recoveredPersonId) {
+                  // Return SUCCESS result to UI so it stays Green
+                  // (We can optionally mark it as "memory" if we want UI to know)
+                  return {
+                    trackId,
+                    result: {
+                      success: true,
+                      person_id: recoveredPersonId,
+                      similarity: 0.99, // Fake high similarity to keep it solid
+                      processing_time: 0,
+                      name: recoveredMemberName,
+                      memberName: recoveredMemberName,
+                      error: null,
+                    },
+                  };
+                }
 
               } else {
                 // ** TRUE UNKNOWN **
