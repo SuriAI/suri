@@ -656,10 +656,10 @@ function createWindow(): void {
       if (y >= height - radius) {
         const offset = Math.ceil(
           radius -
-            Math.sqrt(
-              radius * radius -
-                (y - (height - radius)) * (y - (height - radius)),
-            ),
+          Math.sqrt(
+            radius * radius -
+            (y - (height - radius)) * (y - (height - radius)),
+          ),
         );
         startX = offset;
       }
@@ -668,10 +668,10 @@ function createWindow(): void {
       if (y >= height - radius) {
         const offset = Math.ceil(
           radius -
-            Math.sqrt(
-              radius * radius -
-                (y - (height - radius)) * (y - (height - radius)),
-            ),
+          Math.sqrt(
+            radius * radius -
+            (y - (height - radius)) * (y - (height - radius)),
+          ),
         );
         endX = width - offset;
       }
@@ -796,7 +796,7 @@ function createWindow(): void {
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("http://") || url.startsWith("https://")) {
-      shell.openExternal(url).catch(() => {});
+      shell.openExternal(url).catch(() => { });
     }
 
     return { action: "deny" };
@@ -811,7 +811,7 @@ function createWindow(): void {
     if (!isAllowed) {
       event.preventDefault();
       if (url.startsWith("http://") || url.startsWith("https://")) {
-        shell.openExternal(url).catch(() => {});
+        shell.openExternal(url).catch(() => { });
       }
     }
   });
@@ -846,13 +846,13 @@ function createWindow(): void {
     void dialog
       .showMessageBox(mainWindow, {
         type: "info",
-        title: "Suri is still running",
-        message: "Closing Suri keeps it running in the system tray.",
-        detail: "To fully quit, use the tray icon menu and choose Quit Suri.",
-        buttons: ["OK", "Quit Suri"],
+        title: "Suri is running in the background",
+        message: "Suri will keep running in your system tray.",
+        detail: "You can fully close the app by right-clicking the tray icon and selecting 'Quit'.",
+        buttons: ["Got it", "Quit Suri"],
         defaultId: 0,
         cancelId: 0,
-        checkboxLabel: "Don't show this again",
+        checkboxLabel: "Don't show this reminder again",
         checkboxChecked: false,
         noLink: true,
       })
@@ -906,7 +906,7 @@ function createTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Quit Suri",
+      label: "Quit",
       click: () => {
         isQuitting = true;
         app.quit();
