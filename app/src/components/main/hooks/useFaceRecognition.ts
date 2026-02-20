@@ -87,7 +87,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
       if (now - lastAt <= 1200) return;
       lastSoundAtRef.current.set(soundKey, now);
 
-      soundEffects.play(audioSettings.recognitionSoundUrl).catch(() => { });
+      soundEffects.play(audioSettings.recognitionSoundUrl).catch(() => {});
     },
     [persistentCooldownsRef],
   );
@@ -442,7 +442,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                           : "Unknown error";
                       setError(
                         errorMessage ||
-                        `Failed to record attendance for ${response.person_id}`,
+                          `Failed to record attendance for ${response.person_id}`,
                       );
                     }
                   } catch (error) {
@@ -464,7 +464,9 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
               const currentTime = Date.now();
 
               // Check store for existing identity
-              const existingTrack = useDetectionStore.getState().trackedFaces.get(trackIdStr);
+              const existingTrack = useDetectionStore
+                .getState()
+                .trackedFaces.get(trackIdStr);
               const knownPersonId = existingTrack?.personId;
 
               // If we know who this is, recover the identity!
@@ -475,7 +477,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                 const member = await getMemberFromCache(
                   knownPersonId,
                   currentGroupValue,
-                  memberCacheRef
+                  memberCacheRef,
                 );
                 if (member) {
                   recoveredMemberName = member.memberName;
@@ -500,10 +502,13 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                         bbox: face.bbox,
                         confidence: face.confidence,
                       });
-                      track.trackingHistory = trimTrackingHistory(track.trackingHistory);
+                      track.trackingHistory = trimTrackingHistory(
+                        track.trackingHistory,
+                      );
 
                       // Confidence Decay Logic
-                      track.unknownFramesCount = (track.unknownFramesCount || 0) + 1;
+                      track.unknownFramesCount =
+                        (track.unknownFramesCount || 0) + 1;
 
                       if (track.unknownFramesCount > 30 && track.isLocked) {
                         // Drop the lock if it has been unknown for too long (~1 to 2 seconds of frames)
@@ -536,7 +541,6 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                     },
                   };
                 }
-
               } else {
                 // ** TRUE UNKNOWN **
                 startTransition(() => {
