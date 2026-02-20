@@ -23,6 +23,11 @@ class AttendanceService:
         self.face_detector = face_detector
         self.face_recognizer = face_recognizer
         self.ws_manager = ws_manager
+        
+        # Security: Monotonic clock trackers to strictly prevent mid-class system clock tampering
+        import time
+        self._boot_time_wall = datetime.now()
+        self._boot_time_mono = time.monotonic()
 
     def generate_id(self) -> str:
         """Generate a unique ID"""
@@ -214,8 +219,19 @@ class AttendanceService:
         cooldown_seconds = settings.attendance_cooldown_seconds or 10
         relog_seconds = getattr(settings, "relog_cooldown_seconds", None) or 1800
 
-        # Enforce cooldown(s)
-        current_time = datetime.now()
+        # Enforce True Time using Monotonic Clock
+        import time
+        elapsed_seconds_since_boot = time.monotonic() - self._boot_time_mono
+        true_time = self._boot_time_wall + timedelta(seconds=elapsed_seconds_since_boot)
+        
+        # System clock check (optional warning)
+        os_time = datetime.now()
+        time_drift = abs((os_time - true_time).total_seconds())
+        if time_drift > 60:
+            logger.warning(f"System clock tampering detected. OS Time is {os_time}, but Monotonic True Time is {true_time}.")
+
+        current_time = true_time
+
         window_seconds = max(cooldown_seconds, relog_seconds)
         recent_records = await self.repo.get_records(
             person_id=event_data.person_id,
@@ -256,7 +272,7 @@ class AttendanceService:
 
         # Create attendance record
         record_id = self.generate_id()
-        timestamp = datetime.now()
+        timestamp = current_time
 
         record_data = {
             "id": record_id,
@@ -280,7 +296,7 @@ class AttendanceService:
         group = await self.repo.get_group(member.group_id)
 
         late_threshold_minutes = group.late_threshold_minutes or 15
-        class_start_time = group.class_start_time or datetime.now().strftime("%H:%M")
+        class_start_time = group.class_start_time or current_time.strftime("%H:%M")
         late_threshold_enabled = group.late_threshold_enabled or False
 
         existing_session = await self.repo.get_session(event_data.person_id, today_str)
