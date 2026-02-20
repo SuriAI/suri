@@ -1,0 +1,97 @@
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+/* === AI SCANNING ANIMATIONS === */
+@keyframes ai-scan-line {
+  0%,
+  100% {
+    top: 0%;
+  }
+
+  50% {
+    top: 100%;
+  }
+}
+
+@keyframes ai-pulse-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 0.1;
+  }
+}
+
+@keyframes ai-dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ai-scan-line {
+  animation: ai-scan-line 3s ease-in-out infinite;
+}
+
+.ai-pulse-ring {
+  animation: ai-pulse-ring 2s ease-in-out infinite;
+}
+
+.ai-dot-1 {
+  animation: ai-dot-pulse 1.4s ease-in-out infinite 0s;
+}
+
+.ai-dot-2 {
+  animation: ai-dot-pulse 1.4s ease-in-out infinite 0.2s;
+}
+
+.ai-dot-3 {
+  animation: ai-dot-pulse 1.4s ease-in-out infinite 0.4s;
+}
+
+.bg-gradient-secondary {
+  background: var(--gradient-secondary);
+}
+
+.bg-gradient-accent {
+  background: var(--gradient-accent);
+}
+
+.bg-gradient-surface {
+  background: var(--gradient-surface);
+}
+
+.bg-gradient-radial {
+  background-image: radial-gradient(var(--tw-gradient-stops));
+}
+
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-accent {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom Animation Delays */
+.delay-3000 {
+  animation-delay: 3000ms;
+}

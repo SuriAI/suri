@@ -1,0 +1,129 @@
+/* === SMOOTH LOADER ANIMATIONS === */
+@keyframes smooth-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes smooth-progress-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scaleX(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes smooth-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.smooth-spinner {
+  animation: smooth-spin 1s linear infinite;
+  will-change: transform;
+}
+
+.smooth-progress {
+  animation: smooth-progress-pulse 2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.smooth-fade {
+  animation: smooth-fade-in 0.5s ease-out;
+  will-change: opacity, transform;
+}
+
+.glass-card {
+  background: var(--gradient-surface);
+  border: var(--card-border-width) solid var(--card-border);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-primary);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.menu-card {
+  background: var(--gradient-surface);
+  border: var(--card-border-width) solid var(--card-border);
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    100% 100% at 0% 0%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  z-index: -1;
+}
+
+.menu-card:hover {
+  background: var(--gradient-secondary);
+  border-color: var(--card-hover-border);
+  box-shadow:
+    0 20px 40px -20px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.menu-card:hover::before {
+  background: radial-gradient(
+    100% 100% at 0% 0%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+/* Gradient Animation */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
+}
