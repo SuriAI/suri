@@ -23,9 +23,10 @@ class AttendanceService:
         self.face_detector = face_detector
         self.face_recognizer = face_recognizer
         self.ws_manager = ws_manager
-        
+
         # Security: Monotonic clock trackers to strictly prevent mid-class system clock tampering
         import time
+
         self._boot_time_wall = datetime.now()
         self._boot_time_mono = time.monotonic()
 
@@ -221,14 +222,17 @@ class AttendanceService:
 
         # Enforce True Time using Monotonic Clock
         import time
+
         elapsed_seconds_since_boot = time.monotonic() - self._boot_time_mono
         true_time = self._boot_time_wall + timedelta(seconds=elapsed_seconds_since_boot)
-        
+
         # System clock check (optional warning)
         os_time = datetime.now()
         time_drift = abs((os_time - true_time).total_seconds())
         if time_drift > 60:
-            logger.warning(f"System clock tampering detected. OS Time is {os_time}, but Monotonic True Time is {true_time}.")
+            logger.warning(
+                f"System clock tampering detected. OS Time is {os_time}, but Monotonic True Time is {true_time}."
+            )
 
         current_time = true_time
 

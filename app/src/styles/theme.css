@@ -14,23 +14,31 @@
   line-height: 1.5;
   font-weight: 400;
 
-  --gradient-primary: linear-gradient(135deg,
-      #000000 0%,
-      #0a0a0a 25%,
-      #1a1a1a 50%,
-      #0f0f0f 75%,
-      #000000 100%);
-  --gradient-secondary: linear-gradient(45deg,
-      #111111 0%,
-      #1a1a1a 50%,
-      #0d0d0d 100%);
-  --gradient-accent: linear-gradient(90deg,
-      #1a1a1a 0%,
-      #2a2a2a 50%,
-      #1a1a1a 100%);
-  --gradient-surface: linear-gradient(180deg,
-      rgba(10, 10, 10, 0.95) 0%,
-      rgba(5, 5, 5, 0.8) 100%);
+  --gradient-primary: linear-gradient(
+    135deg,
+    #000000 0%,
+    #0a0a0a 25%,
+    #1a1a1a 50%,
+    #0f0f0f 75%,
+    #000000 100%
+  );
+  --gradient-secondary: linear-gradient(
+    45deg,
+    #111111 0%,
+    #1a1a1a 50%,
+    #0d0d0d 100%
+  );
+  --gradient-accent: linear-gradient(
+    90deg,
+    #1a1a1a 0%,
+    #2a2a2a 50%,
+    #1a1a1a 100%
+  );
+  --gradient-surface: linear-gradient(
+    180deg,
+    rgba(10, 10, 10, 0.95) 0%,
+    rgba(5, 5, 5, 0.8) 100%
+  );
 
   --bg-primary: #000000;
   --bg-secondary: #0a0a0a;
