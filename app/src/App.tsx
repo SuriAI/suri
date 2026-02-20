@@ -1,4 +1,4 @@
-import { WindowBar, WindowFooter } from "@/components/electron";
+import { WindowBar, WindowFooter } from "@/components/window";
 import Main from "@/components/main";
 import { useUIStore } from "@/components/main/stores/uiStore";
 import { IntroModal } from "@/components/shared/IntroModal";
