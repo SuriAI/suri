@@ -1,4 +1,4 @@
-from .paths import BASE_DIR, PROJECT_ROOT, WEIGHTS_DIR, DATA_DIR
+from .paths import BASE_DIR, PROJECT_ROOT, MODELS_DIR, DATA_DIR
 from .server import SERVER_CONFIG, get_server_config
 from .cors import CORS_CONFIG
 from .onnx import OPTIMIZED_PROVIDERS, OPTIMIZED_SESSION_OPTIONS
@@ -19,7 +19,7 @@ from .logging_config import get_logging_config
 __all__ = [
     "BASE_DIR",
     "PROJECT_ROOT",
-    "WEIGHTS_DIR",
+    "MODELS_DIR",
     "DATA_DIR",
     "SERVER_CONFIG",
     "get_server_config",

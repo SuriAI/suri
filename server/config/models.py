@@ -1,9 +1,9 @@
-from .paths import WEIGHTS_DIR, DATA_DIR
+from .paths import MODELS_DIR, DATA_DIR
 from .onnx import OPTIMIZED_PROVIDERS, OPTIMIZED_SESSION_OPTIONS
 
 MODEL_CONFIGS = {
     "face_detector": {
-        "model_path": WEIGHTS_DIR / "detector.onnx",
+        "model_path": MODELS_DIR / "detector.onnx",
         "input_size": (640, 640),
         "score_threshold": 0.8,
         "nms_threshold": 0.3,
@@ -12,7 +12,7 @@ MODEL_CONFIGS = {
         "edge_margin": 5,
     },
     "liveness_detector": {
-        "model_path": WEIGHTS_DIR / "liveness.onnx",
+        "model_path": MODELS_DIR / "liveness.onnx",
         "confidence_threshold": 0.6,
         "bbox_inc": 1.5,
         "model_img_size": 128,
@@ -20,7 +20,7 @@ MODEL_CONFIGS = {
         "enable_temporal_smoothing": True,
     },
     "face_recognizer": {
-        "model_path": WEIGHTS_DIR / "recognizer.onnx",
+        "model_path": MODELS_DIR / "recognizer.onnx",
         "input_size": (112, 112),
         "similarity_threshold": 0.5,
         "providers": OPTIMIZED_PROVIDERS,
@@ -29,7 +29,7 @@ MODEL_CONFIGS = {
         "database_path": DATA_DIR / "face_database.db",
     },
     "face_tracker": {
-        "model_path": WEIGHTS_DIR / "tracker.onnx",
+        "model_path": MODELS_DIR / "tracker.onnx",
         "track_thresh": 0.5,
         "match_thresh": 0.8,
         "track_buffer": 30,
@@ -59,10 +59,10 @@ def validate_model_paths():
 
 
 def validate_directories():
-    from .paths import WEIGHTS_DIR, BASE_DIR
+    from .paths import MODELS_DIR, BASE_DIR
 
     required_dirs = [
-        WEIGHTS_DIR,
+        MODELS_DIR,
         BASE_DIR.parent / "core" / "models",
         BASE_DIR.parent / "utils",
     ]
