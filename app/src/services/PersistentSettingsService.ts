@@ -268,6 +268,27 @@ class PersistentSettingsService {
   async setCooldowns(cooldowns: Record<string, unknown>): Promise<void> {
     await this.set("attendanceCooldowns", cooldowns);
   }
+
+  /**
+   * Cloud Sync Settings
+   */
+  async getSyncSettings(): Promise<PersistentSettingsSchema["sync"]> {
+    const settings = await this.get<PersistentSettingsSchema["sync"]>("sync");
+
+    if (!settings) {
+      await this.set("sync", defaultSettings.sync);
+      return defaultSettings.sync;
+    }
+
+    return { ...defaultSettings.sync, ...settings };
+  }
+
+  async setSyncSettings(
+    settings: Partial<PersistentSettingsSchema["sync"]>,
+  ): Promise<void> {
+    const current = await this.getSyncSettings();
+    await this.set("sync", { ...current, ...settings });
+  }
 }
 
 export const persistentSettings = new PersistentSettingsService();

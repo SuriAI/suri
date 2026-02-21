@@ -531,6 +531,125 @@ ipcMain.handle("assets:list-recognition-sounds", async () => {
   }
 });
 
+/**
+ * Manages periodic background data synchronization to a webhook/cloud endpoint.
+ */
+class BackgroundSyncManager {
+  private timer: NodeJS.Timeout | null = null;
+  private isSyncing = false;
+
+  /**
+   * Start or restart the sync timer based on current settings
+   */
+  start() {
+    this.stop();
+
+    const enabled = persistentStore.get("sync.enabled") as boolean;
+    const syncUrl = persistentStore.get("sync.syncUrl") as string;
+    const intervalMinutes =
+      (persistentStore.get("sync.intervalMinutes") as number) || 30;
+
+    if (!enabled || !syncUrl) {
+      console.log("[Sync] Background Auto-Sync is disabled or URL is missing.");
+      return;
+    }
+
+    const intervalMs = Math.max(1, intervalMinutes) * 60 * 1000;
+    console.log(
+      `[Sync] Starting Auto-Sync. Interval: ${intervalMinutes} minutes.`,
+    );
+
+    this.timer = setInterval(() => {
+      void this.performSync();
+    }, intervalMs);
+  }
+
+  /**
+   * Stop the sync timer
+   */
+  stop() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  /**
+   * Perform the actual data export and POST to the cloud
+   */
+  async performSync() {
+    if (this.isSyncing) return;
+
+    const enabled = persistentStore.get("sync.enabled") as boolean;
+    const syncUrl = persistentStore.get("sync.syncUrl") as string;
+    const syncKey = (persistentStore.get("sync.syncKey") as string) || "";
+
+    if (!enabled || !syncUrl) {
+      this.stop();
+      return;
+    }
+
+    this.isSyncing = true;
+    console.log("[Sync] Triggering background auto-sync...");
+
+    try {
+      // 1. Fetch export payload from local backend
+      const exportUrl = `${backendService.getUrl()}/attendance/export`;
+      const response = await fetch(exportUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(60000), // 1 minute timeout for large exports
+      });
+
+      if (!response.ok) {
+        throw new Error(`Local export failed: HTTP ${response.status}`);
+      }
+
+      const payload = await response.json();
+
+      // 2. POST to user's specified cloud webhook
+      const cloudResponse = await fetch(syncUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": syncKey,
+          "X-Suri-Version": getCurrentVersion(),
+          "User-Agent": "Suri-Desktop-Sync",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(60000),
+      });
+
+      if (!cloudResponse.ok) {
+        throw new Error(`Cloud POST failed: HTTP ${cloudResponse.status}`);
+      }
+
+      console.log("[Sync] Background sync successful.");
+
+      // 3. Update last synced timestamp
+      persistentStore.set("sync.lastSyncedAt", new Date().toISOString());
+    } catch (error) {
+      console.warn("[Sync] Background sync failed:", error);
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+}
+
+const syncManager = new BackgroundSyncManager();
+
+// Manual restart/start of the sync manager (called from settings UI)
+ipcMain.handle("sync:restart-manager", () => {
+  syncManager.start();
+  return true;
+});
+
+// Immediate sync trigger
+ipcMain.handle("sync:trigger-now", async () => {
+  await syncManager.performSync();
+  return true;
+});
+
 // =============================================================================
 // CLOUD SYNC IPC HANDLERS
 // =============================================================================
@@ -1147,6 +1266,9 @@ app.whenReady().then(async () => {
   // Smooth transition: destroy splash, show main
   destroySplash();
   showMainWindow();
+
+  // Start background sync manager if enabled
+  // syncManager.start(); // 👈 Parked for now. Uncomment when Web App is ready.
 
   // Start background update check (1 minute after startup, non-blocking)
   if (!isDev()) {

@@ -156,6 +156,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
     importData: (overwrite: boolean = false) => {
       return ipcRenderer.invoke("sync:import-data", overwrite);
     },
+    restartManager: () => {
+      return ipcRenderer.invoke("sync:restart-manager");
+    },
+    triggerNow: () => {
+      return ipcRenderer.invoke("sync:trigger-now");
+    },
   },
 });
 
