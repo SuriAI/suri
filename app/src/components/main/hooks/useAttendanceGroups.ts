@@ -31,7 +31,8 @@ export function useAttendanceGroups() {
   const memberCacheRef = useRef<Map<string, AttendanceMember | null>>(
     new Map(),
   );
-  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {});
+  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => { });
+  const hasInitializedRef = useRef(false);
 
   // Sync ref with store
   useEffect(() => {
@@ -270,6 +271,10 @@ export function useAttendanceGroups() {
   ]);
 
   useEffect(() => {
+    // Guard: only initialize once on mount
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     const initializeAttendance = async () => {
       try {
         await loadSettings();
@@ -278,7 +283,7 @@ export function useAttendanceGroups() {
 
         if (groups.length === 0) {
           setCurrentGroupWithCache(null);
-        } else if (!currentGroup) {
+        } else if (!currentGroupRef.current) {
           const uiState = await persistentSettings.getUIState();
           const savedGroupId = uiState.selectedGroupId;
           let groupToSelect = null;
@@ -291,6 +296,8 @@ export function useAttendanceGroups() {
             groupToSelect = groups[0];
           }
 
+          await loadAttendanceDataRef.current();
+          // Direct call with resolved group
           await handleSelectGroup(groupToSelect);
         }
       } catch (error) {
@@ -305,7 +312,6 @@ export function useAttendanceGroups() {
   }, [
     handleSelectGroup,
     loadSettings,
-    currentGroup,
     setCurrentGroupWithCache,
     setError,
     setAttendanceGroups,
