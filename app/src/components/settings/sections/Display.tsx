@@ -39,12 +39,14 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
 
             <button
               onClick={() => toggleQuickSetting(key)}
-              className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${quickSettings[key] ? "bg-cyan-500/30" : "bg-white/10"
-                }`}
+              className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
+                quickSettings[key] ? "bg-cyan-500/30" : "bg-white/10"
+              }`}
             >
               <div
-                className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${quickSettings[key] ? "translate-x-5" : "translate-x-0"
-                  }`}
+                className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${
+                  quickSettings[key] ? "translate-x-5" : "translate-x-0"
+                }`}
               ></div>
             </button>
           </div>

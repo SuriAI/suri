@@ -250,10 +250,11 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
       <button
         onClick={onCheck}
         disabled={isChecking || showSuccess}
-        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${showSuccess
-          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-          : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border-white/5"
-          } disabled:opacity-50`}
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+          showSuccess
+            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+            : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border-white/5"
+        } disabled:opacity-50`}
       >
         {isChecking
           ? "Checking..."

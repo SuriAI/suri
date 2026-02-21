@@ -31,8 +31,7 @@ export function useAttendanceGroups() {
   const memberCacheRef = useRef<Map<string, AttendanceMember | null>>(
     new Map(),
   );
-  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => { });
-
+  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {});
 
   // Sync ref with store
   useEffect(() => {

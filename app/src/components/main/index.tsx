@@ -60,7 +60,7 @@ export default function Main() {
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => { });
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
@@ -544,7 +544,7 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
-            // trackingMode removed
+              // trackingMode removed
             />
 
             {/* New Cooldown Overlay */}
