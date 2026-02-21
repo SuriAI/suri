@@ -6,32 +6,37 @@ from pathlib import Path
 IS_FROZEN = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 
+APP_NAME = "SuriApp"
+
+
 def get_base_dir() -> Path:
-    """Get the base directory for resources based on execution mode."""
+    """Get the base directory for read-only resources based on execution mode."""
     if IS_FROZEN:
         return Path(sys._MEIPASS)
-    return Path(__file__).parent.parent
+    return Path(__file__).resolve().parent.parent
 
 
 def get_data_dir() -> Path:
     """
-    Get the data directory.
+    Get the data directory for persistent read-write storage (databases, logs).
     Priority:
-    1. SURI_DATA_DIR environment variable
-    2. Frozen: executable_dir/data
+    1. SURI_DATA_DIR env variable (Preferred for Electron integration)
+    2. IS_FROZEN: OS-native AppData directory
     3. Dev: project_root/data
     """
     env_data_dir = os.getenv("SURI_DATA_DIR")
     if env_data_dir:
         data_dir = Path(env_data_dir)
     elif IS_FROZEN:
-        data_dir = Path(sys.executable).parent / "data"
+        if sys.platform == "win32":
+            app_data = Path(os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local")))
+        elif sys.platform == "darwin":
+            app_data = Path(os.path.expanduser("~/Library/Application Support"))
+        else:
+            app_data = Path(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
+        
+        data_dir = app_data / APP_NAME / "data"
     else:
-        # In dev, base_dir is server/ (from get_base_dir implementation for dev)
-        # But wait, get_base_dir returns server/.. (parent of config endpoint) -> server/
-        # Let's check get_base_dir logic vs implementation
-        # Old implementation: Path(__file__).parent.parent -> server/
-        # So base_dir / "data" -> server/data.
         data_dir = get_base_dir() / "data"
 
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -47,8 +52,7 @@ MIGRATIONS_DIR = BASE_DIR / "migrations"
 PROJECT_ROOT = BASE_DIR.parent if not IS_FROZEN else BASE_DIR
 
 
-# Helpers for specific path retrieval if needed dynamically,
-# though constants above are usually sufficient.
+# Helpers for specific path retrieval if needed dynamically
 def get_models_dir() -> Path:
     return MODELS_DIR
 

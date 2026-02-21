@@ -10,9 +10,9 @@ from alembic import context
 import sys
 from pathlib import Path
 
-# Add server directory to path
-server_dir = Path(__file__).resolve().parent.parent
-sys.path.append(str(server_dir))
+# Add server directory to path using config
+from config.paths import BASE_DIR
+sys.path.append(str(BASE_DIR))
 
 
 config = context.config
