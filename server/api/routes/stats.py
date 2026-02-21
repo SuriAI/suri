@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="", tags=["stats"])
 
+
 @router.get("/groups/{group_id}/stats", response_model=AttendanceStatsResponse)
 async def get_group_stats(
     group_id: str,
@@ -92,6 +93,7 @@ async def get_group_stats(
     except Exception as e:
         logger.error(f"Error getting group stats for {group_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/stats", response_model=DatabaseStatsResponse)
 async def get_database_stats(

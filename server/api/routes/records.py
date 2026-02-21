@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="", tags=["records"])
 
+
 @router.post("/records", response_model=AttendanceRecordResponse)
 async def add_record(
     record_data: AttendanceRecordCreate,
@@ -56,6 +57,7 @@ async def add_record(
         logger.error(f"Error adding record: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.get("/records", response_model=List[AttendanceRecordResponse])
 async def get_records(
     group_id: Optional[str] = Query(None),
@@ -79,6 +81,7 @@ async def get_records(
     except Exception as e:
         logger.error(f"Error getting records: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/sessions", response_model=List[AttendanceSessionResponse])
 async def get_sessions(
@@ -130,9 +133,7 @@ async def get_sessions(
                     group_id=group_id, start_date=day_start, end_date=day_end
                 )
 
-                existing_day_sessions = [
-                    s for s in sessions if s.date == date_str
-                ]
+                existing_day_sessions = [s for s in sessions if s.date == date_str]
 
                 service = AttendanceService(repo)
                 day_sessions = service.compute_sessions_from_records(
@@ -161,6 +162,7 @@ async def get_sessions(
         logger.error(f"Error getting sessions: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.get("/sessions/{person_id}/{date}", response_model=AttendanceSessionResponse)
 async def get_session(
     person_id: str,
@@ -180,6 +182,7 @@ async def get_session(
     except Exception as e:
         logger.error(f"Error getting session for {person_id} on {date}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.post("/events", response_model=AttendanceEventResponse)
 async def process_attendance_event(
