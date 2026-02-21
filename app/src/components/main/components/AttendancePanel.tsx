@@ -316,7 +316,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                    attendanceGroups.some((g) => g.id === currentGroup.id)
+                  attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -389,20 +389,22 @@ export const AttendancePanel = memo(function AttendancePanel({
           <div className="flex gap-1">
             <button
               onClick={() => handleSortFieldChange("time")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "time"
-                ? "bg-white/10 text-white border border-white/15"
-                : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
-                }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
+                sortField === "time"
+                  ? "bg-white/10 text-white border border-white/15"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+              }`}
             >
               <i className="fa-regular fa-clock mr-1 text-[9px]" />
               Newest
             </button>
             <button
               onClick={() => handleSortFieldChange("name")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "name"
-                ? "bg-white/10 text-white border border-white/15"
-                : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
-                }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
+                sortField === "name"
+                  ? "bg-white/10 text-white border border-white/15"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+              }`}
             >
               <i className="fa-solid fa-arrow-down-a-z mr-1 text-[9px]" />
               A–Z
@@ -494,6 +496,7 @@ export const AttendancePanel = memo(function AttendancePanel({
           members={groupMembers}
           presentPersonIds={presentPersonIds}
           onAddMember={handleOpenSettingsForRegistration}
+          currentGroup={currentGroup}
         />
       )}
     </div>

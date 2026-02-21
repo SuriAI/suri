@@ -791,12 +791,18 @@ export class AttendanceManager {
     }
   }
 
-  async importData(): Promise<boolean> {
+  async importData(jsonData: string): Promise<boolean> {
     try {
-      throw new Error("Import functionality requires backend implementation");
+      const parsed = JSON.parse(jsonData);
+      const result = await this.httpClient.post<{
+        success: boolean;
+        message: string;
+      }>("/attendance/import", { data: parsed, overwrite_existing: false });
+      console.info("[AttendanceManager] Import result:", result.message);
+      return true;
     } catch (err) {
       console.error(
-        "Error importing data:",
+        "[AttendanceManager] Error importing data:",
         err instanceof Error ? err.message : "Unknown error",
       );
       return false;
