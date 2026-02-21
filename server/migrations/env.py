@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 import sys
-from pathlib import Path
 
 # Add server directory to path using config
 from config.paths import BASE_DIR
+
 sys.path.append(str(BASE_DIR))
 
 

@@ -5,6 +5,7 @@ import { Notifications } from "@/components/settings/sections/Notifications";
 import { Database } from "@/components/settings/sections/Database";
 import { Attendance } from "@/components/settings/sections/Attendance";
 import { About } from "@/components/settings/sections/About";
+import { CloudSync } from "@/components/settings/sections/CloudSync";
 import { GroupPanel, type GroupSection } from "@/components/group";
 import { Dropdown } from "@/components/shared";
 import { useDialog } from "@/components/shared";
@@ -277,6 +278,11 @@ export const Settings: React.FC<SettingsProps> = ({
     { id: "display", label: "Display", icon: "fa-solid fa-desktop" },
     { id: "notifications", label: "Notifications", icon: "fa-solid fa-bell" },
     { id: "database", label: "Database", icon: "fa-solid fa-database" },
+    {
+      id: "cloudsync",
+      label: "Cloud Sync",
+      icon: "fa-solid fa-cloud-arrow-up",
+    },
     { id: "about", label: "About", icon: "fa-solid fa-circle-info" },
   ];
 
@@ -777,6 +783,7 @@ export const Settings: React.FC<SettingsProps> = ({
               }}
             />
           )}
+          {activeSection === "cloudsync" && <CloudSync />}
           {activeSection === "about" && <About />}
         </div>
       </div>

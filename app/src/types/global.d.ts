@@ -169,6 +169,21 @@ declare global {
     >;
   }
 
+  interface SyncAPI {
+    exportData: () => Promise<{
+      success: boolean;
+      canceled?: boolean;
+      filePath?: string;
+      error?: string;
+    }>;
+    importData: (overwrite?: boolean) => Promise<{
+      success: boolean;
+      canceled?: boolean;
+      message?: string;
+      error?: string;
+    }>;
+  }
+
   interface BackendServiceAPI {
     saveFaceDatabase: (
       databaseData: Record<string, number[]>,
@@ -182,6 +197,7 @@ declare global {
     store: StoreAPI;
     updater: UpdaterAPI;
     assets: AssetsAPI;
+    sync: SyncAPI;
   }
 
   interface Window {
