@@ -1,8 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { attendanceManager } from "@/services/AttendanceManager";
 import { Dropdown } from "@/components/shared";
 import { ModalCloseButton } from "@/components/common";
-import type { AttendanceMember } from "@/components/main/types";
+import type {
+  AttendanceMember,
+  AttendanceGroup,
+} from "@/components/main/types";
+
+interface PersonFaceData {
+  person_id: string;
+  has_face_data: boolean;
+}
 
 interface ManualEntryModalProps {
   onClose: () => void;
@@ -10,6 +18,7 @@ interface ManualEntryModalProps {
   members: AttendanceMember[];
   presentPersonIds: Set<string>;
   onAddMember: () => void;
+  currentGroup?: AttendanceGroup | null;
 }
 
 export const ManualEntryModal = ({
@@ -18,17 +27,45 @@ export const ManualEntryModal = ({
   members,
   presentPersonIds,
   onAddMember,
+  currentGroup,
 }: ManualEntryModalProps) => {
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [faceDataMap, setFaceDataMap] = useState<Map<string, boolean>>(
+    new Map(),
+  );
 
-  // Filter out members who are already present
+  // Fetch face enrollment status for all members in the current group
+  useEffect(() => {
+    if (!currentGroup?.id) return;
+    attendanceManager
+      .getGroupPersons(currentGroup.id)
+      .then((persons: PersonFaceData[]) => {
+        const map = new Map<string, boolean>();
+        persons.forEach((p) => map.set(p.person_id, p.has_face_data));
+        setFaceDataMap(map);
+      })
+      .catch(() => {
+        // Silently ignore — face status is informational only
+      });
+  }, [currentGroup?.id]);
+
   const absentMembers = useMemo(() => {
     return members
       .filter((m) => !presentPersonIds.has(m.person_id))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [members, presentPersonIds]);
+
+  const sortedAllMembers = useMemo(() => {
+    return [...members].sort((a, b) => a.name.localeCompare(b.name));
+  }, [members]);
+
+  const noFaceCount = useMemo(() => {
+    return sortedAllMembers.filter(
+      (m) => faceDataMap.size > 0 && !faceDataMap.get(m.person_id),
+    ).length;
+  }, [sortedAllMembers, faceDataMap]);
 
   const handleSubmit = async () => {
     if (!selectedPersonId) return;
@@ -72,6 +109,11 @@ export const ManualEntryModal = ({
               </h2>
               <p className="text-white/40 text-[10px] mt-0.5 font-medium">
                 {members.length} Total • {presentPersonIds.size} Present
+                {noFaceCount > 0 && (
+                  <span className="text-amber-400/80 ml-1">
+                    • {noFaceCount} need re-enrollment
+                  </span>
+                )}
               </p>
             </div>
             <ModalCloseButton onClick={onClose} />
@@ -125,6 +167,68 @@ export const ManualEntryModal = ({
                 <i className="fa-solid fa-circle-exclamation"></i>
                 {error}
               </div>
+            )}
+
+            {/* Member Roster with face status */}
+            {sortedAllMembers.length > 0 && (
+              <div className="border border-white/[0.06] rounded-lg overflow-hidden">
+                <div className="max-h-[220px] overflow-y-auto divide-y divide-white/[0.04]">
+                  {sortedAllMembers.map((member) => {
+                    const isPresent = presentPersonIds.has(member.person_id);
+                    const hasFace =
+                      faceDataMap.size === 0
+                        ? null // still loading
+                        : (faceDataMap.get(member.person_id) ?? false);
+
+                    return (
+                      <div
+                        key={member.person_id}
+                        className="flex items-center gap-2.5 px-3 py-2"
+                      >
+                        {/* Status dot */}
+                        <div
+                          className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
+                            isPresent ? "bg-emerald-400" : "bg-white/20"
+                          }`}
+                        />
+
+                        {/* Name */}
+                        <span className="flex-1 text-[11px] text-white/80 truncate">
+                          {member.name}
+                        </span>
+
+                        {/* Badges */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {isPresent && (
+                            <span className="text-[9px] font-semibold text-emerald-400/80 uppercase tracking-wide">
+                              Present
+                            </span>
+                          )}
+                          {hasFace === false && (
+                            <span
+                              className="flex items-center gap-1 text-[9px] font-medium text-amber-400/70 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded"
+                              title="Face not enrolled — this member cannot be recognized by the camera until their face is registered on this device."
+                            >
+                              <i className="fa-solid fa-user-slash text-[8px]"></i>
+                              No face data
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Re-enrollment note */}
+            {noFaceCount > 0 && (
+              <p className="text-[9px] text-amber-400/60 leading-relaxed flex items-start gap-1.5">
+                <i className="fa-solid fa-circle-info mt-[1px] flex-shrink-0"></i>
+                Members marked "No face data" were imported from another device.
+                They must be re-enrolled on this device to be recognized by the
+                camera.
+              </p>
             )}
 
             {/* Footer with Add Member Button */}
