@@ -59,7 +59,7 @@ a = Analysis(
         ('config', 'config'),  # Config package (includes settings.py)
         ('database', 'database'),  # Database managers (repository.py, face.py)
         ('utils', 'utils'),
-        ('weights', 'weights'),  # Bundle model weights from server/weights
+        ('assets/models', 'assets/models'),  # Bundle ONNX models from server/assets/models
         ('api', 'api'),  # API package (includes routes, schemas, endpoints)
         ('alembic.ini', '.'),  # Include alembic config in root of bundle
         ('migrations', 'migrations'),  # Include migrations directory

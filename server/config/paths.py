@@ -41,7 +41,7 @@ def get_data_dir() -> Path:
 # Initialize core paths
 BASE_DIR = get_base_dir()
 DATA_DIR = get_data_dir()
-WEIGHTS_DIR = BASE_DIR / "weights"
+MODELS_DIR = BASE_DIR / "assets" / "models"
 ALEMBIC_CONFIG_PATH = BASE_DIR / "alembic.ini"
 MIGRATIONS_DIR = BASE_DIR / "migrations"
 PROJECT_ROOT = BASE_DIR.parent if not IS_FROZEN else BASE_DIR
@@ -49,8 +49,8 @@ PROJECT_ROOT = BASE_DIR.parent if not IS_FROZEN else BASE_DIR
 
 # Helpers for specific path retrieval if needed dynamically,
 # though constants above are usually sufficient.
-def get_weights_dir() -> Path:
-    return WEIGHTS_DIR
+def get_models_dir() -> Path:
+    return MODELS_DIR
 
 
 def get_alembic_config_path() -> Path:
