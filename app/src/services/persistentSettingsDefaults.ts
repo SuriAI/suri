@@ -55,6 +55,14 @@ export interface PersistentSettingsSchema {
     lastChecked: string | null;
     cachedInfo: UpdateInfo | null;
   };
+  // Cloud Sync Settings
+  sync: {
+    enabled: boolean;
+    syncUrl: string;
+    syncKey: string;
+    intervalMinutes: number;
+    lastSyncedAt: string | null;
+  };
 }
 
 // Default values (shared between main and renderer processes)
@@ -96,5 +104,12 @@ export const defaultSettings: PersistentSettingsSchema = {
   updater: {
     lastChecked: null,
     cachedInfo: null,
+  },
+  sync: {
+    enabled: false,
+    syncUrl: "",
+    syncKey: "",
+    intervalMinutes: 30, // Default to every 30 minutes
+    lastSyncedAt: null,
   },
 };

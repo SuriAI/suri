@@ -182,6 +182,8 @@ declare global {
       message?: string;
       error?: string;
     }>;
+    restartManager: () => Promise<boolean>;
+    triggerNow: () => Promise<boolean>;
   }
 
   interface BackendServiceAPI {

@@ -278,11 +278,13 @@ export const Settings: React.FC<SettingsProps> = ({
     { id: "display", label: "Display", icon: "fa-solid fa-desktop" },
     { id: "notifications", label: "Notifications", icon: "fa-solid fa-bell" },
     { id: "database", label: "Database", icon: "fa-solid fa-database" },
+    /*
     {
       id: "cloudsync",
-      label: "Cloud Sync",
+      label: "Backup & Sync",
       icon: "fa-solid fa-cloud-arrow-up",
     },
+    */
     { id: "about", label: "About", icon: "fa-solid fa-circle-info" },
   ];
 
