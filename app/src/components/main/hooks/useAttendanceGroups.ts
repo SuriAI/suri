@@ -32,7 +32,7 @@ export function useAttendanceGroups() {
     new Map(),
   );
   const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => { });
-  const hasInitializedRef = useRef(false);
+
 
   // Sync ref with store
   useEffect(() => {
@@ -271,10 +271,6 @@ export function useAttendanceGroups() {
   ]);
 
   useEffect(() => {
-    // Guard: only initialize once on mount
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-
     const initializeAttendance = async () => {
       try {
         await loadSettings();
@@ -296,8 +292,6 @@ export function useAttendanceGroups() {
             groupToSelect = groups[0];
           }
 
-          await loadAttendanceDataRef.current();
-          // Direct call with resolved group
           await handleSelectGroup(groupToSelect);
         }
       } catch (error) {
@@ -309,13 +303,8 @@ export function useAttendanceGroups() {
     initializeAttendance().catch((error) => {
       console.error("Error in initializeAttendance:", error);
     });
-  }, [
-    handleSelectGroup,
-    loadSettings,
-    setCurrentGroupWithCache,
-    setError,
-    setAttendanceGroups,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     currentGroup,
