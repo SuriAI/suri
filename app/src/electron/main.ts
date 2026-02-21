@@ -531,6 +531,99 @@ ipcMain.handle("assets:list-recognition-sounds", async () => {
   }
 });
 
+// =============================================================================
+// CLOUD SYNC IPC HANDLERS
+// =============================================================================
+
+// Export all attendance data to a user-chosen file
+ipcMain.handle("sync:export-data", async () => {
+  try {
+    // 1. Fetch export payload from local backend
+    const url = `${backendService.getUrl()}/attendance/export`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(30000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Export failed: HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // 2. Show save dialog
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: "Export Suri Data",
+      defaultPath: `suri-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      filters: [{ name: "Suri Backup", extensions: ["json"] }],
+      buttonLabel: "Export",
+    });
+
+    if (canceled || !filePath) {
+      return { success: false, canceled: true };
+    }
+
+    // 3. Write JSON to file
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+
+    return { success: true, filePath };
+  } catch (error) {
+    console.error("[Main] Export failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+});
+
+// Import attendance data from a user-chosen file
+ipcMain.handle(
+  "sync:import-data",
+  async (_event, overwrite: boolean = false) => {
+    try {
+      // 1. Show open dialog
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        title: "Import Suri Data",
+        filters: [{ name: "Suri Backup", extensions: ["json"] }],
+        properties: ["openFile"],
+        buttonLabel: "Import",
+      });
+
+      if (canceled || filePaths.length === 0) {
+        return { success: false, canceled: true };
+      }
+
+      // 2. Read and parse JSON
+      const raw = await fs.readFile(filePaths[0], "utf-8");
+      const parsed = JSON.parse(raw);
+
+      // 3. POST to local backend import endpoint
+      const url = `${backendService.getUrl()}/attendance/import`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: parsed, overwrite_existing: overwrite }),
+        signal: AbortSignal.timeout(60000),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Import failed: ${err}`);
+      }
+
+      const result = await response.json();
+      return { success: true, message: result.message };
+    } catch (error) {
+      console.error("[Main] Import failed:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+);
+
 // System Stats IPC Handler
 ipcMain.handle("system:get-stats", () => {
   const cpu = process.getCPUUsage();

@@ -34,12 +34,16 @@ def get_data_dir() -> Path:
         data_dir = Path(env_data_dir)
     elif IS_FROZEN:
         if sys.platform == "win32":
-            app_data = Path(os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local")))
+            app_data = Path(
+                os.environ.get("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local"))
+            )
         elif sys.platform == "darwin":
             app_data = Path(os.path.expanduser("~/Library/Application Support"))
         else:
-            app_data = Path(os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
-        
+            app_data = Path(
+                os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))
+            )
+
         data_dir = app_data / APP_NAME / "data"
     else:
         data_dir = get_project_root() / "data"

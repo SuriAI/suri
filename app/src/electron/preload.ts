@@ -147,6 +147,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
       return ipcRenderer.invoke("assets:list-recognition-sounds");
     },
   },
+
+  // Cloud Sync API
+  sync: {
+    exportData: () => {
+      return ipcRenderer.invoke("sync:export-data");
+    },
+    importData: (overwrite: boolean = false) => {
+      return ipcRenderer.invoke("sync:import-data", overwrite);
+    },
+  },
 });
 
 // Window control functions

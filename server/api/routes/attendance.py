@@ -891,32 +891,59 @@ async def bulk_register_faces(
 
 # Export / Import Endpoints
 
+
 @router.post("/export", response_model=ExportDataResponse)
 async def export_data(
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """Export all attendance data as a structured snapshot for backup or cloud sync."""
     try:
-        groups = await repo.get_groups(active_only=False)
-        settings = await repo.get_settings()
-
         from sqlalchemy import select
-        from database.models import AttendanceMember as MemberModel, AttendanceRecord as RecordModel, AttendanceSession as SessionModel
+        from database.models import (
+            AttendanceMember as MemberModel,
+            AttendanceRecord as RecordModel,
+            AttendanceSession as SessionModel,
+        )
+
+        groups_orm = await repo.get_groups(active_only=False)
+        settings_orm = await repo.get_settings()
 
         members_result = await repo.session.execute(
             select(MemberModel).where(MemberModel.is_deleted.is_(False))
         )
-        members = members_result.scalars().all()
+        members_orm = members_result.scalars().all()
 
         records_result = await repo.session.execute(
             select(RecordModel).order_by(RecordModel.timestamp.desc())
         )
-        records = records_result.scalars().all()
+        records_orm = records_result.scalars().all()
 
         sessions_result = await repo.session.execute(
             select(SessionModel).order_by(SessionModel.date.desc())
         )
-        sessions = sessions_result.scalars().all()
+        sessions_orm = sessions_result.scalars().all()
+
+        # Serialize ORM objects through their Pydantic response schemas
+        # (model_validate with from_attributes=True reads SQLAlchemy model attributes)
+        groups = [
+            AttendanceGroupResponse.model_validate(g, from_attributes=True)
+            for g in groups_orm
+        ]
+        members = [
+            AttendanceMemberResponse.model_validate(m, from_attributes=True)
+            for m in members_orm
+        ]
+        records = [
+            AttendanceRecordResponse.model_validate(r, from_attributes=True)
+            for r in records_orm
+        ]
+        sessions = [
+            AttendanceSessionResponse.model_validate(s, from_attributes=True)
+            for s in sessions_orm
+        ]
+        settings = AttendanceSettingsResponse.model_validate(
+            settings_orm, from_attributes=True
+        )
 
         return ExportDataResponse(
             groups=groups,
@@ -955,19 +982,26 @@ async def import_data(
                 skipped += 1
                 continue
             if not existing:
-                await repo.create_group({
-                    "id": group.id,
-                    "name": group.name,
-                    "description": group.description,
-                    "settings": group.settings.model_dump() if group.settings else {},
-                })
+                await repo.create_group(
+                    {
+                        "id": group.id,
+                        "name": group.name,
+                        "description": group.description,
+                        "settings": (
+                            group.settings.model_dump() if group.settings else {}
+                        ),
+                    }
+                )
                 imported_groups += 1
             else:
                 # overwrite=True: update name/description
-                await repo.update_group(group.id, {
-                    "name": group.name,
-                    "description": group.description,
-                })
+                await repo.update_group(
+                    group.id,
+                    {
+                        "name": group.name,
+                        "description": group.description,
+                    },
+                )
                 imported_groups += 1
 
         # 2. Import members
@@ -978,7 +1012,8 @@ async def import_data(
                 continue
             if not existing:
                 from database.models import AttendanceMember as MemberModel
-                obj = await repo.session.merge(
+
+                await repo.session.merge(
                     MemberModel(
                         person_id=member.person_id,
                         group_id=member.group_id,
@@ -992,11 +1027,14 @@ async def import_data(
                 await repo.session.commit()
                 imported_members += 1
             else:
-                await repo.update_member(member.person_id, {
-                    "name": member.name,
-                    "role": member.role,
-                    "email": member.email,
-                })
+                await repo.update_member(
+                    member.person_id,
+                    {
+                        "name": member.name,
+                        "role": member.role,
+                        "email": member.email,
+                    },
+                )
                 imported_members += 1
 
         # 3. Import records (deduplicate by ID)
@@ -1014,34 +1052,38 @@ async def import_data(
                 continue
 
             if not existing_record:
-                await repo.add_record({
-                    "id": record.id,
-                    "person_id": record.person_id,
-                    "group_id": record.group_id,
-                    "timestamp": record.timestamp,
-                    "confidence": record.confidence,
-                    "location": record.location,
-                    "notes": record.notes,
-                    "is_manual": record.is_manual,
-                    "created_by": record.created_by,
-                })
+                await repo.add_record(
+                    {
+                        "id": record.id,
+                        "person_id": record.person_id,
+                        "group_id": record.group_id,
+                        "timestamp": record.timestamp,
+                        "confidence": record.confidence,
+                        "location": record.location,
+                        "notes": record.notes,
+                        "is_manual": record.is_manual,
+                        "created_by": record.created_by,
+                    }
+                )
                 imported_records += 1
             else:
                 skipped += 1
 
         # 4. Import sessions (upsert by ID — sessions are inherently idempotent)
         for session in data.sessions:
-            await repo.upsert_session({
-                "id": session.id,
-                "person_id": session.person_id,
-                "group_id": session.group_id,
-                "date": session.date,
-                "check_in_time": session.check_in_time,
-                "status": session.status,
-                "is_late": session.is_late,
-                "late_minutes": session.late_minutes,
-                "notes": session.notes,
-            })
+            await repo.upsert_session(
+                {
+                    "id": session.id,
+                    "person_id": session.person_id,
+                    "group_id": session.group_id,
+                    "date": session.date,
+                    "check_in_time": session.check_in_time,
+                    "status": session.status,
+                    "is_late": session.is_late,
+                    "late_minutes": session.late_minutes,
+                    "notes": session.notes,
+                }
+            )
             imported_sessions += 1
 
         return SuccessResponse(
