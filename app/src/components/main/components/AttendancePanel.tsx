@@ -74,7 +74,7 @@ const AttendanceRecordItem = memo(
         }
 
         // EARLY CHECK
-        if (diffMinutes < earlyThreshold) {
+        if (lateThresholdEnabled && diffMinutes < earlyThreshold) {
           const minutesEarly = Math.abs(diffMinutes);
           return {
             status: "early",
@@ -103,11 +103,10 @@ const AttendanceRecordItem = memo(
 
     return (
       <div
-        className={`text-xs bg-white/[0.02] border-b border-white/[0.05] p-2 relative group transition-colors hover:bg-white/[0.04] ${
-          timeStatus?.status !== "on-time"
+        className={`text-xs bg-white/[0.02] border-b border-white/[0.05] p-2 relative group transition-colors hover:bg-white/[0.04] ${timeStatus?.status !== "on-time"
             ? `border-l-2 ${timeStatus?.borderColor}`
             : ""
-        }`}
+          }`}
         title={
           classStartTime
             ? `Scheduled: ${classStartTime} | Late after: ${lateThresholdMinutes}m`
@@ -318,7 +317,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
+                    attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
