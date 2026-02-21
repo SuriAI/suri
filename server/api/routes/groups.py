@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, HTTPException, Query, Depends
 
 from api.schemas import (
@@ -15,6 +15,7 @@ from services.attendance_service import AttendanceService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/groups", tags=["groups"])
+
 
 @router.post("", response_model=AttendanceGroupResponse)
 async def create_group(
@@ -42,6 +43,7 @@ async def create_group(
         logger.error(f"Error creating group: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.get("", response_model=List[AttendanceGroupResponse])
 async def get_groups(
     active_only: bool = Query(True, description="Return only active groups"),
@@ -55,6 +57,7 @@ async def get_groups(
     except Exception as e:
         logger.error(f"Error getting groups: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/{group_id}", response_model=AttendanceGroupResponse)
 async def get_group(
@@ -73,6 +76,7 @@ async def get_group(
     except Exception as e:
         logger.error(f"Error getting group {group_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.put("/{group_id}", response_model=AttendanceGroupResponse)
 async def update_group(
@@ -111,6 +115,7 @@ async def update_group(
         logger.error(f"Error updating group {group_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.delete("/{group_id}", response_model=SuccessResponse)
 async def delete_group(
     group_id: str, repo: AttendanceRepository = Depends(get_repository)
@@ -128,6 +133,7 @@ async def delete_group(
     except Exception as e:
         logger.error(f"Error deleting group {group_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/{group_id}/persons", response_model=List[dict])
 async def get_group_persons(
@@ -177,6 +183,7 @@ async def get_group_persons(
         logger.error(f"Error getting group persons: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.post("/{group_id}/persons/{person_id}/register-face")
 async def register_face_for_group_person(
     group_id: str,
@@ -187,6 +194,7 @@ async def register_face_for_group_person(
     """Register face data for a specific person in a group with anti-duplicate protection"""
     try:
         from core.lifespan import face_recognizer
+
         service = AttendanceService(repo, face_recognizer=face_recognizer)
         try:
             return await service.register_face(group_id, person_id, request)
@@ -202,6 +210,7 @@ async def register_face_for_group_person(
         logger.error(f"Error registering face for group person: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.delete("/{group_id}/persons/{person_id}/face-data")
 async def remove_face_data_for_group_person(
     group_id: str,
@@ -211,6 +220,7 @@ async def remove_face_data_for_group_person(
     """Remove face data for a specific person in a group"""
     try:
         from core.lifespan import face_recognizer
+
         service = AttendanceService(repo, face_recognizer=face_recognizer)
         try:
             return await service.remove_face_data(group_id, person_id)
@@ -226,6 +236,7 @@ async def remove_face_data_for_group_person(
         logger.error(f"Error removing face data: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.post("/{group_id}/bulk-detect-faces")
 async def bulk_detect_faces(
     group_id: str, request: dict, repo: AttendanceRepository = Depends(get_repository)
@@ -233,6 +244,7 @@ async def bulk_detect_faces(
     """Detect faces in multiple uploaded images for bulk registration"""
     try:
         from core.lifespan import face_detector
+
         images_data = request.get("images", [])
         if not images_data:
             raise HTTPException(status_code=400, detail="No images provided")
@@ -246,6 +258,7 @@ async def bulk_detect_faces(
         else:
             raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.post("/{group_id}/bulk-register-faces")
 async def bulk_register_faces(
     group_id: str, request: dict, repo: AttendanceRepository = Depends(get_repository)
@@ -253,6 +266,7 @@ async def bulk_register_faces(
     """Register multiple faces in bulk"""
     try:
         from core.lifespan import face_recognizer
+
         registrations = request.get("registrations", [])
         if not registrations:
             raise HTTPException(status_code=400, detail="No registrations provided")

@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/members", tags=["members"])
 
+
 @router.get("", response_model=List[AttendanceMemberResponse])
 async def get_members(repo: AttendanceRepository = Depends(get_repository)):
     """Get all attendance members"""
@@ -27,6 +28,7 @@ async def get_members(repo: AttendanceRepository = Depends(get_repository)):
     except Exception as e:
         logger.error(f"Error getting members: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.post("", response_model=AttendanceMemberResponse)
 async def add_member(
@@ -65,6 +67,7 @@ async def add_member(
     except Exception as e:
         logger.error(f"Error adding member: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.post("/bulk", response_model=BulkMemberResponse)
 async def add_members_bulk(
@@ -118,6 +121,7 @@ async def add_members_bulk(
         logger.error(f"Error in bulk member add: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.get("/{person_id}", response_model=AttendanceMemberResponse)
 async def get_member(
     person_id: str, repo: AttendanceRepository = Depends(get_repository)
@@ -135,6 +139,7 @@ async def get_member(
     except Exception as e:
         logger.error(f"Error getting member {person_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.put("/{person_id}", response_model=AttendanceMemberResponse)
 async def update_member(
@@ -173,6 +178,7 @@ async def update_member(
         logger.error(f"Error updating member {person_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+
 @router.delete("/{person_id}", response_model=SuccessResponse)
 async def remove_member(
     person_id: str, repo: AttendanceRepository = Depends(get_repository)
@@ -190,6 +196,7 @@ async def remove_member(
     except Exception as e:
         logger.error(f"Error removing member {person_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.get("/group/{group_id}", response_model=List[AttendanceMemberResponse])
 async def get_group_members(

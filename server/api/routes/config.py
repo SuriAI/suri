@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
+
 @router.get("", response_model=AttendanceSettingsResponse)
 async def get_settings(repo: AttendanceRepository = Depends(get_repository)):
     """Get attendance settings"""
@@ -22,6 +23,7 @@ async def get_settings(repo: AttendanceRepository = Depends(get_repository)):
     except Exception as e:
         logger.error(f"Error getting settings: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 @router.put("", response_model=AttendanceSettingsResponse)
 async def update_settings(
