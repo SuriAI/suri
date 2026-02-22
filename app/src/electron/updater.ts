@@ -57,10 +57,17 @@ function extractSemverLikeVersion(input: string): string | null {
 /**
  * Parse semantic version string into comparable parts
  */
-function parseVersion(version: string): number[] {
-  // Remove 'v' prefix if present
-  const clean = version.replace(/^v/, "");
-  return clean.split(".").map((part) => parseInt(part, 10) || 0);
+// Helper to split version into numeric parts and pre-release tag
+function getVersionParts(
+  version: string,
+): { numeric: number[]; pre: string | null } {
+  const [v, ...preParts] = version.split("-");
+  const numeric = v
+    .replace(/^v/, "")
+    .split(".")
+    .map((part) => parseInt(part, 10) || 0);
+  const pre = preParts.length > 0 ? preParts.join("-") : null;
+  return { numeric, pre };
 }
 
 /**
@@ -68,17 +75,52 @@ function parseVersion(version: string): number[] {
  * Returns: 1 if a > b, -1 if a < b, 0 if equal
  */
 function compareVersions(a: string, b: string): number {
-  const partsA = parseVersion(a);
-  const partsB = parseVersion(b);
+  const partsA = getVersionParts(a);
+  const partsB = getVersionParts(b);
 
-  const maxLength = Math.max(partsA.length, partsB.length);
-
+  // 1. Compare Major.Minor.Patch
+  const maxLength = Math.max(partsA.numeric.length, partsB.numeric.length);
   for (let i = 0; i < maxLength; i++) {
-    const numA = partsA[i] || 0;
-    const numB = partsB[i] || 0;
-
+    const numA = partsA.numeric[i] || 0;
+    const numB = partsB.numeric[i] || 0;
     if (numA > numB) return 1;
     if (numA < numB) return -1;
+  }
+
+  // 2. If numeric parts are identical, check pre-release tags
+  // Rule: Stable version (no tag) is HIGHER than a pre-release (with tag)
+  if (!partsA.pre && partsB.pre) return 1;
+  if (partsA.pre && !partsB.pre) return -1;
+
+  // 3. If both have pre-release tags, compare segments (e.g., beta.10 vs beta.2)
+  if (partsA.pre && partsB.pre) {
+    const segA = partsA.pre.split(".");
+    const segB = partsB.pre.split(".");
+    const maxLen = Math.max(segA.length, segB.length);
+
+    for (let i = 0; i < maxLen; i++) {
+      const sA = segA[i];
+      const sB = segB[i];
+
+      if (sA === undefined) return -1;
+      if (sB === undefined) return 1;
+
+      const nA = parseInt(sA, 10);
+      const nB = parseInt(sB, 10);
+      const isNumA = !isNaN(nA) && /^\d+$/.test(sA);
+      const isNumB = !isNaN(nB) && /^\d+$/.test(sB);
+
+      if (isNumA && isNumB) {
+        if (nA > nB) return 1;
+        if (nA < nB) return -1;
+      } else if (isNumA || isNumB) {
+        // Numeric segments have lower priority than non-numeric
+        return isNumA ? -1 : 1;
+      } else {
+        if (sA > sB) return 1;
+        if (sA < sB) return -1;
+      }
+    }
   }
 
   return 0;
