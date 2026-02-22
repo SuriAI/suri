@@ -90,14 +90,15 @@ export function StartTimeChip({
       <button
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`group overflow-hidden relative flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all duration-300 ${disabled
-          ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
-          : isOpen
-            ? "bg-black/80 border border-cyan-500/50 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
-            : outdated
-              ? "bg-amber-900/20 border-none text-amber-200 hover:bg-amber-900/30 hover:border-amber-500/50"
-              : "bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/[0.07] hover:border-white/20 text-white/90"
-          }`}
+        className={`group overflow-hidden relative flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all duration-300 ${
+          disabled
+            ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
+            : isOpen
+              ? "bg-black/80 border border-cyan-500/50 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
+              : outdated
+                ? "bg-amber-900/20 border-none text-amber-200 hover:bg-amber-900/30 hover:border-amber-500/50"
+                : "bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/[0.07] hover:border-white/20 text-white/90"
+        }`}
         title={
           outdated
             ? "Start time may be outdated - click to update"
@@ -106,14 +107,16 @@ export function StartTimeChip({
       >
         <div className="flex items-baseline gap-1">
           <span
-            className={`font-mono text-base font-light tracking-tight ${outdated ? "text-amber-300" : "text-white"
-              }`}
+            className={`font-mono text-base font-light tracking-tight ${
+              outdated ? "text-amber-300" : "text-white"
+            }`}
           >
             {time}
           </span>
           <span
-            className={`text-[10px] font-medium uppercase ${outdated ? "text-amber-400/70" : "text-white/50"
-              }`}
+            className={`text-[10px] font-medium uppercase ${
+              outdated ? "text-amber-400/70" : "text-white/50"
+            }`}
           >
             {period}
           </span>
@@ -124,7 +127,6 @@ export function StartTimeChip({
           <div>
             <i className="fa-solid fa-triangle-exclamation text-[15px] text-amber-400 animate-pulse" />
           </div>
-
         )}
       </button>
 
