@@ -73,11 +73,15 @@ export class BackendProcessManager {
         ];
       }
 
-      const env = {
+      const env: Record<string, string | undefined> = {
         ...process.env,
         ENVIRONMENT: isDev() ? "development" : "production",
-        SURI_DATA_DIR: app.getPath("userData"),
       };
+
+      // In production, force data to AppData. In dev, let backend use repo root/data
+      if (!isDev()) {
+        env.SURI_DATA_DIR = app.getPath("userData");
+      }
 
       this.process = spawn(command, args, {
         stdio: "pipe",
