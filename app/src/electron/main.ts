@@ -71,7 +71,7 @@ app.whenReady().then(async () => {
 
     let baseDir: string;
     if (isDev()) {
-      baseDir = path.join(__dirname, "../public");
+      baseDir = path.join(__dirname, "../../public");
     } else {
       const appPath = app.getAppPath();
       baseDir = path.join(appPath, "dist-react");
