@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </h1>
       </div>
 
-      <div className="flex-1 px-3 space-y-10 overflow-y-auto custom-scroll pb-6">
+      <div className="flex-1 px-3 space-y-10 overflow-y-auto settings-sidebar-scroll pb-6">
         {/* GROUP MANAGEMENT SOURCE */}
         <section>
           <div className="px-3 mb-4 flex items-center justify-between">
@@ -123,11 +123,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         setRegistrationState(null, null);
                       }
                     }}
-                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                      isActive
+                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
                         ? "bg-white/[0.06] text-white"
                         : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
-                    }`}
+                      }`}
                   >
                     {/* Active Accent Bar */}
                     {isActive && (
@@ -159,11 +158,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                    isActive
+                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
                       ? "bg-white/[0.06] text-white"
                       : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
-                  }`}
+                    }`}
                 >
                   {/* Active Accent Bar */}
                   {isActive && (
