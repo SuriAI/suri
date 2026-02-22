@@ -198,7 +198,7 @@ export function Database({
           ) : (
             <i className="fa-solid fa-circle-exclamation mt-0.5" />
           )}
-          <span>{status.message}</span>
+          <span>{"message" in status ? status.message : ""}</span>
           {status.type !== "loading" && (
             <button
               onClick={() => setStatus({ type: "idle" })}

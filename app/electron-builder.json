@@ -1,8 +1,5 @@
 {
-  "files": [
-    "dist-electron/**/*",
-    "dist-react/**/*"
-  ],
+  "files": ["dist-electron/**/*", "dist-react/**/*"],
   "appId": "com.suri.app",
   "productName": "Suri AI Attendance Tracker",
   "icon": "./public/icons/suri_mark_logo_round_c.png",
