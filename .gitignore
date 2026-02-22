@@ -36,6 +36,7 @@ backend/*.pkg
 *.sqlite3
 face_database/
 attendance_database/
+data/
 
 # ===================================
 # LOGS

@@ -90,7 +90,10 @@ export class BackendProcessManager {
         env,
       });
 
-      const logFile = path.join(app.getPath("userData"), "backend-startup.log");
+      const logDir = isDev()
+        ? path.join(process.cwd(), "..", "data")
+        : app.getPath("userData");
+      const logFile = path.join(logDir, "backend-startup.log");
       fs.writeFileSync(
         logFile,
         `[${new Date().toISOString()}] Backend starting...\n`,
