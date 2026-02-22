@@ -43,9 +43,7 @@
 <br />
 
 <!-- INTRO -->
-**Suri** is an offline-first attendance solution designed for speed and data sovereignty. By executing the entire AI pipeline locally, Suri eliminates network latency and keeps biometric data strictly under local control.
-
-No servers. No cloud. Just the hardware.
+**Suri** is an offline-first attendance solution designed for speed and data privacy. By executing the entire AI pipeline locally, Suri eliminates network latency and keeps biometric data strictly under local control.
 
 <div align="center">
   <br />
@@ -68,7 +66,11 @@ No servers. No cloud. Just the hardware.
 </div>
 
 ---
+## Download
 
+[![Release](https://img.shields.io/github/v/release/SuriAI/suri?label=Latest%20Release&color=4caf50)](https://github.com/SuriAI/suri/releases/latest)
+
+---
 ## Documentation
 
 Dig into the specifics:
