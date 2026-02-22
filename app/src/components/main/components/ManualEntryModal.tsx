@@ -182,9 +182,8 @@ export const ManualEntryModal = ({
                       >
                         {/* Status dot */}
                         <div
-                          className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
-                            isPresent ? "bg-emerald-400" : "bg-white/20"
-                          }`}
+                          className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${isPresent ? "bg-emerald-400" : "bg-white/20"
+                            }`}
                         />
 
                         {/* Name */}
@@ -202,7 +201,7 @@ export const ManualEntryModal = ({
                           {hasFace === false && (
                             <span
                               className="flex items-center gap-1 text-[9px] font-medium text-amber-400/70 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded"
-                              title="Face not enrolled — this member cannot be recognized by the camera until their face is registered on this device."
+                              title="Face not enrolled! This member wasn't registered yet or was imported from another device. They must be enrolled on this device to be recognized by the camera."
                             >
                               <i className="fa-solid fa-user-slash text-[8px]"></i>
                               No face data
@@ -220,9 +219,9 @@ export const ManualEntryModal = ({
             {noFaceCount > 0 && (
               <p className="text-[9px] text-amber-400/60 leading-relaxed flex items-start gap-1.5">
                 <i className="fa-solid fa-circle-info mt-[1px] flex-shrink-0"></i>
-                Members marked "No face data" were imported from another device.
-                They must be re-enrolled on this device to be recognized by the
-                camera.
+                Members marked "No face data" weren't registered yet or were
+                imported from another device. They must be enrolled on this
+                device to be recognized by the camera.
               </p>
             )}
 
