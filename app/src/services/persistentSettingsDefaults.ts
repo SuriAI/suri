@@ -78,7 +78,7 @@ export const defaultSettings: PersistentSettingsSchema = {
     recognitionSoundUrl: "./assets/sounds/Default.mp3",
   },
   attendance: {
-    enableSpoofDetection: true,
+    enableSpoofDetection: false,
     lateThresholdEnabled: false,
     lateThresholdMinutes: 5,
     classStartTime: "00:00",
