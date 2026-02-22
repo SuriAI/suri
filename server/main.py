@@ -30,7 +30,6 @@ logger.info("Server script started")
 app = FastAPI(
     title="SURI",
     description="A desktop application for automated attendance tracking using Artificial Intelligence.",
-    version="1.0.0",
     lifespan=lifespan,
 )
 

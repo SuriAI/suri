@@ -1,7 +1,7 @@
 {
   "name": "suri",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "author": "SURI",
   "type": "module",
   "main": "dist-electron/electron/main.js",
