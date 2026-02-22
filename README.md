@@ -27,7 +27,7 @@
   </p>
 
   <p align="center">
-    The Enterprise-Grade, Local-First AI Attendance Platform.
+      A Real-Time, Privacy-Centric AI Attendance System.
     <br />
     <a href="docs/FEATURES.md"><strong>Explore the Features »</strong></a>
     <br />
