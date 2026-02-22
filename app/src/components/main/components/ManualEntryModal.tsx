@@ -7,11 +7,6 @@ import type {
   AttendanceGroup,
 } from "@/components/main/types";
 
-interface PersonFaceData {
-  person_id: string;
-  has_face_data: boolean;
-}
-
 interface ManualEntryModalProps {
   onClose: () => void;
   onSuccess: () => void;
@@ -41,9 +36,9 @@ export const ManualEntryModal = ({
     if (!currentGroup?.id) return;
     attendanceManager
       .getGroupPersons(currentGroup.id)
-      .then((persons: PersonFaceData[]) => {
+      .then((persons: AttendanceMember[]) => {
         const map = new Map<string, boolean>();
-        persons.forEach((p) => map.set(p.person_id, p.has_face_data));
+        persons.forEach((p) => map.set(p.person_id, p.has_face_data ?? false));
         setFaceDataMap(map);
       })
       .catch(() => {
