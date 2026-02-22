@@ -56,6 +56,8 @@ interface ContentPanelProps {
   } | null;
   addMemberHandler: (() => void) | null;
   hasSelectedMember: boolean;
+  dropdownGroups: AttendanceGroup[];
+  groupSections: Array<{ id: GroupSection; label: string; icon: string }>;
 }
 
 export const ContentPanel: React.FC<ContentPanelProps> = ({
@@ -91,78 +93,98 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   reportsExportHandlers,
   addMemberHandler,
   hasSelectedMember,
+  dropdownGroups,
+  groupSections,
 }) => {
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#090909]">
       {/* Section Header */}
-      <div className="px-8 py-6 border-b border-white/10">
+      <div className="px-10 py-10">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center">
             {activeSection === "group" ? (
-              <>
-                Group{" "}
-                <span className="text-sm text-white/60 ml-1">
-                  ({groupInitialSection || "Overview"})
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-widest mb-0.5">
+                  {dropdownValue
+                    ? dropdownGroups.find((g) => g.id === dropdownValue)?.name
+                    : "Group Management"}
                 </span>
-              </>
+                <span className="text-xl font-semibold text-white">
+                  {groupInitialSection
+                    ? groupSections.find((s) => s.id === groupInitialSection)
+                        ?.label
+                    : "Overview"}
+                </span>
+              </div>
             ) : (
-              activeSection.charAt(0).toUpperCase() + activeSection.slice(1)
-            )}
-          </h2>
-          {activeSection === "group" &&
-            groupInitialSection === "members" &&
-            validInitialGroup &&
-            addMemberHandler &&
-            members.length > 0 && (
-              <button
-                onClick={addMemberHandler}
-                className="px-4 py-2 text-xs bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.1] rounded text-white/70 hover:text-white/90 transition-colors flex items-center gap-2"
-              >
-                <i className="fa-solid fa-user-plus text-xs"></i>
-                Add Member
-              </button>
-            )}
-          {activeSection === "group" &&
-            groupInitialSection === "reports" &&
-            reportsExportHandlers && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={reportsExportHandlers.exportCSV}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 transition-all text-[11px] font-bold uppercase tracking-wider"
-                >
-                  <i className="fa-solid fa-file-csv text-[10px]"></i>
-                  Export CSV
-                </button>
-                <button
-                  onClick={reportsExportHandlers.print}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
-                >
-                  <i className="fa-solid fa-print text-[10px]"></i>
-                  Print
-                </button>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-white/30 uppercase tracking-widest mb-0.5">
+                  General
+                </span>
+                <span className="text-xl font-semibold text-white">
+                  {activeSection.charAt(0).toUpperCase() +
+                    activeSection.slice(1)}
+                </span>
               </div>
             )}
-          {activeSection === "group" &&
-            groupInitialSection === "registration" &&
-            (registrationSource || registrationMode) && (
-              <button
-                onClick={() => {
-                  if (registrationMode === "single" && hasSelectedMember) {
-                    setDeselectMemberTrigger(Date.now());
-                    return;
-                  }
-                  if (registrationMode) {
-                    setRegistrationState(registrationSource, null);
-                  } else if (registrationSource) {
-                    setRegistrationState(null, null);
-                  }
-                }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
-              >
-                <i className="fa-solid fa-arrow-left text-[10px]"></i>
-                Back
-              </button>
-            )}
+          </h2>
+
+          <div className="flex items-center gap-4">
+            {activeSection === "group" &&
+              groupInitialSection === "members" &&
+              validInitialGroup &&
+              addMemberHandler &&
+              members.length > 0 && (
+                <button
+                  onClick={addMemberHandler}
+                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-all flex items-center gap-2 font-bold uppercase tracking-wider"
+                >
+                  <i className="fa-solid fa-user-plus text-xs"></i>
+                  Add Member
+                </button>
+              )}
+            {activeSection === "group" &&
+              groupInitialSection === "reports" &&
+              reportsExportHandlers && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={reportsExportHandlers.exportCSV}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
+                  >
+                    <i className="fa-solid fa-file-csv text-[10px]"></i>
+                    Export CSV
+                  </button>
+                  <button
+                    onClick={reportsExportHandlers.print}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
+                  >
+                    <i className="fa-solid fa-print text-[10px]"></i>
+                    Print
+                  </button>
+                </div>
+              )}
+            {activeSection === "group" &&
+              groupInitialSection === "registration" &&
+              (registrationSource || registrationMode) && (
+                <button
+                  onClick={() => {
+                    if (registrationMode === "single" && hasSelectedMember) {
+                      setDeselectMemberTrigger(Date.now());
+                      return;
+                    }
+                    if (registrationMode) {
+                      setRegistrationState(registrationSource, null);
+                    } else if (registrationSource) {
+                      setRegistrationState(null, null);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-[11px] font-bold uppercase tracking-wider"
+                >
+                  <i className="fa-solid fa-arrow-left text-[10px]"></i>
+                  Back
+                </button>
+              )}
+          </div>
         </div>
       </div>
 

@@ -40,16 +40,16 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
       label: string;
       icon: string;
     }> = [
-        { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
-        { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
-        { id: "members", label: "Members", icon: "fa-solid fa-users" },
-        {
-          id: "registration",
-          label: "Registration",
-          icon: "fa-solid fa-id-card",
-        },
-        { id: "settings", label: "Configuration", icon: "fa-solid fa-sliders" },
-      ];
+      { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
+      { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
+      { id: "members", label: "Members", icon: "fa-solid fa-users" },
+      {
+        id: "registration",
+        label: "Registration",
+        icon: "fa-solid fa-id-card",
+      },
+      { id: "settings", label: "Configuration", icon: "fa-solid fa-sliders" },
+    ];
 
     const sections = [
       { id: "attendance", label: "Attendance", icon: "fa-solid fa-user-check" },
@@ -60,20 +60,17 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
     ];
 
     const mainContent = (
-      <div className="h-full flex bg-[#141414] text-white">
+      <div className="h-full flex bg-[#0c0c0c] text-white">
         <Sidebar
           activeSection={settings.activeSection}
           setActiveSection={settings.setActiveSection}
           groupInitialSection={settings.groupInitialSection}
           setGroupInitialSection={settings.setGroupInitialSection}
-          isGroupExpanded={settings.isGroupExpanded}
-          setIsGroupExpanded={settings.setIsGroupExpanded}
           dropdownGroups={settings.dropdownGroups}
           dropdownValue={settings.dropdownValue}
           onGroupSelect={props.onGroupSelect}
           setTriggerCreateGroup={settings.setTriggerCreateGroup}
           setRegistrationState={settings.setRegistrationState}
-          onBack={props.onBack}
           sections={sections}
           groupSections={groupSections}
         />
@@ -111,6 +108,8 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
           members={settings.members}
           reportsExportHandlers={settings.reportsExportHandlers}
           addMemberHandler={settings.addMemberHandler}
+          dropdownGroups={settings.dropdownGroups}
+          groupSections={groupSections}
         />
       </div>
     );
@@ -138,8 +137,16 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
             }}
             style={{ willChange: "transform, opacity" }}
             // Adjusted padding to account for custom window traffic lights
-            className="bg-[#0f0f0f] rounded-xl w-full max-w-[100%] md:h-[90vh] lg:h-[89vh] lg:max-w-[95%] shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden mt-6"
+            className="bg-[#0b0b0b] rounded-2xl w-full max-w-[100%] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] shadow-[0_50px_100px_rgba(0,0,0,0.8)] border border-white/[0.03] overflow-hidden mt-6 relative"
           >
+            {/* Floating Close Button */}
+            <button
+              onClick={props.onBack}
+              className="absolute top-2 right-2 z-50 text-white/20 hover:text-white transition-all duration-300 hover:rotate-90 bg-transparent border-none p-1.5"
+              title="Close Settings"
+            >
+              <i className="fa-solid fa-xmark text-lg"></i>
+            </button>
             {mainContent}
           </motion.div>
         </motion.div>

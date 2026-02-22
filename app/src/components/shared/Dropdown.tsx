@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 export interface DropdownOption<T = string> {
   value: T;
@@ -138,82 +139,86 @@ export function Dropdown<T extends string | number = string>({
         ></i>
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && !disabled && menuPosition && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-[9998]"
-            onClick={() => setIsOpen(false)}
-          />
-          {/* Options Container - Fixed positioning to escape scroll containers */}
-          <div
-            className="fixed z-[9999] bg-[#0f0f0f] border border-white/10 rounded-md shadow-lg overflow-hidden"
-            style={{
-              top: `${menuPosition.top}px`,
-              left: `${menuPosition.left}px`,
-              width: `${menuPosition.width}px`,
-            }}
-          >
-            {/* Scrollable Container with Max Height */}
+      {/* Dropdown Menu - Rendered via Portal for correct positioning in transformed containers */}
+      {isOpen &&
+        !disabled &&
+        menuPosition &&
+        createPortal(
+          <>
+            {/* Backdrop */}
             <div
-              className="overflow-y-auto custom-scroll"
-              style={{ maxHeight: `${maxHeight}px` }}
+              className="fixed inset-0 z-[9998]"
+              onClick={() => setIsOpen(false)}
+            />
+            {/* Options Container - Fixed positioning relative to viewport */}
+            <div
+              className="fixed z-[9999] bg-[#0c0c0c] border border-white/10 rounded-md shadow-2xl overflow-hidden"
+              style={{
+                top: `${menuPosition.top}px`,
+                left: `${menuPosition.left}px`,
+                width: `${menuPosition.width}px`,
+              }}
             >
-              {/* Empty State */}
-              {options.length === 0 ? (
-                <div className="px-3 py-3 text-center text-white/50 text-sm">
-                  {emptyMessage}
-                </div>
-              ) : (
-                <>
-                  {/* Placeholder Option */}
-                  {showPlaceholderOption && allowClear && (
-                    <>
+              {/* Scrollable Container with Max Height */}
+              <div
+                className="overflow-y-auto custom-scroll"
+                style={{ maxHeight: `${maxHeight}px` }}
+              >
+                {/* Empty State */}
+                {options.length === 0 ? (
+                  <div className="px-3 py-3 text-center text-white/50 text-sm">
+                    {emptyMessage}
+                  </div>
+                ) : (
+                  <>
+                    {/* Placeholder Option */}
+                    {showPlaceholderOption && allowClear && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onChange(null as T | null);
+                            setIsOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                            !value
+                              ? "bg-white/10 text-white"
+                              : "text-white/70 hover:bg-white/5 hover:text-white"
+                          } ${optionClassName}`}
+                        >
+                          {placeholder}
+                        </button>
+                        {options.length > 0 && (
+                          <div className="h-px bg-white/10 mx-2"></div>
+                        )}
+                      </>
+                    )}
+                    {/* Options */}
+                    {options.map((option) => (
                       <button
+                        key={String(option.value)}
                         type="button"
-                        onClick={() => {
-                          onChange(null as T | null);
-                          setIsOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                          !value
+                        onClick={() => handleSelect(option.value)}
+                        disabled={option.disabled}
+                        className={`w-full text-left px-3 py-2 text-sm transition-colors truncate ${
+                          value === option.value
                             ? "bg-white/10 text-white"
-                            : "text-white/70 hover:bg-white/5 hover:text-white"
+                            : option.disabled
+                              ? "text-white/30 cursor-not-allowed"
+                              : "text-white/70 hover:bg-white/5 hover:text-white"
                         } ${optionClassName}`}
+                        title={option.label}
                       >
-                        {placeholder}
+                        {option.label}
                       </button>
-                      {options.length > 0 && (
-                        <div className="h-px bg-white/10 mx-2"></div>
-                      )}
-                    </>
-                  )}
-                  {/* Options */}
-                  {options.map((option) => (
-                    <button
-                      key={String(option.value)}
-                      type="button"
-                      onClick={() => handleSelect(option.value)}
-                      disabled={option.disabled}
-                      className={`w-full text-left px-3 py-2 text-sm transition-colors truncate ${
-                        value === option.value
-                          ? "bg-white/10 text-white"
-                          : option.disabled
-                            ? "text-white/30 cursor-not-allowed"
-                            : "text-white/70 hover:bg-white/5 hover:text-white"
-                      } ${optionClassName}`}
-                      title={option.label}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </>
-              )}
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>,
+          document.body,
+        )}
     </div>
   );
 }
