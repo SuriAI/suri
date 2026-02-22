@@ -1,9 +1,5 @@
-import { useEffect, useRef, useCallback, lazy, Suspense } from "react";
-const Settings = lazy(() =>
-  import("@/components/settings").then((module) => ({
-    default: module.Settings,
-  })),
-);
+import { useEffect, useRef, useCallback } from "react";
+import { Settings } from "@/components/settings";
 import { attendanceManager, BackendService } from "@/services";
 import {
   useStreamState,
@@ -60,7 +56,7 @@ export default function Main() {
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => { });
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
@@ -543,7 +539,7 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
-              // trackingMode removed
+            // trackingMode removed
             />
 
             {/* New Cooldown Overlay */}
@@ -594,113 +590,102 @@ export default function Main() {
       />
 
       {showSettings && (
-        <Suspense
-          fallback={
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-              <div className="relative w-16 h-16">
-                <div className="absolute inset-0 border-4 border-white/10 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-cyan-400 rounded-full border-t-transparent animate-spin"></div>
-              </div>
-            </div>
-          }
-        >
-          <Settings
-            onBack={() => {
-              setShowSettings(false);
-              setGroupInitialSection(undefined);
-              setSettingsInitialSection(undefined);
-              loadAttendanceDataRef.current();
-            }}
-            isModal={true}
-            quickSettings={quickSettings}
-            onQuickSettingsChange={setQuickSettings}
-            audioSettings={audioSettings}
-            onAudioSettingsChange={setAudioSettings}
-            attendanceSettings={{
-              // trackingMode removed
-              lateThresholdEnabled:
-                (currentGroup?.settings as { late_threshold_enabled?: boolean })
-                  ?.late_threshold_enabled ?? false,
-              lateThresholdMinutes:
-                currentGroup?.settings?.late_threshold_minutes ?? 15,
-              classStartTime:
-                currentGroup?.settings?.class_start_time ?? "08:00",
-              attendanceCooldownSeconds: attendanceCooldownSeconds,
-              reLogCooldownSeconds: reLogCooldownSeconds,
-              enableSpoofDetection: enableSpoofDetection,
-            }}
-            onAttendanceSettingsChange={async (updates) => {
-              // trackingMode update logic removed
+        <Settings
+          onBack={() => {
+            setShowSettings(false);
+            setGroupInitialSection(undefined);
+            setSettingsInitialSection(undefined);
+            loadAttendanceDataRef.current();
+          }}
+          isModal={true}
+          quickSettings={quickSettings}
+          onQuickSettingsChange={setQuickSettings}
+          audioSettings={audioSettings}
+          onAudioSettingsChange={setAudioSettings}
+          attendanceSettings={{
+            // trackingMode removed
+            lateThresholdEnabled:
+              (currentGroup?.settings as { late_threshold_enabled?: boolean })
+                ?.late_threshold_enabled ?? false,
+            lateThresholdMinutes:
+              currentGroup?.settings?.late_threshold_minutes ?? 15,
+            classStartTime:
+              currentGroup?.settings?.class_start_time ?? "08:00",
+            attendanceCooldownSeconds: attendanceCooldownSeconds,
+            reLogCooldownSeconds: reLogCooldownSeconds,
+            enableSpoofDetection: enableSpoofDetection,
+          }}
+          onAttendanceSettingsChange={async (updates) => {
+            // trackingMode update logic removed
 
-              if (updates.enableSpoofDetection !== undefined) {
-                setEnableSpoofDetection(updates.enableSpoofDetection);
-              }
+            if (updates.enableSpoofDetection !== undefined) {
+              setEnableSpoofDetection(updates.enableSpoofDetection);
+            }
 
-              if (updates.attendanceCooldownSeconds !== undefined) {
-                setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds);
-                try {
-                  await attendanceManager.updateSettings({
-                    attendance_cooldown_seconds:
-                      updates.attendanceCooldownSeconds,
-                  });
-                } catch (error) {
-                  console.error("Failed to update cooldown setting:", error);
-                }
+            if (updates.attendanceCooldownSeconds !== undefined) {
+              setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds);
+              try {
+                await attendanceManager.updateSettings({
+                  attendance_cooldown_seconds:
+                    updates.attendanceCooldownSeconds,
+                });
+              } catch (error) {
+                console.error("Failed to update cooldown setting:", error);
               }
+            }
 
-              if (updates.reLogCooldownSeconds !== undefined) {
-                setReLogCooldownSeconds(updates.reLogCooldownSeconds);
-                try {
-                  await attendanceManager.updateSettings({
-                    relog_cooldown_seconds: updates.reLogCooldownSeconds,
-                  });
-                } catch (error) {
-                  console.error(
-                    "Failed to update re-log cooldown setting:",
-                    error,
-                  );
-                }
+            if (updates.reLogCooldownSeconds !== undefined) {
+              setReLogCooldownSeconds(updates.reLogCooldownSeconds);
+              try {
+                await attendanceManager.updateSettings({
+                  relog_cooldown_seconds: updates.reLogCooldownSeconds,
+                });
+              } catch (error) {
+                console.error(
+                  "Failed to update re-log cooldown setting:",
+                  error,
+                );
               }
+            }
 
-              if (
-                currentGroup &&
-                (updates.lateThresholdEnabled !== undefined ||
-                  updates.lateThresholdMinutes !== undefined ||
-                  updates.classStartTime !== undefined)
-              ) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  ...(updates.lateThresholdEnabled !== undefined && {
-                    late_threshold_enabled: updates.lateThresholdEnabled,
-                  }),
-                  ...(updates.lateThresholdMinutes !== undefined && {
-                    late_threshold_minutes: updates.lateThresholdMinutes,
-                  }),
-                  ...(updates.classStartTime !== undefined && {
-                    class_start_time: updates.classStartTime,
-                  }),
-                };
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, {
-                    settings: updatedSettings,
-                  });
-                  setCurrentGroup({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  });
-                } catch (error) {
-                  console.error("Failed to update attendance settings:", error);
-                }
+            if (
+              currentGroup &&
+              (updates.lateThresholdEnabled !== undefined ||
+                updates.lateThresholdMinutes !== undefined ||
+                updates.classStartTime !== undefined)
+            ) {
+              const updatedSettings = {
+                ...currentGroup.settings,
+                ...(updates.lateThresholdEnabled !== undefined && {
+                  late_threshold_enabled: updates.lateThresholdEnabled,
+                }),
+                ...(updates.lateThresholdMinutes !== undefined && {
+                  late_threshold_minutes: updates.lateThresholdMinutes,
+                }),
+                ...(updates.classStartTime !== undefined && {
+                  class_start_time: updates.classStartTime,
+                }),
+              };
+              try {
+                await attendanceManager.updateGroup(currentGroup.id, {
+                  settings: updatedSettings,
+                });
+                setCurrentGroup({
+                  ...currentGroup,
+                  settings: updatedSettings,
+                });
+              } catch (error) {
+                console.error("Failed to update attendance settings:", error);
               }
-            }}
-            initialGroupSection={groupInitialSection}
-            initialSection={settingsInitialSection}
-            currentGroup={currentGroup}
-            onGroupSelect={handleSelectGroup}
-            onGroupsChanged={() => loadAttendanceDataRef.current()}
-            initialGroups={attendanceGroups}
-          />
-        </Suspense>
+            }
+          }}
+          initialGroupSection={groupInitialSection}
+          initialSection={settingsInitialSection}
+          currentGroup={currentGroup}
+          onGroupSelect={handleSelectGroup}
+          onGroupsChanged={() => loadAttendanceDataRef.current()}
+          initialGroups={attendanceGroups}
+        />
       )}
 
       <DeleteConfirmationModal
