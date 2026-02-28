@@ -1,6 +1,5 @@
 import type { CaptureSource } from "@/components/group/sections/registration/types";
 
-// Helper hook or props could be passed here if needed
 interface CameraFeedProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   isStreaming: boolean;
@@ -11,7 +10,6 @@ interface CameraFeedProps {
   onStop: () => void;
   source: CaptureSource;
 
-  // Specific UI flags
   isCameraSelected: boolean;
 }
 
@@ -41,7 +39,6 @@ export function CameraFeed({
           muted
         />
 
-        {/* Not Streaming State */}
         {!isStreaming && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/90">
             <div className="text-center space-y-2">
@@ -68,14 +65,12 @@ export function CameraFeed({
           </div>
         )}
 
-        {/* Loading State */}
         {isStreaming && !isVideoReady && !cameraError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <div className="h-12 w-12 rounded-full border-2 border-white/20 border-t-cyan-400 animate-spin" />
           </div>
         )}
 
-        {/* Error State Overlay */}
         {cameraError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-4 text-center">
             <div className="space-y-2">
@@ -84,7 +79,6 @@ export function CameraFeed({
           </div>
         )}
 
-        {/* Capture Button */}
         {isStreaming && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
             <button
@@ -97,13 +91,10 @@ export function CameraFeed({
           </div>
         )}
 
-        {/* Start/Stop Controls */}
         <div className="absolute bottom-2 right-2 z-10">
           <button
             onClick={isStreaming ? onStop : onStart}
             disabled={!isStreaming && !isCameraSelected}
-            // Note: parent logic was: disabled = !isButtonEnabled
-            // isButtonEnabled = isStreaming || (isCameraSelected && !isStreaming)
             className={`px-2 py-2 rounded-md border text-xs font-medium transition-all min-w-[100px] ${
               isStreaming
                 ? "bg-red-500/40 border-red-400/50 text-red-100 hover:bg-red-500/50"

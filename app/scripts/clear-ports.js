@@ -1,17 +1,16 @@
 import { execSync } from "child_process";
 
-const ports = [3000, 8700]; // React and Backend ports
+const ports = [3000, 8700];
 
 function clearPort(port) {
   try {
     let pid;
     if (process.platform === "win32") {
-      // Windows: Find PID using netstat, filtering for LISTENING
       let output = "";
       try {
         output = execSync(`netstat -ano | findstr :${port}`).toString();
       } catch {
-        return; // Port is likely free
+        return;
       }
 
       const lines = output.trim().split("\n");
@@ -26,25 +25,20 @@ function clearPort(port) {
         }
       }
     } else {
-      // Linux/Mac: Find PID using lsof
       pid = execSync(`lsof -t -i:${port}`).toString().trim();
     }
 
     if (pid) {
-      console.log(
-        `[Port Cleaner] Found process ${pid} on port ${port}. Killing...`,
-      );
+      console.log(`Found process ${pid} on port ${port}. Killing...`);
       if (process.platform === "win32") {
         execSync(`taskkill /F /PID ${pid}`);
       } else {
         execSync(`kill -9 ${pid}`);
       }
     }
-  } catch (e) {
-    // console.log(`[Port Cleaner] Port ${port} is clear.`);
-  }
+  } catch (e) {}
 }
 
-console.log("[Port Cleaner] Checking for zombie processes...");
+console.log("Checking for zombie processes...");
 ports.forEach(clearPort);
-console.log("[Port Cleaner] Done.");
+console.log("Done.");

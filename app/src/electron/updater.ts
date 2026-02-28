@@ -6,13 +6,11 @@
 
 import { app, shell, BrowserWindow, net } from "electron";
 
-// GitHub repository configuration (suriAI organization)
 const GITHUB_OWNER = "suriAI";
 const GITHUB_REPO = "suri";
 const GITHUB_RELEASES_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
 const GITHUB_RELEASES_PAGE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
 
-// Cache configuration
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const NETWORK_TIMEOUT_MS = 8000; // 8 seconds - fail fast if no internet
 let lastCheckTime = 0;
@@ -57,7 +55,7 @@ function extractSemverLikeVersion(input: string): string | null {
 /**
  * Parse semantic version string into comparable parts
  */
-// Helper to split version into numeric parts and pre-release tag
+
 function getVersionParts(version: string): {
   numeric: number[];
   pre: string | null;
@@ -79,7 +77,6 @@ function compareVersions(a: string, b: string): number {
   const partsA = getVersionParts(a);
   const partsB = getVersionParts(b);
 
-  // 1. Compare Major.Minor.Patch
   const maxLength = Math.max(partsA.numeric.length, partsB.numeric.length);
   for (let i = 0; i < maxLength; i++) {
     const numA = partsA.numeric[i] || 0;
@@ -88,12 +85,9 @@ function compareVersions(a: string, b: string): number {
     if (numA < numB) return -1;
   }
 
-  // 2. If numeric parts are identical, check pre-release tags
-  // Rule: Stable version (no tag) is HIGHER than a pre-release (with tag)
   if (!partsA.pre && partsB.pre) return 1;
   if (partsA.pre && !partsB.pre) return -1;
 
-  // 3. If both have pre-release tags, compare segments (e.g., beta.10 vs beta.2)
   if (partsA.pre && partsB.pre) {
     const segA = partsA.pre.split(".");
     const segB = partsB.pre.split(".");
@@ -115,7 +109,6 @@ function compareVersions(a: string, b: string): number {
         if (nA > nB) return 1;
         if (nA < nB) return -1;
       } else if (isNumA || isNumB) {
-        // Numeric segments have lower priority than non-numeric
         return isNumA ? -1 : 1;
       } else {
         if (sA > sB) return 1;

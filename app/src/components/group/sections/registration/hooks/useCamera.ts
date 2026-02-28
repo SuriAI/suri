@@ -18,7 +18,6 @@ export function useCamera() {
       .catch(console.error);
   }, []);
 
-  // Load saved camera setting on mount
   useEffect(() => {
     persistentSettings.getUIState().then((uiState) => {
       if (uiState.selectedCamera) {
@@ -43,7 +42,6 @@ export function useCamera() {
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     getCameraDevices();
   }, [getCameraDevices]);
@@ -78,7 +76,6 @@ export function useCamera() {
       let deviceIdToUse: string | undefined = undefined;
       let cameraToSelect = selectedCamera;
 
-      // Logic to resolve valid camera ID
       if (cameraToSelect && videoDevices.length > 0) {
         const deviceExists = videoDevices.some(
           (device) => device.deviceId && device.deviceId === cameraToSelect,
@@ -168,7 +165,7 @@ export function useCamera() {
       }
     } catch (err) {
       console.error("Error starting camera:", err);
-      // Construct user-friendly error message
+
       let errorMessage =
         "Unable to access your camera. Please make sure your camera is connected and try again.";
 
@@ -194,7 +191,6 @@ export function useCamera() {
           errorName === "OverconstrainedError" ||
           errorName === "ConstraintNotSatisfiedError"
         ) {
-          // Fallback attempt would go here if needed, simplified for hook
           errorMessage = "Unable to start camera with current settings.";
         }
       }
@@ -205,7 +201,6 @@ export function useCamera() {
     }
   }, [selectedCamera, getCameraDevices, setSelectedCamera]);
 
-  // Monitor video state
   useEffect(() => {
     if (!isStreaming || !isVideoReady) return;
 
@@ -237,7 +232,6 @@ export function useCamera() {
     return () => clearInterval(interval);
   }, [isStreaming, isVideoReady, cameraError]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (streamRef.current) {

@@ -54,7 +54,6 @@ export function FaceAssignmentGrid({
                     : "border-amber-400/30 bg-amber-500/5"
               }`}
             >
-              {/* Face Preview */}
               <div className="relative aspect-square">
                 <img
                   src={face.previewUrl}
@@ -75,9 +74,7 @@ export function FaceAssignmentGrid({
                 )}
               </div>
 
-              {/* Assignment */}
               <div className="p-3 space-y-2">
-                {/* Member Select */}
                 {!face.assignedPersonId ? (
                   <div className="relative">
                     <select

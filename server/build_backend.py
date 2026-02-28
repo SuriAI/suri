@@ -30,7 +30,7 @@ def get_platform_info():
 
 def check_dependencies():
     """Check if required dependencies are installed"""
-    # Map package names to their import names
+
     package_imports = {
         "pyinstaller": "PyInstaller",
         "fastapi": "fastapi",
@@ -100,7 +100,6 @@ def build_backend(debug=False, onefile=True, clean=True):
     print("Starting Suri Backend Build Process")
     print("=" * 50)
 
-    # Get platform info
     platform_name, arch = get_platform_info()
     print(f"Platform: {platform_name}-{arch}")
 
@@ -112,12 +111,9 @@ def build_backend(debug=False, onefile=True, clean=True):
     if not install_pyinstaller():
         return False
 
-    # Clean build directories
     if clean:
         clean_build_dirs()
 
-    # Prepare build command
-    # When using a spec file, we only need basic options
     cmd = [
         sys.executable,
         "-m",
@@ -129,7 +125,6 @@ def build_backend(debug=False, onefile=True, clean=True):
     if debug:
         cmd.extend(["--debug", "all"])
 
-    # Add the spec file (spec file contains all other configuration)
     cmd.append("suri_backend.spec")
 
     print("⏳ Building backend... This may take several minutes")
@@ -137,19 +132,17 @@ def build_backend(debug=False, onefile=True, clean=True):
     start_time = time.time()
 
     try:
-        # Run PyInstaller
+
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode == 0:
             build_time = time.time() - start_time
             print(f"[SUCCESS] Build completed successfully in {build_time:.1f} seconds")
 
-            # Show output information
             dist_dir = Path("dist")
             if dist_dir.exists():
                 print(f"📁 Output directory: {dist_dir.absolute()}")
 
-                # List built files
                 for item in dist_dir.iterdir():
                     if item.is_file():
                         size_mb = item.stat().st_size / (1024 * 1024)
@@ -184,7 +177,7 @@ def test_executable():
     print("🧪 Testing executable...")
 
     try:
-        # Test with --help flag
+
         result = subprocess.run(
             [str(exe_path), "--help"], capture_output=True, text=True, timeout=10
         )
@@ -223,7 +216,6 @@ def main():
 
     args = parser.parse_args()
 
-    # Build the backend
     success = build_backend(
         debug=args.debug, onefile=not args.onedir, clean=not args.no_clean
     )

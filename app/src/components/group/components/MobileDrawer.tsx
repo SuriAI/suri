@@ -6,7 +6,6 @@ import { useGroupModals } from "@/components/group/hooks";
 import { MobileNav } from "@/components/group/components/MobileNav";
 
 export function MobileDrawer() {
-  // Zustand stores
   const { selectedGroup, groups, setSelectedGroup } = useGroupStore();
   const {
     isMobileDrawerOpen,
@@ -32,7 +31,6 @@ export function MobileDrawer() {
     };
   }, [isMobileDrawerOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isMobileDrawerOpen) {
@@ -47,14 +45,12 @@ export function MobileDrawer() {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 z-40 lg:hidden animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Drawer */}
       <div
         className={`
           fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white/[0.02]
@@ -67,7 +63,6 @@ export function MobileDrawer() {
         aria-label="Navigation menu"
       >
         <div className="h-full flex flex-col pt-12 pb-5">
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 border border-white/10"
@@ -88,7 +83,6 @@ export function MobileDrawer() {
             </svg>
           </button>
 
-          {/* Menu Header */}
           <div className="px-4 pt-1 pb-3 border-b border-white/[0.08]">
             <div className="flex items-center gap-2">
               <img
@@ -100,7 +94,6 @@ export function MobileDrawer() {
             </div>
           </div>
 
-          {/* Group Selector & Actions - Above Navigation */}
           <div className="px-4 py-3 border-b border-white/[0.08]">
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
@@ -136,7 +129,6 @@ export function MobileDrawer() {
             </div>
           </div>
 
-          {/* Navigation */}
           <div className="flex-1 min-h-0">
             <MobileNav
               activeSection={activeSection}

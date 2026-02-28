@@ -45,13 +45,10 @@ export function BulkRegistration({
 
   return (
     <div className="h-full flex flex-col overflow-hidden relative bg-[#0a0a0a]">
-      {/* Duplicate Confirmation Modal */}
       {pendingDuplicates && (
         <>
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40 z-40" />
 
-          {/* Modal */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-[1.5rem] border border-amber-500/30 bg-black/90 p-6 min-w-[360px] max-w-[95%] intro-y shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center">
@@ -116,7 +113,6 @@ export function BulkRegistration({
         </>
       )}
 
-      {/* Error Alert */}
       {error && (
         <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
@@ -130,7 +126,6 @@ export function BulkRegistration({
         </div>
       )}
 
-      {/* Main Content */}
       <div
         className={`flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent ${
           !registrationResults && uploadedFiles.length === 0
@@ -138,7 +133,6 @@ export function BulkRegistration({
             : ""
         }`}
       >
-        {/* Step 1: Upload Files */}
         {!registrationResults && (
           <BulkUploadArea
             uploadedCount={uploadedFiles.length}
@@ -148,7 +142,6 @@ export function BulkRegistration({
           />
         )}
 
-        {/* Step 2: Assign Members */}
         {detectedFaces.length > 0 && !registrationResults && (
           <FaceAssignmentGrid
             detectedFaces={detectedFaces}
@@ -162,7 +155,6 @@ export function BulkRegistration({
           />
         )}
 
-        {/* Step 3: Results */}
         {registrationResults && (
           <RegistrationResults
             results={registrationResults}

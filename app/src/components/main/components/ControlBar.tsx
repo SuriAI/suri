@@ -10,7 +10,6 @@ interface ControlBarProps {
   stopCamera: () => void;
   hasSelectedGroup: boolean;
   requestGroupSelection: () => void;
-  // Props for time chip
   lateTrackingEnabled?: boolean;
   classStartTime?: string;
   onStartTimeChange?: (newTime: string) => void;
@@ -29,7 +28,6 @@ export function ControlBar({
   classStartTime = "08:00",
   onStartTimeChange,
 }: ControlBarProps) {
-  // Check if a camera is selected and valid (exists in available devices)
   const isCameraSelected =
     !!selectedCamera &&
     selectedCamera.trim() !== "" &&
@@ -37,7 +35,7 @@ export function ControlBar({
   const hasCameraDevices = cameraDevices.length > 0;
   const canStartTracking =
     (isCameraSelected || hasCameraDevices) && !isStreaming && hasSelectedGroup;
-  // Button should be enabled if streaming (to allow stop) OR if ready to start
+
   const isButtonEnabled = isStreaming || canStartTracking;
 
   const handlePrimaryAction = () => {
@@ -58,7 +56,6 @@ export function ControlBar({
     <div>
       <div className="rounded-lg p-4 flex items-center justify-between min-h-[4rem] gap-4">
         <div className="flex items-center space-x-6">
-          {/* Camera Selection */}
           {cameraDevices.length > 0 && (
             <div className="flex flex-col items-start space-y-1">
               <div className="min-w-[200px]">
@@ -85,7 +82,6 @@ export function ControlBar({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Time Chip - Only show when late tracking is enabled and group selected */}
           {lateTrackingEnabled && hasSelectedGroup && onStartTimeChange && (
             <StartTimeChip
               startTime={classStartTime}
@@ -94,7 +90,6 @@ export function ControlBar({
             />
           )}
 
-          {/* Start/Stop Button */}
           <Tooltip
             content={
               isStreaming

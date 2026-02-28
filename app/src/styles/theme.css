@@ -1,4 +1,3 @@
-/* === THEME === */
 :root {
   font-family:
     "Inter",
@@ -65,7 +64,6 @@
   --text-tertiary: #a0a0a0;
   --text-muted: #606060;
 
-  /* Accent Color - Cyan (Single consistent accent) */
   --accent: #22d3ee;
   /* cyan-400 */
   --accent-hover: #06b6d4;
@@ -90,7 +88,6 @@
 
   font-synthesis: none;
   text-rendering: optimizeSpeed;
-  /* OPTIMIZED: Faster text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

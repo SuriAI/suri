@@ -31,10 +31,9 @@ export function FaceCapture({
   onSelectedMemberChange,
 }: FaceCaptureProps) {
   const dialog = useDialog();
-  // Store integration
+
   const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId);
 
-  // --- View State ---
   const [source, setSource] = useState<CaptureSource>(
     initialSource ?? "upload",
   );
@@ -47,14 +46,12 @@ export function FaceCapture({
     new Map(),
   );
 
-  // Handle pre-selection from deep links
   useEffect(() => {
     if (preSelectedId) {
       setSelectedMemberId(preSelectedId);
     }
   }, [preSelectedId]);
 
-  // --- Hooks ---
   const {
     videoRef,
     isStreaming,
@@ -94,7 +91,6 @@ export function FaceCapture({
 
   const framesReady = frames.length > 0;
 
-  // --- Lifecycle & Sync ---
   useEffect(() => {
     if (onSelectedMemberChange) {
       onSelectedMemberChange(!!selectedMemberId);
@@ -107,7 +103,6 @@ export function FaceCapture({
     }
   }, [deselectMemberTrigger]);
 
-  // --- Handlers ---
   const handleCaptureFromCamera = useCallback(() => {
     if (!videoRef.current || !selectedMemberId) return;
     const canvas = document.createElement("canvas");
@@ -151,7 +146,6 @@ export function FaceCapture({
 
   return (
     <div className="h-full flex flex-col overflow-hidden relative">
-      {/* Success Modal */}
       <Modal
         isOpen={!!successMessage}
         onClose={() => {
@@ -184,7 +178,6 @@ export function FaceCapture({
         </div>
       </Modal>
 
-      {/* Error Modal */}
       <Modal
         isOpen={!!globalError}
         onClose={() => setGlobalError(null)}

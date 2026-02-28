@@ -10,8 +10,7 @@ from core.lifespan import lifespan
 from api.endpoints import router
 from middleware.cors import setup_cors
 
-# Configure logging immediately
-# We need to do this BEFORE other logic runs
+
 if not logging.getLogger().handlers:
     from config.logging_config import get_logging_config
 
@@ -19,7 +18,7 @@ if not logging.getLogger().handlers:
         logging_config = get_logging_config()
         logging.config.dictConfig(logging_config)
     except Exception as e:
-        # Fallback if config fails
+
         logging.basicConfig(level=logging.INFO)
         print(f"Failed to load logging config: {e}")
 
@@ -33,10 +32,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure CORS
+
 setup_cors(app)
 
-# Include API router
+
 app.include_router(router)
 
 
@@ -107,11 +106,8 @@ async def get_available_models():
 if __name__ == "__main__":
     from database.migrate import run_migrations
 
-    # Run database migrations before starting the server
     run_migrations()
 
-    # logging_config is already applied at module level, but uvicorn needs it passed or it will reconfigure
-    # We re-fetch it to pass to uvicorn
     from config.logging_config import get_logging_config
 
     logging_config = get_logging_config()

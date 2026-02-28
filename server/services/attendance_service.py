@@ -67,13 +67,11 @@ class AttendanceService:
         """Compute attendance sessions from records using configurable late threshold"""
         sessions = []
 
-        # Create a map of existing sessions by person_id for quick lookup
         existing_sessions_map = {}
         if existing_sessions:
             for session in existing_sessions:
                 existing_sessions_map[session.person_id] = session
 
-        # Group records by person_id
         records_by_person = {}
         for record in records:
             person_id = record.person_id
@@ -81,7 +79,6 @@ class AttendanceService:
                 records_by_person[person_id] = []
             records_by_person[person_id].append(record)
 
-        # Parse class start time (format: "HH:MM")
         if not class_start_time:
             class_start_time = datetime.now().strftime("%H:%M")
 
@@ -93,7 +90,6 @@ class AttendanceService:
             day_start_hour = 8
             day_start_minute = 0
 
-        # Parse target date for comparison
         try:
             target_date_obj = datetime.strptime(target_date, "%Y-%m-%d").date()
         except (ValueError, TypeError):
@@ -141,7 +137,6 @@ class AttendanceService:
                 )
                 continue
 
-            # Sort records by timestamp (ascending)
             person_records.sort(key=lambda r: r.timestamp)
 
             first_record = person_records[0]
@@ -220,13 +215,11 @@ class AttendanceService:
         cooldown_seconds = settings.attendance_cooldown_seconds or 10
         relog_seconds = getattr(settings, "relog_cooldown_seconds", None) or 1800
 
-        # Enforce True Time using Monotonic Clock
         import time
 
         elapsed_seconds_since_boot = time.monotonic() - self._boot_time_mono
         true_time = self._boot_time_wall + timedelta(seconds=elapsed_seconds_since_boot)
 
-        # System clock check (optional warning)
         os_time = datetime.now()
         time_drift = abs((os_time - true_time).total_seconds())
         if time_drift > 60:
@@ -274,7 +267,6 @@ class AttendanceService:
                         error=f"Duplicate log blocked. Wait {int(relog_seconds - time_diff)}s.",
                     )
 
-        # Create attendance record
         record_id = self.generate_id()
         timestamp = current_time
 
@@ -293,7 +285,6 @@ class AttendanceService:
         # Add record
         await self.repo.add_record(record_data)
 
-        # Create or update session for today
         today_str = timestamp.strftime("%Y-%m-%d")
 
         # Get group settings for late threshold calculation
@@ -371,7 +362,6 @@ class AttendanceService:
 
         await self.repo.upsert_session(session_data)
 
-        # Broadcast attendance event
         if self.ws_manager:
             broadcast_message = {
                 "type": "attendance_event",
@@ -418,7 +408,6 @@ class AttendanceService:
         if member.group_id != group_id:
             raise ValueError("Member does not belong to this group")
 
-        # Decode and validate image
         image_data = request.get("image")
         bbox = request.get("bbox")
 
@@ -437,7 +426,6 @@ class AttendanceService:
         if landmarks_5 is None:
             raise ValueError("Landmarks required from frontend face detection")
 
-        # Register the face
         logger.info(f"Registering face for {person_id} in group {group_id}")
 
         result = await self.face_recognizer.register_person(
@@ -479,7 +467,6 @@ class AttendanceService:
         if member.group_id != group_id:
             raise ValueError("Member does not belong to this group")
 
-        # Remove face data
         result = await self.face_recognizer.remove_person(person_id)
 
         if result["success"]:
@@ -508,7 +495,7 @@ class AttendanceService:
 
         for idx, image_data in enumerate(images_data):
             try:
-                # Decode image
+
                 image_base64 = image_data.get("image")
                 image_id = image_data.get("id", f"image_{idx}")
 
@@ -537,7 +524,6 @@ class AttendanceService:
                     )
                     continue
 
-                # Process each detected face
                 processed_faces = []
                 for face in detections:
                     processed_faces.append(

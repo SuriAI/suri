@@ -68,7 +68,6 @@ export function useFaceCapture(
           );
         }
 
-        // Get highest confidence face
         const bestFace = detection.faces.reduce(
           (best, current) =>
             (current.confidence ?? 0) > (best.confidence ?? 0) ? current : best,

@@ -45,7 +45,6 @@ export function useReportTransform(
     return map;
   }, [sessions]);
 
-  // Aggregate Raw Records for Time Out Calculation
   const recordStatsMap = useMemo(() => {
     // Key: personId_dateString
     // Value: { min: Date, max: Date, durationStr: string }
@@ -146,7 +145,6 @@ export function useReportTransform(
           totalHours = recordStats.durationHrs;
         }
 
-        // --- DYNAMIC LATE LOGIC ---
         // We override the backend's static "is_late" with a dynamic calculation based on current settings.
         // This allows the user to change the Class Start Time and immediately see updated reports.
 

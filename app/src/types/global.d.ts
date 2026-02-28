@@ -11,7 +11,6 @@ import type {
 
 export {};
 
-// Update info from GitHub releases
 export interface UpdateInfo {
   currentVersion: string;
   latestVersion: string;

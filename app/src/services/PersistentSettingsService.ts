@@ -15,18 +15,11 @@ class PersistentSettingsService {
     this.scope = scopeId;
   }
 
-  /**
-   * Helper to return a scoped key if a scope is set.
-   * Format: orgs.[scopeId].[key]
-   */
   private scopedKey(key: string): string {
     if (!this.scope) return key;
     return `orgs.${this.scope}.${key}`;
   }
 
-  /**
-   * Get the store API from window.electronAPI (with type safety)
-   */
   private getStoreAPI(): StoreAPI | null {
     if (typeof window === "undefined") return null;
     // Type assertion for window.electronAPI (defined in global.d.ts)
@@ -36,9 +29,6 @@ class PersistentSettingsService {
     return electronAPI?.store || null;
   }
 
-  /**
-   * Get a value from the store
-   */
   async get<T = unknown>(key: string): Promise<T | undefined> {
     const store = this.getStoreAPI();
     if (!store) return undefined;
@@ -46,9 +36,6 @@ class PersistentSettingsService {
     return store.get(finalKey) as Promise<T | undefined>;
   }
 
-  /**
-   * Set a value in the store
-   */
   async set(key: string, value: unknown): Promise<void> {
     const store = this.getStoreAPI();
     if (!store) return;
@@ -56,9 +43,6 @@ class PersistentSettingsService {
     await store.set(finalKey, value);
   }
 
-  /**
-   * Delete a value from the store
-   */
   async delete(key: string): Promise<void> {
     const store = this.getStoreAPI();
     if (!store) return;
@@ -66,22 +50,12 @@ class PersistentSettingsService {
     await store.delete(finalKey);
   }
 
-  /**
-   * Get all store data
-   */
   async getAll(): Promise<Record<string, unknown>> {
     const store = this.getStoreAPI();
     if (!store) return {};
     return await store.getAll();
   }
 
-  // ============================================================================
-  // Convenience methods for specific settings
-  // ============================================================================
-
-  /**
-   * QuickSettings (Display)
-   */
   async getQuickSettings(): Promise<QuickSettings> {
     const settings = await this.get<QuickSettings>("quickSettings");
 
@@ -98,9 +72,6 @@ class PersistentSettingsService {
     await this.set("quickSettings", settings);
   }
 
-  /**
-   * Audio Settings
-   */
   async getAudioSettings(): Promise<PersistentSettingsSchema["audio"]> {
     const settings = await this.get<PersistentSettingsSchema["audio"]>("audio");
 
@@ -119,9 +90,6 @@ class PersistentSettingsService {
     await this.set("audio", { ...current, ...settings });
   }
 
-  /**
-   * Attendance Settings
-   */
   async getAttendanceSettings() {
     const settings =
       await this.get<typeof defaultSettings.attendance>("attendance");
@@ -144,7 +112,6 @@ class PersistentSettingsService {
   async setAttendanceSettings(
     settings: Partial<{
       enableSpoofDetection: boolean;
-      // trackingMode removed
       lateThresholdEnabled: boolean;
       lateThresholdMinutes: number;
       classStartTime: string;
@@ -156,9 +123,6 @@ class PersistentSettingsService {
     await this.set("attendance", { ...current, ...settings });
   }
 
-  /**
-   * UI State
-   */
   async getUIState(): Promise<PersistentSettingsSchema["ui"]> {
     const state = await this.get<PersistentSettingsSchema["ui"]>("ui");
 
@@ -175,7 +139,6 @@ class PersistentSettingsService {
   async setUIState(
     state: Partial<PersistentSettingsSchema["ui"]>,
   ): Promise<void> {
-    // Use granular updates to prevent race conditions (read-modify-write patterns were overwriting each other)
     // electron-store supports dot notation for nested updates
     const updates = Object.entries(state).map(([key, value]) => {
       return this.set(`ui.${key}`, value);
@@ -184,9 +147,6 @@ class PersistentSettingsService {
     await Promise.all(updates);
   }
 
-  /**
-   * Report Views (per group)
-   */
   async getReportViews(groupId: string): Promise<unknown[]> {
     const views = await this.get<Record<string, unknown[]>>("reportViews");
     return views?.[groupId] || [];
@@ -198,9 +158,6 @@ class PersistentSettingsService {
     await this.set("reportViews", { ...allViews, [groupId]: views });
   }
 
-  /**
-   * Report Scratchpad (Transient tweaks)
-   */
   async getReportScratchpad(groupId: string): Promise<unknown> {
     const scratchpad =
       (await this.get<Record<string, unknown>>("reportScratchpad")) || {};
@@ -240,9 +197,6 @@ class PersistentSettingsService {
     }
   }
 
-  /**
-   * Updater Info
-   */
   async getUpdaterInfo(): Promise<PersistentSettingsSchema["updater"]> {
     const info = await this.get<PersistentSettingsSchema["updater"]>("updater");
     return info || defaultSettings.updater;
@@ -255,9 +209,6 @@ class PersistentSettingsService {
     await this.set("updater", { ...current, ...info });
   }
 
-  /**
-   * Attendance Cooldowns
-   */
   async getCooldowns(): Promise<Record<string, unknown>> {
     const cooldowns = await this.get<Record<string, unknown>>(
       "attendanceCooldowns",
@@ -269,9 +220,6 @@ class PersistentSettingsService {
     await this.set("attendanceCooldowns", cooldowns);
   }
 
-  /**
-   * Cloud Sync Settings
-   */
   async getSyncSettings(): Promise<PersistentSettingsSchema["sync"]> {
     const settings = await this.get<PersistentSettingsSchema["sync"]>("sync");
 

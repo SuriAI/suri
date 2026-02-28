@@ -66,7 +66,6 @@ export function useBackendService(options: UseBackendServiceOptions) {
     backendServiceReadyRef,
   } = options;
 
-  // Zustand stores
   const {
     setIsStreaming,
     setIsVideoLoading,

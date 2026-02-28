@@ -40,16 +40,16 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
       label: string;
       icon: string;
     }> = [
-        { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
-        { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
-        { id: "members", label: "Members", icon: "fa-solid fa-users" },
-        {
-          id: "registration",
-          label: "Registration",
-          icon: "fa-solid fa-id-card",
-        },
-        { id: "settings", label: "Configuration", icon: "fa-solid fa-sliders" },
-      ];
+      { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
+      { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
+      { id: "members", label: "Members", icon: "fa-solid fa-users" },
+      {
+        id: "registration",
+        label: "Registration",
+        icon: "fa-solid fa-id-card",
+      },
+      { id: "settings", label: "Configuration", icon: "fa-solid fa-sliders" },
+    ];
 
     const sections = [
       { id: "attendance", label: "Attendance", icon: "fa-solid fa-user-check" },
@@ -136,10 +136,8 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
               mass: 0.5,
             }}
             style={{ willChange: "transform, opacity" }}
-            // Adjusted padding to account for custom window traffic lights
             className="bg-[#0b0b0b] rounded-2xl w-full max-w-[100%] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/[0.03] overflow-hidden mt-6 relative"
           >
-            {/* Floating Close Button */}
             <button
               onClick={props.onBack}
               className="absolute top-2 right-2 z-50 text-white/20 hover:text-white transition-all duration-300 bg-transparent border-none p-1.5"

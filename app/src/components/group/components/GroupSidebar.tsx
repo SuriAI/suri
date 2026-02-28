@@ -10,7 +10,6 @@ interface GroupSidebarProps {
 }
 
 export function GroupSidebar({ onBack }: GroupSidebarProps) {
-  // Zustand stores
   const { selectedGroup, groups, setSelectedGroup } = useGroupStore();
   const { activeSection, isSidebarCollapsed, setActiveSection, toggleSidebar } =
     useGroupUIStore();
@@ -23,13 +22,11 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
         ${isSidebarCollapsed ? "w-16" : "w-64"} h-full
       `}
     >
-      {/* Sidebar Header - Group + Collapse Button */}
       <GroupHeader
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebar}
       />
 
-      {/* Group Selector Section - Above Navigation */}
       {!isSidebarCollapsed && (
         <div className="px-4 py-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
@@ -55,7 +52,6 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
                 allowClear={true}
               />
             </div>
-            {/* New Group Button */}
             <Tooltip content="New Group" position="top">
               <button
                 onClick={openCreateGroup}
@@ -69,7 +65,6 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
         </div>
       )}
 
-      {/* Navigation Items */}
       <GroupNav
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -77,7 +72,6 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
         isCollapsed={isSidebarCollapsed}
       />
 
-      {/* Close Button at Bottom */}
       <div
         className={`py-3 border-t border-white/[0.08] mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
       >

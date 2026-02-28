@@ -47,7 +47,6 @@ export const VideoCanvas = memo(function VideoCanvas({
         </div>
       )}
 
-      {/* Minimalist Video Loader */}
       {isVideoLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none z-15">
           <div className="flex flex-col items-center">
@@ -56,7 +55,6 @@ export const VideoCanvas = memo(function VideoCanvas({
         </div>
       )}
 
-      {/* Camera Icon - Show when not streaming (before Start Tracking) */}
       {!isStreaming && !isVideoLoading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-15">
           <div className="flex flex-col items-center gap-3 px-6 text-center">

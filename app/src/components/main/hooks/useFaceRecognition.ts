@@ -47,7 +47,6 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
     loadAttendanceDataRef,
   } = options;
 
-  // Zustand stores
   const {
     currentRecognitionResults,
     setCurrentRecognitionResults,
@@ -166,7 +165,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
               }
 
               const { memberName } = memberResult;
-              const trackIdStr = `track_${face.track_id}`; // Unified track ID format
+              const trackIdStr = `track_${face.track_id}`;
               const currentTime = Date.now();
 
               startTransition(() => {
@@ -250,11 +249,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                   try {
                     const actualConfidence = face.confidence;
 
-                    // trackingMode check removed - always auto
                     const currentTime = Date.now();
-                    // Scoped Cooldown Key: personId + groupId
-                    // This ensures a student is only "blocked" for this specific class.
-                    // If they go to another class (different Group ID), they are fresh.
                     const cooldownKey = `${response.person_id}-${currentGroupValue.id}`;
                     const cooldownInfo =
                       persistentCooldownsRef.current.get(cooldownKey);
@@ -459,8 +454,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                 result: { ...response, name: memberName, memberName },
               };
             } else if (response.success) {
-              // "Unknown" response - BUT check if we have memory of this track!
-              const trackIdStr = `track_${face.track_id}`; // Unified track ID format (was unknown_track_)
+              const trackIdStr = `track_${face.track_id}`;
               const currentTime = Date.now();
 
               // Check store for existing identity

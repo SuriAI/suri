@@ -202,20 +202,20 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                     await websocket.send_text(json.dumps(response_data))
 
             except WebSocketDisconnect:
-                # Connection closed by client, exit gracefully
+
                 logger.info(
                     f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
                 )
                 break
             except Exception as e:
-                # Check if it's a connection-related error
+
                 error_str = str(e).lower()
                 if "disconnect" in error_str or "close" in error_str:
                     logger.info(
                         f"[WebSocket] Client {client_id} disconnected due to connection error: {e}"
                     )
                     break
-                # Only log if it's not a connection-related error
+
                 logger.error(
                     f"[WebSocket] Detection processing error for client {client_id}: {e}"
                 )
@@ -230,7 +230,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         )
                     )
                 except (WebSocketDisconnect, RuntimeError) as send_error:
-                    # Connection already closed, ignore
+
                     logger.info(
                         f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}"
                     )
@@ -268,7 +268,6 @@ async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
             pass
 
     await notification_manager.connect(websocket, client_id, enable_tracking=False)
-    # Notification client connected
 
     try:
         while True:
@@ -291,7 +290,7 @@ async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
                     break
 
     except WebSocketDisconnect:
-        # Notification client disconnected
+
         pass
     except Exception as e:
         logger.error(f"WebSocket notification error: {e}")

@@ -1,4 +1,3 @@
-/* === SMOOTH LOADER ANIMATIONS === */
 @keyframes smooth-spin {
   from {
     transform: rotate(0deg);
@@ -108,7 +107,6 @@
   );
 }
 
-/* Gradient Animation */
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 8s ease infinite;

@@ -25,7 +25,6 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     lastVideoRectUpdateRef,
   } = options;
 
-  // Zustand stores
   const { currentDetections, currentRecognitionResults } = useDetectionStore();
   const { isStreaming } = useCameraStore();
   const { persistentCooldowns, currentGroup } = useAttendanceStore();

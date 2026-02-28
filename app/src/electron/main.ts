@@ -57,10 +57,6 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-// =============================================================================
-// APP LIFECYCLE
-// =============================================================================
-
 app.whenReady().then(async () => {
   registerAllHandlers();
 

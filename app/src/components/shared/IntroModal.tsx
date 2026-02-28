@@ -93,7 +93,6 @@ export function IntroModal() {
   return (
     <Modal isOpen={true} maxWidth="md" hideCloseButton={true}>
       <div className="relative overflow-hidden -m-5">
-        {/* Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/5">
           <div
             className="h-full bg-cyan-500 transition-all duration-300 ease-out"

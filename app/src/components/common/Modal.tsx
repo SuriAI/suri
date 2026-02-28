@@ -22,7 +22,6 @@ export function Modal({
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on escape key
   useEffect(() => {
     if (!isOpen || !onClose) return;
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-// Hook for bulk registration logic
+
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
 import type {
   DetectedFace,
@@ -14,7 +14,6 @@ import {
 
 const API_BASE_URL = "http://127.0.0.1:8700";
 
-// Type for pending duplicate files that need confirmation
 export interface PendingDuplicateFiles {
   duplicates: File[];
   newFiles: File[];
@@ -34,7 +33,6 @@ export function useBulkRegistration(
     BulkRegistrationResult[] | null
   >(null);
 
-  // Pending duplicates that need user confirmation
   const [pendingDuplicates, setPendingDuplicates] =
     useState<PendingDuplicateFiles | null>(null);
 
@@ -198,7 +196,6 @@ export function useBulkRegistration(
     [uploadedFiles, group.id, createFacePreview],
   );
 
-  // Helper to check if a file is a duplicate (same name and size)
   const isFileDuplicate = useCallback(
     (file: File): boolean => {
       return uploadedFiles.some(
@@ -209,14 +206,13 @@ export function useBulkRegistration(
     [uploadedFiles],
   );
 
-  // Process files (either new or after duplicate confirmation)
   const processFiles = useCallback(
     async (filesToProcess: File[]) => {
       if (filesToProcess.length === 0) return;
 
       const startIndex = uploadedFiles.length;
       setUploadedFiles((prev) => [...prev, ...filesToProcess]);
-      // Append new files faces detection
+
       await handleDetectFaces(filesToProcess, startIndex);
     },
     [handleDetectFaces, uploadedFiles.length],
@@ -232,7 +228,6 @@ export function useBulkRegistration(
 
       if (imageFiles.length === 0) return;
 
-      // Check for duplicates
       const duplicates: File[] = [];
       const newFiles: File[] = [];
 
@@ -244,19 +239,16 @@ export function useBulkRegistration(
         }
       }
 
-      // If there are duplicates, show confirmation modal
       if (duplicates.length > 0) {
         setPendingDuplicates({ duplicates, newFiles });
         return;
       }
 
-      // No duplicates, process all files directly
       await processFiles(newFiles);
     },
     [isFileDuplicate, processFiles],
   );
 
-  // Confirm adding duplicate files
   const handleConfirmDuplicates = useCallback(async () => {
     if (!pendingDuplicates) return;
 
@@ -268,7 +260,6 @@ export function useBulkRegistration(
     await processFiles(allFiles);
   }, [pendingDuplicates, processFiles]);
 
-  // Cancel duplicate upload - only add new files
   const handleCancelDuplicates = useCallback(async () => {
     if (!pendingDuplicates) return;
 
@@ -280,7 +271,6 @@ export function useBulkRegistration(
     }
   }, [pendingDuplicates, processFiles]);
 
-  // Dismiss duplicate modal without adding any files
   const handleDismissDuplicates = useCallback(() => {
     setPendingDuplicates(null);
   }, []);

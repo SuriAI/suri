@@ -1,4 +1,3 @@
-/* === MAIN MENU === */
 .main-menu {
   display: flex;
   flex-direction: column;
@@ -151,7 +150,6 @@
   border-radius: 50%;
 }
 
-/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .main-menu {
     gap: 1.5rem;

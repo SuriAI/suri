@@ -33,7 +33,6 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     processCurrentFrameRef,
   } = options;
 
-  // Zustand store
   const {
     detectionFps,
     currentDetections,

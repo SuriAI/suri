@@ -51,7 +51,6 @@ export function CameraQueue({
     "all" | "registered" | "non-registered"
   >("all");
 
-  // Use camera hook - get all needed values for camera selection
   const {
     videoRef,
     cameraDevices,
@@ -96,7 +95,6 @@ export function CameraQueue({
     return result;
   }, [members, memberSearch, registrationFilter]);
 
-  // Setup member queue
   const setupQueue = useCallback((selectedMembers: AttendanceMember[]) => {
     const queue: QueuedMember[] = selectedMembers.map((member) => ({
       personId: member.person_id,
@@ -120,7 +118,6 @@ export function CameraQueue({
     }
   }, [completedMembers, totalMembers, isProcessing]);
 
-  // Capture from camera
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !currentMember) {
       return;
@@ -167,7 +164,6 @@ export function CameraQueue({
     setError(null);
 
     try {
-      // Detect face
       const detection = await backendService.detectFaces(base64Payload, {
         model_type: "face_detector",
       });
@@ -194,7 +190,6 @@ export function CameraQueue({
         );
       }
 
-      // Update status
       setMemberQueue((prev) =>
         prev.map((m, idx) =>
           idx === currentIndex
@@ -207,7 +202,6 @@ export function CameraQueue({
         ),
       );
 
-      // Register face
       const result = await attendanceManager.registerFaceForGroupPerson(
         group.id,
         currentMember.personId,
@@ -280,7 +274,6 @@ export function CameraQueue({
     videoRef,
   ]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (!queueStarted || !currentMember) return;
@@ -343,12 +336,10 @@ export function CameraQueue({
     capturePhoto,
   ]);
 
-  // Camera cleanup on unmount
   useEffect(() => () => stopCamera(), [stopCamera]);
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#0f0f0f] text-white">
-      {/* Error Alert */}
       {error && (
         <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
@@ -369,12 +360,9 @@ export function CameraQueue({
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {!queueStarted ? (
-          /* Setup Phase */
           <div className="space-y-6">
-            {/* Member Selection */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-white">
@@ -564,9 +552,7 @@ export function CameraQueue({
             )}
           </div>
         ) : (
-          /* Capture Phase - Immersive style matching single registration */
           <div className="flex gap-4 h-full">
-            {/* Camera Feed - Main Focus */}
             <div className="flex-1 flex flex-col min-w-0">
               <div className="flex-1 relative overflow-hidden rounded-xl border border-white/20 bg-black">
                 <video
@@ -576,7 +562,6 @@ export function CameraQueue({
                   muted
                 />
 
-                {/* Not Streaming State - Show Camera Selection */}
                 {!isStreaming && !cameraError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/95">
                     <div className="text-center space-y-4 max-w-xs">
@@ -586,7 +571,7 @@ export function CameraQueue({
                       <div className="text-sm text-white/60">
                         Select a camera to start
                       </div>
-                      {/* Camera Selection Dropdown */}
+
                       {cameraDevices.length > 0 && (
                         <Dropdown
                           options={cameraDevices.map((device, index) => ({
@@ -611,7 +596,7 @@ export function CameraQueue({
                           No cameras detected
                         </div>
                       )}
-                      {/* Start Button */}
+
                       <button
                         onClick={() => void startCamera()}
                         disabled={!selectedCamera && cameraDevices.length > 0}
@@ -624,7 +609,6 @@ export function CameraQueue({
                   </div>
                 )}
 
-                {/* Loading State - Camera starting */}
                 {isStreaming && !isVideoReady && !cameraError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/90">
                     <div className="text-center space-y-3">
@@ -636,7 +620,6 @@ export function CameraQueue({
                   </div>
                 )}
 
-                {/* Error State */}
                 {cameraError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-4 text-center">
                     <div className="space-y-3">
@@ -656,7 +639,6 @@ export function CameraQueue({
                   </div>
                 )}
 
-                {/* Current Member Info - Minimal overlay */}
                 {currentMember && (
                   <div className="absolute top-2 left-2 z-10">
                     <div className="text-md font-medium text-white/80 truncate">
@@ -670,7 +652,6 @@ export function CameraQueue({
                   </div>
                 )}
 
-                {/* Progress indicator and controls */}
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
                   <span className="text-xs text-white/50">
                     {currentIndex + 1}/{totalMembers}
@@ -693,7 +674,6 @@ export function CameraQueue({
                   </button>
                 </div>
 
-                {/* Navigation Controls - Left/Right arrows */}
                 <div className="absolute inset-y-0 left-2 flex items-center z-10">
                   <button
                     onClick={() => {
@@ -723,9 +703,7 @@ export function CameraQueue({
                   </button>
                 </div>
 
-                {/* Bottom Actions - Floating */}
                 <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center gap-2">
-                  {/* Skip Button */}
                   <button
                     onClick={() => {
                       if (currentMember) {
@@ -747,7 +725,6 @@ export function CameraQueue({
                     Skip
                   </button>
 
-                  {/* Capture Button - Primary Action */}
                   <button
                     onClick={() => void capturePhoto()}
                     disabled={
@@ -768,7 +745,6 @@ export function CameraQueue({
                     )}
                   </button>
 
-                  {/* Retry Button */}
                   {currentMember?.status === "error" && (
                     <button
                       onClick={() => {
@@ -795,7 +771,6 @@ export function CameraQueue({
                   )}
                 </div>
 
-                {/* Status Badge - Shows completed/error state */}
                 {currentMember &&
                   currentMember.status !== "pending" &&
                   currentMember.status !== "capturing" && (

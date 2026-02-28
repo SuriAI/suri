@@ -34,17 +34,14 @@ class FaceRecognizer:
         self.providers = providers or ["CPUExecutionProvider"]
         self.database_path = database_path
 
-        # Preprocessing constants
         self.INPUT_MEAN = 127.5
         self.INPUT_STD = 127.5
         self.EMBEDDING_DIM = 512
 
-        # Session Layer: Initialize ONNX session
         self.session, self.input_name = init_face_recognizer_session(
             model_path, self.providers, session_options
         )
 
-        # Database Layer: Initialize database manager
         if self.database_path:
             if self.database_path.endswith(".json"):
                 sqlite_path = self.database_path.replace(".json", ".db")
@@ -56,7 +53,6 @@ class FaceRecognizer:
             self.db_manager = None
             logger.warning("No database path provided, running without persistence")
 
-        # Cache Layer: Person database cache
         self._persons_cache = None
         self._cache_timestamp = 0
         self._cache_ttl = 1.0
@@ -135,7 +131,6 @@ class FaceRecognizer:
         if not database:
             return None, 0.0
 
-        # Postprocessing Layer: Find best match
         return find_best_match(
             embedding, database, self.similarity_threshold, allowed_person_ids
         )

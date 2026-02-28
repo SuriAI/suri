@@ -112,12 +112,10 @@ const AttendanceRecordItem = memo(
         }
       >
         <div className="flex items-center gap-2 py-0.5">
-          {/* Name */}
           <span className="flex-1 min-w-0 text-[12px] font-medium text-white/90 truncate">
             {displayName}
           </span>
 
-          {/* Status pill + Time — same line */}
           <div className="flex-shrink-0 flex items-center gap-1.5">
             {timeStatus && timeStatus.status !== "on-time" && (
               <span
@@ -155,13 +153,10 @@ export const AttendancePanel = memo(function AttendancePanel({
   const { setShowSettings, setGroupInitialSection } = useUIStore();
   const [showManualEntry, setShowManualEntry] = useState(false);
 
-  // Present person IDs for filtering the manual entry list
   const presentPersonIds = useMemo(() => {
     return new Set(recentAttendance.map((r) => r.person_id));
   }, [recentAttendance]);
 
-  // Late tracking settings derived from current group
-  // This ensures we match what the Settings modal shows/updates
   const lateTrackingSettings = useMemo(() => {
     if (!currentGroup?.settings) {
       return {
@@ -194,7 +189,6 @@ export const AttendancePanel = memo(function AttendancePanel({
     setShowSettings(true);
   }, [setGroupInitialSection, setShowSettings]);
 
-  // Hardcoded as it was in Main
   const attendanceEnabled = true;
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("time");
@@ -375,7 +369,6 @@ export const AttendancePanel = memo(function AttendancePanel({
 
       {recentAttendance.length > 0 && (
         <div className="px-2 flex-shrink-0 space-y-1.5">
-          {/* Search */}
           <div className="relative">
             <i className="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30 text-[10px] pointer-events-none" />
             <input
@@ -387,7 +380,6 @@ export const AttendancePanel = memo(function AttendancePanel({
             />
           </div>
 
-          {/* Sort toggle */}
           <div className="flex gap-1">
             <button
               onClick={() => handleSortFieldChange("time")}

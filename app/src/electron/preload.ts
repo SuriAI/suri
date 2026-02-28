@@ -1,11 +1,10 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  // Generic IPC invoke method
+  // Generic IPC invoke method removed
   invoke: (channel: string, ...args: unknown[]) => {
     return ipcRenderer.invoke(channel, ...args);
   },
-  // Backend readiness check (models are loaded on server side)
   backend_ready: {
     isReady: () => {
       return ipcRenderer.invoke("backend:is-ready");
@@ -31,7 +30,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ) => {
       return ipcRenderer.invoke("backend:detect-faces", imageBase64, options);
     },
-    // Face recognition APIs
     recognizeFace: (
       imageData: string,
       bbox: number[],
@@ -184,6 +182,5 @@ contextBridge.exposeInMainWorld("suriElectron", {
     return () => ipcRenderer.removeListener("window:restored", listener);
   },
   getSystemStats: () => ipcRenderer.invoke("system:get-stats"),
-  // Shorthand for getting current app version
   getVersion: () => ipcRenderer.invoke("updater:get-version"),
 });

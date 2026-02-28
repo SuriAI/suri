@@ -38,7 +38,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="w-[280px] flex-shrink-0 flex flex-col bg-[#0b0b0b] border-r border-white/5">
-      {/* Header */}
       <div className="px-6 py-8 flex items-center justify-between">
         <h1 className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/20">
           Settings
@@ -46,7 +45,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <div className="flex-1 px-3 space-y-10 overflow-y-auto settings-sidebar-scroll pb-6">
-        {/* GROUP MANAGEMENT SOURCE */}
         <section>
           <div className="px-3 mb-4 flex items-center justify-between">
             <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
@@ -55,7 +53,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="space-y-6">
-            {/* Group Selector */}
             <div className="flex items-center gap-2 px-1">
               <div className="flex-1 min-w-0" key={storeGroups.length}>
                 <Dropdown
@@ -105,7 +102,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </Tooltip>
             </div>
 
-            {/* Group-specific Sections */}
             <div
               className={`space-y-0.5 ${!dropdownValue ? "opacity-20 pointer-events-none grayscale" : ""}`}
             >
@@ -130,7 +126,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
                     }`}
                   >
-                    {/* Active Accent Bar */}
                     {isActive && (
                       <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]" />
                     )}
@@ -145,7 +140,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </section>
 
-        {/* GENERAL SETTINGS */}
         <section>
           <div className="px-3 mb-4">
             <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
@@ -166,7 +160,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
                   }`}
                 >
-                  {/* Active Accent Bar */}
                   {isActive && (
                     <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
                   )}

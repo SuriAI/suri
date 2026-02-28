@@ -44,7 +44,6 @@ export class BackendService {
     this.client = new BackendClient(() => this.getUrl());
   }
 
-  // Lifecycle
   async start(): Promise<void> {
     return this.processManager.start();
   }
@@ -64,7 +63,6 @@ export class BackendService {
     this.processManager.killSync();
   }
 
-  // Status & Info
   getStatus(): BackendStatus {
     return this.processManager.getStatus();
   }
@@ -79,7 +77,6 @@ export class BackendService {
     return health.available;
   }
 
-  // API Client Methods (Delegated to BackendClient)
   async checkAvailability() {
     return this.client.checkAvailability();
   }

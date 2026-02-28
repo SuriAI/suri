@@ -56,7 +56,6 @@ class ConnectionManager:
                     "current_fps": 30,
                 }
 
-                # Create per-client face tracker
                 self.face_trackers[client_id] = FaceTracker(
                     model_path=str(FACE_TRACKER_CONFIG["model_path"]),
                     track_thresh=FACE_TRACKER_CONFIG["track_thresh"],
@@ -65,7 +64,6 @@ class ConnectionManager:
                     frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
                 )
 
-            # Send welcome message
             await self.send_personal_message(
                 {
                     "type": "connection",
@@ -92,18 +90,15 @@ class ConnectionManager:
         if client_id in self.active_connections:
             websocket = self.active_connections[client_id]
 
-            # Cancel streaming task if active
             if client_id in self.streaming_tasks:
                 self.streaming_tasks[client_id].cancel()
                 del self.streaming_tasks[client_id]
 
-            # Close the WebSocket connection
             try:
                 await websocket.close(code=1008, reason="Idle timeout")
             except Exception as e:
                 logger.warning(f"Error closing websocket for {client_id}: {e}")
 
-            # Remove connection
             del self.active_connections[client_id]
             if client_id in self.connection_metadata:
                 del self.connection_metadata[client_id]
@@ -130,7 +125,6 @@ class ConnectionManager:
             websocket = self.active_connections[client_id]
             await websocket.send_text(json.dumps(message))
 
-            # Update metadata
             if client_id in self.connection_metadata:
                 self.connection_metadata[client_id]["last_activity"] = datetime.now()
                 self.connection_metadata[client_id]["message_count"] += 1
@@ -161,7 +155,6 @@ class ConnectionManager:
             try:
                 await websocket.send_text(json.dumps(message))
 
-                # Update metadata
                 if client_id in self.connection_metadata:
                     self.connection_metadata[client_id][
                         "last_activity"
@@ -172,7 +165,6 @@ class ConnectionManager:
                 logger.error(f"Failed to broadcast to {client_id}: {e}")
                 disconnected_clients.append(client_id)
 
-        # Clean up disconnected clients
         for client_id in disconnected_clients:
             await self.disconnect(client_id)
 

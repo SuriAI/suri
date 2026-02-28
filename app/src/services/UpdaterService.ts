@@ -1,10 +1,3 @@
-/**
- * Updater Service
- *
- * Provides update checking functionality for the renderer process.
- * Communicates with the main process via IPC.
- */
-
 import type { UpdateInfo } from "@/types/global";
 import { persistentSettings } from "./PersistentSettingsService";
 
@@ -46,9 +39,6 @@ class UpdaterService {
     }
   }
 
-  /**
-   * Get the current app version
-   */
   async getVersion(): Promise<string> {
     if (this.cachedVersion) {
       return this.cachedVersion;
@@ -64,10 +54,6 @@ class UpdaterService {
     }
   }
 
-  /**
-   * Check for updates from GitHub releases
-   * @param force - If true, bypasses the cache
-   */
   async checkForUpdates(force = false): Promise<UpdateInfo> {
     try {
       const updateInfo =
@@ -81,7 +67,6 @@ class UpdaterService {
         lastChecked: this.lastChecked.toISOString(),
       });
 
-      // Broadcast result (including hasUpdate=false) so UI like footer can clear.
       this.emitUpdateInfo(updateInfo);
 
       return updateInfo;
@@ -107,9 +92,6 @@ class UpdaterService {
     }
   }
 
-  /**
-   * Subscribe to update-info changes (fires for both update available and up-to-date results).
-   */
   onUpdateInfoChanged(
     callback: (updateInfo: UpdateInfo | null) => void,
   ): () => void {
@@ -125,36 +107,24 @@ class UpdaterService {
     };
   }
 
-  /**
-   * Get cached update info if available
-   */
   getCachedUpdateInfo(): UpdateInfo | null {
     return this.cachedUpdateInfo;
   }
 
-  /**
-   * Get the last checked date
-   */
   getLastChecked(): Date | null {
     return this.lastChecked;
   }
 
-  /**
-   * Wait for the service to be initialized from store
-   */
   async waitForInitialization(): Promise<void> {
     return this.initPromise;
   }
 
-  /**
-   * Open the GitHub releases page
-   */
   async openReleasePage(url?: string): Promise<void> {
     try {
       await window.electronAPI.updater.openReleasePage(url);
     } catch (error) {
       console.error("[UpdaterService] Failed to open release page:", error);
-      // Fallback: try to open in new window
+
       window.open(
         url || "https://github.com/suriAI/suri/releases/latest",
         "_blank",
@@ -162,9 +132,6 @@ class UpdaterService {
     }
   }
 
-  /**
-   * Subscribe to update availability notifications from main process
-   */
   onUpdateAvailable(callback: (updateInfo: UpdateInfo) => void): () => void {
     return window.electronAPI.updater.onUpdateAvailable(async (updateInfo) => {
       this.cachedUpdateInfo = updateInfo;
@@ -176,16 +143,12 @@ class UpdaterService {
         lastChecked: this.lastChecked.toISOString(),
       });
 
-      // Keep any generic subscribers in sync.
       this.emitUpdateInfo(updateInfo);
 
       callback(updateInfo);
     });
   }
 
-  /**
-   * Format the published date nicely
-   */
   formatPublishedDate(isoDate: string): string {
     if (!isoDate) return "";
     try {
@@ -200,9 +163,6 @@ class UpdaterService {
     }
   }
 
-  /**
-   * Parse release notes into sections (basic markdown support)
-   */
   parseReleaseNotes(notes: string): string[] {
     if (!notes) return [];
     // Split by newlines, filter empty lines, and take first 10 lines

@@ -57,7 +57,7 @@ export default function Main() {
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => { });
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
@@ -98,7 +98,6 @@ export default function Main() {
     groupToDelete,
     newGroupName,
     setNewGroupName,
-    // trackingMode removed
     attendanceCooldownSeconds,
     setAttendanceCooldownSeconds,
     reLogCooldownSeconds,
@@ -146,7 +145,6 @@ export default function Main() {
       ? rawCurrentRecognitionResults
       : new Map();
 
-  // 1. Stream State Hook
   useStreamState({
     isProcessingRef,
     animationFrameRef,
@@ -158,13 +156,10 @@ export default function Main() {
     lastStopTimeRef,
   });
 
-  // 2. Attendance Cooldown Hook
   const { persistentCooldownsRef } = useAttendanceCooldown();
 
-  // 3. Face Tracking Hook
   const { calculateAngleConsistencyRef } = useFaceTracking();
 
-  // 4. Attendance Groups Hook
   const {
     currentGroupRef,
     memberCacheRef,
@@ -175,7 +170,6 @@ export default function Main() {
     cancelDeleteGroup,
   } = useAttendanceGroups();
 
-  // 5. Video Stream Hook
   const { captureFrame, getCameraDevices } = useVideoStream({
     videoRef,
     canvasRef,
@@ -186,7 +180,6 @@ export default function Main() {
     isStartingRef,
   });
 
-  // 6. Face Detection Hook
   useFaceDetection({
     backendServiceRef,
     isScanningRef,
@@ -201,7 +194,6 @@ export default function Main() {
     fpsTrackingRef,
   });
 
-  // 7. Face Recognition Hook
   const { performFaceRecognition } = useFaceRecognition({
     backendServiceRef,
     currentGroupRef,
@@ -219,7 +211,6 @@ export default function Main() {
     lastVideoRectUpdateRef,
   });
 
-  // 9. Backend Service Hook
   const stopCameraRef = useRef<((forceCleanup: boolean) => void) | null>(null);
 
   const { initializeWebSocket } = useBackendService({
@@ -241,7 +232,6 @@ export default function Main() {
     backendServiceReadyRef,
   });
 
-  // 9. Camera Control Hook
   const { startCamera, stopCamera } = useCameraControl({
     videoRef,
     streamRef,
@@ -357,9 +347,6 @@ export default function Main() {
     }
   }, []);
 
-  // ===== REMAINING USEEFFECTS =====
-
-  // Animation loop
   useEffect(() => {
     if (isStreaming) {
       animate();
@@ -369,7 +356,6 @@ export default function Main() {
     };
   }, [isStreaming, animate]);
 
-  // Group change reset
   useEffect(() => {
     resetLastDetectionRef(lastDetectionRef);
     useDetectionStore.getState().resetDetectionState();
@@ -379,7 +365,6 @@ export default function Main() {
     }
   }, [currentGroup, stopCamera, isStreamingRef, lastDetectionRef]);
 
-  // Cleanup on unload
   useEffect(() => {
     let cleanupExecuted = false;
 
@@ -488,7 +473,6 @@ export default function Main() {
     };
   }, [stopCamera, startCameraGuarded]);
 
-  // ===== RENDER =====
   return (
     <div className="h-full bg-black text-white flex flex-col overflow-hidden">
       {warning && (
@@ -538,12 +522,10 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
-            // trackingMode removed
             />
 
             {/* New Cooldown Overlay */}
             <CooldownOverlay
-              // trackingMode removed
               persistentCooldowns={persistentCooldowns}
               attendanceCooldownSeconds={attendanceCooldownSeconds}
             />
@@ -574,8 +556,6 @@ export default function Main() {
           trackedFaces={trackedFaces}
           isStreaming={isStreaming}
           isVideoLoading={isVideoLoading}
-          // persistentCooldowns and attendanceCooldownSeconds removed from here
-          // handleSelectGroup kept
           handleSelectGroup={handleSelectGroup}
         />
       </div>
@@ -604,7 +584,6 @@ export default function Main() {
             audioSettings={audioSettings}
             onAudioSettingsChange={setAudioSettings}
             attendanceSettings={{
-              // trackingMode removed
               lateThresholdEnabled:
                 (currentGroup?.settings as { late_threshold_enabled?: boolean })
                   ?.late_threshold_enabled ?? false,
@@ -617,8 +596,6 @@ export default function Main() {
               enableSpoofDetection: enableSpoofDetection,
             }}
             onAttendanceSettingsChange={async (updates) => {
-              // trackingMode update logic removed
-
               if (updates.enableSpoofDetection !== undefined) {
                 setEnableSpoofDetection(updates.enableSpoofDetection);
               }

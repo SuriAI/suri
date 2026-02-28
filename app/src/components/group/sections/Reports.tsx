@@ -3,7 +3,6 @@ import { useGroupStore } from "@/components/group/stores";
 import { getLocalDateString } from "@/utils";
 import type { AttendanceGroup } from "@/types/recognition";
 
-// Hooks & Components
 import { useReportData } from "@/components/group/sections/reports/hooks/useReportData";
 import { useReportViews } from "@/components/group/sections/reports/hooks/useReportViews";
 import { useReportTransform } from "@/components/group/sections/reports/hooks/useReportTransform";
@@ -44,13 +43,11 @@ export function Reports({
   const dialog = useDialog();
   const storeMembers = useGroupStore((state) => state.members);
 
-  // --- Date State ---
   const [reportStartDate, setReportStartDate] =
     useState<string>(getLocalDateString());
   const [reportEndDate, setReportEndDate] =
     useState<string>(getLocalDateString());
 
-  // --- Data Hook ---
   const {
     report,
     sessions,
@@ -61,7 +58,6 @@ export function Reports({
     generateReport,
   } = useReportData(group, storeMembers, reportStartDate, reportEndDate);
 
-  // --- Views Hook ---
   const {
     views,
     activeViewIndex,
@@ -81,7 +77,6 @@ export function Reports({
     handleViewChange,
   } = useReportViews(group.id, DEFAULT_COLUMNS, dialog);
 
-  // --- Transform Hook ---
   const { groupedRows, daysTracked, allColumns } = useReportTransform(
     group,
     members,
@@ -95,8 +90,6 @@ export function Reports({
     search,
   );
 
-  // --- Sync Effects ---
-  // Debounce generateReport
   useEffect(() => {
     const timer = setTimeout(() => {
       generateReport();
@@ -104,14 +97,12 @@ export function Reports({
     return () => clearTimeout(timer);
   }, [generateReport]);
 
-  // Sync daysTracked
   useEffect(() => {
     if (onDaysTrackedChange) {
       onDaysTrackedChange(daysTracked, loading);
     }
   }, [daysTracked, loading, onDaysTrackedChange]);
 
-  // Export handlers
   const handleExportCSV = useCallback(() => {
     exportReportToCSV(
       groupedRows,
@@ -149,7 +140,6 @@ export function Reports({
     loading,
   ]);
 
-  // Empty State
   if (!loading && members.length === 0) {
     return (
       <EmptyState
@@ -189,7 +179,6 @@ export function Reports({
           </div>
         ) : (
           <div className="h-full flex flex-col rounded-2xl border border-white/10 bg-white/[0.01] overflow-hidden shadow-2xl">
-            {/* Unified Control Area (Header + Toolbar) */}
             <div className="bg-white/[0.02] border-b border-white/5">
               <div className="px-4 pt-3 pb-0">
                 <ReportHeader

@@ -1,17 +1,7 @@
-/**
- * About Section - Settings
- *
- * Clean about page with privacy modal for detailed information.
- */
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { updaterService } from "@/services";
 import type { UpdateInfo } from "@/types/global";
 import { Modal } from "@/components/common";
-
-// ============================================================================
-// Privacy Modal Component
-// ============================================================================
 
 interface PrivacyModalProps {
   onClose: () => void;
@@ -35,7 +25,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
       maxWidth="lg"
     >
       <div className="overflow-y-auto max-h-[70vh] space-y-6 custom-scroll pr-2 -mr-2 mt-2">
-        {/* Local-first */}
         <section>
           <h3 className="text-sm font-medium text-white mb-2">
             Your data stays local
@@ -48,7 +37,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
           </p>
         </section>
 
-        {/* No collection */}
         <section>
           <h3 className="text-sm font-medium text-white mb-2">
             No data collection
@@ -61,7 +49,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
           </p>
         </section>
 
-        {/* Offline operation */}
         <section>
           <h3 className="text-sm font-medium text-white mb-2">Works offline</h3>
           <p className="text-xs text-white/50 leading-relaxed">
@@ -71,7 +58,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
           </p>
         </section>
 
-        {/* Optional cloud */}
         <section>
           <h3 className="text-sm font-medium text-white mb-2">
             Optional cloud sync
@@ -83,7 +69,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
           </p>
         </section>
 
-        {/* Legal compliance */}
         <section>
           <h3 className="text-sm font-medium text-white mb-2">
             Regulatory compliance
@@ -114,10 +99,6 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
   );
 };
 
-// ============================================================================
-// Update Status Component
-// ============================================================================
-
 interface UpdateStatusProps {
   updateInfo: UpdateInfo | null;
   isChecking: boolean;
@@ -144,12 +125,10 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     });
   };
 
-  // Offline
   if (updateInfo?.isOffline) {
     return <span className="text-xs text-amber-400/70">No internet</span>;
   }
 
-  // Update available
   if (updateInfo?.hasUpdate) {
     return (
       <div className="flex items-center gap-3">
@@ -190,7 +169,6 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     );
   }
 
-  // Error
   if (updateInfo?.error) {
     return (
       <div className="flex items-center gap-3">
@@ -208,7 +186,6 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     );
   }
 
-  // Up to date or initial
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2 mr-1">
@@ -242,10 +219,6 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     </div>
   );
 };
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export const About: React.FC = () => {
   const [version, setVersion] = useState<string>("");
@@ -323,17 +296,12 @@ export const About: React.FC = () => {
 
   return (
     <div className="relative h-full">
-      {/* Privacy Modal */}
       {showPrivacyModal && (
         <PrivacyModal onClose={() => setShowPrivacyModal(false)} />
       )}
 
-      {/* Main Content */}
       <div className="p-10 h-full flex flex-col">
         <div className="flex-1 space-y-6">
-          {/* ============================================================ */}
-          {/* App Identity */}
-          {/* ============================================================ */}
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">
               Suri
@@ -342,12 +310,7 @@ export const About: React.FC = () => {
               AI-powered attendance tracker
             </p>
           </div>
-
-          {/* ============================================================ */}
-          {/* Info Rows */}
-          {/* ============================================================ */}
           <div className="space-y-3">
-            {/* Version */}
             <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
               <span className="text-xs text-white/50">Version</span>
               <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-mono text-white/50">
@@ -355,7 +318,6 @@ export const About: React.FC = () => {
               </div>
             </div>
 
-            {/* Updates */}
             <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
               <span className="text-xs text-white/50">Updates</span>
               <UpdateStatus
@@ -368,7 +330,6 @@ export const About: React.FC = () => {
               />
             </div>
 
-            {/* License */}
             <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
               <span className="text-xs text-white/50">License</span>
               <button
@@ -379,7 +340,6 @@ export const About: React.FC = () => {
               </button>
             </div>
 
-            {/* Source */}
             <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
               <span className="text-xs text-white/50">Source code</span>
               <button
@@ -390,7 +350,6 @@ export const About: React.FC = () => {
               </button>
             </div>
 
-            {/* Privacy */}
             <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
               <span className="text-xs text-white/50">Privacy & data</span>
               <button
@@ -403,10 +362,6 @@ export const About: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* ============================================================== */}
-        {/* Footer Actions & Copyright */}
-        {/* ============================================================== */}
         <div className="pt-6 pb-6 mt-auto flex items-center justify-between border-t border-white/[0.04]">
           <div className="flex items-center gap-3">
             <button
