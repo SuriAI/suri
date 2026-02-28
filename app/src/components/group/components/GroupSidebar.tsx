@@ -81,31 +81,29 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       <div
         className={`py-3 border-t border-white/[0.08] mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
       >
-        <Tooltip content="Close" position="top">
-          <button
-            onClick={onBack}
-            className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
-            aria-label="Close"
-          >
-            {!isSidebarCollapsed ? (
-              <span className="text-sm">Close</span>
-            ) : (
-              <svg
-                className="w-5 h-5 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            )}
-          </button>
-        </Tooltip>
+        <button
+          onClick={onBack}
+          className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
+          aria-label="Close"
+        >
+          {!isSidebarCollapsed ? (
+            <span className="text-sm">Close</span>
+          ) : (
+            <svg
+              className="w-5 h-5 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          )}
+        </button>
       </div>
     </aside>
   );

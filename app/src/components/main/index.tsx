@@ -57,7 +57,7 @@ export default function Main() {
 
   const lastDetectionRef = useRef<DetectionResult | null>(null);
   const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => { });
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
@@ -506,7 +506,6 @@ export default function Main() {
             onClick={() => setWarning(null)}
             className="text-white/60 hover:text-white/90 transition-colors"
             aria-label="Dismiss warning"
-            title="Dismiss"
           >
             <i className="fa-solid fa-xmark"></i>
           </button>
@@ -521,7 +520,6 @@ export default function Main() {
             onClick={() => setError(null)}
             className="text-red-100/70 hover:text-red-100 transition-colors"
             aria-label="Dismiss error"
-            title="Dismiss"
           >
             <i className="fa-solid fa-xmark"></i>
           </button>
@@ -540,7 +538,7 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
-              // trackingMode removed
+            // trackingMode removed
             />
 
             {/* New Cooldown Overlay */}
