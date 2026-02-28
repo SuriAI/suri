@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { GroupSection } from "@/components/group/types";
 import type { AttendanceGroup } from "@/types/recognition";
+import { Tooltip } from "@/components/shared";
 
 interface GroupNavProps {
   activeSection: GroupSection;
@@ -91,38 +92,42 @@ export function GroupNav({
 
           return (
             <li key={section.id}>
-              <button
-                onClick={() => !isDisabled && onSectionChange(section.id)}
-                disabled={isDisabled}
-                className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                  transition-all duration-200 group relative
-                  ${
-                    isActive
-                      ? "bg-white/10 text-white"
-                      : isDisabled
-                        ? "text-white/30 cursor-not-allowed"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                  }
-                `}
-                title={isCollapsed ? section.label : undefined}
-                aria-label={section.label}
-                aria-current={isActive ? "page" : undefined}
+              <Tooltip
+                content={isCollapsed ? section.label : ""}
+                position="right"
               >
-                {/* Label (hidden when collapsed) */}
-                {!isCollapsed && (
-                  <div className="flex-1 min-w-0 text-left">
-                    <div className="font-medium text-sm truncate">
-                      {section.label}
+                <button
+                  onClick={() => !isDisabled && onSectionChange(section.id)}
+                  disabled={isDisabled}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                    transition-all duration-200 group relative
+                    ${
+                      isActive
+                        ? "bg-white/10 text-white"
+                        : isDisabled
+                          ? "text-white/30 cursor-not-allowed"
+                          : "text-white/70 hover:text-white hover:bg-white/5"
+                    }
+                  `}
+                  aria-label={section.label}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {/* Label (hidden when collapsed) */}
+                  {!isCollapsed && (
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="font-medium text-sm truncate">
+                        {section.label}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Active indicator */}
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
-                )}
-              </button>
+                  {/* Active indicator */}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
+                  )}
+                </button>
+              </Tooltip>
             </li>
           );
         })}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Tooltip } from "@/components/shared";
 
 export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false);
@@ -82,29 +83,35 @@ export default function WindowBar() {
           } as React.CSSProperties
         }
       >
-        <button
-          onClick={handleMinimize}
-          className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
-          title="Minimize"
-        >
-          &#xE921;
-        </button>
+        <Tooltip content="Minimize" position="bottom">
+          <button
+            onClick={handleMinimize}
+            className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          >
+            &#xE921;
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleMaximize}
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
-          title={isMaximized ? "Restore" : "Maximize"}
+        <Tooltip
+          content={isMaximized ? "Restore" : "Maximize"}
+          position="bottom"
         >
-          {isMaximized ? <>&#xE923;</> : <>&#xE922;</>}
-        </button>
+          <button
+            onClick={handleMaximize}
+            className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          >
+            {isMaximized ? <>&#xE923;</> : <>&#xE922;</>}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleClose}
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-[#e81123] hover:text-white transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
-          title="Close"
-        >
-          &#xE8BB;
-        </button>
+        <Tooltip content="Close" position="bottom">
+          <button
+            onClick={handleClose}
+            className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-[#e81123] hover:text-white transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          >
+            &#xE8BB;
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

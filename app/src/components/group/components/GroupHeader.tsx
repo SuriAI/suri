@@ -1,3 +1,5 @@
+import { Tooltip } from "@/components/shared";
+
 interface GroupHeaderProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -21,16 +23,20 @@ export function GroupHeader({
       )}
 
       {/* Collapse/Expand Button */}
-      <button
-        onClick={onToggleCollapse}
-        className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all group ${isCollapsed ? "mx-auto" : "ml-auto"}`}
-        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      <Tooltip
+        content={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        position="right"
       >
-        <i
-          className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/50 group-hover:text-white transition-all duration-200`}
-        ></i>
-      </button>
+        <button
+          onClick={onToggleCollapse}
+          className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all group ${isCollapsed ? "mx-auto" : "ml-auto"}`}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <i
+            className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/50 group-hover:text-white transition-all duration-200`}
+          ></i>
+        </button>
+      </Tooltip>
     </div>
   );
 }
