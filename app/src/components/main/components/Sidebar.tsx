@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { motion } from "framer-motion";
+import { Tooltip } from "@/components/shared";
 import type {
   AttendanceGroup,
   DetectionResult,
@@ -257,57 +258,66 @@ export const Sidebar = memo(function Sidebar({
         >
           <div className="flex items-center justify-between gap-2">
             {/* Collapse Button - Top Left */}
-            <button
-              onClick={toggleSidebar}
-              className="sidebar-toggle-btn flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group"
-              title={
+            <Tooltip
+              content={
                 isCollapsed
                   ? "Expand sidebar (Ctrl+B)"
                   : "Collapse sidebar (Ctrl+B)"
               }
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              position="bottom"
             >
-              <img
-                src={sidebarCollapseIcon}
-                alt=""
-                className="w-5 h-5 transition-all duration-300 group-hover:opacity-100"
-                style={{ filter: "brightness(0) invert(1)", opacity: 0.7 }}
-              />
-            </button>
+              <button
+                onClick={toggleSidebar}
+                className="sidebar-toggle-btn flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group"
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                <img
+                  src={sidebarCollapseIcon}
+                  alt=""
+                  className="w-5 h-5 transition-all duration-300 group-hover:opacity-100"
+                  style={{ filter: "brightness(0) invert(1)", opacity: 0.7 }}
+                />
+              </button>
+            </Tooltip>
 
             {/* Settings Button - Top Right */}
-            <motion.button
-              onClick={() => {
-                setShowSettings(true);
-                if (updateInfo?.hasUpdate) {
-                  useUIStore.getState().setSettingsInitialSection("about");
-                }
-              }}
-              className="flex items-center justify-center w-9 h-9 bg-transparent border-none group rounded-lg relative"
-              title={
+            <Tooltip
+              content={
                 updateInfo?.hasUpdate
                   ? "Update available! (Ctrl+,)"
                   : "Settings (Ctrl+,)"
               }
+              position="bottom"
               disabled={isCollapsed}
-              aria-label="Open Settings"
-              initial="initial"
-              whileHover="hover"
             >
-              <motion.i
-                className="fa-solid fa-gear text-white/50 group-hover:text-white text-base transition-colors"
-                variants={{
-                  initial: { rotate: 0 },
-                  hover: { rotate: 90 },
+              <motion.button
+                onClick={() => {
+                  setShowSettings(true);
+                  if (updateInfo?.hasUpdate) {
+                    useUIStore.getState().setSettingsInitialSection("about");
+                  }
                 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              ></motion.i>
+                className="flex items-center justify-center w-9 h-9 bg-transparent border-none group rounded-lg relative"
+                disabled={isCollapsed}
+                aria-label="Open Settings"
+                initial="initial"
+                whileHover="hover"
+              >
+                <motion.i
+                  className="fa-solid fa-gear text-white/50 group-hover:text-white text-base transition-colors"
+                  variants={{
+                    initial: { rotate: 0 },
+                    hover: { rotate: 90 },
+                  }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                ></motion.i>
 
-              {/* Update Badge */}
-              {updateInfo?.hasUpdate && (
-                <div className="absolute top-[6px] right-[6px] w-[6px] h-[6px] bg-emerald-500 rounded-full border border-black shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
-              )}
-            </motion.button>
+                {/* Update Badge */}
+                {updateInfo?.hasUpdate && (
+                  <div className="absolute top-[6px] right-[6px] w-[6px] h-[6px] bg-emerald-500 rounded-full border border-black shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                )}
+              </motion.button>
+            </Tooltip>
           </div>
         </div>
 
@@ -341,55 +351,60 @@ export const Sidebar = memo(function Sidebar({
         {isCollapsed && (
           <div className="absolute inset-0 flex flex-col items-center py-3 gap-3">
             {/* Expand Button - Top */}
-            <button
-              onClick={toggleSidebar}
-              className="sidebar-toggle-btn flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group"
-              title="Expand sidebar (Ctrl+B)"
-              aria-label="Expand sidebar"
-            >
-              <img
-                src={sidebarExpandIcon}
-                alt=""
-                className="w-5 h-5 transition-all group-hover:opacity-100"
-                style={{ filter: "brightness(0) invert(1)", opacity: 0.7 }}
-              />
-            </button>
+            <Tooltip content="Expand sidebar (Ctrl+B)" position="left">
+              <button
+                onClick={toggleSidebar}
+                className="sidebar-toggle-btn flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 group"
+                aria-label="Expand sidebar"
+              >
+                <img
+                  src={sidebarExpandIcon}
+                  alt=""
+                  className="w-5 h-5 transition-all group-hover:opacity-100"
+                  style={{ filter: "brightness(0) invert(1)", opacity: 0.7 }}
+                />
+              </button>
+            </Tooltip>
 
             {/* Visual Separator */}
             <div className="w-8 h-px bg-white/[0.06] my-1"></div>
 
             {/* Settings Icon */}
-            <motion.button
-              onClick={() => {
-                setShowSettings(true);
-                if (updateInfo?.hasUpdate) {
-                  useUIStore.getState().setSettingsInitialSection("about");
-                }
-              }}
-              className="flex items-center justify-center w-11 h-11 bg-transparent border-none group rounded-xl relative"
-              title={
+            <Tooltip
+              content={
                 updateInfo?.hasUpdate
                   ? "Update available! (Ctrl+,)"
                   : "Settings (Ctrl+,)"
               }
-              aria-label="Open Settings"
-              initial="initial"
-              whileHover="hover"
+              position="left"
             >
-              <motion.i
-                className="fa-solid fa-gear text-white/70 group-hover:text-white text-base transition-colors"
-                variants={{
-                  initial: { rotate: 0 },
-                  hover: { rotate: 90 },
+              <motion.button
+                onClick={() => {
+                  setShowSettings(true);
+                  if (updateInfo?.hasUpdate) {
+                    useUIStore.getState().setSettingsInitialSection("about");
+                  }
                 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              ></motion.i>
+                className="flex items-center justify-center w-11 h-11 bg-transparent border-none group rounded-xl relative"
+                aria-label="Open Settings"
+                initial="initial"
+                whileHover="hover"
+              >
+                <motion.i
+                  className="fa-solid fa-gear text-white/70 group-hover:text-white text-base transition-colors"
+                  variants={{
+                    initial: { rotate: 0 },
+                    hover: { rotate: 90 },
+                  }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                ></motion.i>
 
-              {/* Update Badge */}
-              {updateInfo?.hasUpdate && (
-                <div className="absolute top-2 right-2 w-[8px] h-[8px] bg-emerald-500 rounded-full border border-black shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-              )}
-            </motion.button>
+                {/* Update Badge */}
+                {updateInfo?.hasUpdate && (
+                  <div className="absolute top-2 right-2 w-[8px] h-[8px] bg-emerald-500 rounded-full border border-black shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                )}
+              </motion.button>
+            </Tooltip>
           </div>
         )}
       </div>

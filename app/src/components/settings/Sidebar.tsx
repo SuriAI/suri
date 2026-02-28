@@ -1,5 +1,5 @@
 import React from "react";
-import { Dropdown } from "@/components/shared";
+import { Dropdown, Tooltip } from "@/components/shared";
 import type { AttendanceGroup } from "@/types/recognition";
 import { useGroupStore } from "@/components/group/stores";
 import type { GroupSection } from "@/components/group/types";
@@ -89,19 +89,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   maxHeight={256}
                 />
               </div>
-              <button
-                onClick={() => {
-                  setActiveSection("group");
-                  if (activeSection !== "group") {
-                    setGroupInitialSection("overview");
-                  }
-                  setTriggerCreateGroup(Date.now());
-                }}
-                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-white/30 hover:text-cyan-400 group/btn"
-                title="Create new group"
-              >
-                <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
-              </button>
+              <Tooltip content="Create new group" position="top">
+                <button
+                  onClick={() => {
+                    setActiveSection("group");
+                    if (activeSection !== "group") {
+                      setGroupInitialSection("overview");
+                    }
+                    setTriggerCreateGroup(Date.now());
+                  }}
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-white/30 hover:text-cyan-400 group/btn"
+                >
+                  <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
+                </button>
+              </Tooltip>
             </div>
 
             {/* Group-specific Sections */}

@@ -1,4 +1,4 @@
-import { Dropdown } from "@/components/shared";
+import { Dropdown, Tooltip } from "@/components/shared";
 
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
 import { useGroupModals } from "@/components/group/hooks";
@@ -56,14 +56,15 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
               />
             </div>
             {/* New Group Button */}
-            <button
-              onClick={openCreateGroup}
-              className="w-10 h-10 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
-              aria-label="New Group"
-              title="New Group"
-            >
-              <span className="text-lg">+</span>
-            </button>
+            <Tooltip content="New Group" position="top">
+              <button
+                onClick={openCreateGroup}
+                className="w-10 h-10 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                aria-label="New Group"
+              >
+                <span className="text-lg">+</span>
+              </button>
+            </Tooltip>
           </div>
         </div>
       )}
@@ -80,30 +81,31 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       <div
         className={`py-3 border-t border-white/[0.08] mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
       >
-        <button
-          onClick={onBack}
-          className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
-          aria-label="Close"
-          title="Close"
-        >
-          {!isSidebarCollapsed ? (
-            <span className="text-sm">Close</span>
-          ) : (
-            <svg
-              className="w-5 h-5 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          )}
-        </button>
+        <Tooltip content="Close" position="top">
+          <button
+            onClick={onBack}
+            className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
+            aria-label="Close"
+          >
+            {!isSidebarCollapsed ? (
+              <span className="text-sm">Close</span>
+            ) : (
+              <svg
+                className="w-5 h-5 mx-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            )}
+          </button>
+        </Tooltip>
       </div>
     </aside>
   );

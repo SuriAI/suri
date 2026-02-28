@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, memo, useCallback } from "react";
 import { createDisplayNameMap } from "@/utils";
-import { Dropdown } from "@/components/shared";
+import { Dropdown, Tooltip } from "@/components/shared";
 import type {
   AttendanceGroup,
   AttendanceRecord,
@@ -336,22 +336,24 @@ export const AttendancePanel = memo(function AttendancePanel({
                 showPlaceholderOption={false}
               />
             </div>
-            <button
-              onClick={() => setShowManualEntry(true)}
-              className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
-              title="Members"
-              aria-label="Members"
-            >
-              <i className="fa-solid fa-users text-sm"></i>
-            </button>
-            <button
-              onClick={() => setShowGroupManagement(true)}
-              className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
-              title="Create new group"
-              aria-label="Create new group"
-            >
-              <i className="fa-solid fa-plus text-sm"></i>
-            </button>
+            <Tooltip content="Members" position="top">
+              <button
+                onClick={() => setShowManualEntry(true)}
+                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                aria-label="Members"
+              >
+                <i className="fa-solid fa-users text-sm"></i>
+              </button>
+            </Tooltip>
+            <Tooltip content="Create new group" position="top">
+              <button
+                onClick={() => setShowGroupManagement(true)}
+                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                aria-label="Create new group"
+              >
+                <i className="fa-solid fa-plus text-sm"></i>
+              </button>
+            </Tooltip>
           </div>
         </div>
       ) : (
