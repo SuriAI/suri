@@ -13,7 +13,7 @@ from config.server import get_server_config
 from config.paths import BASE_DIR
 from database.migrate import run_migrations
 
-# Add the backend directory to Python path
+
 sys.path.insert(0, str(BASE_DIR))
 
 config = {
@@ -33,11 +33,10 @@ def signal_handler(signum, frame):
     sys.exit(0)
 
 
-# Register signal handlers for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
 signal.signal(signal.SIGTERM, signal_handler)  # Termination request
 
-# Windows-specific signal handling
+
 if sys.platform == "win32":
     try:
         signal.signal(signal.SIGBREAK, signal_handler)  # Windows Ctrl+Break
@@ -69,41 +68,35 @@ def validate_setup():
 def main():
     """Main entry point"""
 
-    # Parse command line arguments
     parser = argparse.ArgumentParser(description="Face Detection API Backend")
     parser.add_argument("--port", type=int, help="Port to run the server on")
     parser.add_argument("--host", type=str, help="Host to run the server on")
     args = parser.parse_args()
 
-    # Setup logging
     setup_logging()
     logger = logging.getLogger(__name__)
 
-    # Validate setup
     if not validate_setup():
         print("Setup validation failed. Please check the configuration.")
         sys.exit(1)
 
     run_migrations()
 
-    # Server configuration
     server_config = config["server"].copy()
 
-    # Override with command line arguments if provided
     if args.port:
         server_config["port"] = args.port
     if args.host:
         server_config["host"] = args.host
 
     try:
-        # Import the app directly for PyInstaller compatibility
+
         from main import app
 
         logger.info(
             f"Starting server on {server_config['host']}:{server_config['port']}"
         )
 
-        # Start the server
         uvicorn.run(
             app,
             host=server_config["host"],

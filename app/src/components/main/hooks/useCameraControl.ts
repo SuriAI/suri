@@ -36,7 +36,6 @@ interface CameraControlProps {
   resetOverlayRefs: () => void;
   overlayCanvasRef: React.RefObject<HTMLCanvasElement | null>;
 
-  // Store actions/state
   setIsStreaming: (val: boolean) => void;
   setIsVideoLoading: (val: boolean) => void;
   setCameraActive: (val: boolean) => void;
@@ -46,7 +45,6 @@ interface CameraControlProps {
   selectedCamera: string | null;
   cameraDevices: MediaDeviceInfo[];
 
-  // Methods from other hooks
   initializeWebSocket: () => Promise<void>;
   getCameraDevices: () => Promise<MediaDeviceInfo[]>;
 }
@@ -129,7 +127,6 @@ export function useCameraControl({
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      // Validate and get the correct camera device ID
       let deviceIdToUse: string | undefined = undefined;
       if (selectedCamera && cameraDevices.length > 0) {
         const deviceExists = cameraDevices.some(

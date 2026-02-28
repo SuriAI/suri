@@ -18,7 +18,6 @@ export function GroupModals({
   onMemberSuccess,
   onGroupSuccess,
 }: GroupModalsProps) {
-  // Zustand stores
   const { selectedGroup, fetchGroups, setSelectedGroup, members } =
     useGroupStore();
   const {

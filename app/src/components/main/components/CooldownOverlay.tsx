@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { CooldownInfo } from "@/components/main/types";
 
 interface CooldownOverlayProps {
-  // trackingMode removed
   persistentCooldowns: Map<string, CooldownInfo>;
   attendanceCooldownSeconds: number;
 }
@@ -49,15 +48,12 @@ const CooldownCard = memo(
 CooldownCard.displayName = "CooldownCard";
 
 export const CooldownOverlay = memo(function CooldownOverlay({
-  // trackingMode removed
   persistentCooldowns,
   attendanceCooldownSeconds,
 }: CooldownOverlayProps) {
-  // Drives the re-render loop for the visual countdown
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
-    // 10fps update for smoother progress circle
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 100);
@@ -66,7 +62,6 @@ export const CooldownOverlay = memo(function CooldownOverlay({
   }, []);
 
   const activeItems = useMemo(() => {
-    // Filter and prepare items
     const items: Array<{
       id: string;
       info: CooldownInfo;
@@ -82,8 +77,6 @@ export const CooldownOverlay = memo(function CooldownOverlay({
       const elapsed = now - info.startTime;
       const remainingMs = durationMs - elapsed;
 
-      // Show items that have at least 0.1s remaining to process exit animation logic upstream if needed
-      // (Visuals will effectively hide < 0)
       if (remainingMs > 0) {
         items.push({
           id: cooldownId,
@@ -94,18 +87,11 @@ export const CooldownOverlay = memo(function CooldownOverlay({
       }
     }
 
-    // Sort: Least time remaining at the top? Or most recent at top?
-    // User requested "best UI/UX".
-    // Usually, sorting by "soonest to expire" at the top is helpful to know who is becoming available.
-    // Or maybe insert order (Start time descending).
-    // Let's sort by remaining time ascending (soonest to finish first).
     items.sort((a, b) => a.remaining - b.remaining);
 
     return items;
   }, [persistentCooldowns, attendanceCooldownSeconds, currentTime]);
 
-  // Keep the overlay mounted via AnimatePresence so exit animations play
-  // (including when the last item disappears).
   return (
     <AnimatePresence>
       {activeItems.length > 0 ? (
@@ -122,7 +108,6 @@ export const CooldownOverlay = memo(function CooldownOverlay({
           }}
           className="absolute top-6 right-6 z-40 flex flex-col gap-3 pointer-events-auto select-none max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scroll p-2"
         >
-          {/* pointer-events-auto to allow scrolling */}
           <AnimatePresence mode="popLayout">
             {activeItems.map((item) => (
               <CooldownCard key={item.id} cooldownInfo={item.info} />

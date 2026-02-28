@@ -70,7 +70,6 @@ body {
   }
 }
 
-/* Electric hexagon SVG overlay */
 .electric-hexagon {
   position: absolute;
   inset: 0;
@@ -80,7 +79,6 @@ body {
   overflow: visible;
 }
 
-/* Base bolt style */
 .bolt {
   fill: none;
   stroke: #22d3ee;
@@ -94,11 +92,6 @@ body {
   stroke-dashoffset: 100;
 }
 
-/* 
-   Smooth sequential flow:
-   Duration 3s. Stagger 0.5s.
-   Overlap trail for natural electric feel.
-*/
 .edge-1 {
   animation: energyFlow 3s linear infinite;
   animation-delay: 0s;
@@ -155,7 +148,6 @@ body {
   }
 }
 
-/* Logo with electric pulse and flicker */
 .logo {
   position: absolute;
   inset: 0;

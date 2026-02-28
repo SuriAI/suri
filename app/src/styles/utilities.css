@@ -2,7 +2,6 @@
   background: var(--gradient-primary);
 }
 
-/* === AI SCANNING ANIMATIONS === */
 @keyframes ai-scan-line {
   0%,
   100% {

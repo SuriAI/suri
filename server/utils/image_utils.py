@@ -20,11 +20,10 @@ def decode_base64_image(base64_string: str) -> np.ndarray:
         OpenCV image as numpy array (BGR format)
     """
     try:
-        # Remove data URL prefix if present
+
         if base64_string.startswith("data:image"):
             base64_string = base64_string.split(",")[1]
 
-        # Decode base64
         image_data = base64.b64decode(base64_string)
 
         # Convert to numpy array
@@ -88,22 +87,18 @@ def resize_image(
     target_w, target_h = target_size
 
     if maintain_aspect_ratio:
-        # Calculate scaling factor
+
         scale = min(target_w / w, target_h / h)
         new_w = int(w * scale)
         new_h = int(h * scale)
 
-        # Resize image
         resized = cv2.resize(image, (new_w, new_h), interpolation=interpolation)
 
-        # Create padded image
         padded = np.zeros((target_h, target_w, image.shape[2]), dtype=image.dtype)
 
-        # Calculate padding
         pad_x = (target_w - new_w) // 2
         pad_y = (target_h - new_h) // 2
 
-        # Place resized image in center
         padded[pad_y : pad_y + new_h, pad_x : pad_x + new_w] = resized
 
         return padded
@@ -127,10 +122,9 @@ def normalize_image(
     Returns:
         Normalized image
     """
-    # Convert to float and normalize to 0-1
+
     image = image.astype(np.float32) / 255.0
 
-    # Apply normalization
     mean = np.array(mean, dtype=np.float32)
     std = np.array(std, dtype=np.float32)
 
@@ -194,17 +188,14 @@ def crop_face(image: np.ndarray, bbox: dict, padding: float = 0.2) -> np.ndarray
     face_w = int(bbox["width"])
     face_h = int(bbox["height"])
 
-    # Calculate padding
     pad_w = int(face_w * padding)
     pad_h = int(face_h * padding)
 
-    # Calculate crop coordinates with padding
     x1 = max(0, x - pad_w)
     y1 = max(0, y - pad_h)
     x2 = min(w, x + face_w + pad_w)
     y2 = min(h, y + face_h + pad_h)
 
-    # Crop face
     face_crop = image[y1:y2, x1:x2]
 
     return face_crop
@@ -227,7 +218,6 @@ def draw_detection_info(
     """
     output = image.copy()
 
-    # Draw FPS
     if fps is not None:
         cv2.putText(
             output,
@@ -239,7 +229,6 @@ def draw_detection_info(
             2,
         )
 
-    # Draw model name
     if model_name is not None:
         cv2.putText(
             output,
@@ -251,7 +240,6 @@ def draw_detection_info(
             2,
         )
 
-    # Draw face count
     cv2.putText(
         output,
         f"Faces: {len(faces)}",

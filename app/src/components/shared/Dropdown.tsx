@@ -50,7 +50,6 @@ export function Dropdown<T extends string | number = string>({
   const selectedOption = options.find((opt) => opt.value === value);
   const displayText = selectedOption?.label || placeholder;
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -70,7 +69,6 @@ export function Dropdown<T extends string | number = string>({
     };
   }, [isOpen]);
 
-  // Close dropdown on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -81,7 +79,6 @@ export function Dropdown<T extends string | number = string>({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen]);
 
-  // Calculate dropdown position and direction (auto-positioning with fixed positioning)
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
@@ -116,7 +113,6 @@ export function Dropdown<T extends string | number = string>({
 
   return (
     <div className={`relative min-w-0 ${className}`} ref={dropdownRef}>
-      {/* Dropdown Button */}
       <button
         type="button"
         ref={buttonRef}
@@ -131,7 +127,7 @@ export function Dropdown<T extends string | number = string>({
         `}
       >
         <span className="truncate flex-1 min-w-0 text-left">{displayText}</span>
-        {/* Chevron Icon - Right Aligned */}
+
         <i
           className={`fa-solid fa-chevron-down text-white/50 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -139,18 +135,16 @@ export function Dropdown<T extends string | number = string>({
         ></i>
       </button>
 
-      {/* Dropdown Menu - Rendered via Portal for correct positioning in transformed containers */}
       {isOpen &&
         !disabled &&
         menuPosition &&
         createPortal(
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 z-[9998]"
               onClick={() => setIsOpen(false)}
             />
-            {/* Options Container - Fixed positioning relative to viewport */}
+
             <div
               className="fixed z-[9999] bg-[#0c0c0c] border border-white/10 rounded-md overflow-hidden"
               style={{
@@ -159,19 +153,16 @@ export function Dropdown<T extends string | number = string>({
                 width: `${menuPosition.width}px`,
               }}
             >
-              {/* Scrollable Container with Max Height */}
               <div
                 className="overflow-y-auto custom-scroll"
                 style={{ maxHeight: `${maxHeight}px` }}
               >
-                {/* Empty State */}
                 {options.length === 0 ? (
                   <div className="px-3 py-3 text-center text-white/50 text-sm">
                     {emptyMessage}
                   </div>
                 ) : (
                   <>
-                    {/* Placeholder Option */}
                     {showPlaceholderOption && allowClear && (
                       <>
                         <button
@@ -193,7 +184,7 @@ export function Dropdown<T extends string | number = string>({
                         )}
                       </>
                     )}
-                    {/* Options */}
+
                     {options.map((option) => (
                       <button
                         key={String(option.value)}

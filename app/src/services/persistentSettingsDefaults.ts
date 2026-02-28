@@ -4,15 +4,11 @@ import type {
 } from "../components/settings/types";
 import type { UpdateInfo } from "../types/global";
 
-// Define the persistent settings schema (shared between main and renderer)
 export interface PersistentSettingsSchema {
-  // Display Settings (QuickSettings)
   quickSettings: QuickSettings;
 
-  // Audio / Sound effects
   audio: AudioSettings;
 
-  // Attendance Settings
   attendance: {
     enableSpoofDetection: boolean;
     lateThresholdEnabled: boolean;
@@ -22,7 +18,6 @@ export interface PersistentSettingsSchema {
     reLogCooldownSeconds: number;
   };
 
-  // UI State
   ui: {
     sidebarCollapsed: boolean;
     sidebarWidth: number;
@@ -37,7 +32,6 @@ export interface PersistentSettingsSchema {
     closeToTrayNoticeDismissed: boolean;
   };
 
-  // Report Scratchpad (unsaved tweaks)
   reportScratchpad: Record<
     string,
     {
@@ -47,15 +41,12 @@ export interface PersistentSettingsSchema {
     }
   >;
 
-  // Report Views (per group)
   reportViews: Record<string, unknown>;
   reportDefaultViewNames: Record<string, string>;
-  // Updater Info
   updater: {
     lastChecked: string | null;
     cachedInfo: UpdateInfo | null;
   };
-  // Cloud Sync Settings
   sync: {
     enabled: boolean;
     syncUrl: string;
@@ -65,7 +56,6 @@ export interface PersistentSettingsSchema {
   };
 }
 
-// Default values (shared between main and renderer processes)
 export const defaultSettings: PersistentSettingsSchema = {
   quickSettings: {
     showFPS: false,
@@ -73,7 +63,6 @@ export const defaultSettings: PersistentSettingsSchema = {
     cameraMirrored: true,
   },
   audio: {
-    // Default ON with Default.mp3 on first start
     recognitionSoundEnabled: true,
     recognitionSoundUrl: "./assets/sounds/Default.mp3",
   },

@@ -24,7 +24,6 @@ export function Members({
     "all" | "registered" | "non-registered"
   >("all");
 
-  // Generate display names with auto-differentiation for duplicates
   const membersWithDisplayNames = useMemo(() => {
     return generateDisplayNames(members);
   }, [members]);
@@ -75,7 +74,6 @@ export function Members({
       setMemberToDelete(null);
     } catch (err) {
       console.error("Error removing member:", err);
-      // Optional: Show error toast here
     }
   };
 
@@ -98,7 +96,6 @@ export function Members({
   return (
     <>
       <div className="space-y-3 flex flex-col overflow-hidden min-h-0 h-full p-6">
-        {/* Search Bar */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="relative flex-1">
             <svg
@@ -124,7 +121,6 @@ export function Members({
           </div>
         </div>
 
-        {/* Filters & Count */}
         <div className="flex items-center justify-between gap-2 flex-shrink-0">
           {members.length > 0 && filteredMembers.length > 0 && (
             <div className="text-xs text-white/30">
@@ -166,7 +162,6 @@ export function Members({
           </div>
         </div>
 
-        {/* Member List */}
         <div className="flex-1 space-y-1.5 overflow-y-auto custom-scroll overflow-x-hidden min-h-0">
           {filteredMembers.length === 0 && (
             <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-6 text-center w-full">
@@ -215,7 +210,6 @@ export function Members({
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0 relative z-10">
-                  {/* Actions Group */}
                   <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
                     <button
                       onClick={() => onEdit(member)}
@@ -233,7 +227,6 @@ export function Members({
                     </button>
                   </div>
 
-                  {/* Main Action / Status Badge */}
                   {!isRegistered ? (
                     <button
                       onClick={() => {
@@ -254,11 +247,10 @@ export function Members({
                       }}
                       className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
                     >
-                      {/* Check icon - visible by default, hidden on hover */}
                       <i className="fa-solid fa-check text-[8px] transition-all duration-300 group-hover/btn:opacity-0 group-hover/btn:scale-75 group-hover/btn:absolute"></i>
-                      {/* Rotate icon - hidden by default, visible on hover */}
+
                       <i className="fa-solid fa-rotate-right text-[10px] absolute opacity-0 scale-75 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-100 group-hover/btn:relative"></i>
-                      {/* Text swap */}
+
                       <span className="transition-all duration-300 group-hover/btn:hidden">
                         Registered
                       </span>

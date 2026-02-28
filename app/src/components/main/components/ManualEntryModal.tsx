@@ -31,7 +31,6 @@ export const ManualEntryModal = ({
     new Map(),
   );
 
-  // Fetch face enrollment status for all members in the current group
   useEffect(() => {
     if (!currentGroup?.id) return;
     attendanceManager
@@ -41,9 +40,8 @@ export const ManualEntryModal = ({
         persons.forEach((p) => map.set(p.person_id, p.has_face_data ?? false));
         setFaceDataMap(map);
       })
-      .catch(() => {
-        // Silently ignore — face status is informational only
-      });
+
+      .catch(() => {});
   }, [currentGroup?.id]);
 
   const absentMembers = useMemo(() => {
@@ -108,7 +106,6 @@ export const ManualEntryModal = ({
       maxWidth="sm"
     >
       <div className="space-y-4">
-        {/* Compact Add Row */}
         <div className=" rounded-xl p-1.5 pt-0">
           <div className="flex gap-2">
             <div className="flex-1 min-w-0">
@@ -148,7 +145,6 @@ export const ManualEntryModal = ({
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-medium flex items-center gap-2">
             <i className="fa-solid fa-circle-exclamation"></i>
@@ -156,7 +152,6 @@ export const ManualEntryModal = ({
           </div>
         )}
 
-        {/* Member Roster with face status */}
         {sortedAllMembers.length > 0 && (
           <div className="border border-white/[0.06] rounded-lg overflow-hidden">
             <div className="max-h-[220px] overflow-y-auto divide-y divide-white/[0.04]">
@@ -164,7 +159,7 @@ export const ManualEntryModal = ({
                 const isPresent = presentPersonIds.has(member.person_id);
                 const hasFace =
                   faceDataMap.size === 0
-                    ? null // still loading
+                    ? null
                     : (faceDataMap.get(member.person_id) ?? false);
 
                 return (
@@ -172,19 +167,16 @@ export const ManualEntryModal = ({
                     key={member.person_id}
                     className="flex items-center gap-2.5 px-3 py-2"
                   >
-                    {/* Status dot */}
                     <div
                       className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
                         isPresent ? "bg-emerald-400" : "bg-white/20"
                       }`}
                     />
 
-                    {/* Name */}
                     <span className="flex-1 text-[11px] text-white/80 truncate">
                       {member.name}
                     </span>
 
-                    {/* Badges */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {isPresent && (
                         <span className="text-[9px] font-semibold text-emerald-400/80 uppercase tracking-wide">
@@ -208,7 +200,6 @@ export const ManualEntryModal = ({
           </div>
         )}
 
-        {/* Re-enrollment note */}
         {noFaceCount > 0 && (
           <p className="text-[9px] text-amber-400/60 leading-relaxed flex items-start gap-1.5">
             <i className="fa-solid fa-circle-info mt-[1px] flex-shrink-0"></i>
@@ -218,7 +209,6 @@ export const ManualEntryModal = ({
           </p>
         )}
 
-        {/* Footer with Add Member Button */}
         <div className="pt-3 border-t border-white/5">
           <button
             onClick={() => {

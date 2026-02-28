@@ -50,7 +50,7 @@
 
 /* Settings Sidebar */
 @property --settings-sb-thumb {
-  syntax: '<color>';
+  syntax: "<color>";
   inherits: true;
   initial-value: transparent;
 }

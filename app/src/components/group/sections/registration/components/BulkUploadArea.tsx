@@ -41,7 +41,6 @@ export function BulkUploadArea({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Clear Button */}
             <button
               onClick={onClear}
               disabled={isDetecting}

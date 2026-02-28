@@ -2,20 +2,15 @@ import { create } from "zustand";
 import { persistentSettings } from "@/services/PersistentSettingsService";
 
 interface CameraState {
-  // Streaming state
   isStreaming: boolean;
   isVideoLoading: boolean;
   cameraActive: boolean;
   websocketStatus: "disconnected" | "connecting" | "connected" | "error";
-
-  // Camera devices
   cameraDevices: MediaDeviceInfo[];
   selectedCamera: string; // The ACTIVE camera
   preferredCameraId: string | null; // The USER'S CHOICE (persisted)
   preferredCameraLabel: string | null; // SECONDARY MATCH (persisted)
   isPreferredCameraMissing: boolean;
-
-  // Actions
   setIsStreaming: (value: boolean) => void;
   setIsVideoLoading: (value: boolean) => void;
   setCameraActive: (value: boolean) => void;
@@ -27,7 +22,6 @@ interface CameraState {
 }
 
 export const useCameraStore = create<CameraState>((set, get) => ({
-  // Initial state
   isStreaming: false,
   isVideoLoading: false,
   cameraActive: false,
@@ -37,8 +31,6 @@ export const useCameraStore = create<CameraState>((set, get) => ({
   preferredCameraId: null,
   preferredCameraLabel: null,
   isPreferredCameraMissing: false,
-
-  // Actions
   setIsStreaming: (value) => set({ isStreaming: value }),
   setIsVideoLoading: (value) => set({ isVideoLoading: value }),
   setCameraActive: (value) => set({ cameraActive: value }),

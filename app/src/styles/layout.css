@@ -1,4 +1,3 @@
-/* === MAIN ELECTRON WINDOW === */
 .electron-window-container {
   width: 100%;
   height: 100%;
@@ -8,14 +7,12 @@
   color: var(--text-primary);
 }
 
-/* Scrollable content area */
 .app-content-wrapper {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* === APP LAYOUT === */
 .app-container {
   min-height: 100vh;
   background: var(--bg-primary);
@@ -88,7 +85,6 @@
   width: 100%;
 }
 
-/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .app-header {
     padding: 1rem;

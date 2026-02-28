@@ -32,7 +32,6 @@ function GroupPanelComponent({
   onAddMemberHandlerReady,
   onSectionChange,
 }: GroupPanelProps) {
-  // Zustand stores - use selectors to prevent unnecessary re-renders
   const selectedGroup = useGroupStore((state) => state.selectedGroup);
   const error = useGroupStore((state) => state.error);
   const setSelectedGroup = useGroupStore((state) => state.setSelectedGroup);
@@ -46,10 +45,8 @@ function GroupPanelComponent({
   const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup);
   const openAddMember = useGroupUIStore((state) => state.openAddMember);
 
-  // Initialize with useGroupData hook for side effects
   useGroupData(initialGroup);
 
-  // Handlers
   const handleMemberSuccess = useCallback(() => {
     const currentGroup = useGroupStore.getState().selectedGroup;
     if (currentGroup) {
@@ -63,7 +60,7 @@ function GroupPanelComponent({
       if (newGroup) {
         setSelectedGroup(newGroup);
       }
-      // Notify parent component that groups have changed, passing the new group if created
+
       if (onGroupsChanged) {
         onGroupsChanged(newGroup);
       }
@@ -77,17 +74,14 @@ function GroupPanelComponent({
     }
   }, [selectedGroup, fetchGroupDetails]);
 
-  // Sync initial section
   useEffect(() => {
     if (initialSection) {
       setActiveSection(initialSection);
     }
   }, [initialSection, setActiveSection]);
 
-  // Handle triggerCreateGroup prop
   const prevTriggerRef = useRef(0);
   useEffect(() => {
-    // Only trigger if the value actually changed (not just > 0)
     if (
       triggerCreateGroup > 0 &&
       triggerCreateGroup !== prevTriggerRef.current
@@ -97,15 +91,12 @@ function GroupPanelComponent({
     }
   }, [triggerCreateGroup, openCreateGroup]);
 
-  // Expose add member handler to parent
   useEffect(() => {
     if (onAddMemberHandlerReady) {
       onAddMemberHandlerReady(openAddMember);
     }
   }, [onAddMemberHandlerReady, openAddMember]);
 
-  // Notify parent when active section changes in the store
-  // This enables Settings to sync its groupInitialSection when jumpToRegistration is called
   const prevActiveSectionRef = useRef(useGroupUIStore.getState().activeSection);
 
   useEffect(() => {
@@ -119,16 +110,13 @@ function GroupPanelComponent({
     return unsubscribe;
   }, [onSectionChange]);
 
-  // Embedded mode - just return content without wrapper
   if (isEmbedded) {
     return (
       <>
-        {/* Error Banner */}
         {error && (
           <ErrorBanner error={error} onDismiss={() => setError(null)} />
         )}
 
-        {/* Main Content Area - Full width when embedded */}
         <div className="h-full overflow-hidden">
           <GroupContent
             onMembersChange={handleMembersChange}
@@ -143,7 +131,6 @@ function GroupPanelComponent({
           />
         </div>
 
-        {/* Modals */}
         <GroupModals
           onMemberSuccess={handleMemberSuccess}
           onGroupSuccess={handleGroupSuccess}
@@ -152,13 +139,10 @@ function GroupPanelComponent({
     );
   }
 
-  // Standalone mode - full page with sidebar
   return (
     <div className="h-full bg-black text-white flex overflow-hidden">
-      {/* Error Banner */}
       {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
 
-      {/* Mobile Top Bar */}
       <div className="fixed inset-x-0 top-9 lg:hidden z-30">
         <div className="h-12 px-3 flex items-center justify-between bg-white/[0.02] border-b border-white/[0.08]">
           <button
@@ -177,15 +161,12 @@ function GroupPanelComponent({
         </div>
       </div>
 
-      {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden lg:block">
         <GroupSidebar onBack={onBack} />
       </div>
 
-      {/* Mobile Drawer */}
       <MobileDrawer />
 
-      {/* Main Content Area */}
       <main className="flex-1 overflow-hidden bg-black">
         <GroupContent
           onMembersChange={handleMembersChange}
@@ -200,7 +181,6 @@ function GroupPanelComponent({
         />
       </main>
 
-      {/* Modals */}
       <GroupModals
         onMemberSuccess={handleMemberSuccess}
         onGroupSuccess={handleGroupSuccess}

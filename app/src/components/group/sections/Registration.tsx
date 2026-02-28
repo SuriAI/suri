@@ -35,7 +35,6 @@ export function Registration({
   registrationMode,
   onRegistrationModeChange,
 }: RegistrationProps) {
-  // Store integration
   const storeSource = useGroupUIStore((state) => state.lastRegistrationSource);
   const storeMode = useGroupUIStore((state) => state.lastRegistrationMode);
   const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId);
@@ -43,12 +42,10 @@ export function Registration({
     (state) => state.setRegistrationState,
   );
 
-  // Derive effective state (prefer props if defined)
   const source =
     registrationSource !== undefined ? registrationSource : storeSource;
   const mode = registrationMode !== undefined ? registrationMode : storeMode;
 
-  // Handle Deep Linking / Pre-selection
   useEffect(() => {
     if (preSelectedId && !source && !mode) {
       if (onRegistrationSourceChange && onRegistrationModeChange) {
@@ -100,7 +97,7 @@ export function Registration({
         setRegistrationState(null, null);
       }
     }
-    // Also clear pre-selection when going back
+
     useGroupUIStore.setState({ preSelectedMemberId: null });
   }, [
     mode,
@@ -109,8 +106,6 @@ export function Registration({
     onRegistrationSourceChange,
     onRegistrationModeChange,
   ]);
-
-  // --- Sub-View Routing ---
 
   if (mode === "bulk" && source === "upload") {
     return (
@@ -143,14 +138,9 @@ export function Registration({
         initialSource={source === "camera" ? "live" : source}
         deselectMemberTrigger={deselectMemberTrigger}
         onSelectedMemberChange={onHasSelectedMemberChange}
-        // preSelectedMemberId is handled internally by FaceCapture reading from store if needed
-        // but it's better if we just use FaceCapture's internal selection logic.
-        // Let's ensure FaceCapture picks up the preSelectedId.
       />
     );
   }
-
-  // --- Main View (Wizard / Quick Start) ---
 
   if (members.length === 0) {
     return (

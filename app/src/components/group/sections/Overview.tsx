@@ -108,7 +108,6 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
   return (
     <section className="space-y-4 h-full flex flex-col overflow-hidden p-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
         <StatsCard type="active" value={activeNow} label="Active Now" />
         <StatsCard
@@ -128,7 +127,6 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         <StatsCard type="late" value={stats.late_today} label="Late arrivals" />
       </div>
 
-      {/* Recent Activity */}
       <div className="rounded-xl border border-white/10 bg-white/5 p-4 overflow-hidden flex-1 flex flex-col min-h-0">
         <h3 className="text-sm font-semibold mb-3 flex-shrink-0">
           Recent activity

@@ -1,6 +1,4 @@
 import { useState } from "react";
-// import { persistentSettings } from "@/services";
-// import type { PersistentSettingsSchema } from "@/services/persistentSettingsDefaults";
 
 type SyncStatus =
   | { type: "idle" }
@@ -10,66 +8,6 @@ type SyncStatus =
 
 export function CloudSync() {
   const [status, setStatus] = useState<SyncStatus>({ type: "idle" });
-  /*
-  const [syncSettings, setSyncSettings] = useState<
-    PersistentSettingsSchema["sync"] | null
-  >(null);
-  */
-  // const [isSaving, setIsSaving] = useState(false);
-
-  /*
-  useEffect(() => {
-    const loadSettings = async () => {
-      const settings = await persistentSettings.getSyncSettings();
-      setSyncSettings(settings);
-    };
-    loadSettings();
-  }, []);
-  */
-
-  /*
-  const saveSettings = async (
-    updates: Partial<PersistentSettingsSchema["sync"]>,
-  ) => {
-    if (!syncSettings) return;
-    setIsSaving(true);
-    try {
-      const newSettings = { ...syncSettings, ...updates };
-      await persistentSettings.setSyncSettings(updates);
-      setSyncSettings(newSettings);
-
-      // Notify main process to restart sync manager with new settings
-      await window.electronAPI.sync.restartManager();
-    } catch (err) {
-      console.error("Failed to save sync settings:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleTriggerNow = async () => {
-    setStatus({ type: "loading", action: "export" }); // Reuse export loading state
-    try {
-      const success = await window.electronAPI.sync.triggerNow();
-      if (success) {
-        // Refresh settings to get new lastSyncedAt
-        const updated = await persistentSettings.getSyncSettings();
-        setSyncSettings(updated);
-        setStatus({
-          type: "success",
-          message: "Sync triggered and completed successfully.",
-        });
-      } else {
-        setStatus({ type: "error", message: "Manual sync trigger failed." });
-      }
-    } catch (err) {
-      setStatus({
-        type: "error",
-        message: err instanceof Error ? err.message : "Sync failed.",
-      });
-    }
-  };
-  */
 
   const handleExport = async () => {
     setStatus({ type: "loading", action: "export" });
@@ -129,7 +67,6 @@ export function CloudSync() {
 
   return (
     <div className="space-y-8 max-w-auto p-10">
-      {/* Header explanation */}
       <div className="space-y-1">
         <h3 className="text-sm font-semibold text-white">
           Data Safety & Transfers
@@ -143,7 +80,6 @@ export function CloudSync() {
         </p>
       </div>
 
-      {/* Status feedback */}
       {status.type !== "idle" && (
         <div
           className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-xs ${
@@ -177,116 +113,6 @@ export function CloudSync() {
         </div>
       )}
 
-      {/* 
-        PARKED: Automatic Cloud Sync UI
-        Uncomment this section when the Web App / Backend is ready to receive POST requests.
-      */}
-      {/* <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
-        <div className="px-6 py-5 border-b border-white/[0.06]">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 mb-1">
-                <i className="fa-solid fa-cloud-arrow-up text-emerald-400 text-sm" />
-                <h4 className="text-sm font-semibold text-white">
-                  Automated Syncing
-                </h4>
-              </div>
-              <p className="text-xs text-white/50">
-                Automatically keep your data updated on another server for real-time access.
-              </p>
-            </div>
-            {syncSettings && (
-              <button
-                onClick={() =>
-                  saveSettings({ enabled: !syncSettings.enabled })
-                }
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  syncSettings.enabled ? "bg-emerald-500" : "bg-white/10"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                    syncSettings.enabled ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {syncSettings && syncSettings.enabled && (
-          <div className="px-6 py-6 space-y-6 bg-white/[0.01]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
-                  Sync Destination (Server Address)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/sync"
-                  value={syncSettings.syncUrl}
-                  onChange={(e) => saveSettings({ syncUrl: e.target.value })}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
-                  Secret Key
-                </label>
-                <input
-                  type="password"
-                  placeholder="Your secret code"
-                  value={syncSettings.syncKey}
-                  onChange={(e) => saveSettings({ syncKey: e.target.value })}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-white/40 uppercase tracking-wider">
-                  Update Frequency
-                </label>
-                <select
-                  value={syncSettings.intervalMinutes}
-                  onChange={(e) =>
-                    saveSettings({
-                      intervalMinutes: parseInt(e.target.value),
-                    })
-                  }
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 transition-colors appearance-none cursor-pointer"
-                >
-                  <option value={5}>Every 5 minutes</option>
-                  <option value={15}>Every 15 minutes</option>
-                  <option value={30}>Every 30 minutes</option>
-                  <option value={60}>Every hour</option>
-                </select>
-              </div>
-
-              <div className="space-y-2 flex flex-col justify-end">
-                <div className="flex items-center justify-between text-[10px] text-white/30">
-                  <span>Last successful update:</span>
-                  <span className="text-emerald-400/80">
-                    {syncSettings.lastSyncedAt
-                      ? new Date(syncSettings.lastSyncedAt).toLocaleString()
-                      : "Never"}
-                  </span>
-                </div>
-                <button
-                  onClick={handleTriggerNow}
-                  disabled={isLoading || isSaving}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-400 text-xs font-semibold transition-all disabled:opacity-40"
-                >
-                  <i className="fa-solid fa-rotate" />
-                  Sync Now
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div> */}
-
-      {/* Export card */}
       <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="px-6 py-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 mb-1">
@@ -315,7 +141,6 @@ export function CloudSync() {
         </div>
       </div>
 
-      {/* Import card */}
       <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
         <div className="px-6 py-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 mb-1">
@@ -360,7 +185,6 @@ export function CloudSync() {
         </div>
       </div>
 
-      {/* Advisory note */}
       <div className="flex items-start gap-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
         <i className="fa-solid fa-shield-halved mt-0.5 flex-shrink-0 text-blue-400/40" />
         <div className="space-y-1">

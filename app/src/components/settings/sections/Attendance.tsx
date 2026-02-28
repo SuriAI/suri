@@ -19,7 +19,6 @@ export function Attendance({
 }: AttendanceProps) {
   return (
     <div className="space-y-4 max-w-auto p-10">
-      {/* Spoof Detection Section */}
       <div className="flex items-center py-3 border-b border-white/5 gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-white/90">
@@ -52,7 +51,6 @@ export function Attendance({
         </button>
       </div>
 
-      {/* Attendance Cooldown (Re-Log Prevention) */}
       <div className="flex items-center py-3 border-b border-white/5 gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-white/90">
@@ -68,9 +66,9 @@ export function Attendance({
         <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
           <input
             type="range"
-            min="300" // 5 mins
-            max="7200" // 2 hours
-            step="300" // 5 min steps
+            min="300"
+            max="7200"
+            step="300"
             value={attendanceSettings.reLogCooldownSeconds ?? 1800}
             onChange={(e) => onReLogCooldownChange(parseInt(e.target.value))}
             className="w-24 accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -82,9 +80,7 @@ export function Attendance({
         </div>
       </div>
 
-      {/* Late Tracking Section */}
       <div className="space-y-4">
-        {/* Enable/Disable Toggle */}
         <div className="flex items-center py-3 border-b border-white/5 gap-4">
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-white/90">Late</div>
@@ -116,12 +112,8 @@ export function Attendance({
           </button>
         </div>
 
-        {/* Class Start Time */}
         {attendanceSettings.lateThresholdEnabled && hasSelectedGroup && (
           <>
-            {/* Scheduled Start removed - now handled via main UI chip */}
-
-            {/* Late Threshold */}
             <div className="flex items-center py-3 border-b border-white/5 gap-4">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white/90">

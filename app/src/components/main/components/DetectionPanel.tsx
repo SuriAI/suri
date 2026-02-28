@@ -14,7 +14,6 @@ interface DetectionPanelProps {
   isVideoLoading: boolean;
 }
 
-// Memoized individual detection card - compact border-status design with enhanced spoof UI
 const DetectionCard = memo(
   ({
     index,
@@ -29,19 +28,15 @@ const DetectionCard = memo(
     displayName: string;
     trackedFace: TrackedFace | undefined;
   }) => {
-    // Simplified status styles - Silent Failure approach
-    // We only highlight SUCCESS (Recognized + Real). Everything else is neutral.
     const getStatusStyles = () => {
-      // If recognized, show success visuals
       if (isRecognized) {
         return {
           borderColor: "border-green-500/60",
-          bgColor: "bg-green-950/10", // Very subtle tint
+          bgColor: "bg-green-950/10",
           textColor: "text-green-400",
         };
       }
 
-      // Default/Unknown/Spoof - All look the same (Neutral)
       return {
         borderColor: "border-white/10",
         bgColor: "",
@@ -63,9 +58,7 @@ const DetectionCard = memo(
         ${hasName ? "shadow-md" : ""}
       `}
       >
-        {/* Single-line compact layout */}
         <div className="flex items-center justify-between gap-2">
-          {/* Left: Name */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {hasName ? (
               <span
@@ -77,9 +70,6 @@ const DetectionCard = memo(
               <span className="text-xs italic text-white/40">Unknown</span>
             )}
           </div>
-
-          {/* Right: Removed Status Text Badge completely.
-              Silent failure means we don't tell them why it failed. */}
         </div>
       </div>
     );
@@ -97,26 +87,20 @@ export function DetectionPanel({
   isStreaming,
   isVideoLoading,
 }: DetectionPanelProps) {
-  // Create display name map for members
   const displayNameMap = useMemo(() => {
     return createDisplayNameMap(groupMembers);
   }, [groupMembers]);
 
-  // Memoize tracked faces array to prevent recreation
   const trackedFacesArray = useMemo(
     () => Array.from(trackedFaces.values()),
     [trackedFaces],
   );
 
-  // Show all faces (including unknown faces)
-  // Sort: LIVE faces always on top
   const filteredFaces = useMemo(() => {
     if (!currentDetections?.faces) return [];
 
-    // Show all faces
     const faces = currentDetections.faces;
 
-    // Sort: REAL faces (status === "real") always on top
     return [...faces].sort((a, b) => {
       const aIsLive = a.liveness?.status === "real";
       const bIsLive = b.liveness?.status === "real";
@@ -134,7 +118,6 @@ export function DetectionPanel({
       {!hasDetections ? (
         <div className="flex-1 flex items-center justify-center min-h-0">
           <div className="relative flex flex-col items-center gap-4">
-            {/* AI Scanning Frame */}
             <div className="relative w-20 h-20">
               {isVideoLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -142,21 +125,17 @@ export function DetectionPanel({
                 </div>
               ) : (
                 <>
-                  {/* Outer pulsing ring - only animate when streaming */}
                   <div
                     className={`absolute inset-0 rounded-2xl border ${isStreaming ? "border-cyan-500/30 ai-pulse-ring" : "border-white/20"}`}
                   />
 
-                  {/* Main scanner frame */}
                   <div
                     className={`absolute inset-1 rounded-xl border overflow-hidden ${isStreaming ? "border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 to-transparent" : "border-white/10 bg-white/5"}`}
                   >
-                    {/* Scanning line - only show when streaming */}
                     {isStreaming && (
                       <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent ai-scan-line" />
                     )}
 
-                    {/* Face icon */}
                     <svg
                       className={`w-full h-full p-4 ${isStreaming ? "text-cyan-400/50" : "text-white/30 animate-pulse"}`}
                       fill="none"
@@ -172,7 +151,6 @@ export function DetectionPanel({
                     </svg>
                   </div>
 
-                  {/* Corner accents */}
                   <div
                     className={`absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 rounded-tl-lg ${isStreaming ? "border-cyan-400/40" : "border-white/20"}`}
                   />
@@ -189,7 +167,6 @@ export function DetectionPanel({
               )}
             </div>
 
-            {/* Text - different based on streaming state */}
             <div
               className={`text-sm font-medium ${isStreaming ? "text-cyan-400/60" : "text-white/40"}`}
             >

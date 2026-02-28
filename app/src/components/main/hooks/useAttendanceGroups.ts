@@ -4,7 +4,6 @@ import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
 import { useAttendanceStore, useUIStore } from "@/components/main/stores";
 
 export function useAttendanceGroups() {
-  // Zustand stores
   const {
     currentGroup,
     setCurrentGroup,
@@ -33,12 +32,10 @@ export function useAttendanceGroups() {
   );
   const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {});
 
-  // Sync ref with store
   useEffect(() => {
     currentGroupRef.current = currentGroup;
   }, [currentGroup]);
 
-  // Enhanced setCurrentGroup that also clears cache
   const setCurrentGroupWithCache = useCallback(
     (group: AttendanceGroup | null) => {
       setCurrentGroup(group);
@@ -222,7 +219,6 @@ export function useAttendanceGroups() {
     setGroupToDelete(null);
   }, [setGroupToDelete, setShowDeleteConfirmation]);
 
-  // Listen for selectGroup custom event (e.g., from Settings when group is deleted)
   useEffect(() => {
     const handleSelectGroupEvent = (event: Event) => {
       const customEvent = event as CustomEvent<{

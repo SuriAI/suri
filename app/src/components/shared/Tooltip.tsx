@@ -149,7 +149,6 @@ function buildArrowStyle(
   };
 }
 
-// Props interface that cloneElement can accept — lets us inject ref + events
 type InjectableProps = React.HTMLAttributes<HTMLElement> & {
   ref?: React.Ref<Element>;
 };
@@ -186,7 +185,6 @@ export function Tooltip({
 
   useEffect(() => () => clearTimer(), [clearTimer]);
 
-  // Recompute tooltip position whenever it becomes visible
   useEffect(() => {
     if (!visible || !triggerRef.current) return;
 
@@ -218,8 +216,6 @@ export function Tooltip({
 
   if (!content || disabled) return children;
 
-  // Clone the child and inject ref + event handlers so no wrapper span is needed.
-  // The trigger's bounding rect is used directly for accurate positioning.
   const child = React.cloneElement<InjectableProps>(
     children as ReactElement<InjectableProps>,
     {

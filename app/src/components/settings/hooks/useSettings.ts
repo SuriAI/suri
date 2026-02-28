@@ -63,7 +63,6 @@ export const useSettings = ({
   );
   const [isGroupExpanded, setIsGroupExpanded] = useState(true);
 
-  // Store access
   const storeGroups = useGroupStore((state) => state.groups);
   const storeSelectedGroup = useGroupStore((state) => state.selectedGroup);
   const storeMembers = useGroupStore((state) => state.members);

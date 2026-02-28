@@ -5,7 +5,6 @@ export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
-    // Listen for window state changes
     const handleMaximize = () => setIsMaximized(true);
     const handleUnmaximize = () => setIsMaximized(false);
 
@@ -50,18 +49,15 @@ export default function WindowBar() {
         } as React.CSSProperties
       }
     >
-      {/* Background Layer */}
       <div className="absolute inset-0 bg-black/90 border-b border-white/[0.06] z-40 pointer-events-none"></div>
 
       <div className="flex items-center ml-4 space-x-3 flex-1 relative z-40 pointer-events-none">
-        {/* Logo */}
         <img
           src="./icons/suri_mark_logo_transparent.png"
           alt="Suri"
           className="w-8 h-8 object-contain opacity-90 -ml-3 mr-1"
         />
 
-        {/* Branding Container */}
         <div className="flex items-center space-x-2">
           <span className="text-white font-semibold text-[13px] tracking-wide">
             Suri
@@ -73,7 +69,6 @@ export default function WindowBar() {
         </div>
       </div>
 
-      {/* Window Controls */}
       <div
         className="flex items-center h-full relative z-[70] [webkit-app-region:no-drag]"
         style={

@@ -6,7 +6,7 @@ echo    Suri - Complete Build Script
 echo ========================================
 echo.
 
-:: Check if we're in the correct directory
+
 if not exist "server" (
     echo Error: server directory not found. Please run this script from the project root.
     pause
@@ -19,7 +19,7 @@ if not exist "app" (
     exit /b 1
 )
 
-:: Build Backend
+
 echo [1/3] Building Python Backend...
 echo =====================================
 cd server
@@ -33,7 +33,7 @@ if !errorlevel! neq 0 (
 cd ..
 echo.
 
-:: Build Frontend
+
 echo [2/3] Building Electron Frontend...
 echo ===================================
 cd app
@@ -57,7 +57,7 @@ if !errorlevel! neq 0 (
 cd ..
 echo.
 
-:: Package Application
+
 echo [3/3] Packaging Application...
 echo ==============================
 cd app

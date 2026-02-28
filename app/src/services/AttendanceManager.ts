@@ -28,7 +28,7 @@ const API_ENDPOINTS = {
 
 export class AttendanceManager {
   private readonly clockCheckStorageKey = "suri:lastSystemTimeMs";
-  private readonly clockBackwardWarnThresholdMs = 60 * 1000; // 60 seconds
+  private readonly clockBackwardWarnThresholdMs = 60 * 1000;
 
   private httpClient: HttpClient;
   private groupManager: GroupManager;
@@ -59,11 +59,8 @@ export class AttendanceManager {
       this.getSessions.bind(this),
       this.getSettings.bind(this),
     );
-
     this.loadSettingsWhenReady();
   }
-
-  // --- Core Lifecycle ---
 
   private async loadSettingsWhenReady(): Promise<void> {
     const maxWaitTime = 60000;
@@ -127,8 +124,6 @@ export class AttendanceManager {
     }
   }
 
-  // --- Group Management (Delegated) ---
-
   async createGroup(
     name: string,
     description?: string,
@@ -158,8 +153,6 @@ export class AttendanceManager {
   async getGroupMembers(groupId: string): Promise<AttendanceMember[]> {
     return this.groupManager.getGroupMembers(groupId);
   }
-
-  // --- Member Management (Delegated) ---
 
   async addMember(
     groupId: string,
@@ -192,7 +185,6 @@ export class AttendanceManager {
     return this.groupManager.getGroupMembers(groupId);
   }
 
-  // Re-adding missed face methods in facade
   async registerFaceForGroupPerson(
     groupId: string,
     personId: string,
@@ -215,8 +207,6 @@ export class AttendanceManager {
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     return this.memberManager.removeFaceDataForGroupPerson(groupId, personId);
   }
-
-  // --- Record & Session Management (Delegated) ---
 
   async processAttendanceEvent(
     personId: string,
@@ -285,8 +275,6 @@ export class AttendanceManager {
     return this.recordManager.getSessions(filters);
   }
 
-  // --- Settings (Internal to Facade for now) ---
-
   async getSettings(): Promise<AttendanceSettings> {
     if (!this.settings) await this.loadSettings();
     return { ...this.settings! };
@@ -306,8 +294,6 @@ export class AttendanceManager {
       throw error;
     }
   }
-
-  // --- Maintenance & Backup (Delegated) ---
 
   async exportData(): Promise<string> {
     return this.backupManager.exportData();
@@ -352,8 +338,6 @@ export class AttendanceManager {
       };
     }
   }
-
-  // --- Helpers ---
 
   private warnIfSystemClockWentBackwards(): void {
     try {

@@ -21,10 +21,9 @@ if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize global variables
+
 face_detector = None
 liveness_detector = None
-face_recognizer = None
 face_recognizer = None
 
 
@@ -70,7 +69,6 @@ async def lifespan(app: FastAPI):
 
         set_model_references(liveness_detector, None, face_recognizer, face_detector)
 
-        # Set model references for attendance routes - DB is now handled via Dependency Injection
         from api.routes import attendance as attendance_routes
 
         attendance_routes.face_detector = face_detector

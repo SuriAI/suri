@@ -83,7 +83,6 @@ export class BackendService {
     this.adapter = new ElectronAdapter();
   }
 
-  // WebSocket Methods
   getWebSocketStatus(): WebSocketStatus {
     return this.wsStatus;
   }
@@ -113,7 +112,6 @@ export class BackendService {
             message: "Connected to detector",
           });
 
-          // Send initial configuration
           if (this.ws) {
             this.ws.send(
               JSON.stringify({
@@ -222,7 +220,6 @@ export class BackendService {
     this.ws!.send(frameData);
   }
 
-  // REST Methods
   async isBackendAvailable(): Promise<boolean> {
     try {
       const response = await fetch(`${this.config.baseUrl}/`, {

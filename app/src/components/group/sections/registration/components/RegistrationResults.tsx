@@ -15,7 +15,6 @@ export function RegistrationResults({
 }: RegistrationResultsProps) {
   return (
     <div className="space-y-6">
-      {/* Summary */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 p-6">
           <div className="text-3xl font-light text-cyan-200 mb-1">
@@ -35,7 +34,6 @@ export function RegistrationResults({
         </div>
       </div>
 
-      {/* Details */}
       {results.length > 0 && (
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {results.map((result, idx) => (

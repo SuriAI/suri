@@ -41,7 +41,6 @@ async def recognize_face(
 
         image = decode_base64_image(request.image)
 
-        # Check liveness detection
         should_block, error_msg = process_liveness_for_face_operation(
             image, request.bbox, request.enable_liveness_detection, "Recognition"
         )
@@ -55,7 +54,6 @@ async def recognize_face(
                 error=error_msg,
             )
 
-        # Landmarks are required for alignment in this pipeline.
         landmarks_5 = request.landmarks_5
 
         allowed_person_ids = await repo.get_group_person_ids(request.group_id)
@@ -185,7 +183,6 @@ async def update_person(request: PersonUpdateRequest):
         if not face_recognizer:
             raise HTTPException(status_code=500, detail="Face recognizer not available")
 
-        # Validate input
         if not request.old_person_id.strip() or not request.new_person_id.strip():
             raise HTTPException(
                 status_code=400, detail="Both old and new person IDs must be provided"
@@ -196,7 +193,6 @@ async def update_person(request: PersonUpdateRequest):
                 status_code=400, detail="Old and new person IDs must be different"
             )
 
-        # Update person ID using face recognizer method
         result = await face_recognizer.update_person_id(
             request.old_person_id.strip(), request.new_person_id.strip()
         )

@@ -21,7 +21,6 @@ interface AttendanceState {
 
   persistentCooldowns: Map<string, CooldownInfo>;
 
-  // trackingMode removed
   attendanceCooldownSeconds: number;
   reLogCooldownSeconds: number;
   enableSpoofDetection: boolean;
@@ -39,7 +38,6 @@ interface AttendanceState {
       | Map<string, CooldownInfo>
       | ((prev: Map<string, CooldownInfo>) => Map<string, CooldownInfo>),
   ) => void;
-  // setTrackingMode removed
   setAttendanceCooldownSeconds: (seconds: number) => void;
   setReLogCooldownSeconds: (seconds: number) => void;
   setEnableSpoofDetection: (enabled: boolean) => void;
@@ -68,7 +66,6 @@ const loadInitialSettings = async (): Promise<Partial<AttendanceState>> => {
   });
 
   return {
-    // trackingMode removed
     attendanceCooldownSeconds: attendanceSettings.attendanceCooldownSeconds,
     reLogCooldownSeconds: attendanceSettings.reLogCooldownSeconds ?? 1800,
     enableSpoofDetection: attendanceSettings.enableSpoofDetection,
