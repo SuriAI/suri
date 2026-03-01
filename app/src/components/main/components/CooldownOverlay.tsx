@@ -23,7 +23,7 @@ const CooldownCard = memo(
           transition: { duration: 0.22, ease: "easeInOut" },
         }}
         transition={{ type: "spring", stiffness: 520, damping: 34, mass: 0.7 }}
-        className="group flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 pr-4 shadow-lg hover:bg-black/80 hover:border-white/20"
+        className="group flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 pr-4 shadow-lg hover:bg-black/80 hover:border-white/20"
         style={{ minWidth: "180px" }}
       >
         {/* Success Icon */}

@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                   }}
                   placeholder="Select group…"
-                  className="bg-white/[0.03] border-white/10 hover:bg-white/[0.05]"
+                  className="bg-white/5 border-white/10 hover:bg-white/5"
                   emptyMessage="No groups available"
                   maxHeight={256}
                 />
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     setTriggerCreateGroup(Date.now());
                   }}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-white/50 hover:text-cyan-400 group/btn"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-white/50 hover:text-cyan-400 group/btn"
                 >
                   <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
                 </button>
@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
                       isActive
                         ? "bg-white/[0.06] text-white"
-                        : "text-white/60 hover:bg-white/[0.05] hover:text-white"
+                        : "text-white/60 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     {isActive && (
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
                     isActive
                       ? "bg-white/[0.06] text-white"
-                      : "text-white/60 hover:bg-white/[0.05] hover:text-white"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   {isActive && (

@@ -106,7 +106,7 @@ export function ControlBar({
             <button
               onClick={handlePrimaryAction}
               disabled={!isButtonEnabled}
-              className={`min-w-[140px] py-3 rounded-xl font-semibold text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`min-w-[140px] py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isStreaming
                   ? "bg-red-500/20 border border-red-400/40 text-red-200 hover:bg-red-500/30"
                   : canStartTracking

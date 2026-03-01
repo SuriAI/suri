@@ -50,7 +50,7 @@ export function StatsCard({ type, value, total, label }: StatsCardProps) {
   }[type];
 
   return (
-    <div className={`rounded-xl border ${config.border} ${config.bg} p-4`}>
+    <div className={`rounded-lg border ${config.border} ${config.bg} p-4`}>
       <p className={`text-xs ${config.labelColor} uppercase tracking-wider`}>
         {config.label}
       </p>

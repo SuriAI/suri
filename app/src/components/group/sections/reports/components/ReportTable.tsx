@@ -73,7 +73,7 @@ export function ReportTable({
                     {statusFilter !== "all" && (
                       <button
                         onClick={onResetFilter}
-                        className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-xs font-bold uppercase tracking-wider"
+                        className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-xs font-bold uppercase tracking-wider"
                       >
                         Reset Filter
                       </button>
@@ -106,13 +106,13 @@ export function ReportTable({
                     <tr>
                       <td
                         colSpan={visibleColDefs.length}
-                        className="px-4 py-3 bg-white/[0.03] border-b border-white/5"
+                        className="px-4 py-3 bg-white/5 border-b border-white/5"
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold text-cyan-100/90 tracking-wide">
                             {groupInfo}
                           </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] text-white/40 font-medium">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-medium">
                             {rows.length}{" "}
                             {rows.length === 1 ? "record" : "records"}
                           </span>
@@ -141,7 +141,7 @@ export function ReportTable({
                               "bg-rose-500/10 text-rose-400 border-rose-500/20";
                           if (s === "no_records")
                             badgeClass =
-                              "bg-white/[0.02] text-white/20 border-white/5";
+                              "bg-white/5 text-white/20 border-white/5";
 
                           content = (
                             <div
@@ -246,7 +246,7 @@ export function ReportTable({
                         return (
                           <td
                             key={c.key}
-                            className={`px-4 py-3.5 whitespace-nowrap border-b border-white/[0.04] ${alignClass} ${cIdx === 0 ? "relative" : ""}`}
+                            className={`px-4 py-3.5 whitespace-nowrap border-b border-white/5 ${alignClass} ${cIdx === 0 ? "relative" : ""}`}
                           >
                             {cIdx === 0 && (
                               <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />

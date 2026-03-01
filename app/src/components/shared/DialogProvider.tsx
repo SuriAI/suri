@@ -32,10 +32,10 @@ type ActiveDialogState =
 
 function getButtonClasses(variant: DialogVariant): string {
   if (variant === "danger") {
-    return "px-4 py-2 rounded-md bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30 transition-colors";
+    return "px-4 py-2 rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30 transition-colors";
   }
 
-  return "px-4 py-2 rounded-md bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-colors";
+  return "px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-colors";
 }
 
 export function DialogProvider({ children }: { children: ReactNode }) {

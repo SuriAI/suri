@@ -161,8 +161,8 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         <StatsCard type="late" value={stats.late_today} label="Late arrivals" />
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden flex-shrink-0 flex flex-col min-h-[400px]">
-        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-shrink-0 bg-white/[0.02]">
+      <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden flex-shrink-0 flex flex-col min-h-[400px]">
+        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-shrink-0 bg-white/5">
           <h3 className="text-sm font-semibold text-white/90 flex items-center gap-2 whitespace-nowrap">
             <i className="fa-solid fa-clock-rotate-left text-cyan-500/70 text-xs"></i>
             Activity Log
@@ -209,7 +209,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 </div>
               </div>
             ) : filteredRecords.length === 0 ? (
-              <div className="rounded-xl border border-white/5 bg-white/[0.02] px-6 py-8 text-center w-full mt-4">
+              <div className="rounded-lg border border-white/5 bg-white/5 px-6 py-8 text-center w-full mt-4">
                 <div className="text-xs text-white/40">
                   No results found for "{activitySearch}"
                 </div>
@@ -224,7 +224,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                   return (
                     <div
                       key={record.id}
-                      className="group relative flex items-start gap-4 hover:bg-white/[0.02] rounded-xl p-2 transition-colors -ml-4 pl-4"
+                      className="group relative flex items-start gap-4 hover:bg-white/5 rounded-lg p-2 transition-colors -ml-4 pl-4"
                     >
                       <div className="relative z-10 w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <div

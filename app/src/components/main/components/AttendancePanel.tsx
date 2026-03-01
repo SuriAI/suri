@@ -104,7 +104,7 @@ const AttendanceRecordItem = memo(
 
     return (
       <div
-        className={`border-b border-white/[0.05] px-3 py-2.5 relative group transition-colors hover:bg-white/[0.03] border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
+        className={`border-b border-white/5 px-3 py-2.5 relative group transition-colors hover:bg-white/5 border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
         title={
           classStartTime
             ? `Scheduled: ${classStartTime} | Late after: ${lateThresholdMinutes}m`
@@ -376,7 +376,7 @@ export const AttendancePanel = memo(function AttendancePanel({
               placeholder="Search name..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="w-full bg-white/[0.05] text-white text-[11px] border border-white/[0.08] rounded-md pl-7 pr-3 py-1.5 placeholder:text-white/25 focus:border-white/20 focus:outline-none transition-colors"
+              className="w-full bg-white/5 text-white text-[11px] border border-white/10 rounded-lg pl-7 pr-3 py-1.5 placeholder:text-white/25 focus:border-white/20 focus:outline-none transition-colors"
             />
           </div>
 
@@ -386,7 +386,7 @@ export const AttendancePanel = memo(function AttendancePanel({
               className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
                 sortField === "time"
                   ? "bg-white/10 text-white border border-white/15"
-                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
               }`}
             >
               <i className="fa-regular fa-clock mr-1 text-[9px]" />
@@ -397,7 +397,7 @@ export const AttendancePanel = memo(function AttendancePanel({
               className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
                 sortField === "name"
                   ? "bg-white/10 text-white border border-white/15"
-                  : "text-white/40 hover:text-white/60 hover:bg-white/[0.04]"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
               }`}
             >
               <i className="fa-solid fa-arrow-down-a-z mr-1 text-[9px]" />

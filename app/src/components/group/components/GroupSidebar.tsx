@@ -17,7 +17,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
   return (
     <aside
       className={`
-        flex flex-col border-r border-white/[0.08] bg-white/[0.02]
+        flex flex-col border-r border-white/10 bg-white/5
         transition-all duration-300 ease-in-out flex-shrink-0
         ${isSidebarCollapsed ? "w-16" : "w-64"} h-full
       `}
@@ -28,7 +28,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       />
 
       {!isSidebarCollapsed && (
-        <div className="px-4 py-3 border-b border-white/[0.08]">
+        <div className="px-4 py-3 border-b border-white/10">
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <Dropdown
@@ -73,11 +73,11 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       />
 
       <div
-        className={`py-3 border-t border-white/[0.08] mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
+        className={`py-3 border-t border-white/10 mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
       >
         <button
           onClick={onBack}
-          className={`w-full rounded-md text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
+          className={`w-full rounded-lg text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white/80 transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
           aria-label="Close"
         >
           {!isSidebarCollapsed ? (

@@ -46,11 +46,11 @@ export function FaceAssignmentGrid({
           return (
             <div
               key={face.faceId}
-              className={`group rounded-xl border overflow-hidden transition-all ${
+              className={`group rounded-lg border overflow-hidden transition-all ${
                 face.assignedPersonId
                   ? "border-cyan-400/40 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5"
                   : face.isAcceptable
-                    ? "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    ? "border-white/10 bg-white/5 hover:border-white/20"
                     : "border-amber-400/30 bg-amber-500/5"
               }`}
             >
@@ -128,7 +128,7 @@ export function FaceAssignmentGrid({
                     </div>
                     <button
                       onClick={() => onUnassign(face.faceId)}
-                      className="h-6 w-6 rounded-md bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 transition flex items-center justify-center"
+                      className="h-6 w-6 rounded-lg bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-300 transition flex items-center justify-center"
                     >
                       <svg
                         className="w-3 h-3"
@@ -156,7 +156,7 @@ export function FaceAssignmentGrid({
         <button
           onClick={onBulkRegister}
           disabled={isRegistering}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-400/40 px-4 py-4 text-sm font-medium text-cyan-100 hover:from-cyan-500/30 hover:to-cyan-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-cyan-500/10"
+          className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-400/40 px-4 py-4 text-sm font-medium text-cyan-100 hover:from-cyan-500/30 hover:to-cyan-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-cyan-500/10"
         >
           {isRegistering ? (
             <>

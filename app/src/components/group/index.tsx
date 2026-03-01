@@ -144,10 +144,10 @@ function GroupPanelComponent({
       {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
 
       <div className="fixed inset-x-0 top-9 lg:hidden z-30">
-        <div className="h-12 px-3 flex items-center justify-between bg-white/[0.02] border-b border-white/[0.08]">
+        <div className="h-12 px-3 flex items-center justify-between bg-white/5 border-b border-white/10">
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="px-3 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors"
             aria-label="Open menu"
             title="Open menu"
           >

@@ -65,7 +65,7 @@ export function GroupEntry({
   };
 
   return (
-    <div className="group/row rounded-lg border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] transition-all overflow-hidden font-sans">
+    <div className="group/row rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/5 transition-all overflow-hidden font-sans">
       {/* Group Header */}
       <div
         onClick={() => onToggle(group.id)}
@@ -79,7 +79,7 @@ export function GroupEntry({
           <div className="flex-1 min-w-0 flex items-baseline gap-3">
             {/* Group Name */}
             {editingGroup?.groupId === group.id &&
-              editingGroup.field === "name" ? (
+            editingGroup.field === "name" ? (
               <input
                 type="text"
                 value={editValue}
@@ -108,10 +108,12 @@ export function GroupEntry({
 
             {/* Combined Metadata / Description */}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">·</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">
+                ·
+              </span>
 
               {editingGroup?.groupId === group.id &&
-                editingGroup.field === "description" ? (
+              editingGroup.field === "description" ? (
                 <input
                   type="text"
                   value={editValue}
@@ -132,10 +134,11 @@ export function GroupEntry({
                     e.stopPropagation();
                     onStartEditingGroup(group, "description");
                   }}
-                  className={`text-[10px] transition-colors truncate ${group.description
-                    ? "text-white/50 hover:text-white/80"
-                    : "text-white/20 italic hover:text-white/40"
-                    }`}
+                  className={`text-[10px] transition-colors truncate ${
+                    group.description
+                      ? "text-white/50 hover:text-white/80"
+                      : "text-white/20 italic hover:text-white/40"
+                  }`}
                 >
                   {group.description || "Add description"}
                 </div>
@@ -162,17 +165,19 @@ export function GroupEntry({
               onDeleteGroup(group.id);
             }}
             disabled={deletingGroup === group.id || deletingGroup === "all"}
-            className="w-6 h-6 flex items-center justify-center rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/row:opacity-100 disabled:opacity-50"
+            className="w-6 h-6 flex items-center justify-center rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/row:opacity-100 disabled:opacity-50"
             title="Delete group"
           >
-            <i className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
+            <i
+              className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}
+            ></i>
           </button>
         </div>
       </div>
 
       {/* Members List */}
       {isExpanded && (
-        <div className="border-t border-white/5 bg-white/[0.02]">
+        <div className="border-t border-white/5 bg-white/5">
           {group.members.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-white/40">
               No members in this group

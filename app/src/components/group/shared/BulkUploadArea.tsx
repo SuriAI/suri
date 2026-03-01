@@ -14,14 +14,14 @@ export function BulkUploadArea({
   if (uploadedCount > 0) {
     return (
       <div className="mb-6">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
           <div className="flex items-center gap-3">
             {isDetecting ? (
-              <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-300">
+              <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300">
                 <i className="fa-solid fa-circle-notch fa-spin text-lg"></i>
               </div>
             ) : (
-              <div className="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-300">
+              <div className="h-10 w-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-300">
                 <i className="fa-solid fa-check text-lg"></i>
               </div>
             )}
@@ -76,11 +76,11 @@ export function BulkUploadArea({
 
   return (
     <div className="flex-1 flex items-center justify-center p-6">
-      <label className="group relative flex w-full max-w-lg cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/[0.02] hover:border-white/30 hover:bg-white/[0.04] transition-all p-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/0 group-hover:from-cyan-500/5 group-hover:to-transparent transition-all rounded-2xl" />
+      <label className="group relative flex w-full max-w-lg cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 hover:border-white/30 hover:bg-white/5 transition-all p-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 to-cyan-500/0 group-hover:from-cyan-500/5 group-hover:to-transparent transition-all rounded-xl" />
 
         <div className="relative flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
+          <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
             <i className="fa-solid fa-cloud-arrow-up text-2xl text-white/40 group-hover:text-white/60 transition-colors"></i>
           </div>
 

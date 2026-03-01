@@ -49,7 +49,7 @@ export function Modal({
     >
       <div
         ref={modalRef}
-        className={`w-full ${maxWidthClass} bg-[#09090b]/95 border border-white/10 rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+        className={`w-full ${maxWidthClass} bg-[#09090b]/95 border border-white/10 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5">

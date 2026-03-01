@@ -149,7 +149,7 @@ export function StartTimeChip({
             </Tooltip>
           </div>
 
-          <div className="relative group rounded-md overflow-hidden bg-white/5 hover:bg-white/10 border border-white/5 transition-colors">
+          <div className="relative group rounded-lg overflow-hidden bg-white/5 hover:bg-white/10 border border-white/5 transition-colors">
             <input
               type="time"
               value={startTime}

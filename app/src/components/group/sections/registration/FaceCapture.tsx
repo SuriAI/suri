@@ -158,7 +158,7 @@ export function FaceCapture({
         hideCloseButton={true}
       >
         <div className="flex flex-col items-center gap-4 py-2">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
             <i className="fa-solid fa-check text-xl text-cyan-400"></i>
           </div>
           <p className="text-sm text-cyan-200/60 font-medium text-center">
@@ -171,7 +171,7 @@ export function FaceCapture({
               setSelectedMemberId("");
               resetFrames();
             }}
-            className="w-full px-4 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-[10px] font-black uppercase tracking-widest transition-all mt-2"
+            className="w-full px-4 py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-[10px] font-black uppercase tracking-widest transition-all mt-2"
           >
             Done
           </button>
@@ -192,7 +192,7 @@ export function FaceCapture({
 
           <button
             onClick={() => setGlobalError(null)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-[10px] font-black uppercase tracking-widest transition-all mt-2"
+            className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-[10px] font-black uppercase tracking-widest transition-all mt-2"
           >
             Dismiss
           </button>

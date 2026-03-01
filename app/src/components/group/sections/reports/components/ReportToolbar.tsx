@@ -86,7 +86,7 @@ export function ReportToolbar({
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            className="bg-white/[0.04] border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
+            className="bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
             style={
               {
                 colorScheme: "dark",
@@ -103,7 +103,7 @@ export function ReportToolbar({
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            className="bg-white/[0.04] border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
+            className="bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
             style={
               {
                 colorScheme: "dark",
@@ -127,7 +127,7 @@ export function ReportToolbar({
             placeholder="Search…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-white/[0.04] border border-white/5 rounded-lg pl-7 pr-3 py-1.5 text-[11px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/30 transition-all font-medium w-36 focus:w-52"
+            className="bg-white/5 border border-white/5 rounded-lg pl-7 pr-3 py-1.5 text-[11px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/30 transition-all font-medium w-36 focus:w-52"
           />
         </div>
 
@@ -146,7 +146,7 @@ export function ReportToolbar({
               className={`relative flex items-center justify-center w-7 h-7 rounded-lg border transition-all ${
                 showFilter || statusFilter !== "all"
                   ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                  : "bg-white/[0.04] border-white/5 text-white/35 hover:text-white/60"
+                  : "bg-white/5 border-white/5 text-white/35 hover:text-white/60"
               }`}
             >
               <i className="fa-solid fa-filter text-[10px]" />
@@ -157,7 +157,7 @@ export function ReportToolbar({
           </Tooltip>
 
           {showFilter && (
-            <div className="absolute right-0 mt-2 w-36 bg-[#161616] border border-white/10 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-36 bg-[#161616] border border-white/10 rounded-lg shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden">
               {STATUS_OPTIONS.map(({ value: st, label }) => (
                 <button
                   key={st}
@@ -186,7 +186,7 @@ export function ReportToolbar({
               className={`flex items-center justify-center w-7 h-7 rounded-lg border transition-all ${
                 showOptions
                   ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                  : "bg-white/[0.04] border-white/5 text-white/35 hover:text-white/60"
+                  : "bg-white/5 border-white/5 text-white/35 hover:text-white/60"
               }`}
             >
               <i className="fa-solid fa-sliders text-[10px]" />
@@ -195,7 +195,7 @@ export function ReportToolbar({
 
           {showOptions && (
             <div
-              className="absolute right-0 mt-2 w-56 bg-[#161616] border border-white/10 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden flex flex-col"
+              className="absolute right-0 mt-2 w-56 bg-[#161616] border border-white/10 rounded-lg shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-100 overflow-hidden flex flex-col"
               style={{ maxHeight: "360px" }}
             >
               {/* Columns */}
