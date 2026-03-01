@@ -120,10 +120,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         setRegistrationState(null, null);
                       }
                     }}
-                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
+                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
+                      isActive
                         ? "bg-white/[0.06] text-white"
                         : "text-white/60 hover:bg-white/[0.05] hover:text-white"
-                      }`}
+                    }`}
                   >
                     {isActive && (
                       <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]" />
@@ -153,10 +154,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
+                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
+                    isActive
                       ? "bg-white/[0.06] text-white"
                       : "text-white/60 hover:bg-white/[0.05] hover:text-white"
-                    }`}
+                  }`}
                 >
                   {isActive && (
                     <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" />

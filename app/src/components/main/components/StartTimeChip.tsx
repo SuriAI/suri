@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Tooltip } from "@/components/shared";
 
 interface StartTimeChipProps {
   startTime: string; // "HH:MM" format
@@ -79,78 +80,87 @@ export function StartTimeChip({
 
   return (
     <div ref={containerRef} className="relative">
-      <button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        className={`group overflow-hidden relative flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all duration-300 ${
-          disabled
-            ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
-            : isOpen
-              ? "bg-black/80 border border-cyan-500/50 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
-              : outdated
-                ? "bg-amber-900/20 border-none text-amber-200 hover:bg-amber-900/30 hover:border-amber-500/50"
-                : "bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/[0.07] hover:border-white/20 text-white/90"
-        }`}
-        title={
+      <Tooltip
+        content={
           outdated
             ? "Start time may be outdated - click to update"
             : "Click to adjust session start time"
         }
+        position="top"
       >
-        <div className="flex items-baseline gap-1">
-          <span
-            className={`font-mono text-base font-light tracking-tight ${
-              outdated ? "text-amber-300" : "text-white"
-            }`}
-          >
-            {time}
-          </span>
-          <span
-            className={`text-[10px] font-medium uppercase ${
-              outdated ? "text-amber-400/70" : "text-white/50"
-            }`}
-          >
-            {period}
-          </span>
-        </div>
-
-        {outdated && (
-          <div>
-            <i className="fa-solid fa-triangle-exclamation text-[15px] text-amber-400 animate-pulse" />
+        <button
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          className={`group overflow-hidden relative flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all duration-300 ${
+            disabled
+              ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
+              : isOpen
+                ? "bg-black/80 border border-cyan-500/50 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
+                : outdated
+                  ? "bg-amber-900/20 border-none text-amber-200 hover:bg-amber-900/30 hover:border-amber-500/50"
+                  : "bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/[0.07] hover:border-white/20 text-white/90"
+          }`}
+        >
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`font-mono text-sm tracking-tight ${
+                outdated ? "text-amber-300" : "text-white/80"
+              }`}
+            >
+              {time}
+            </span>
+            <span
+              className={`text-[9px] font-bold uppercase ${
+                outdated ? "text-amber-400/70" : "text-white/40"
+              }`}
+            >
+              {period}
+            </span>
           </div>
-        )}
-      </button>
+
+          {outdated && (
+            <div>
+              <i className="fa-solid fa-triangle-exclamation text-[15px] text-amber-400 animate-pulse" />
+            </div>
+          )}
+        </button>
+      </Tooltip>
 
       {isOpen && (
-        <div className="absolute bottom-full right-0 mb-3 bg-[#050505]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] p-3 min-w-[200px] z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 origin-bottom-right">
-          <div className="flex items-center justify-between mb-3 px-1">
-            <span
-              className="text-[9px] text-white/20 uppercase tracking-[0.2em] font-bold cursor-help"
-              title="Attendance is tracked relative to this scheduled time"
+        <div className="absolute bottom-full right-0 mb-2 bg-[#0c0c0c] border border-white/10 rounded-lg shadow-xl p-2 min-w-[160px] z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-150 origin-bottom-right">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <Tooltip
+              content="Attendance is tracked relative to this scheduled time"
+              position="top"
             >
-              Start Time
-            </span>
-            <button
-              onClick={handleSetNow}
-              className="group/now focus:outline-none !bg-transparent !border-none !p-0 !shadow-none"
-              title="Set to Current Time"
-            >
-              <i className="fa-solid fa-arrows-rotate text-white/20 hover:text-cyan-400 text-xs transition-colors group-hover/now:rotate-180 duration-500"></i>
-            </button>
+              <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold cursor-help block py-1">
+                Start Time
+              </span>
+            </Tooltip>
+
+            <Tooltip content="Set to Current Time" position="top">
+              <button
+                onClick={handleSetNow}
+                className="group/now focus:outline-none bg-transparent border-none p-0 flex items-center justify-center w-6 h-6 rounded hover:bg-white/5 transition-colors"
+                aria-label="Set to Current Time"
+              >
+                <i className="fa-solid fa-arrows-rotate text-white/30 hover:text-cyan-400 text-[10px] group-hover/now:rotate-180 transition-all duration-300"></i>
+              </button>
+            </Tooltip>
           </div>
 
-          <div className="relative group rounded-xl overflow-hidden bg-white/[0.03] hover:bg-white/[0.05] border border-white/5 hover:border-white/10 transition-colors">
+          <div className="relative group rounded-md overflow-hidden bg-white/5 hover:bg-white/10 border border-white/5 transition-colors">
             <input
               type="time"
               value={startTime}
               onChange={(e) => onTimeChange(e.target.value)}
               onClick={(e) => e.currentTarget.showPicker()}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 focus:outline-none"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="py-3 px-4 text-center pointer-events-none">
-              <div className="font-mono text-3xl text-white font-light tracking-widest flex justify-center items-baseline gap-1.5">
+            <div className="py-2.5 px-3 text-center pointer-events-none">
+              <div className="font-mono text-xl text-white tracking-widest flex justify-center items-baseline gap-1">
                 <span>{formatTimeDisplay(startTime).time}</span>
-                <span className="text-xs text-white/30 font-sans font-bold uppercase tracking-wider">
+                <span className="text-[10px] text-white/40 font-sans font-bold uppercase tracking-wider">
                   {formatTimeDisplay(startTime).period}
                 </span>
               </div>
