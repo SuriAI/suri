@@ -1,9 +1,8 @@
-import { spawn, exec, execSync, ChildProcess } from "child_process";
+import { spawn, exec, execSync, type ChildProcess } from "child_process";
 import { app } from "electron";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
-import { fileURLToPath } from "node:url";
 import isDev from "../util.js";
 
 const sleep = promisify(setTimeout);
@@ -348,8 +347,7 @@ export class BackendProcessManager {
 
   private getBackendExecutablePath(): string {
     if (isDev()) {
-      const currentDir = path.dirname(fileURLToPath(import.meta.url));
-      return path.join(currentDir, "..", "..", "..", "..", "server", "run.py");
+      return path.join(app.getAppPath(), "..", "server", "run.py");
     }
 
     const platform = process.platform;

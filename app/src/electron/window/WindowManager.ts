@@ -6,8 +6,8 @@ import { state } from "../State.js";
 import { createRoundedShape } from "./windowUtils.js";
 import { persistentStore } from "../persistentStore.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const window_filename = fileURLToPath(import.meta.url);
+const window_dirname = path.dirname(window_filename);
 
 export class WindowManager {
   static createSplashWindow(): BrowserWindow {
@@ -28,7 +28,9 @@ export class WindowManager {
       },
     });
 
-    const splashPath = path.join(__dirname, "../splash.html");
+    const splashPath = isDev()
+      ? path.join(app.getAppPath(), "out", "main", "splash.html")
+      : path.join(window_dirname, "splash.html");
     splash.loadFile(splashPath);
 
     state.splashWindow = splash;
@@ -54,7 +56,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, "../preload.js"),
+        preload: path.join(window_dirname, "../preload/preload.js"),
         webgl: true,
         zoomFactor: 1.0,
         devTools: isDev(),
@@ -66,17 +68,10 @@ export class WindowManager {
     state.mainWindow = mainWindow;
 
     // Load content
-    if (isDev()) {
-      const loadVite = () => {
-        mainWindow.loadURL("http://localhost:3000").catch(() => {
-          setTimeout(loadVite, 500);
-        });
-      };
-      loadVite();
+    if (isDev() && process.env["ELECTRON_RENDERER_URL"]) {
+      mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {
-      mainWindow.loadFile(
-        path.join(__dirname, "../../../dist-react/index.html"),
-      );
+      mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"));
     }
 
     mainWindow.once("ready-to-show", () => {

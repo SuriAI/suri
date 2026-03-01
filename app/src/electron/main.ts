@@ -10,8 +10,8 @@ import { WindowManager } from "./window/WindowManager.js";
 import { TrayManager } from "./tray/TrayManager.js";
 import { registerAllHandlers } from "./ipc/index.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const main_filename = fileURLToPath(import.meta.url);
+const main_dirname = path.dirname(main_filename);
 
 app.setName("Suri");
 
@@ -67,7 +67,7 @@ app.whenReady().then(async () => {
 
     let baseDir: string;
     if (isDev()) {
-      baseDir = path.join(__dirname, "../../public");
+      baseDir = path.join(main_dirname, "../../public");
     } else {
       const appPath = app.getAppPath();
       baseDir = path.join(appPath, "dist-react");

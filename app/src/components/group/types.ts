@@ -1,6 +1,11 @@
 import type { AttendanceGroup } from "@/types/recognition";
 
-export type GroupSection = "overview" | "members" | "reports" | "registration";
+export type GroupSection =
+  | "overview"
+  | "members"
+  | "reports"
+  | "registration"
+  | "settings";
 
 export interface GroupPanelProps {
   onBack: () => void;

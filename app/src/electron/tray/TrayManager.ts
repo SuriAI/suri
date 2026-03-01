@@ -4,8 +4,8 @@ import path from "path";
 import { fileURLToPath } from "node:url";
 import { state } from "../State.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const tray_filename = fileURLToPath(import.meta.url);
+const tray_dirname = path.dirname(tray_filename);
 
 export class TrayManager {
   static createTray(): void {
@@ -13,8 +13,8 @@ export class TrayManager {
 
     const iconPath = isDev()
       ? path.join(
-          __dirname,
-          "../../../public/icons/suri_mark_logo_transparent.png",
+          tray_dirname,
+          "../../public/icons/suri_mark_logo_transparent.png",
         )
       : path.join(
           process.resourcesPath,
