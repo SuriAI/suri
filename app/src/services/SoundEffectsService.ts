@@ -20,7 +20,6 @@ export const soundEffects = {
 
     try {
       const audio = getAudio(url);
-      // Hint browser to start fetching/decoding
       audio.load();
     } catch {
       // Ignore preload failures
@@ -31,16 +30,15 @@ export const soundEffects = {
     if (!url) return;
 
     try {
-      const audio = getAudio(url);
-      if (audio.readyState < 2) {
-        // Ensure fetch starts ASAP (helps on first play)
-        audio.load();
+      const baseAudio = getAudio(url);
+      if (baseAudio.readyState < 2) {
+        baseAudio.load();
       }
-      // Rewind so repeated triggers play immediately
-      audio.currentTime = 0;
-      await audio.play();
+
+      const audioClone = baseAudio.cloneNode(true) as HTMLAudioElement;
+
+      await audioClone.play();
     } catch (err) {
-      // Autoplay restrictions or missing file should not break recognition flow
       console.debug("Sound play blocked/failed:", err);
     }
   },
