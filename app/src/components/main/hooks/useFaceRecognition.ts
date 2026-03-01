@@ -86,7 +86,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
       if (now - lastAt <= 1200) return;
       lastSoundAtRef.current.set(soundKey, now);
 
-      soundEffects.play(audioSettings.recognitionSoundUrl).catch(() => {});
+      soundEffects.play(audioSettings.recognitionSoundUrl);
     },
     [persistentCooldownsRef],
   );

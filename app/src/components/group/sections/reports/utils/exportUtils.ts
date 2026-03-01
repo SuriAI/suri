@@ -28,10 +28,17 @@ export function exportReportToCSV(
       groupArr.forEach((r) => {
         const row = cols.map((c) => {
           const v = (r as RowData)[c.key];
+
+          if (c.key === "total_hours" && typeof v === "number") {
+            const hrs = Math.floor(v);
+            const mins = Math.round((v - hrs) * 60);
+            return `${hrs > 0 ? `${hrs}h ` : ""}${mins > 0 || hrs === 0 ? `${mins}m` : ""}`.trim();
+          }
+
           if (typeof v === "boolean") return v ? "true" : "false";
           if (typeof v === "number") return String(v);
           if (v instanceof Date) return formatLocalDateTime(v);
-          return v ?? "";
+          return (v as string | undefined) ?? "";
         });
         rows.push(row);
       });

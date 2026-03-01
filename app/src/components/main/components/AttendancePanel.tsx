@@ -133,7 +133,7 @@ const AttendanceRecordItem = memo(
 
           <div className="flex-shrink-0 flex items-center gap-1.5">
             <span
-              className={`px-1.5 py-px text-[9px] font-bold tracking-wider rounded border ${timeStatus?.pillColor || "bg-white/10 text-white/60 border-white/20"}`}
+              className={`text-[10px] font-bold tracking-widest ${timeStatus?.color || "text-white/60"}`}
             >
               {timeStatus?.label || "SCANNED"}
             </span>
@@ -323,7 +323,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                    attendanceGroups.some((g) => g.id === currentGroup.id)
+                  attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -396,20 +396,22 @@ export const AttendancePanel = memo(function AttendancePanel({
           <div className="flex gap-1">
             <button
               onClick={() => handleSortFieldChange("time")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "time"
-                ? "bg-white/10 text-white border border-white/15"
-                : "text-white/40 hover:text-white/60 hover:bg-white/5"
-                }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
+                sortField === "time"
+                  ? "bg-white/10 text-white border border-white/15"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
+              }`}
             >
               <i className="fa-regular fa-clock mr-1 text-[9px]" />
               Newest
             </button>
             <button
               onClick={() => handleSortFieldChange("name")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "name"
-                ? "bg-white/10 text-white border border-white/15"
-                : "text-white/40 hover:text-white/60 hover:bg-white/5"
-                }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
+                sortField === "name"
+                  ? "bg-white/10 text-white border border-white/15"
+                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
+              }`}
             >
               <i className="fa-solid fa-arrow-down-a-z mr-1 text-[9px]" />
               A–Z
@@ -457,7 +459,8 @@ export const AttendancePanel = memo(function AttendancePanel({
                     displayNameMap.get(record.person_id) || "Unknown";
 
                   // Default to false (Time In) if somehow missing from map
-                  const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false;
+                  const hasCheckedInEarlier =
+                    recordCheckInStatus.get(record.id) ?? false;
 
                   return (
                     <AttendanceRecordItem

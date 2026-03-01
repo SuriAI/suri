@@ -10,6 +10,7 @@ function getAudio(url: string): HTMLAudioElement {
 
   const audio = new Audio(url);
   audio.preload = "auto";
+
   audioCache.set(url, { audio });
   return audio;
 }
@@ -39,7 +40,7 @@ export const soundEffects = {
 
       await audioClone.play();
     } catch (err) {
-      console.debug("Sound play blocked/failed:", err);
+      console.error("Audio playback error:", err);
     }
   },
 };

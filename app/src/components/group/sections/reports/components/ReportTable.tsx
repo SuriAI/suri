@@ -131,21 +131,14 @@ export function ReportTable({
 
                         if (c.key === "status") {
                           const s = row.status;
-                          let badgeClass =
-                            "bg-white/5 text-white/40 border-white/10";
-                          if (s === "present")
-                            badgeClass =
-                              "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-                          if (s === "absent")
-                            badgeClass =
-                              "bg-rose-500/10 text-rose-400 border-rose-500/20";
-                          if (s === "no_records")
-                            badgeClass =
-                              "bg-white/5 text-white/20 border-white/5";
+                          let textColor = "text-white/40";
+                          if (s === "present") textColor = "text-emerald-400";
+                          if (s === "absent") textColor = "text-rose-400";
+                          if (s === "no_records") textColor = "text-white/20";
 
                           content = (
                             <div
-                              className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] uppercase tracking-wider font-bold border ${badgeClass} transition-transform group-hover:scale-105`}
+                              className={`inline-flex items-center text-[11px] uppercase tracking-widest font-bold ${textColor}`}
                             >
                               {s === "no_records" ? "N/A" : s}
                             </div>
@@ -200,9 +193,15 @@ export function ReportTable({
                           }
                         } else if (c.key === "total_hours") {
                           if (row.total_hours) {
+                            const hrs = Math.floor(row.total_hours);
+                            const mins = Math.round(
+                              (row.total_hours - hrs) * 60,
+                            );
+
                             content = (
-                              <span className="text-cyan-400 font-bold">
-                                {row.total_hours.toFixed(2)}h
+                              <span className="text-cyan-400 font-bold whitespace-nowrap">
+                                {hrs > 0 ? `${hrs}h ` : ""}
+                                {mins > 0 || hrs === 0 ? `${mins}m` : ""}
                               </span>
                             );
                           } else {
