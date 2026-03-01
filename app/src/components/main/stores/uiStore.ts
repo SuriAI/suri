@@ -86,7 +86,7 @@ export const useUIStore = create<UIState>((set) => ({
 
   audioSettings: {
     recognitionSoundEnabled: true,
-    recognitionSoundUrl: "./assets/sounds/Default.mp3",
+    recognitionSoundUrl: "./assets/sounds/Recognition_Success.mp3",
   },
 
   // Actions

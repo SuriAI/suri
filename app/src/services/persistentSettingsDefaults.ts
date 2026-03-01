@@ -64,7 +64,7 @@ export const defaultSettings: PersistentSettingsSchema = {
   },
   audio: {
     recognitionSoundEnabled: true,
-    recognitionSoundUrl: "./assets/sounds/Default.mp3",
+    recognitionSoundUrl: "./assets/sounds/Recognition_Success.mp3",
   },
   attendance: {
     enableSpoofDetection: false,
