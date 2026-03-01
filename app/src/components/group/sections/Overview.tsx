@@ -215,7 +215,10 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 </div>
               </div>
             ) : (
-              <div className="relative before:absolute before:inset-y-0 before:left-[11.7px] before:w-px before:bg-white/10 space-y-4 pt-2 pb-4 ml-2">
+              <div className="relative space-y-4 pt-2 pb-4 ml-2">
+                {/* Timeline vertical line - perfectly mathematically centered at 12px (left-3) */}
+                <div className="absolute inset-y-0 left-3 w-px -translate-x-1/2 bg-white/10" />
+
                 {filteredRecords.slice(0, 50).map((record) => {
                   const displayName =
                     displayNameMap.get(record.person_id) || "Unknown";
@@ -224,9 +227,9 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                   return (
                     <div
                       key={record.id}
-                      className="group relative flex items-start gap-4 hover:bg-white/5 rounded-lg p-2 transition-colors -ml-4 pl-4"
+                      className="group relative flex items-center gap-4 hover:bg-white/5 rounded-lg p-2 transition-colors -ml-4 pl-4"
                     >
-                      <div className="relative z-10 w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="relative z-10 w-6 h-6 flex items-center justify-center flex-shrink-0">
                         <div
                           className={`w-1.5 h-1.5 rounded-full ${
                             isHighConfidence
@@ -236,21 +239,21 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                         />
                       </div>
 
-                      <div className="flex-1 min-w-0 pt-0.5">
-                        <div className="flex items-center justify-between gap-3 mb-1">
-                          <div className="font-semibold text-white text-[14px] tracking-tight truncate">
+                      <div className="flex-1 min-w-0 flex items-center justify-between gap-3 h-6">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="font-semibold text-white text-[13px] tracking-tight truncate">
                             {displayName}
-                          </div>
-                          <div className="text-[11px] font-medium text-white/40 flex-shrink-0">
-                            {getRelativeTime(record.timestamp)}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5 text-[12px] text-white/50">
-                            <i className="fa-regular fa-clock text-[10px]"></i>
+                          </span>
+                          <span className="text-white/20 text-[10px] hidden sm:inline">
+                            ·
+                          </span>
+                          <span className="hidden sm:flex items-center gap-1.5 whitespace-nowrap text-[11px] text-white/50">
+                            <i className="fa-regular fa-clock text-[9px] -mt-px opacity-70"></i>
                             {formatTime(record.timestamp)}
-                          </div>
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-medium text-white/40 flex-shrink-0 whitespace-nowrap">
+                          {getRelativeTime(record.timestamp)}
                         </div>
                       </div>
                     </div>

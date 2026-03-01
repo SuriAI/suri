@@ -302,8 +302,7 @@ export function Database({
             disabled={isLoading}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all disabled:opacity-20"
           >
-            <i className="fa-solid fa-face-smile"></i>
-            Reset Face Intelligence
+            Clear Face Data
           </button>
         </div>
       </div>

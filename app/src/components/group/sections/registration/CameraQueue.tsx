@@ -517,7 +517,7 @@ export function CameraQueue({
                           </div>
                           <div className="flex items-center gap-2">
                             {isRegistered && (
-                              <span className="px-2 py-0.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-[10px] text-cyan-200">
+                              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
                                 Registered
                               </span>
                             )}

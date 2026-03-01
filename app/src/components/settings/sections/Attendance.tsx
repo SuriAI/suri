@@ -33,16 +33,18 @@ export function Attendance({
           onClick={() =>
             onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)
           }
-          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${attendanceSettings.enableSpoofDetection
+          className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
+            attendanceSettings.enableSpoofDetection
               ? "bg-cyan-500/30"
               : "bg-white/10"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           <div
-            className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${attendanceSettings.enableSpoofDetection
+            className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${
+              attendanceSettings.enableSpoofDetection
                 ? "translate-x-5"
                 : "translate-x-0"
-              }`}
+            }`}
           ></div>
         </button>
       </div>
@@ -76,10 +78,11 @@ export function Attendance({
 
       <div className="flex flex-col">
         <div
-          className={`flex items-center py-3 gap-4 ${attendanceSettings.lateThresholdEnabled && hasSelectedGroup
+          className={`flex items-center py-3 gap-4 ${
+            attendanceSettings.lateThresholdEnabled && hasSelectedGroup
               ? ""
               : "border-b border-white/5"
-            }`}
+          }`}
         >
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-white/90">
@@ -97,16 +100,18 @@ export function Attendance({
               onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)
             }
             disabled={!hasSelectedGroup}
-            className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${attendanceSettings.lateThresholdEnabled
+            className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 flex-shrink-0 flex items-center ml-auto ${
+              attendanceSettings.lateThresholdEnabled
                 ? "bg-cyan-500/30"
                 : "bg-white/10"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <div
-              className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${attendanceSettings.lateThresholdEnabled
+              className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${
+                attendanceSettings.lateThresholdEnabled
                   ? "translate-x-5"
                   : "translate-x-0"
-                }`}
+              }`}
             ></div>
           </button>
         </div>

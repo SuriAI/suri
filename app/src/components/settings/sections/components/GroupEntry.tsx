@@ -153,7 +153,7 @@ export function GroupEntry({
               {memberCount} {memberCount === 1 ? "Member" : "Members"}
             </div>
             {registeredCount > 0 && (
-              <div className="text-[9px] font-black px-1.5 py-0 border border-cyan-500/30 rounded-full bg-cyan-500/10 text-cyan-400 uppercase tracking-widest scale-90">
+              <div className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
                 {registeredCount} Active
               </div>
             )}

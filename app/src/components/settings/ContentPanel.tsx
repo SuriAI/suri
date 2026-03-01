@@ -114,7 +114,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 <span className="text-xl font-semibold text-white">
                   {groupInitialSection
                     ? groupSections.find((s) => s.id === groupInitialSection)
-                      ?.label
+                        ?.label
                     : "Overview"}
                 </span>
               </div>

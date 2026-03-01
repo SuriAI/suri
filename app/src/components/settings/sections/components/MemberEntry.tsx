@@ -133,11 +133,11 @@ export function MemberEntry({
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             {member.has_face_data ? (
-              <div className="text-[8px] font-black px-1.5 py-0 border border-cyan-500/20 rounded bg-cyan-500/10 text-cyan-400 uppercase">
+              <div className="text-[10px] font-black tracking-widest text-cyan-400 uppercase">
                 Face
               </div>
             ) : (
-              <div className="text-[8px] font-black px-1.5 py-0 border border-amber-500/20 rounded bg-amber-500/10 text-amber-500/60 uppercase">
+              <div className="text-[10px] font-black tracking-widest text-amber-500/60 uppercase">
                 Empty
               </div>
             )}

@@ -80,7 +80,17 @@ class PersistentSettingsService {
       return defaultSettings.audio;
     }
 
-    return { ...defaultSettings.audio, ...settings };
+    // Auto-migrate legacy or corrupted sound paths to use safe relative paths for Electron
+    const merged = { ...defaultSettings.audio, ...settings };
+    if (
+      merged.recognitionSoundUrl?.includes("Default.mp3") ||
+      merged.recognitionSoundUrl === "/assets/sounds/Recognition_Success.mp3"
+    ) {
+      merged.recognitionSoundUrl = "./assets/sounds/Recognition_Success.mp3";
+      await this.set("audio", merged); // Save the corrected path
+    }
+
+    return merged;
   }
 
   async setAudioSettings(
