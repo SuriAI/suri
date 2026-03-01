@@ -4,14 +4,14 @@ import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import isDev from "../util.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const asset_filename = fileURLToPath(import.meta.url);
+const asset_dirname = path.dirname(asset_filename);
 
 export function registerAssetHandlers() {
   ipcMain.handle("assets:list-recognition-sounds", async () => {
     const soundsDir = isDev()
-      ? path.join(__dirname, "../../../public/assets/sounds")
-      : path.join(__dirname, "../../../dist-react/assets/sounds");
+      ? path.join(asset_dirname, "../../public/assets/sounds")
+      : path.join(asset_dirname, "../../dist-react/assets/sounds");
 
     try {
       const entries = await fs.readdir(soundsDir, { withFileTypes: true });

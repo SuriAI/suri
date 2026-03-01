@@ -19,9 +19,11 @@ const storeOptions: {
   name: string;
   defaults: PersistentSettingsSchema;
   cwd?: string;
+  projectName?: string;
 } = {
   name: "config",
   defaults: defaultSettings,
+  projectName: "Suri",
 };
 
 // If in development, isolate the config file from production AppData
