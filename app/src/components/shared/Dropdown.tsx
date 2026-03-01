@@ -130,8 +130,9 @@ export function Dropdown<T extends string | number = string>({
         <span className="truncate flex-1 min-w-0 text-left">{displayText}</span>
 
         <i
-          className={`fa-solid fa-chevron-down text-white/50 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            } ${iconClassName}`}
+          className={`fa-solid fa-chevron-down text-white/50 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          } ${iconClassName}`}
         ></i>
       </button>
 
@@ -161,7 +162,11 @@ export function Dropdown<T extends string | number = string>({
                   left: `${menuPosition.left}px`,
                   width: `${menuPosition.width}px`,
                   // Change transform origin so it expands from the button, depending on whether it opens up or down
-                  transformOrigin: menuPosition.top < (buttonRef.current?.getBoundingClientRect().top || 0) ? "bottom center" : "top center",
+                  transformOrigin:
+                    menuPosition.top <
+                    (buttonRef.current?.getBoundingClientRect().top || 0)
+                      ? "bottom center"
+                      : "top center",
                 }}
               >
                 <div
@@ -182,10 +187,11 @@ export function Dropdown<T extends string | number = string>({
                               onChange(null as T | null);
                               setIsOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2 text-sm transition-colors rounded-none ${!value
-                              ? "bg-white/10 text-white"
-                              : "text-white/70 hover:bg-white/5 hover:text-white"
-                              } ${optionClassName}`}
+                            className={`w-full text-left px-3 py-2 text-sm transition-colors rounded-none ${
+                              !value
+                                ? "bg-white/10 text-white"
+                                : "text-white/70 hover:bg-white/5 hover:text-white"
+                            } ${optionClassName}`}
                           >
                             {placeholder}
                           </button>
@@ -201,12 +207,13 @@ export function Dropdown<T extends string | number = string>({
                           type="button"
                           onClick={() => handleSelect(option.value)}
                           disabled={option.disabled}
-                          className={`w-full text-left px-3 py-2 text-sm transition-colors truncate rounded-none ${value === option.value
-                            ? "bg-white/10 text-white"
-                            : option.disabled
-                              ? "text-white/30 cursor-not-allowed"
-                              : "text-white/70 hover:bg-white/5 hover:text-white"
-                            } ${optionClassName}`}
+                          className={`w-full text-left px-3 py-2 text-sm transition-colors truncate rounded-none ${
+                            value === option.value
+                              ? "bg-white/10 text-white"
+                              : option.disabled
+                                ? "text-white/30 cursor-not-allowed"
+                                : "text-white/70 hover:bg-white/5 hover:text-white"
+                          } ${optionClassName}`}
                           title={option.label}
                         >
                           {option.label}
