@@ -23,16 +23,31 @@ const AttendanceRecordItem = memo(
     classStartTime,
     lateThresholdMinutes,
     lateThresholdEnabled,
+    hasCheckedInEarlier,
   }: {
     record: AttendanceRecord;
     displayName: string;
     classStartTime: string;
     lateThresholdMinutes: number;
     lateThresholdEnabled: boolean;
+    hasCheckedInEarlier: boolean;
   }) => {
     const calculateTimeStatus = () => {
       try {
         if (!classStartTime) return null;
+
+        // If the user already has a check-in earlier today, this is a check-out scan
+        if (hasCheckedInEarlier) {
+          return {
+            status: "check-out",
+            minutes: 0,
+            label: "TIME OUT",
+            color: "text-cyan-400",
+            pillColor: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+            borderColor: "border-l-cyan-500",
+            avatarColor: "bg-cyan-500/20 text-cyan-400",
+          };
+        }
 
         const [startHours, startMinutes] = classStartTime
           .split(":")
@@ -48,7 +63,7 @@ const AttendanceRecordItem = memo(
         const earlyThreshold = -5;
 
         if (lateThresholdEnabled && diffMinutes > lateThresholdMinutes) {
-          const minutesLate = diffMinutes - lateThresholdMinutes;
+          const minutesLate = diffMinutes;
           return {
             status: minutesLate > severeLateThreshold ? "severe-late" : "late",
             minutes: minutesLate,
@@ -89,9 +104,9 @@ const AttendanceRecordItem = memo(
         return {
           status: "on-time",
           minutes: 0,
-          label: "ON TIME",
+          label: "TIME IN",
           color: "text-slate-400",
-          pillColor: null,
+          pillColor: "bg-white/10 text-white/60 border-white/20",
           borderColor: "border-l-transparent",
           avatarColor: "bg-white/10 text-white/60",
         };
@@ -106,7 +121,7 @@ const AttendanceRecordItem = memo(
       <div
         className={`border-b border-white/5 px-3 py-2.5 relative group transition-colors hover:bg-white/5 border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
         title={
-          classStartTime
+          classStartTime && !hasCheckedInEarlier
             ? `Scheduled: ${classStartTime} | Late after: ${lateThresholdMinutes}m`
             : undefined
         }
@@ -117,13 +132,11 @@ const AttendanceRecordItem = memo(
           </span>
 
           <div className="flex-shrink-0 flex items-center gap-1.5">
-            {timeStatus && timeStatus.status !== "on-time" && (
-              <span
-                className={`px-1.5 py-px text-[9px] font-bold tracking-wider rounded border ${timeStatus.pillColor}`}
-              >
-                {timeStatus.label}
-              </span>
-            )}
+            <span
+              className={`px-1.5 py-px text-[9px] font-bold tracking-wider rounded border ${timeStatus?.pillColor || "bg-white/10 text-white/60 border-white/20"}`}
+            >
+              {timeStatus?.label || "SCANNED"}
+            </span>
             <span className="text-[11px] font-mono text-white/40 tabular-nums">
               {record.timestamp.toLocaleTimeString([], {
                 hour: "2-digit",
@@ -310,7 +323,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
+                    attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -383,22 +396,20 @@ export const AttendancePanel = memo(function AttendancePanel({
           <div className="flex gap-1">
             <button
               onClick={() => handleSortFieldChange("time")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
-                sortField === "time"
-                  ? "bg-white/10 text-white border border-white/15"
-                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
-              }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "time"
+                ? "bg-white/10 text-white border border-white/15"
+                : "text-white/40 hover:text-white/60 hover:bg-white/5"
+                }`}
             >
               <i className="fa-regular fa-clock mr-1 text-[9px]" />
               Newest
             </button>
             <button
               onClick={() => handleSortFieldChange("name")}
-              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${
-                sortField === "name"
-                  ? "bg-white/10 text-white border border-white/15"
-                  : "text-white/40 hover:text-white/60 hover:bg-white/5"
-              }`}
+              className={`flex-1 py-1 text-[10px] font-medium rounded transition-all ${sortField === "name"
+                ? "bg-white/10 text-white border border-white/15"
+                : "text-white/40 hover:text-white/60 hover:bg-white/5"
+                }`}
             >
               <i className="fa-solid fa-arrow-down-a-z mr-1 text-[9px]" />
               A–Z
@@ -411,24 +422,60 @@ export const AttendancePanel = memo(function AttendancePanel({
         <div className="flex-1 overflow-y-auto min-h-0 custom-scroll flex flex-col">
           {visibleRecords.length > 0 ? (
             <>
-              {visibleRecords.map((record) => {
-                const displayName =
-                  displayNameMap.get(record.person_id) || "Unknown";
-                return (
-                  <AttendanceRecordItem
-                    key={record.id}
-                    record={record}
-                    displayName={displayName}
-                    classStartTime={lateTrackingSettings.classStartTime}
-                    lateThresholdMinutes={
-                      lateTrackingSettings.lateThresholdMinutes
-                    }
-                    lateThresholdEnabled={
-                      lateTrackingSettings.lateThresholdEnabled
-                    }
-                  />
+              {(() => {
+                // Keep track of who has a valid "Time In" scan
+                const checkedInSet = new Set<string>();
+
+                // We iterate from oldest to newest to chronologically track check-ins
+                // But we still want to render them in the original sorted order (which might be newest first)
+                // First, determine check-in status chronologically
+                const chronologicalRecords = [...processedRecords].sort(
+                  (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
                 );
-              })}
+
+                const recordCheckInStatus = new Map<string, boolean>();
+
+                chronologicalRecords.forEach((record) => {
+                  const personId = record.person_id;
+                  const dateString = record.timestamp.toDateString();
+                  const key = `${personId}_${dateString}`;
+
+                  if (!checkedInSet.has(key)) {
+                    // First scan of the day!
+                    checkedInSet.add(key);
+                    recordCheckInStatus.set(record.id, false); // false = "not checked in earlier"
+                  } else {
+                    // Subsequent scan of the day!
+                    // Add 60-second grace period protection here if needed,
+                    // but simple existence in set is enough for "checked in earlier" flag
+                    recordCheckInStatus.set(record.id, true); // true = "has checked in earlier"
+                  }
+                });
+
+                return visibleRecords.map((record) => {
+                  const displayName =
+                    displayNameMap.get(record.person_id) || "Unknown";
+
+                  // Default to false (Time In) if somehow missing from map
+                  const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false;
+
+                  return (
+                    <AttendanceRecordItem
+                      key={record.id}
+                      record={record}
+                      displayName={displayName}
+                      classStartTime={lateTrackingSettings.classStartTime}
+                      lateThresholdMinutes={
+                        lateTrackingSettings.lateThresholdMinutes
+                      }
+                      lateThresholdEnabled={
+                        lateTrackingSettings.lateThresholdEnabled
+                      }
+                      hasCheckedInEarlier={hasCheckedInEarlier}
+                    />
+                  );
+                });
+              })()}
 
               {hasMore && (
                 <div className="px-2 py-2">
