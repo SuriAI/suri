@@ -6,6 +6,9 @@ SERVER_CONFIG = {
     "port": 8700,
     "reload": False,
     "log_level": "info",
+    # Workers must stay at 1 when passing a live `app` object to uvicorn.run().
+    # Multi-worker mode only works with an import string (e.g. "main:app").
+    # For a local desktop process, 1 worker is also sufficient.
     "workers": 1,
 }
 
@@ -14,10 +17,7 @@ def get_server_config() -> Dict[str, Any]:
     config = SERVER_CONFIG.copy()
     env = os.getenv("ENVIRONMENT", "development")
 
-    if env == "production":
-        config["reload"] = False
-        config["workers"] = 4
-    elif env == "testing":
+    if env == "testing":
         config["port"] = 8700
 
     if os.getenv("SERVER_HOST"):

@@ -47,7 +47,7 @@ export class BackendProcessManager {
   private async _start(): Promise<void> {
     if (this.status.isRunning) return;
 
-    this.killAllBackendProcesses();
+    await this.killAllBackendProcesses();
 
     try {
       const executablePath = this.getBackendExecutablePath();
@@ -247,14 +247,31 @@ export class BackendProcessManager {
   }
 
   killSync(): void {
-    this.killAllBackendProcesses();
+    // Synchronous kill specifically for app exit — called from before-quit handler.
+    // Does NOT use the async killAllBackendProcesses to avoid unawaited promises.
+    try {
+      if (process.platform === "win32") {
+        execSync("taskkill /F /IM server.exe /T", {
+          stdio: "ignore",
+          timeout: 3000,
+        });
+      } else {
+        execSync("pkill -9 server", { stdio: "ignore", timeout: 3000 });
+      }
+    } catch {
+      /* silent — process may not be running */
+    }
     this.process = null;
     this.status.isRunning = false;
     this.status.pid = undefined;
     this.cleanup();
   }
 
-  private killAllBackendProcesses(): void {
+  /**
+   * Kills all stale backend processes before starting a new one.
+   * Uses async sleep() instead of a CPU busy-spin to avoid blocking the main process.
+   */
+  private async killAllBackendProcesses(): Promise<void> {
     const isWin = process.platform === "win32";
     const maxAttempts = isWin ? 5 : 3;
 
@@ -313,10 +330,8 @@ export class BackendProcessManager {
             return;
           }
         }
-        const start = Date.now();
-        while (Date.now() - start < 300) {
-          /* wait */
-        }
+        // Non-blocking async sleep — does NOT block the Electron main process
+        await sleep(300);
       } catch (error: unknown) {
         const err = error as { message?: string };
         if (err?.message?.includes("not found")) return;

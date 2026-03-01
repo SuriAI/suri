@@ -94,13 +94,12 @@ app.whenReady().then(async () => {
       await backendService.start();
 
       const maxWaitTime = 120000;
-      const pollInterval = 1000;
       const startTime = Date.now();
 
       while (Date.now() - startTime < maxWaitTime) {
         const readiness = await backendService.checkReadiness();
         if (readiness.ready) return true;
-        await new Promise((r) => setTimeout(r, pollInterval));
+        await new Promise((r) => setTimeout(r, 250));
       }
 
       throw new Error("Backend synchronization timed out.");
