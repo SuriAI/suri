@@ -1,131 +1,51 @@
-# ===================================
-# DEPENDENCIES
-# ===================================
+# Dependencies
 node_modules/
-.pnpm-store/
-.pnpm-debug.log
+**/node_modules/
 
-# ===================================
-# BUILD OUTPUTS
-# ===================================
-# Electron
-app/dist/
-app/dist-electron/
-app/dist-react/
-app/out/
-
-# Backend
-backend/dist/
-backend/build/
-backend/*.exe
-backend/*.pkg
-
-# ===================================
-# ENVIRONMENT & CONFIG
-# ===================================
-.env
-.env.local
-.env.*.local
-*.local
-
-# ===================================
-# DATABASE & DATA
-# ===================================
-*.db
-*.sqlite
-*.sqlite3
-face_database/
-attendance_database/
+# Local Data
 data/
+**/data/
 
-# ===================================
-# LOGS
-# ===================================
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Build Outputs
+app/out/
+out/
+app/dist/
+app/release/
+app/build/
+server/dist/
+server/build/
 
-# ===================================
-# PYTHON
-# ===================================
+# Python Cache
 __pycache__/
+**/__pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-*.toc
-*.pyz
-*.pyo
-*.pyd
+*.class
+server/.Python
+server/env/
+server/venv/
+server/.venv/
+venv/
+env/
+.env/
 
-# PyInstaller
-*.manifest
-*.spec.bak
-
-# ===================================
-# TYPESCRIPT
-# ===================================
-*.tsbuildinfo
-.tsbuildinfo
-
-# ===================================
-# TESTING & COVERAGE
-# ===================================
-coverage/
-*.coverage
-.nyc_output
-.cache
-
-# ===================================
-# IDE & EDITORS
-# ===================================
-.vscode/
-.cursor/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# ===================================
-# OS
-# ===================================
+# Cache & Temporary Files
+.vite/
+app/.vite/
 .DS_Store
 Thumbs.db
-desktop.ini
+*.log
+app/*.log
+app/.tmp/
+app/*.tsbuildinfo
+app/.electron-vite/
 
-# ===================================
-# TEMPORARY & MISC
-# ===================================
-*.tmp
-*.temp
-.tmp/
-.temp/
-playground/
+# Environment
+.env
+.env*
 
-# ===================================
-# CI/CD (optional)
-# ===================================
-.github/
-
-venv/
+# IDE
+.vscode/
+.idea/
+*.suo
+*.sln
+*.sw?
