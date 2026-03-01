@@ -1,12 +1,9 @@
-# Dependencies
 node_modules/
 **/node_modules/
 
-# Local Data
 data/
 **/data/
 
-# Build Outputs
 app/out/
 out/
 app/dist/
@@ -15,7 +12,6 @@ app/build/
 server/dist/
 server/build/
 
-# Python Cache
 __pycache__/
 **/__pycache__/
 *.py[cod]
@@ -28,7 +24,6 @@ venv/
 env/
 .env/
 
-# Cache & Temporary Files
 .vite/
 app/.vite/
 .DS_Store
@@ -39,11 +34,9 @@ app/.tmp/
 app/*.tsbuildinfo
 app/.electron-vite/
 
-# Environment
 .env
 .env*
 
-# IDE
 .vscode/
 .idea/
 *.suo
