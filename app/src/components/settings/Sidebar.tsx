@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div className="w-[280px] flex-shrink-0 flex flex-col bg-[#0b0b0b] border-r border-white/5">
       <div className="px-6 py-8 flex items-center justify-between">
-        <h1 className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/20">
+        <h1 className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
           Settings
         </h1>
       </div>
@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex-1 px-3 space-y-10 overflow-y-auto settings-sidebar-scroll pb-6">
         <section>
           <div className="px-3 mb-4 flex items-center justify-between">
-            <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+            <h2 className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
               Group Management
             </h2>
           </div>
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     setTriggerCreateGroup(Date.now());
                   }}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-white/30 hover:text-cyan-400 group/btn"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-white/50 hover:text-cyan-400 group/btn"
                 >
                   <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
                 </button>
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div
-              className={`space-y-0.5 ${!dropdownValue ? "opacity-20 pointer-events-none grayscale" : ""}`}
+              className={`space-y-0.5 ${!dropdownValue ? "opacity-40 pointer-events-none grayscale" : ""}`}
             >
               {groupSections.map((subsection) => {
                 const isActive =
@@ -120,17 +120,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         setRegistrationState(null, null);
                       }
                     }}
-                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                      isActive
+                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
                         ? "bg-white/[0.06] text-white"
-                        : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
-                    }`}
+                        : "text-white/60 hover:bg-white/[0.05] hover:text-white"
+                      }`}
                   >
                     {isActive && (
                       <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]" />
                     )}
                     <i
-                      className={`${subsection.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-cyan-400" : "text-white/20"}`}
+                      className={`${subsection.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-cyan-400" : "text-white/50"}`}
                     ></i>
                     {subsection.label}
                   </button>
@@ -142,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <section>
           <div className="px-3 mb-4">
-            <h2 className="text-[10px] font-bold text-white/20 uppercase tracking-widest">
+            <h2 className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
               General
             </h2>
           </div>
@@ -154,17 +153,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                    isActive
+                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${isActive
                       ? "bg-white/[0.06] text-white"
-                      : "text-white/40 hover:bg-white/[0.03] hover:text-white/80"
-                  }`}
+                      : "text-white/60 hover:bg-white/[0.05] hover:text-white"
+                    }`}
                 >
                   {isActive && (
                     <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
                   )}
                   <i
-                    className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/20"}`}
+                    className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/50"}`}
                   ></i>
                   {section.label}
                 </button>
