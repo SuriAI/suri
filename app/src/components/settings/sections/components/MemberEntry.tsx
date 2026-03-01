@@ -42,11 +42,11 @@ export function MemberEntry({
   };
 
   return (
-    <div className="rounded-md p-3 bg-white/5 hover:bg-white/10 border border-white/5 transition-colors">
-      <div className="flex items-start gap-3">
-        <div className="flex-1 min-w-0 space-y-2">
+    <div className="group/member relative px-3 py-1.5 bg-white/[0.01] hover:bg-white/[0.03] border border-transparent hover:border-white/[0.08] rounded-md transition-all">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0 flex items-center gap-3">
           {/* Name */}
-          <div>
+          <div className="shrink-0 font-sans">
             {isEditing("name") ? (
               <input
                 type="text"
@@ -56,21 +56,22 @@ export function MemberEntry({
                 onKeyDown={(e) => handleKeyDown(e, "name")}
                 autoFocus
                 disabled={savingMember === member.person_id}
-                className="w-full px-2 py-1 bg-white/5 border border-white/10 rounded text-sm text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[11px] font-bold text-white focus:outline-none focus:border-cyan-400/50 transition-colors h-5"
               />
             ) : (
               <div
                 onClick={() => onStartEditing(member, "name")}
-                className="text-sm font-semibold text-white cursor-pointer hover:text-cyan-300 transition-colors"
-                title="Click to edit"
+                className="text-[11px] font-bold text-white/90 cursor-pointer hover:text-cyan-400 transition-colors truncate"
               >
                 {member.name}
               </div>
             )}
           </div>
 
-          {/* Role */}
-          <div>
+          <span className="text-[9px] font-black text-white/10 shrink-0 select-none">/</span>
+
+          {/* Role & Email - Combined */}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
             {isEditing("role") ? (
               <input
                 type="text"
@@ -80,24 +81,21 @@ export function MemberEntry({
                 onKeyDown={(e) => handleKeyDown(e, "role")}
                 autoFocus
                 disabled={savingMember === member.person_id}
-                placeholder="Role (optional)"
-                className="w-full px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+                placeholder="Role"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5 max-w-[100px]"
               />
             ) : (
               <div
                 onClick={() => onStartEditing(member, "role")}
-                className="text-xs text-white/60 cursor-pointer hover:text-white/80 transition-colors"
-                title="Click to edit"
+                className={`text-[10px] cursor-pointer transition-colors truncate ${member.role ? "text-white/60 hover:text-white/80" : "text-white/20 italic hover:text-white/40"
+                  }`}
               >
-                {member.role || (
-                  <span className="text-white/30 italic">No role</span>
-                )}
+                {member.role || "No role"}
               </div>
             )}
-          </div>
 
-          {/* Email */}
-          <div>
+            <span className="text-[9px] font-black text-white/10 shrink-0 select-none">·</span>
+
             {isEditing("email") ? (
               <input
                 type="email"
@@ -107,51 +105,44 @@ export function MemberEntry({
                 onKeyDown={(e) => handleKeyDown(e, "email")}
                 autoFocus
                 disabled={savingMember === member.person_id}
-                placeholder="Email (optional)"
-                className="w-full px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+                placeholder="Email"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5 max-w-[150px]"
               />
             ) : (
               <div
                 onClick={() => onStartEditing(member, "email")}
-                className="text-xs text-white/50 cursor-pointer hover:text-white/70 transition-colors"
-                title="Click to edit"
+                className={`text-[10px] cursor-pointer transition-colors truncate ${member.email ? "text-white/50 hover:text-white/70" : "text-white/20 italic hover:text-white/40"
+                  }`}
               >
-                {member.email || (
-                  <span className="text-white/30 italic">No email</span>
-                )}
+                {member.email || "No email"}
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <div className="flex items-center gap-2">
             {member.has_face_data ? (
-              <div className="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              <div className="text-[8px] font-black px-1.5 py-0 border border-cyan-500/20 rounded bg-cyan-500/10 text-cyan-400 uppercase">
                 Face
               </div>
             ) : (
-              <div className="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                No Face
+              <div className="text-[8px] font-black px-1.5 py-0 border border-amber-500/20 rounded bg-amber-500/10 text-amber-500/60 uppercase">
+                Empty
               </div>
             )}
+
             <button
               onClick={() => onDeleteMember(member.person_id, member.name)}
               disabled={deletingMember === member.person_id}
-              className="px-2 py-0.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-5 h-5 flex items-center justify-center rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/member:opacity-100 disabled:opacity-50"
               title="Delete member"
             >
-              {deletingMember === member.person_id ? (
-                <i className="fa-solid fa-spinner fa-spin"></i>
-              ) : (
-                <i className="fa-solid fa-trash"></i>
-              )}
+              <i className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[9px]`}></i>
             </button>
           </div>
           {savingMember === member.person_id && (
-            <div className="text-xs text-white/40">
-              <i className="fa-solid fa-spinner fa-spin"></i>
-            </div>
+            <i className="fa-solid fa-spinner fa-spin text-[9px] text-cyan-400/60"></i>
           )}
         </div>
       </div>

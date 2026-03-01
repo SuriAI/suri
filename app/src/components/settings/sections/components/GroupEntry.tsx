@@ -65,92 +65,107 @@ export function GroupEntry({
   };
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+    <div className="group/row rounded-lg border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] transition-all overflow-hidden font-sans">
       {/* Group Header */}
-      <div className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
+      <div
+        onClick={() => onToggle(group.id)}
+        className="w-full px-3 py-2 flex items-center justify-between cursor-pointer transition-colors"
+      >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <button onClick={() => onToggle(group.id)} className="flex-shrink-0">
-            <i
-              className={`fa-solid fa-chevron-${isExpanded ? "down" : "right"} text-white/40 text-xs transition-transform`}
-            ></i>
-          </button>
-          <div className="flex-1 min-w-0 text-left space-y-1">
+          <i
+            className={`fa-solid fa-chevron-right text-[10px] text-white/40 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""} group-hover/row:text-white/70 w-3 text-center`}
+          ></i>
+
+          <div className="flex-1 min-w-0 flex items-baseline gap-3">
             {/* Group Name */}
             {editingGroup?.groupId === group.id &&
-            editingGroup.field === "name" ? (
+              editingGroup.field === "name" ? (
               <input
                 type="text"
                 value={editValue}
                 onChange={(e) => onEditValueChange(e.target.value)}
                 onBlur={() => onSaveGroupEdit(group.id, "name", editValue)}
                 onKeyDown={(e) => handleGroupKeyDown(e, "name")}
+                onClick={(e) => e.stopPropagation()}
                 autoFocus
                 disabled={savingGroup === group.id}
-                className="w-full px-2 py-1 bg-white/5 border border-white/10 rounded text-sm font-semibold text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-xs font-bold text-white focus:outline-none focus:border-cyan-400/50 transition-colors h-6"
               />
             ) : (
               <div
-                onClick={() => onStartEditingGroup(group, "name")}
-                className="text-sm font-semibold text-white cursor-pointer hover:text-cyan-300 transition-colors truncate"
-                title="Click to edit name"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStartEditingGroup(group, "name");
+                }}
+                className="text-xs font-bold text-white hover:text-cyan-400 transition-colors truncate flex items-center gap-2"
               >
                 {group.name}
                 {savingGroup === group.id && (
-                  <span className="ml-2 text-white/40">
-                    <i className="fa-solid fa-spinner fa-spin"></i>
-                  </span>
+                  <i className="fa-solid fa-spinner fa-spin text-[9px] text-cyan-400/50"></i>
                 )}
               </div>
             )}
-            {/* Group Description */}
-            {editingGroup?.groupId === group.id &&
-            editingGroup.field === "description" ? (
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => onEditValueChange(e.target.value)}
-                onBlur={() =>
-                  onSaveGroupEdit(group.id, "description", editValue)
-                }
-                onKeyDown={(e) => handleGroupKeyDown(e, "description")}
-                autoFocus
-                disabled={savingGroup === group.id}
-                placeholder="Description (optional)"
-                className="w-full px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
-              />
-            ) : (
-              <div
-                onClick={() => onStartEditingGroup(group, "description")}
-                className="text-xs text-white/50 cursor-pointer hover:text-white/80 transition-colors truncate"
-                title="Click to edit description"
-              >
-                {group.description || (
-                  <span className="text-white/30 italic">No description</span>
-                )}
-              </div>
-            )}
+
+            {/* Combined Metadata / Description */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">·</span>
+
+              {editingGroup?.groupId === group.id &&
+                editingGroup.field === "description" ? (
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => onEditValueChange(e.target.value)}
+                  onBlur={() =>
+                    onSaveGroupEdit(group.id, "description", editValue)
+                  }
+                  onKeyDown={(e) => handleGroupKeyDown(e, "description")}
+                  onClick={(e) => e.stopPropagation()}
+                  autoFocus
+                  disabled={savingGroup === group.id}
+                  placeholder="Description…"
+                  className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5"
+                />
+              ) : (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartEditingGroup(group, "description");
+                  }}
+                  className={`text-[10px] transition-colors truncate ${group.description
+                    ? "text-white/50 hover:text-white/80"
+                    : "text-white/20 italic hover:text-white/40"
+                    }`}
+                >
+                  {group.description || "Add description"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-          <div className="text-xs text-white/50">
-            {memberCount} {memberCount === 1 ? "member" : "members"}
-          </div>
-          {registeredCount > 0 && (
-            <div className="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-              {registeredCount} registered
+
+        <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+          <div className="flex items-center gap-2.5">
+            <div className="text-[9px] font-bold text-white/40 uppercase tracking-tighter">
+              {memberCount} {memberCount === 1 ? "Member" : "Members"}
             </div>
-          )}
+            {registeredCount > 0 && (
+              <div className="text-[9px] font-black px-1.5 py-0 border border-cyan-500/30 rounded-full bg-cyan-500/10 text-cyan-400 uppercase tracking-widest scale-90">
+                {registeredCount} Active
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={() => onDeleteGroup(group.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteGroup(group.id);
+            }}
             disabled={deletingGroup === group.id || deletingGroup === "all"}
-            className="px-2 py-1 text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-6 h-6 flex items-center justify-center rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/row:opacity-100 disabled:opacity-50"
             title="Delete group"
           >
-            {deletingGroup === group.id ? (
-              <i className="fa-solid fa-spinner fa-spin"></i>
-            ) : (
-              <i className="fa-solid fa-trash"></i>
-            )}
+            <i className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
           </button>
         </div>
       </div>
