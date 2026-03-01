@@ -1,8 +1,6 @@
-import { useDialog } from "@/components/shared";
 import { useMemo, memo } from "react";
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
 import {
-  GroupSettings,
   Members,
   Overview,
   Registration,
@@ -37,16 +35,14 @@ function GroupContentComponent({
   onRegistrationModeChange,
   registrationMode,
 }: GroupContentProps) {
-  const dialog = useDialog();
   const selectedGroup = useGroupStore((state) => state.selectedGroup);
   const groupsLength = useGroupStore((state) => state.groups.length);
   const members = useGroupStore((state) => state.members);
   const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails);
-  const exportData = useGroupStore((state) => state.exportData);
+
   const activeSection = useGroupUIStore((state) => state.activeSection);
   const openAddMember = useGroupUIStore((state) => state.openAddMember);
   const openEditMember = useGroupUIStore((state) => state.openEditMember);
-  const openEditGroup = useGroupUIStore((state) => state.openEditGroup);
   const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup);
 
   const handleMembersChange = () => {
@@ -120,29 +116,6 @@ function GroupContentComponent({
           onRegistrationSourceChange={onRegistrationSourceChange}
           registrationMode={registrationMode}
           onRegistrationModeChange={onRegistrationModeChange}
-        />
-      )}
-
-      {activeSection === "settings" && (
-        <GroupSettings
-          group={selectedGroup}
-          memberCount={members.length}
-          onEdit={openEditGroup}
-          onDelete={async () => {
-            if (!selectedGroup) return;
-            const ok = await dialog.confirm({
-              title: "Delete group",
-              message: `Delete group "${selectedGroup.name}"? This will remove all members and attendance records.`,
-              confirmText: "Delete group",
-              cancelText: "Cancel",
-              confirmVariant: "danger",
-            });
-            if (!ok) return;
-            const groupId = selectedGroup.id;
-            await useGroupStore.getState().deleteGroup(groupId);
-          }}
-          onExportData={exportData}
-          onRefresh={handleMembersChange}
         />
       )}
     </>

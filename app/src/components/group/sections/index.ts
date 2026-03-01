@@ -1,4 +1,3 @@
-export { GroupSettings } from "@/components/group/sections/GroupSettings";
 export { Members } from "@/components/group/sections/Members";
 export { Overview } from "@/components/group/sections/Overview";
 export { Registration } from "@/components/group/sections/Registration";
