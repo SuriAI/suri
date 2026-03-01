@@ -183,13 +183,12 @@ export function Database({
       {/* Backup Status Message */}
       {status.type !== "idle" && (
         <div
-          className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-[10px] ${
-            status.type === "loading"
-              ? "bg-white/5 border-white/10 text-white/60"
-              : status.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-400"
-          }`}
+          className={`flex items-start gap-3 px-4 py-3 rounded-lg border text-[10px] ${status.type === "loading"
+            ? "bg-white/5 border-white/10 text-white/60"
+            : status.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+              : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+            }`}
         >
           {status.type === "loading" ? (
             <i className="fa-solid fa-circle-notch fa-spin mt-0.5" />
@@ -211,39 +210,37 @@ export function Database({
       )}
 
       {/* Search */}
-      <div className="relative">
+      <div className="relative group/search max-w-sm mx-auto">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within/search:text-cyan-400 transition-colors pointer-events-none">
+          <i className="fa-solid fa-magnifying-glass text-[10px]"></i>
+        </div>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search members by name, email, or role..."
-          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-cyan-400/50 focus:ring-1 focus:ring-cyan-400/20 transition-colors"
+          placeholder="Search members or groups…"
+          className="w-full pl-8 pr-8 py-1.5 bg-white/[0.04] border border-white/10 rounded-full text-xs text-white placeholder-white/40 focus:outline-none focus:border-cyan-400/30 focus:bg-white/[0.06] transition-all"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-all border-none bg-transparent p-0"
           >
-            <i className="fa-solid fa-xmark"></i>
+            <i className="fa-solid fa-xmark text-[9px]"></i>
           </button>
         )}
       </div>
 
       {/* Groups with Members */}
       <div
-        className={`space-y-2 ${filteredData.length === 0 ? "h-24" : "h-auto"}`}
+        className={`space-y-1 ${filteredData.length === 0 ? "h-24" : "h-auto"}`}
       >
         {filteredData.length === 0 ? (
-          <div className="text-center py-12 text-white/50">
-            <div className="text-sm">No groups or members found</div>
+          <div className="text-center py-8 text-white/40">
+            <div className="text-xs">No results found</div>
             {groups.length === 0 && (
-              <div className="text-xs mt-1">
-                Create a group first to manage members here.
-              </div>
-            )}
-            {groups.length > 0 && (
-              <div className="text-xs mt-1">
-                Try adjusting the search or expand a group to view members.
+              <div className="text-[10px] mt-1 italic text-white/20">
+                Create a group to begin managing members.
               </div>
             )}
           </div>
@@ -275,62 +272,36 @@ export function Database({
       </div>
 
       {/* Clear Actions */}
-      <div className="pt-4 border-t border-white/10 space-y-3 pb-8">
-        <button
-          onClick={handleClearAllGroups}
-          disabled={isLoading || deletingGroup === "all" || groups.length === 0}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-sm font-medium text-red-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {deletingGroup === "all" ? (
-            <>
-              <i className="fa-solid fa-spinner fa-spin"></i>
-              <span>Deleting...</span>
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  strokeWidth={2}
-                />
-              </svg>
-              Delete All Groups
-            </>
-          )}
-        </button>
-        <p className="text-xs text-white/40">
-          Removes all groups and their members. This does not delete face data.
-        </p>
-        <button
-          onClick={onClearDatabase}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-sm font-medium text-red-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <div className="pt-6 border-t border-white/5 flex items-center justify-between gap-4 px-2">
+        <div className="flex-1">
+          <p className="text-[9px] text-white/30 leading-relaxed font-sans">
+            Deleting groups is permanent. Face data is managed separately from records.
+          </p>
+        </div>
+
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={handleClearAllGroups}
+            disabled={isLoading || deletingGroup === "all" || groups.length === 0}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-[10px] font-bold text-red-400 hover:text-red-300 transition-all disabled:opacity-20"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-              strokeWidth={2}
-            />
-          </svg>
-          Clear All Face Data
-        </button>
-        <p className="text-xs text-white/40">
-          Clears recognition data for every person. Attendance records remain.
-        </p>
+            {deletingGroup === "all" ? (
+              <i className="fa-solid fa-spinner fa-spin"></i>
+            ) : (
+              <i className="fa-solid fa-layer-group"></i>
+            )}
+            Clear Groups
+          </button>
+
+          <button
+            onClick={onClearDatabase}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all disabled:opacity-20"
+          >
+            <i className="fa-solid fa-face-smile"></i>
+            Reset Face Intelligence
+          </button>
+        </div>
       </div>
     </div>
   );
