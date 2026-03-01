@@ -61,13 +61,15 @@ export function FaceAssignmentGrid({
                   alt="Detected face"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/80">
+                <div className="absolute top-2 right-2 flex items-center p-1.5 rounded-full bg-black/80 backdrop-blur-sm shadow-sm border border-white/5">
                   <div
-                    className={`h-1 w-1 rounded-full ${face.confidence > 0.8 ? "bg-cyan-400" : "bg-yellow-400"}`}
+                    className={`h-2 w-2 rounded-full ${face.confidence > 0.8 ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]" : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"}`}
+                    title={
+                      face.confidence > 0.8
+                        ? "High Confidence"
+                        : "Low Confidence"
+                    }
                   />
-                  <span className="text-xs text-white">
-                    {Math.round(face.confidence * 100)}%
-                  </span>
                 </div>
                 {!face.isAcceptable && (
                   <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded-lg bg-amber-500/90 text-center">
