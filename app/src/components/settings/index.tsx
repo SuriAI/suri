@@ -135,7 +135,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
               mass: 0.5,
             }}
             style={{ willChange: "transform, opacity" }}
-            className="bg-[#0b0b0b] rounded-2xl w-full max-w-[100%] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/[0.03] overflow-hidden mt-6 relative"
+            className="bg-[#0b0b0b] rounded-xl w-full max-w-[100%] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/5 overflow-hidden mt-6 relative"
           >
             <button
               onClick={props.onBack}

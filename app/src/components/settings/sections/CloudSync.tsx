@@ -113,7 +113,7 @@ export function CloudSync() {
         </div>
       )}
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+      <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
         <div className="px-6 py-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 mb-1">
             <i className="fa-solid fa-upload text-cyan-400 text-sm" />
@@ -141,10 +141,10 @@ export function CloudSync() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+      <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
         <div className="px-6 py-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2 mb-1">
-            <i className="fa-solid fa-file-import text-blue-400 text-sm" />
+            <i className="fa-solid fa-file-import text-cyan-400 text-sm" />
             <h4 className="text-sm font-semibold text-white">
               Restore from Backup
             </h4>
@@ -158,7 +158,7 @@ export function CloudSync() {
           <button
             onClick={() => handleImport(false)}
             disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/25 text-blue-400 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/25 text-cyan-400 text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isLoading && status.action === "import" ? (
               <i className="fa-solid fa-circle-notch fa-spin" />
@@ -167,7 +167,7 @@ export function CloudSync() {
             )}
             Upload Backup File
           </button>
-          <div className="pt-4 border-t border-white/[0.04] space-y-3">
+          <div className="pt-4 border-t border-white/5 space-y-3">
             <p className="text-[10px] text-white/30 leading-relaxed max-w-md">
               <strong className="text-amber-400/50">Advanced:</strong> If you
               want to completely replace your current data with the contents of
@@ -185,10 +185,10 @@ export function CloudSync() {
         </div>
       </div>
 
-      <div className="flex items-start gap-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
-        <i className="fa-solid fa-shield-halved mt-0.5 flex-shrink-0 text-blue-400/40" />
+      <div className="flex items-start gap-4 p-4 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+        <i className="fa-solid fa-shield-halved mt-0.5 flex-shrink-0 text-cyan-400/40" />
         <div className="space-y-1">
-          <h5 className="text-[11px] font-semibold text-blue-400/80">
+          <h5 className="text-[11px] font-semibold text-cyan-400/80">
             Your privacy matters
           </h5>
           <p className="text-[10px] text-white/40 leading-relaxed max-w-lg">

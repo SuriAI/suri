@@ -120,7 +120,7 @@ export function Dropdown<T extends string | number = string>({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={`
-          w-full bg-white/5 border border-white/10 rounded-md pl-3 pr-2 py-2 text-sm text-white
+          w-full bg-white/5 border border-white/10 rounded-lg pl-3 pr-2 py-2 text-sm text-white
           focus:outline-none focus:border-white/20 transition-all cursor-pointer text-left
           flex items-center justify-between hover:bg-white/8
           disabled:opacity-50 disabled:cursor-not-allowed min-w-0
@@ -155,7 +155,7 @@ export function Dropdown<T extends string | number = string>({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="fixed z-[9999] bg-[#0c0c0c] border border-white/10 rounded-md overflow-hidden shadow-xl"
+                className="fixed z-[9999] bg-[#0c0c0c] border border-white/10 rounded-lg overflow-hidden shadow-xl"
                 onMouseDown={(e) => e.stopPropagation()}
                 style={{
                   top: `${menuPosition.top}px`,

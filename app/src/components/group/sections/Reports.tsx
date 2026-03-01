@@ -167,7 +167,7 @@ export function Reports({
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col rounded-2xl border border-white/10 bg-white/[0.01] overflow-hidden shadow-2xl">
+          <div className="flex-1 flex flex-col rounded-xl border border-white/10 bg-white/[0.01] overflow-hidden shadow-2xl">
             <ReportToolbar
               startDate={reportStartDate}
               endDate={reportEndDate}

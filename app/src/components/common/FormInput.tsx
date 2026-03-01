@@ -34,7 +34,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:${focusColor} ${className}`}
+        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:${focusColor} ${className}`}
       />
     );
   },

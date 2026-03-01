@@ -341,7 +341,7 @@ export function CameraQueue({
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#0f0f0f] text-white">
       {error && (
-        <div className="mx-6 mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
+        <div className="mx-6 mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
           <span className="flex-1">{error}</span>
           <button
@@ -354,7 +354,7 @@ export function CameraQueue({
       )}
 
       {successMessage && (
-        <div className="mx-6 mt-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200 flex items-center gap-3 flex-shrink-0">
+        <div className="mx-6 mt-4 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200 flex items-center gap-3 flex-shrink-0">
           <div className="h-1 w-1 rounded-full bg-cyan-400 animate-pulse" />
           <span className="flex-1">{successMessage}</span>
         </div>
@@ -388,7 +388,7 @@ export function CameraQueue({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-3">
+              <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-3">
                 <div className="flex flex-wrap gap-2">
                   <div className="relative flex-1 min-w-[220px]">
                     <svg
@@ -434,7 +434,7 @@ export function CameraQueue({
 
                 <div className="max-h-64 overflow-y-auto space-y-1.5 custom-scroll">
                   {members.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-white/5 bg-white/[0.02] px-3 py-8 text-center">
+                    <div className="rounded-lg border border-dashed border-white/5 bg-white/5 px-3 py-8 text-center">
                       <div className="text-xs text-white/40">
                         No members yet
                       </div>
@@ -442,7 +442,7 @@ export function CameraQueue({
                   )}
 
                   {members.length > 0 && filteredMembers.length === 0 && (
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-6 text-center">
+                    <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center">
                       <div className="text-xs text-white/40">
                         {memberSearch.trim()
                           ? `No results for "${memberSearch}"`
@@ -498,10 +498,10 @@ export function CameraQueue({
                             );
                           });
                         }}
-                        className={`group w-full rounded-xl border px-3 py-2 text-left transition-all ${
+                        className={`group w-full rounded-lg border px-3 py-2 text-left transition-all ${
                           isInQueue
                             ? "border-cyan-400/50 bg-gradient-to-br from-cyan-500/10 to-cyan-500/5"
-                            : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/5"
+                            : "border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/5"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -517,7 +517,7 @@ export function CameraQueue({
                           </div>
                           <div className="flex items-center gap-2">
                             {isRegistered && (
-                              <span className="px-2 py-0.5 rounded-md bg-cyan-500/20 border border-cyan-500/30 text-[10px] text-cyan-200">
+                              <span className="px-2 py-0.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-[10px] text-cyan-200">
                                 Registered
                               </span>
                             )}
@@ -554,7 +554,7 @@ export function CameraQueue({
         ) : (
           <div className="flex gap-4 h-full">
             <div className="flex-1 flex flex-col min-w-0">
-              <div className="flex-1 relative overflow-hidden rounded-xl border border-white/20 bg-black">
+              <div className="flex-1 relative overflow-hidden rounded-lg border border-white/20 bg-black">
                 <video
                   ref={videoRef}
                   className="w-full h-full object-contain scale-x-[-1]"
@@ -659,7 +659,7 @@ export function CameraQueue({
                   {isStreaming && (
                     <button
                       onClick={() => stopCamera()}
-                      className="px-2 py-1 rounded-md bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 text-xs font-medium transition-all"
+                      className="px-2 py-1 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 text-xs font-medium transition-all"
                     >
                       <i className="fa-solid fa-stop mr-1"></i>
                       Stop
@@ -667,7 +667,7 @@ export function CameraQueue({
                   )}
                   <button
                     onClick={() => setQueueStarted(false)}
-                    className="px-2 py-1 rounded-md bg-white/10 border border-white/10 text-white/50 hover:text-white hover:bg-white/20 text-xs font-medium transition-all"
+                    className="px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/50 hover:text-white hover:bg-white/20 text-xs font-medium transition-all"
                   >
                     <i className="fa-solid fa-list-ul mr-1"></i>
                     Queue
@@ -720,7 +720,7 @@ export function CameraQueue({
                       }
                     }}
                     disabled={!currentMember}
-                    className="px-3 py-2 rounded-md border border-white/10 bg-black/40 text-white/70 hover:text-white hover:bg-black/60 text-xs font-medium transition-all disabled:opacity-40"
+                    className="px-3 py-2 rounded-lg border border-white/10 bg-black/40 text-white/70 hover:text-white hover:bg-black/60 text-xs font-medium transition-all disabled:opacity-40"
                   >
                     Skip
                   </button>
@@ -733,7 +733,7 @@ export function CameraQueue({
                       !currentMember ||
                       !!cameraError
                     }
-                    className="flex-1 px-4 py-2 rounded-md border border-cyan-400/50 bg-cyan-500/40 text-cyan-100 hover:bg-cyan-500/50 text-xs font-medium transition-all disabled:bg-black/40 disabled:border-white/10 disabled:text-white/30 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 text-cyan-100 hover:bg-cyan-500/50 text-xs font-medium transition-all disabled:bg-black/40 disabled:border-white/10 disabled:text-white/30 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? (
                       <span className="flex items-center justify-center gap-2">
@@ -764,7 +764,7 @@ export function CameraQueue({
                           setError(null);
                         }
                       }}
-                      className="px-3 py-2 rounded-md border border-amber-400/50 bg-amber-500/40 text-amber-100 hover:bg-amber-500/50 text-xs font-medium transition-all"
+                      className="px-3 py-2 rounded-lg border border-amber-400/50 bg-amber-500/40 text-amber-100 hover:bg-amber-500/50 text-xs font-medium transition-all"
                     >
                       Retry
                     </button>
@@ -776,7 +776,7 @@ export function CameraQueue({
                   currentMember.status !== "capturing" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
                       <div
-                        className={`px-6 py-4 rounded-2xl border ${
+                        className={`px-6 py-4 rounded-xl border ${
                           currentMember.status === "completed"
                             ? "bg-cyan-500/20 border-cyan-500/30"
                             : currentMember.status === "skipped"
@@ -854,7 +854,7 @@ export function CameraQueue({
             </div>
 
             {/* Queue Sidebar - Compact */}
-            <div className="w-64 flex-shrink-0 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            <div className="w-64 flex-shrink-0 flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5">
               <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between">
                 <span className="text-xs font-semibold text-white/70">
                   Queue

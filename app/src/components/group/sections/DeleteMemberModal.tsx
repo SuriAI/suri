@@ -40,7 +40,7 @@ export function DeleteMemberModal({
       <div className="flex gap-3">
         <button
           onClick={onConfirm}
-          className="flex-1 px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30 transition-colors"
+          className="flex-1 px-4 py-2 rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30 transition-colors"
         >
           Remove Member
         </button>

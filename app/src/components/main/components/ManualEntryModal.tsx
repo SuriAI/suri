@@ -90,7 +90,7 @@ export const ManualEntryModal = ({
       title={
         <div className="flex flex-col -mt-0.5">
           <div className="flex items-center gap-2">
-            <i className="fa-solid fa-users text-blue-400 text-sm"></i>
+            <i className="fa-solid fa-users text-cyan-400 text-sm"></i>
             <span>Members</span>
           </div>
           <p className="text-white/40 text-[10px] mt-0.5 font-medium">
@@ -106,7 +106,7 @@ export const ManualEntryModal = ({
       maxWidth="sm"
     >
       <div className="space-y-4">
-        <div className=" rounded-xl p-1.5 pt-0">
+        <div className=" rounded-lg p-1.5 pt-0">
           <div className="flex gap-2">
             <div className="flex-1 min-w-0">
               <Dropdown
@@ -131,7 +131,7 @@ export const ManualEntryModal = ({
             <button
               onClick={handleSubmit}
               disabled={!selectedPersonId || isSubmitting}
-              className="px-3 py-1.5 text-xs font-semibold bg-blue-500 hover:bg-blue-400 text-white rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap h-8"
+              className="px-3 py-1.5 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap h-8"
             >
               {isSubmitting ? (
                 <i className="fa-solid fa-circle-notch fa-spin"></i>

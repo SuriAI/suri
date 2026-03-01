@@ -101,7 +101,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-[#090909]">
       {/* Section Header */}
-      <div className="px-10 py-10">
+      <div className="px-10 pt-10 pb-2">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center">
             {activeSection === "group" ? (
@@ -114,7 +114,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 <span className="text-xl font-semibold text-white">
                   {groupInitialSection
                     ? groupSections.find((s) => s.id === groupInitialSection)
-                        ?.label
+                      ?.label
                     : "Overview"}
                 </span>
               </div>

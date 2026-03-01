@@ -35,7 +35,7 @@ export function CaptureControls({
             key={option}
             onClick={() => setSource(option)}
             disabled={hasRequiredFrame}
-            className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all ${
               source === option
                 ? "bg-white/10 text-white border border-white/20"
                 : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/10 hover:text-white/60"

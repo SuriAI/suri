@@ -116,7 +116,7 @@ export function Members({
               value={memberSearch}
               onChange={(e) => setMemberSearch(e.target.value)}
               placeholder="Search members..."
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/10 focus:outline-none transition-all"
+              className="w-full rounded-lg border border-white/10 bg-white/5 pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/10 focus:outline-none transition-all"
             />
           </div>
         </div>
@@ -164,7 +164,7 @@ export function Members({
 
         <div className="flex-1 space-y-1.5 overflow-y-auto custom-scroll overflow-x-hidden min-h-0">
           {filteredMembers.length === 0 && (
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-6 text-center w-full">
+            <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center w-full">
               <div className="text-xs text-white/40">
                 {memberSearch.trim()
                   ? `No results for "${memberSearch}"`
@@ -182,7 +182,7 @@ export function Members({
             return (
               <div
                 key={member.person_id}
-                className="group relative w-full rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.03] px-4 py-4 transition-all duration-300 flex items-center justify-between gap-4 overflow-hidden"
+                className="group relative w-full rounded-xl border border-white/5 bg-white/5 hover:bg-white/5 px-4 py-4 transition-all duration-300 flex items-center justify-between gap-4 overflow-hidden"
               >
                 <div className="flex-1 min-w-0 relative z-10">
                   <div className="text-[15px] font-bold text-white tracking-tight mb-1">
@@ -234,7 +234,7 @@ export function Members({
                           useGroupUIStore.getState().jumpToRegistration;
                         jump(member.person_id);
                       }}
-                      className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] active:scale-95"
+                      className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] active:scale-95"
                     >
                       Register
                     </button>
@@ -245,7 +245,7 @@ export function Members({
                           useGroupUIStore.getState().jumpToRegistration;
                         jump(member.person_id);
                       }}
-                      className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+                      className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
                     >
                       <i className="fa-solid fa-check text-[8px] transition-all duration-300 group-hover/btn:opacity-0 group-hover/btn:scale-75 group-hover/btn:absolute"></i>
 

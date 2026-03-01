@@ -53,8 +53,8 @@ export function MobileDrawer() {
 
       <div
         className={`
-          fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white/[0.02]
-          border-r border-white/[0.08] z-50 lg:hidden
+          fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white/5
+          border-r border-white/10 z-50 lg:hidden
           transform transition-transform duration-300 ease-out
           ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}
         `}
@@ -83,7 +83,7 @@ export function MobileDrawer() {
             </svg>
           </button>
 
-          <div className="px-4 pt-1 pb-3 border-b border-white/[0.08]">
+          <div className="px-4 pt-1 pb-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <img
                 src="./icons/suri_mark_logo_transparent.png"
@@ -94,7 +94,7 @@ export function MobileDrawer() {
             </div>
           </div>
 
-          <div className="px-4 py-3 border-b border-white/[0.08]">
+          <div className="px-4 py-3 border-b border-white/10">
             <div className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
                 <Dropdown

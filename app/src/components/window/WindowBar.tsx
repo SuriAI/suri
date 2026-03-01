@@ -81,7 +81,7 @@ export default function WindowBar() {
         <Tooltip content="Minimize" position="bottom">
           <button
             onClick={handleMinimize}
-            className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+            className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
           >
             &#xE921;
           </button>
@@ -93,7 +93,7 @@ export default function WindowBar() {
         >
           <button
             onClick={handleMaximize}
-            className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/[0.08] transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+            className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
           >
             {isMaximized ? <>&#xE923;</> : <>&#xE922;</>}
           </button>

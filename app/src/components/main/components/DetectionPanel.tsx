@@ -126,11 +126,11 @@ export function DetectionPanel({
               ) : (
                 <>
                   <div
-                    className={`absolute inset-0 rounded-2xl border ${isStreaming ? "border-cyan-500/30 ai-pulse-ring" : "border-white/20"}`}
+                    className={`absolute inset-0 rounded-xl border ${isStreaming ? "border-cyan-500/30 ai-pulse-ring" : "border-white/20"}`}
                   />
 
                   <div
-                    className={`absolute inset-1 rounded-xl border overflow-hidden ${isStreaming ? "border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 to-transparent" : "border-white/10 bg-white/5"}`}
+                    className={`absolute inset-1 rounded-lg border overflow-hidden ${isStreaming ? "border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 to-transparent" : "border-white/10 bg-white/5"}`}
                   >
                     {isStreaming && (
                       <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent ai-scan-line" />

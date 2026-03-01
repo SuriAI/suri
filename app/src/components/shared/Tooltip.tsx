@@ -259,7 +259,7 @@ export function Tooltip({
               className="fixed z-[99999] pointer-events-none"
               style={{ top: coords.top, left: coords.left }}
             >
-              <div className="relative bg-[#111214] text-white text-xs font-medium px-2.5 py-1.5 rounded-md shadow-[0_4px_20px_rgba(0,0,0,0.65)] border border-white/[0.08] max-w-[260px] whitespace-nowrap">
+              <div className="relative bg-[#111214] text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.65)] border border-white/10 max-w-[260px] whitespace-nowrap">
                 {content}
                 <div style={coords.arrowStyle} />
               </div>

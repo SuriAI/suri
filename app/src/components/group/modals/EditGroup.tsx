@@ -71,7 +71,7 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-cyan-500/60 transition-colors min-h-[80px]"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500/60 transition-colors min-h-[80px]"
               placeholder="Brief description of this group..."
             />
           </label>
@@ -81,7 +81,7 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
           <button
             onClick={handleSave}
             disabled={!name.trim() || loading}
-            className="w-full px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
+            className="w-full px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Saving…" : "Save Changes"}
           </button>

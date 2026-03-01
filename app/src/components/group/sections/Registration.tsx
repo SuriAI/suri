@@ -175,7 +175,7 @@ export function Registration({
           <div className="grid grid-cols-2 gap-6">
             <button
               onClick={() => handleSourceChange("camera")}
-              className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
+              className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
             >
               <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
                 <i className="fa-solid fa-camera-retro text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
@@ -192,7 +192,7 @@ export function Registration({
 
             <button
               onClick={() => handleSourceChange("upload")}
-              className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
+              className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
             >
               <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
                 <i className="fa-solid fa-cloud-arrow-up text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
@@ -230,9 +230,9 @@ export function Registration({
         <div className="grid gap-4">
           <button
             onClick={() => handleModeChange("single")}
-            className="group p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+            className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
           >
-            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+            <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
               <i className="fa-solid fa-user text-xl text-white/30 group-hover:text-cyan-400"></i>
             </div>
             <div className="text-left">
@@ -248,9 +248,9 @@ export function Registration({
           {source === "upload" && (
             <button
               onClick={() => handleModeChange("bulk")}
-              className="group p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+              className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
             >
-              <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
                 <i className="fa-solid fa-layer-group text-xl text-white/30 group-hover:text-cyan-400"></i>
               </div>
               <div className="text-left">
@@ -267,9 +267,9 @@ export function Registration({
           {source === "camera" && (
             <button
               onClick={() => handleModeChange("queue")}
-              className="group p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+              className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
             >
-              <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+              <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
                 <i className="fa-solid fa-users-viewfinder text-xl text-white/30 group-hover:text-cyan-400"></i>
               </div>
               <div className="text-left">

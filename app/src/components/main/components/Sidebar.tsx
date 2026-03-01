@@ -210,7 +210,7 @@ export const Sidebar = memo(function Sidebar({
       >
         {!isCollapsed && (
           <div
-            className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-blue-500/30 active:bg-blue-500/50 transition-colors z-20 group"
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-cyan-500/30 active:bg-cyan-500/50 transition-colors z-20 group"
             onMouseDown={handleResizeStart}
             title="Drag to resize"
             style={{
@@ -221,15 +221,15 @@ export const Sidebar = memo(function Sidebar({
             <div
               className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 rounded-r transition-all ${
                 isResizing
-                  ? "bg-blue-500/70 h-16"
-                  : "bg-white/10 group-hover:bg-blue-500/50"
+                  ? "bg-cyan-500/70 h-16"
+                  : "bg-white/10 group-hover:bg-cyan-500/50"
               }`}
             />
           </div>
         )}
 
         <div
-          className={`px-3 py-1 border-b border-white/[0.08] transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          className={`px-3 py-1 border-b border-white/10 transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           style={{ minWidth: isResizing ? undefined : sidebarWidth }}
         >
           <div className="flex items-center justify-between gap-2">
@@ -300,7 +300,7 @@ export const Sidebar = memo(function Sidebar({
         >
           <AttendancePanel handleSelectGroup={handleSelectGroup} />
 
-          <div className="flex-1 border-t border-white/[0.08] flex flex-col min-h-0 bg-black">
+          <div className="flex-1 border-t border-white/10 flex flex-col min-h-0 bg-black">
             <div className="flex-1 overflow-y-auto custom-scroll flex flex-col min-h-0 bg-black">
               <div className="flex-1 flex flex-col min-h-[0] px-2 bg-black">
                 <DetectionPanel
@@ -351,7 +351,7 @@ export const Sidebar = memo(function Sidebar({
                     useUIStore.getState().setSettingsInitialSection("about");
                   }
                 }}
-                className="flex items-center justify-center w-11 h-11 bg-transparent border-none group rounded-xl relative"
+                className="flex items-center justify-center w-11 h-11 bg-transparent border-none group rounded-lg relative"
                 aria-label="Open Settings"
                 initial="initial"
                 whileHover="hover"

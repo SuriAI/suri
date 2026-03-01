@@ -232,7 +232,7 @@ export function AddMember({
                 type="text"
                 value={newMemberName}
                 onChange={(event) => setNewMemberName(event.target.value)}
-                className={`w-full bg-white/5 border rounded-xl px-4 py-2 focus:outline-none transition-colors ${
+                className={`w-full bg-white/5 border rounded-lg px-4 py-2 focus:outline-none transition-colors ${
                   isDuplicate && !confirmDuplicate
                     ? "border-amber-500/50 focus:border-amber-400"
                     : "border-white/10 focus:border-cyan-500/60"
@@ -255,7 +255,7 @@ export function AddMember({
                 type="text"
                 value={newMemberRole}
                 onChange={(event) => setNewMemberRole(event.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-cyan-500/60 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500/60 transition-colors"
                 placeholder="e.g. Staff, Student, Teacher"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleAddMember();
@@ -290,7 +290,7 @@ export function AddMember({
               <textarea
                 value={bulkMembersText}
                 onChange={(event) => setBulkMembersText(event.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-500/60 font-mono text-sm min-h-[200px]"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500/60 font-mono text-sm min-h-[200px]"
                 placeholder="Enter one member per line. Format:&#10;Name, Role (optional)&#10;&#10;Example:&#10;John Doe, Student&#10;Jane Smith, Teacher&#10;Bob Johnson"
               />
               <div className="mt-2 text-xs text-white/50">
@@ -303,7 +303,7 @@ export function AddMember({
             {/* Bulk Results */}
             {bulkResults && (
               <div
-                className={`rounded-xl border p-3 ${
+                className={`rounded-lg border p-3 ${
                   bulkResults.failed === 0
                     ? "border-cyan-500/40 bg-cyan-500/10"
                     : "border-yellow-500/40 bg-yellow-500/10"
@@ -342,7 +342,7 @@ export function AddMember({
             <button
               onClick={handleAddMember}
               disabled={!newMemberName.trim() || loading}
-              className={`w-full px-4 py-2 rounded-xl border transition-colors text-sm font-medium disabled:opacity-50 ${
+              className={`w-full px-4 py-2 rounded-lg border transition-colors text-sm font-medium disabled:opacity-50 ${
                 confirmDuplicate
                   ? "bg-amber-500/20 border-amber-400/40 text-amber-200 hover:bg-amber-500/30"
                   : "bg-cyan-500/20 border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30"
@@ -358,7 +358,7 @@ export function AddMember({
             <button
               onClick={() => void handleBulkAddMembers()}
               disabled={!bulkMembersText.trim() || isProcessingBulk}
-              className="w-full px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
+              className="w-full px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
             >
               {isProcessingBulk ? "Processing…" : `Add Members`}
             </button>

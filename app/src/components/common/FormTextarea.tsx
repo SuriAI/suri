@@ -23,7 +23,7 @@ export function FormTextarea({
       onChange={onChange}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:${focusColor} ${minHeight} ${className}`}
+      className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:${focusColor} ${minHeight} ${className}`}
     />
   );
 }

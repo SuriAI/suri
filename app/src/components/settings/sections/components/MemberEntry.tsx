@@ -42,7 +42,7 @@ export function MemberEntry({
   };
 
   return (
-    <div className="group/member relative px-3 py-1.5 bg-white/[0.01] hover:bg-white/[0.03] border border-transparent hover:border-white/[0.08] rounded-md transition-all">
+    <div className="group/member relative px-3 py-1.5 bg-white/[0.01] hover:bg-white/5 border border-transparent hover:border-white/10 rounded-lg transition-all">
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex items-center gap-3">
           {/* Name */}
@@ -68,7 +68,9 @@ export function MemberEntry({
             )}
           </div>
 
-          <span className="text-[9px] font-black text-white/10 shrink-0 select-none">/</span>
+          <span className="text-[9px] font-black text-white/10 shrink-0 select-none">
+            /
+          </span>
 
           {/* Role & Email - Combined */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
@@ -87,14 +89,19 @@ export function MemberEntry({
             ) : (
               <div
                 onClick={() => onStartEditing(member, "role")}
-                className={`text-[10px] cursor-pointer transition-colors truncate ${member.role ? "text-white/60 hover:text-white/80" : "text-white/20 italic hover:text-white/40"
-                  }`}
+                className={`text-[10px] cursor-pointer transition-colors truncate ${
+                  member.role
+                    ? "text-white/60 hover:text-white/80"
+                    : "text-white/20 italic hover:text-white/40"
+                }`}
               >
                 {member.role || "No role"}
               </div>
             )}
 
-            <span className="text-[9px] font-black text-white/10 shrink-0 select-none">·</span>
+            <span className="text-[9px] font-black text-white/10 shrink-0 select-none">
+              ·
+            </span>
 
             {isEditing("email") ? (
               <input
@@ -111,8 +118,11 @@ export function MemberEntry({
             ) : (
               <div
                 onClick={() => onStartEditing(member, "email")}
-                className={`text-[10px] cursor-pointer transition-colors truncate ${member.email ? "text-white/50 hover:text-white/70" : "text-white/20 italic hover:text-white/40"
-                  }`}
+                className={`text-[10px] cursor-pointer transition-colors truncate ${
+                  member.email
+                    ? "text-white/50 hover:text-white/70"
+                    : "text-white/20 italic hover:text-white/40"
+                }`}
               >
                 {member.email || "No email"}
               </div>
@@ -135,10 +145,12 @@ export function MemberEntry({
             <button
               onClick={() => onDeleteMember(member.person_id, member.name)}
               disabled={deletingMember === member.person_id}
-              className="w-5 h-5 flex items-center justify-center rounded-md text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/member:opacity-100 disabled:opacity-50"
+              className="w-5 h-5 flex items-center justify-center rounded-lg text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/member:opacity-100 disabled:opacity-50"
               title="Delete member"
             >
-              <i className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[9px]`}></i>
+              <i
+                className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[9px]`}
+              ></i>
             </button>
           </div>
           {savingMember === member.person_id && (

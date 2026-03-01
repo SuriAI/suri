@@ -90,7 +90,7 @@ export function MobileNav({
 
       {/* Footer Hint */}
       {selectedGroup && (
-        <div className="mt-6 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
+        <div className="mt-6 px-4 py-3 bg-white/5 rounded-lg border border-white/10">
           <div className="text-xs text-white/60">
             <div className="font-semibold mb-1">Quick Tip</div>
             <div>Swipe from left edge to open this menu</div>

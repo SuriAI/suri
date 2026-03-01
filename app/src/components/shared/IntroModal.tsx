@@ -24,7 +24,7 @@ export function IntroModal() {
       title: "1. No Photos Stored",
       content: (
         <div className="space-y-4">
-          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <h4 className="text-red-200 font-medium mb-1">
               Suri does not save images
             </h4>
@@ -40,7 +40,7 @@ export function IntroModal() {
       title: "2. Offline by Default",
       content: (
         <div className="space-y-4">
-          <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
+          <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
             <h4 className="text-cyan-200 font-medium mb-1">
               Data stays on this device
             </h4>
@@ -132,7 +132,7 @@ export function IntroModal() {
 
             <button
               onClick={handleNext}
-              className="px-5 py-2 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium active:scale-95"
+              className="px-5 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium active:scale-95"
             >
               {step === steps.length - 1 ? "Get Started" : "Next"}
             </button>

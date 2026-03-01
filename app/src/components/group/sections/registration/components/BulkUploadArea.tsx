@@ -14,7 +14,7 @@ export function BulkUploadArea({
   if (uploadedCount > 0) {
     return (
       <div className="mb-6">
-        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
           <div className="flex items-center gap-3">
             {isDetecting ? (
               <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300">
@@ -76,7 +76,7 @@ export function BulkUploadArea({
 
   return (
     <div className="mb-6">
-      <label className="group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/10 bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 hover:from-white/10 transition-all overflow-hidden">
+      <label className="group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 hover:from-white/10 transition-all overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-transparent transition-all" />
         <div className="relative flex flex-col items-center gap-3">
           <div className="text-center">

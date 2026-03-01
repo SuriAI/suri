@@ -32,7 +32,7 @@ export function UploadArea({ onFileProcessed, onError }: UploadAreaProps) {
   );
 
   return (
-    <div className="h-full rounded-2xl border border-white/10 bg-black/40 overflow-hidden">
+    <div className="h-full rounded-xl border border-white/10 bg-black/40 overflow-hidden">
       <label className="h-full flex cursor-pointer flex-col items-center justify-center p-8 text-center hover:bg-white/5 transition-all group">
         <div className="flex flex-col items-center gap-4">
           <div>

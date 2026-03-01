@@ -85,7 +85,7 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
           <button
             onClick={handleCreate}
             disabled={!name.trim() || loading}
-            className="w-full px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
+            className="w-full px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Creating…" : "Create Group"}
           </button>

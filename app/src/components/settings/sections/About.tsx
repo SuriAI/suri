@@ -311,14 +311,14 @@ export const About: React.FC = () => {
             </p>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between py-2 border-b border-white/5">
               <span className="text-xs text-white/50">Version</span>
-              <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-mono text-white/50">
+              <span className="text-xs font-mono text-white/50">
                 {version || "—"}
-              </div>
+              </span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between py-2 border-b border-white/5">
               <span className="text-xs text-white/50">Updates</span>
               <UpdateStatus
                 updateInfo={updateInfo}
@@ -330,7 +330,7 @@ export const About: React.FC = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between py-2 border-b border-white/5">
               <span className="text-xs text-white/50">License</span>
               <button
                 onClick={openLink("https://www.gnu.org/licenses/agpl-3.0.html")}
@@ -340,7 +340,7 @@ export const About: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between py-2 border-b border-white/5">
               <span className="text-xs text-white/50">Source code</span>
               <button
                 onClick={openLink("https://github.com/suriAI/suri")}
@@ -350,7 +350,7 @@ export const About: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between py-2 border-b border-white/5">
               <span className="text-xs text-white/50">Privacy & data</span>
               <button
                 onClick={() => setShowPrivacyModal(true)}
@@ -362,7 +362,7 @@ export const About: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="pt-6 pb-6 mt-auto flex items-center justify-between border-t border-white/[0.04]">
+        <div className="pt-6 pb-6 mt-auto flex items-center justify-between border-t border-white/5">
           <div className="flex items-center gap-3">
             <button
               onClick={openLink("https://github.com/suriAI/suri/releases")}
