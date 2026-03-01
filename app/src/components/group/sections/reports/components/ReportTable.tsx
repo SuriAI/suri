@@ -21,7 +21,6 @@ export function ReportTable({
   allColumns,
   search,
   statusFilter,
-  onResetSearch,
   onResetFilter,
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) =>
@@ -40,7 +39,7 @@ export function ReportTable({
               return (
                 <th
                   key={c.key}
-                  className={`px-4 py-4 border-b border-white/10 text-[10px] uppercase font-bold tracking-widest text-white/30 bg-[#0f0f0f] ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}
+                  className={`px-4 py-2.5 border-b border-white/10 text-[10px] uppercase font-bold tracking-widest text-white/30 bg-[#0f0f0f] ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}
                 >
                   {c.label}
                 </th>
@@ -54,15 +53,6 @@ export function ReportTable({
             <tr>
               <td colSpan={visibleColDefs.length} className="py-24">
                 <div className="flex flex-col items-center justify-center text-center px-6">
-                  {/* Icon with contextual pulse */}
-                  <div className="relative mb-6">
-                    <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/5 flex items-center justify-center shadow-inner">
-                      <i
-                        className={`fa-solid ${search ? "fa-magnifying-glass-slash" : "fa-calendar-xmark"} text-3xl text-white/10`}
-                      ></i>
-                    </div>
-                  </div>
-
                   <h3 className="text-base font-bold text-white/80 mb-2">
                     {search
                       ? `No matches for "${search}"`
@@ -80,14 +70,6 @@ export function ReportTable({
                   </p>
 
                   <div className="flex items-center gap-3">
-                    {search && (
-                      <button
-                        onClick={onResetSearch}
-                        className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all text-xs font-bold uppercase tracking-wider"
-                      >
-                        Clear Search
-                      </button>
-                    )}
                     {statusFilter !== "all" && (
                       <button
                         onClick={onResetFilter}
