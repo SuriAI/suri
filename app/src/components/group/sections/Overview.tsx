@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { attendanceManager } from "@/services";
-import { getLocalDateString, createDisplayNameMap } from "@/utils";
+import { createDisplayNameMap } from "@/utils";
 import { StatsCard, EmptyState } from "@/components/group/shared";
 import type {
   AttendanceGroup,
   AttendanceMember,
   AttendanceStats,
   AttendanceRecord,
-  AttendanceSession,
 } from "@/types/recognition";
 
 interface OverviewProps {
@@ -57,7 +56,6 @@ const getRelativeTime = (value: Date | string): string => {
 export function Overview({ group, members, onAddMember }: OverviewProps) {
   const [stats, setStats] = useState<AttendanceStats | null>(null);
   const [recentRecords, setRecentRecords] = useState<AttendanceRecord[]>([]);
-  const [activeNow, setActiveNow] = useState<number>(0);
   const [activitySearch, setActivitySearch] = useState("");
 
   const displayNameMap = useMemo(() => {
@@ -87,26 +85,16 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
     }
 
     try {
-      const todayStr = getLocalDateString();
-      const [groupStats, records, sessions] = await Promise.all([
+      const [groupStats, records] = await Promise.all([
         attendanceManager.getGroupStats(group.id, new Date()),
         attendanceManager.getRecords({
           group_id: group.id,
           limit: 100,
         }),
-        attendanceManager.getSessions({
-          group_id: group.id,
-          start_date: todayStr,
-          end_date: todayStr,
-        }),
       ]);
 
       setStats(groupStats);
       setRecentRecords(records);
-      const activeCount = (sessions as AttendanceSession[]).filter(
-        (s) => s.status === "present",
-      ).length;
-      setActiveNow(activeCount);
     } catch (err) {
       console.error("Error loading overview data:", err);
     }
@@ -141,32 +129,44 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }
 
   return (
-    <section className="space-y-4 h-full flex flex-col overflow-hidden p-6 custom-scroll overflow-y-auto">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
-        <StatsCard type="active" value={activeNow} label="Active Now" />
-        <StatsCard
-          type="present"
-          value={stats.present_today}
-          total={stats.total_members}
-          label="Timed-in Today"
-        />
-        <StatsCard
-          type="absent"
-          value={Math.max(
-            0,
-            (stats.total_members ?? 0) - (stats.present_today ?? 0),
-          )}
-          label="Not yet timed-in"
-        />
-        <StatsCard type="late" value={stats.late_today} label="Late arrivals" />
+    <section className="space-y-6 h-full flex flex-col overflow-hidden p-6 custom-scroll overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/5 bg-[#0a0a0b] rounded-lg overflow-hidden divide-x divide-white/5 flex-shrink-0">
+        <div className="px-8">
+          <StatsCard
+            type="present"
+            value={stats.present_today}
+            total={stats.total_members}
+            label="Present Today"
+          />
+        </div>
+        <div className="px-8">
+          <StatsCard
+            type="absent"
+            value={Math.max(
+              0,
+              (stats.total_members ?? 0) - (stats.present_today ?? 0),
+            )}
+            total={stats.total_members}
+            label="Missing Arrival"
+          />
+        </div>
+        <div className="px-8">
+          <StatsCard
+            type="late"
+            value={stats.late_today}
+            label="Late Check-ins"
+          />
+        </div>
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden flex-shrink-0 flex flex-col min-h-[400px]">
-        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-shrink-0 bg-white/5">
-          <h3 className="text-sm font-semibold text-white/90 flex items-center gap-2 whitespace-nowrap">
-            <i className="fa-solid fa-clock-rotate-left text-cyan-500/70 text-xs"></i>
-            Activity Log
-          </h3>
+      <div className="rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm overflow-hidden flex-shrink-0 flex flex-col min-h-[400px] shadow-2xl">
+        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-shrink-0 bg-white/[0.02]">
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              <i className="fa-solid fa-clock-rotate-left text-cyan-500 text-xs"></i>
+              Activity Log
+            </h3>
+          </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-shrink-0">
             <div className="relative w-full sm:w-56">
@@ -195,7 +195,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scroll p-4">
-          <div className="space-y-2 h-full">
+          <div className="h-full">
             {recentRecords.length === 0 ? (
               <div className="flex flex-col flex-1 items-center justify-center p-12 h-full min-h-[250px]">
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
@@ -215,46 +215,57 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 </div>
               </div>
             ) : (
-              <div className="relative space-y-4 pt-2 pb-4 ml-2">
-                {/* Timeline vertical line - perfectly mathematically centered at 12px (left-3) */}
-                <div className="absolute inset-y-0 left-3 w-px -translate-x-1/2 bg-white/10" />
-
-                {filteredRecords.slice(0, 50).map((record) => {
+              <div className="relative ml-1 overflow-visible">
+                {filteredRecords.slice(0, 50).map((record, idx) => {
                   const displayName =
                     displayNameMap.get(record.person_id) || "Unknown";
                   const isHighConfidence = record.confidence >= 0.85;
+                  const itemsCount = Math.min(filteredRecords.length, 50);
+                  const isLast = idx === itemsCount - 1;
 
                   return (
                     <div
                       key={record.id}
-                      className="group relative flex items-center gap-4 hover:bg-white/5 rounded-lg p-2 transition-colors -ml-4 pl-4"
+                      className="group relative flex items-center gap-3 hover:bg-white/[0.01] transition-all py-1.5 px-2"
                     >
-                      <div className="relative z-10 w-6 h-6 flex items-center justify-center flex-shrink-0">
+                      {/* Unbroken Vertical Line Segment */}
+                      <div
+                        className="absolute w-px bg-white/20 left-[20px]"
+                        style={{
+                          top: idx === 0 ? "50%" : "0",
+                          bottom: isLast ? "50%" : "0",
+                        }}
+                      />
+
+                      {/* Timeline Dot Column */}
+                      <div className="relative z-10 w-6 h-10 flex items-center justify-center flex-shrink-0">
                         <div
-                          className={`w-1.5 h-1.5 rounded-full ${
+                          className={`w-1.5 h-1.5 rounded-full ring-[3px] ring-black/40 transition-all duration-300 ${
                             isHighConfidence
-                              ? "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
-                              : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                              ? "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                              : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]"
                           }`}
                         />
                       </div>
 
-                      <div className="flex-1 min-w-0 flex items-center justify-between gap-3 h-6">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="font-semibold text-white text-[13px] tracking-tight truncate">
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-bold text-white text-[13px] tracking-tight group-hover:text-cyan-400 transition-colors">
                             {displayName}
                           </span>
-                          <span className="text-white/20 text-[10px] hidden sm:inline">
-                            ·
-                          </span>
-                          <span className="hidden sm:flex items-center gap-1.5 whitespace-nowrap text-[11px] text-white/50">
-                            <i className="fa-regular fa-clock text-[9px] -mt-px opacity-70"></i>
-                            {formatTime(record.timestamp)}
+                          <span className="text-[10px] font-medium text-white/20 uppercase tracking-[0.15em]">
+                            {getRelativeTime(record.timestamp)}
                           </span>
                         </div>
-                        <div className="text-[11px] font-medium text-white/40 flex-shrink-0 whitespace-nowrap">
-                          {getRelativeTime(record.timestamp)}
+                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-white/40">
+                          <i className="fa-regular fa-clock text-[9px] opacity-40"></i>
+                          <span>{formatTime(record.timestamp)}</span>
                         </div>
+                      </div>
+
+                      {/* Right-side decorative arrow or status icon */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity pr-2 text-white/10">
+                        <i className="fa-solid fa-chevron-right text-[10px]"></i>
                       </div>
                     </div>
                   );
