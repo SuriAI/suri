@@ -32,10 +32,7 @@ def align_face(
     """
     tform, _ = cv2.estimateAffinePartial2D(
         landmarks,
-        REFERENCE_POINTS,
-        method=cv2.LMEDS,
-        maxIters=1,
-        refineIters=0,
+        REFERENCE_POINTS
     )
 
     if tform is None:
@@ -46,8 +43,7 @@ def align_face(
         tform,
         input_size,
         flags=cv2.INTER_CUBIC,
-        borderMode=cv2.BORDER_CONSTANT,
-        borderValue=0,
+        borderMode=cv2.BORDER_REPLICATE
     )
 
     return aligned_face
