@@ -6,62 +6,19 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ type, value, total, label }: StatsCardProps) {
-  const config = {
-    present: {
-      accent: "bg-cyan-400/70",
-      label: label || "Present Today",
-      sublabel: total ? `out of ${total} members` : undefined,
-      border: "border-white/10",
-      bg: "bg-white/5",
-      valueColor: "text-white",
-      labelColor: "text-white/60",
-      subColor: "text-white/40",
-    },
-    absent: {
-      accent: "bg-rose-400/70",
-      label: label || "Absent Today",
-      sublabel: "no check-in record",
-      border: "border-white/10",
-      bg: "bg-white/5",
-      valueColor: "text-white",
-      labelColor: "text-white/60",
-      subColor: "text-white/40",
-    },
-    late: {
-      accent: "bg-amber-400/80",
-      label: label || "Late Today",
-      sublabel: "exceeded late threshold",
-      border: "border-white/10",
-      bg: "bg-white/5",
-      valueColor: "text-white",
-      labelColor: "text-white/60",
-      subColor: "text-white/40",
-    },
-    active: {
-      accent: "bg-cyan-400/80",
-      label: label || "Active Now",
-      sublabel: undefined,
-      border: "border-white/10",
-      bg: "bg-white/5",
-      valueColor: "text-white",
-      labelColor: "text-white/60",
-      subColor: "text-white/40",
-    },
-  }[type];
-
   return (
-    <div className={`rounded-lg border ${config.border} ${config.bg} p-4`}>
-      <p className={`text-xs ${config.labelColor} uppercase tracking-wider`}>
-        {config.label}
+    <div className="flex flex-col gap-3 py-6">
+      <p className="text-[11px] font-bold text-white/40 uppercase tracking-tight">
+        {label}
       </p>
-      <div className={`text-2xl font-semibold ${config.valueColor} mt-1`}>
-        {value ?? 0}
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-4xl font-semibold text-white tracking-tight">
+          {value ?? 0}
+        </span>
+        {total !== undefined && (type === "present" || type === "absent") && (
+          <span className="text-white/20 font-medium text-xl">/ {total}</span>
+        )}
       </div>
-      {config.sublabel && (
-        <p className={`text-[10px] ${config.subColor} mt-1`}>
-          {config.sublabel}
-        </p>
-      )}
     </div>
   );
 }
