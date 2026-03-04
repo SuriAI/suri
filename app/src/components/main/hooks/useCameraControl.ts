@@ -82,6 +82,7 @@ export function useCameraControl({
   getCameraDevices,
 }: CameraControlProps) {
   const startCamera = useCallback(async () => {
+    let deviceIdToUse: string | undefined = undefined;
     try {
       const now = Date.now();
       const timeSinceLastStart = now - lastStartTimeRef.current;
@@ -127,7 +128,7 @@ export function useCameraControl({
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
 
-      let deviceIdToUse: string | undefined = undefined;
+      deviceIdToUse = undefined;
       if (selectedCamera && cameraDevices.length > 0) {
         const deviceExists = cameraDevices.some(
           (device) => device.deviceId && device.deviceId === selectedCamera,
@@ -234,32 +235,41 @@ export function useCameraControl({
           let instructions = "";
           if (userAgent.includes("win")) {
             instructions =
-              "Go to Settings \u2192 Privacy \u2192 Camera \u2192 Turn ON 'Allow apps to access your camera'";
+              "Please check your Windows Privacy settings: Go to Settings → Privacy → Camera and ensure 'Allow apps to access your camera' is turned ON.";
           } else if (userAgent.includes("mac")) {
             instructions =
-              "Go to System Settings \u2192 Privacy & Security \u2192 Camera \u2192 Turn ON for this app";
+              "Please check your macOS Privacy settings: Go to System Settings → Privacy & Security → Camera and ensure Suri is allowed to access your camera.";
           } else {
             instructions =
-              "Go to your system settings and allow camera access for this application";
+              "Please ensure you have granted camera permissions in your system settings.";
           }
-          errorMessage = `Camera access was blocked. ${instructions}. Then close and reopen this app.`;
+          errorMessage = `Camera access was denied. ${instructions}`;
         } else if (
           errorName === "NotFoundError" ||
           errorName === "DevicesNotFoundError"
         ) {
           errorMessage =
-            "No camera detected. Please make sure your camera is connected and try again.";
+            "No camera was found. Please check if your camera is properly connected to your computer.";
         } else if (
           errorName === "NotReadableError" ||
           errorName === "TrackStartError"
         ) {
-          errorMessage =
-            "Your camera is being used by another app. Please close other apps (like Zoom, Teams, or your web browser) that might be using the camera, then try again.";
+          const otherCameras = cameraDevices.filter(
+            (d) => d.deviceId !== deviceIdToUse && d.deviceId !== "",
+          );
+          if (otherCameras.length > 0) {
+            errorMessage = `Your camera is currently in use by another application. Since you have ${otherCameras.length} other ${otherCameras.length === 1 ? "camera" : "cameras"} available, try selecting a different one from the dropdown.`;
+          } else {
+            errorMessage =
+              "Your camera is currently in use by another application (Zoom, Discord, or a web browser). Please close those apps and try starting the camera again.";
+          }
         } else if (
           errorName === "OverconstrainedError" ||
           errorName === "ConstraintNotSatisfiedError"
         ) {
-          errorMessage = "Switching to a different camera...";
+          errorMessage =
+            "Your camera doesn't support the requested settings. Trying to start with default settings...";
+          // ... rest of the fallback logic ...
           try {
             const fallbackConstraints: MediaStreamConstraints = {
               video: true,
@@ -284,11 +294,11 @@ export function useCameraControl({
           } catch (fallbackErr) {
             console.error("Fallback camera start also failed:", fallbackErr);
             errorMessage =
-              "Unable to start camera. Please check if your camera is working and not being used by another app.";
+              "The camera could not be started. This usually happens if the hardware is busy or malfunctioning. Please try re-plugging your camera.";
           }
         } else {
           errorMessage =
-            "Unable to start camera. Please make sure your camera is connected and not being used by another app.";
+            "An unexpected error occurred while starting the camera. Please check your connection or try another camera device.";
         }
       }
 
