@@ -21,7 +21,7 @@
   </a>
 
   <h1 style="font-size: 4rem; margin-bottom: 0; border-bottom: none;">Suri</h1>
-  <p style="font-size: 1rem; font-style: italic; margin-top: 0.5rem; margin-bottom: 1.5rem; color: #666; letter-spacing: 0.1em; text-transform: uppercase; font-weight: bold;">AI Attendance Tracker</p>
+  <p align="center" style="font-size: 1rem; margin-top: 0.5rem; color: #666; font-weight: bold;">LOCAL AI ATTENDANCE</p>
 
   <p align="center">
     Offline-first. Privacy-centric. Local AI.
@@ -40,7 +40,7 @@
 <br />
 
 <!-- INTRO -->
-**Suri** is an offline-first attendance tool built for speed and privacy. By executing the entire AI pipeline locally, Suri provides zero network latency and keeps biometric data strictly under local control.
+**Suri** is an offline attendance tool. It executes the entire AI pipeline locally to eliminate network latency and keep biometric data on-device.
 
 <div align="center">
   <br />
@@ -52,9 +52,9 @@
 
 ### Why Suri?
 
-| **Local First** | **Privacy by Default** | **Encrypted Backups** |
+| **Local First** | **Privacy by Default** | **Encrypted Vaults** |
 |:---|:---|:---|
-| AI runs 100% on local hardware. Recognition takes ~15ms because there's no server round-trip. | Face images are **never saved or uploaded**. The AI instantly converts faces into unreadable numbers. | Export encrypted `.suri` files (AES-256). Biometric data requires the user password to restore. |
+| AI runs on local hardware. No server round-trips. | Face images are never saved. Faces are converted to mathematical embeddings. | AES-256-GCM encrypted `.suri` vaults. Password required for restoration. |
 
 <div align="center">
   <br/>
@@ -100,16 +100,16 @@ Dig into the specifics:
 
 ### Phase 1: Local Foundation (Completed)
 - [x] **Core AI**: Local Face Recognition & Liveness Detection.
-- [x] **Data Management**: CSV Import/Export & Group Management.
-- [x] **Privacy Architecture**: Local-first SQLite & E2EE logic.
+- [x] **Data Integrity**: Atomic System Backups & Encrypted Vaults (.suri).
+- [x] **Privacy Architecture**: Local-first SQLite & Zero-Knowledge logic.
 
 ### Phase 2: Connectivity (In-Progress)
 - [ ] **Multi-Camera**: Parallel RTSP stream support for large venues.
-- [ ] **Remote Sync**: Background synchronization with the Cloud Bridge.
+- [ ] **Secure Sync**: Automated encrypted backup synchronization with Cloud Bridge.
 
 ### Phase 3: Ecosystem (Future)
-- [ ] **Remote Dashboard**: Centralized web-based admin panel for report aggregation.
-- [ ] **Mobile Companion**: Attendance check-in and notification app.
+- [ ] **Zero-Knowledge Dashboard**: Centralized admin panel for report aggregation without biometric exposure.
+- [ ] **Mobile Companion**: Remote attendance check-in and automated notifications.
 
 
 Visit the [issues page](https://github.com/johnraivenolazo/suri/issues) to submit feature requests.

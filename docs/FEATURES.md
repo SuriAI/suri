@@ -1,42 +1,23 @@
 # Features
 
-Suri provides a local attendance system focused on speed and data security.
-
-## Core Recognition Engine
-
-### Biometric Authentication
-Uses a pipeline of neural networks to verify identity.
-- **Fast Detection**: Finds faces in **<10ms** using lightweight models.
-- **Liveness Detection**: Blocks photos, screens, and masks by analyzing depth and texture.
-- **Vector Matching**: Uses Cosine Similarity to compare 512-dimensional vectors. Stable even if someone is wearing glasses or partially blocked.
-
-### Identity Tracking
-Maintains identity consistency across video frames.
-- **Handling occlusions**: Keeps track of people even if they're moving fast or temporarily blocked from view.
-- **Smoothing**: Uses **Kalman Filtering** to prevent "jittery" tracking and predict positions accurately.
+## Core
+- **Biometric Authentication**: Multi-stage neural network verification.
+- **Liveness Detection**: Anti-spoofing logic for photos, screens, and masks.
+- **Fast Detection**: <100ms detection/recognition on standard CPUs.
+- **Identity Tracking**: Kalman filtering for consistent identity maintenance across frames.
 
 ## Management Tools
-
-### Configuration
 - **Grouping**: Organize users into Classes, Teams, or Zones.
-- **Attendance Rules**: Define specific times for "Late", "Absent", or "Present" status.
+- **Attendance Rules**: Configurable "Late", "Absent", or "Present" logic.
+- **Real-Time Dashboards**: Live monitoring of check-in events.
+- **Analytics**: Historical visualization of attendance patterns.
 
-### Real-Time Monitoring
-- **Live Dashboard**: View attendance status as it happens.
-- **Analytics**: Visualization of attendance frequency over time.
-
-## Data Export
-
-- **CSV Export**: Download raw attendance logs for external processing (Excel, ERPS).
+## Data & Portability
+- **CSV Export**: Raw attendance logs for external processing (Excel, ERP).
+- **Encrypted Vaults**: AES-256-GCM encrypted `.suri` files for system backups and biometrics.
 
 ## Suri Cloud (Optional)
-
-For teams that need multi-device management, the optional **Pro** tier adds:
-
-### 1. Hybrid Sync
-- **Secure Encrypted Sync**: Biometric data is encrypted (E2EE) before upload.
-- **Web Dashboard**: View attendance reports from any browser without exposing raw face data.
-
-### 2. Organization Management
-- **Role Based Access**: Assign Admins and Viewers.
-- **Centralized Settings**: Push configuration timelines to all connected kiosks.
+Cloud features for multi-site deployments:
+- **Zero-Knowledge Sync**: E2EE biometric mirroring. The server never sees raw embeddings.
+- **Remote Analytics**: Centralized admin panel for cross-location reports and metrics.
+- **Automated Backups**: Continuous cloud vaulting of system state.
