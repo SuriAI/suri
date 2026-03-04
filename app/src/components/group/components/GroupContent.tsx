@@ -1,4 +1,5 @@
 import { useMemo, memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
 import {
   Members,
@@ -76,49 +77,59 @@ function GroupContentComponent({
   }
 
   return (
-    <>
-      {activeSection === "overview" && (
-        <Overview
-          group={selectedGroup}
-          members={members}
-          onAddMember={openAddMember}
-        />
-      )}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeSection}
+        initial={{ opacity: 0, scale: 0.995 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.995 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+        style={{ willChange: "opacity, transform" }}
+        className="h-full w-full"
+      >
+        {activeSection === "overview" && (
+          <Overview
+            group={selectedGroup}
+            members={members}
+            onAddMember={openAddMember}
+          />
+        )}
 
-      {activeSection === "reports" && (
-        <Reports
-          group={selectedGroup}
-          onDaysTrackedChange={onDaysTrackedChange}
-          onExportHandlersReady={onExportHandlersReady}
-          onAddMember={openAddMember}
-        />
-      )}
+        {activeSection === "reports" && (
+          <Reports
+            group={selectedGroup}
+            onDaysTrackedChange={onDaysTrackedChange}
+            onExportHandlersReady={onExportHandlersReady}
+            onAddMember={openAddMember}
+          />
+        )}
 
-      {activeSection === "members" && (
-        <Members
-          members={members}
-          onMembersChange={handleMembersChange}
-          onEdit={openEditMember}
-          onAdd={openAddMember}
-        />
-      )}
+        {activeSection === "members" && (
+          <Members
+            members={members}
+            onMembersChange={handleMembersChange}
+            onEdit={openEditMember}
+            onAdd={openAddMember}
+          />
+        )}
 
-      {activeSection === "registration" && (
-        <Registration
-          group={selectedGroup}
-          members={members}
-          onRefresh={handleMembersChange}
-          deselectMemberTrigger={deselectMemberTrigger}
-          onHasSelectedMemberChange={onHasSelectedMemberChange}
-          onAddMember={openAddMember}
-          // Pass controlled props
-          registrationSource={registrationSource}
-          onRegistrationSourceChange={onRegistrationSourceChange}
-          registrationMode={registrationMode}
-          onRegistrationModeChange={onRegistrationModeChange}
-        />
-      )}
-    </>
+        {activeSection === "registration" && (
+          <Registration
+            group={selectedGroup}
+            members={members}
+            onRefresh={handleMembersChange}
+            deselectMemberTrigger={deselectMemberTrigger}
+            onHasSelectedMemberChange={onHasSelectedMemberChange}
+            onAddMember={openAddMember}
+            // Pass controlled props
+            registrationSource={registrationSource}
+            onRegistrationSourceChange={onRegistrationSourceChange}
+            registrationMode={registrationMode}
+            onRegistrationModeChange={onRegistrationModeChange}
+          />
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

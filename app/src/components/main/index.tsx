@@ -522,6 +522,10 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
+              lateTrackingEnabled={
+                !!currentGroup?.settings?.late_threshold_enabled
+              }
+              classStartTime={currentGroup?.settings?.class_start_time}
             />
 
             {/* New Cooldown Overlay */}
@@ -585,8 +589,7 @@ export default function Main() {
             onAudioSettingsChange={setAudioSettings}
             attendanceSettings={{
               lateThresholdEnabled:
-                (currentGroup?.settings as { late_threshold_enabled?: boolean })
-                  ?.late_threshold_enabled ?? false,
+                currentGroup?.settings?.late_threshold_enabled ?? false,
               lateThresholdMinutes:
                 currentGroup?.settings?.late_threshold_minutes ?? 15,
               classStartTime:

@@ -110,7 +110,11 @@ export const useSettings = ({
   }, []);
 
   useEffect(() => {
-    loadSystemData();
+    // Defer heavy data loading until the mount animation settles (prevents "laggy" open)
+    const timer = setTimeout(() => {
+      loadSystemData();
+    }, 250);
+    return () => clearTimeout(timer);
   }, [loadSystemData]);
 
   useEffect(() => {

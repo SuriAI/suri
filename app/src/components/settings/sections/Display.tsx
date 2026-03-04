@@ -10,17 +10,17 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
     {
       key: "cameraMirrored" as keyof QuickSettings,
       label: "Camera Mirroring",
-      description: "Mirror camera display",
+      description: "Flip the preview for a more natural mirror-like view.",
     },
     {
       key: "showFPS" as keyof QuickSettings,
-      label: "FPS Counter",
-      description: "Frame rate indicator",
+      label: "Performance Info",
+      description: "Display real-time processing frames per second.",
     },
     {
       key: "showRecognitionNames" as keyof QuickSettings,
-      label: "Recognition Labels",
-      description: "Identity name tags",
+      label: "Identification Labels",
+      description: "Overlay member names on detected faces in the feed.",
     },
   ];
 
