@@ -1,10 +1,9 @@
-import { ipcMain, dialog, BrowserWindow, app } from "electron";
+import { ipcMain, dialog } from "electron";
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
-import path from "node:path";
+
 import { backendService } from "../backendService.js";
 import { syncManager } from "../managers/BackgroundSyncManager.js";
-import { state } from "../State.js";
 
 // Cryptographic Constants
 const SURI_MAGIC = Buffer.from("SURI\x00\x01"); // 6 bytes
@@ -78,111 +77,6 @@ function decryptVault(blob: Buffer, password: string): Buffer {
   }
 }
 
-// Password Prompt Window
-async function promptPassword(
-  title: string,
-  label: string,
-): Promise<string | null> {
-  return new Promise((resolve) => {
-    const preloadPath = path.join(
-      app.getAppPath(),
-      "out",
-      "preload",
-      "preload.js",
-    );
-
-    const promptWindow = new BrowserWindow({
-      width: 420,
-      height: 220,
-      resizable: false,
-      modal: true,
-      parent: state.mainWindow ?? undefined,
-      show: false,
-      frame: false,
-      backgroundColor: "#111113",
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: preloadPath,
-      },
-    });
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-body { background: #111113; color: #e8e8e8; padding: 24px; display: flex; flex-direction: column; gap: 16px; height: 100vh; justify-content: center; }
-h3 { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; color: #fff; text-transform: uppercase; }
-label { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; display: block; }
-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; padding: 8px 12px; font-size: 13px; outline: none; transition: border-color 0.15s; }
-input:focus { border-color: rgba(6,182,212,0.5); }
-.row { display: flex; gap: 8px; margin-top: 4px; }
-button { flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: background 0.15s; }
-.confirm { background: rgba(6,182,212,0.15); color: #22d3ee; border-color: rgba(6,182,212,0.3); }
-.confirm:hover { background: rgba(6,182,212,0.25); }
-.cancel { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.08); }
-.cancel:hover { background: rgba(255,255,255,0.08); }
-</style>
-</head>
-<body>
-<h3>${title.replace(/</g, "&lt;")}</h3>
-<div style="display:flex;flex-direction:column;gap:4px">
-  <label>${label.replace(/</g, "&lt;")}</label>
-  <input type="password" id="pw" placeholder="Enter password\u2026" autofocus />
-</div>
-<div class="row">
-  <button class="cancel" id="btnCancel">Cancel</button>
-  <button class="confirm" id="btnConfirm">Confirm</button>
-</div>
-<script>
-  const input = document.getElementById('pw');
-  const btnConfirm = document.getElementById('btnConfirm');
-  const btnCancel = document.getElementById('btnCancel');
-  function doConfirm() { window.electronAPI.sync.vaultPassword(input.value); }
-  function doCancel() { window.electronAPI.sync.vaultPassword(null); }
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doConfirm(); if (e.key === 'Escape') doCancel(); });
-  btnConfirm.addEventListener('click', doConfirm);
-  btnCancel.addEventListener('click', doCancel);
-  window.addEventListener('DOMContentLoaded', () => { setTimeout(() => input.focus(), 50); });
-</script>
-</body>
-</html>`;
-
-    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-    promptWindow.loadURL(dataUrl);
-
-    promptWindow.once("ready-to-show", () => {
-      promptWindow.show();
-    });
-
-    let hasResolved = false;
-
-    ipcMain.handleOnce(
-      "vault:password-response",
-      (_event, password: string | null) => {
-        if (hasResolved) return;
-        hasResolved = true;
-        if (!promptWindow.isDestroyed()) promptWindow.destroy();
-        resolve(password && password.length > 0 ? password : null);
-      },
-    );
-
-    promptWindow.on("closed", () => {
-      if (!hasResolved) {
-        hasResolved = true;
-        try {
-          ipcMain.removeHandler("vault:password-response");
-        } catch {
-          /* ignore */
-        }
-        resolve(null);
-      }
-    });
-  });
-}
-
 // IPC Registration
 export function registerSyncHandlers() {
   ipcMain.handle("sync:restart-manager", () => {
@@ -195,8 +89,12 @@ export function registerSyncHandlers() {
     return true;
   });
 
-  ipcMain.handle("sync:export-data", async () => {
+  ipcMain.handle("sync:export-data", async (_event, password?: string) => {
     try {
+      if (!password) {
+        throw new Error("Password is required to export vault.");
+      }
+
       const exportUrl = `${backendService.getUrl()}/vault/export`;
       const exportRes = await fetch(exportUrl, {
         method: "POST",
@@ -222,13 +120,6 @@ export function registerSyncHandlers() {
 
       if (canceled || !filePath) return { success: false, canceled: true };
 
-      const password = await promptPassword(
-        "Set Vault Password",
-        "Password (required to restore this vault)",
-      );
-
-      if (!password) return { success: false, canceled: true };
-
       const plaintext = Buffer.from(JSON.stringify(vaultPayload), "utf-8");
       const encrypted = encryptVault(plaintext, password);
       await fs.writeFile(filePath, encrypted);
@@ -245,8 +136,12 @@ export function registerSyncHandlers() {
 
   ipcMain.handle(
     "sync:import-data",
-    async (_event, overwrite: boolean = false) => {
+    async (_event, password?: string, overwrite: boolean = false) => {
       try {
+        if (!password) {
+          throw new Error("Password is required to restore vault.");
+        }
+
         // 1. Open file dialog (only .suri files)
         const { canceled, filePaths } = await dialog.showOpenDialog({
           title: "Open Suri Vault",
@@ -257,14 +152,6 @@ export function registerSyncHandlers() {
 
         if (canceled || filePaths.length === 0)
           return { success: false, canceled: true };
-
-        // 2. Prompt for decryption password
-        const password = await promptPassword(
-          "Unlock Vault",
-          "Enter the vault password",
-        );
-
-        if (!password) return { success: false, canceled: true };
 
         // 3. Read encrypted file and decrypt
         const encryptedBlob = await fs.readFile(filePaths[0]);

@@ -142,14 +142,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
 
   sync: {
-    vaultPassword: (password: string | null) => {
-      return ipcRenderer.invoke("vault:password-response", password);
+    exportData: (password: string) => {
+      return ipcRenderer.invoke("sync:export-data", password);
     },
-    exportData: () => {
-      return ipcRenderer.invoke("sync:export-data");
-    },
-    importData: (overwrite: boolean = false) => {
-      return ipcRenderer.invoke("sync:import-data", overwrite);
+    importData: (password: string, overwrite: boolean = false) => {
+      return ipcRenderer.invoke("sync:import-data", password, overwrite);
     },
     restartManager: () => {
       return ipcRenderer.invoke("sync:restart-manager");

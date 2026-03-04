@@ -6,6 +6,7 @@ import { useDatabaseManagement } from "@/components/settings/sections/hooks/useD
 import { DatabaseStats } from "@/components/settings/sections/components/DatabaseStats";
 import { GroupEntry } from "@/components/settings/sections/components/GroupEntry";
 import { useDialog } from "@/components/shared";
+import { Modal } from "@/components/common/Modal";
 
 type BackupStatus =
   | { type: "idle" }
@@ -55,11 +56,17 @@ export function Database({
   } = useDatabaseManagement(groups, onGroupsChanged, dialog);
 
   const [status, setStatus] = useState<BackupStatus>({ type: "idle" });
+  const [passwordModal, setPasswordModal] = useState<{
+    isOpen: boolean;
+    action: "export" | "import";
+    overwrite?: boolean;
+  }>({ isOpen: false, action: "export" });
+  const [passwordInput, setPasswordInput] = useState("");
 
-  const handleExport = async () => {
+  const handleExport = async (password: string) => {
     setStatus({ type: "loading", action: "export" });
     try {
-      const result = await window.electronAPI.sync.exportData();
+      const result = await window.electronAPI.sync.exportData(password);
       if (result.canceled) {
         setStatus({ type: "idle" });
         return;
@@ -83,10 +90,13 @@ export function Database({
     }
   };
 
-  const handleImport = async (overwriteAttr = false) => {
+  const handleImport = async (password: string, overwriteAttr = false) => {
     setStatus({ type: "loading", action: "import" });
     try {
-      const result = await window.electronAPI.sync.importData(overwriteAttr);
+      const result = await window.electronAPI.sync.importData(
+        password,
+        overwriteAttr,
+      );
       if (result.canceled) {
         setStatus({ type: "idle" });
         return;
@@ -141,7 +151,9 @@ export function Database({
           </div>
           <div className="px-5 py-4">
             <button
-              onClick={handleExport}
+              onClick={() =>
+                setPasswordModal({ isOpen: true, action: "export" })
+              }
               disabled={isBackingUp}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 text-[10px] font-semibold transition-all disabled:opacity-40"
             >
@@ -172,7 +184,13 @@ export function Database({
           </div>
           <div className="px-5 py-4">
             <button
-              onClick={() => handleImport(false)}
+              onClick={() =>
+                setPasswordModal({
+                  isOpen: true,
+                  action: "import",
+                  overwrite: false,
+                })
+              }
               disabled={isBackingUp}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 text-[10px] font-semibold transition-all disabled:opacity-40"
             >
@@ -186,6 +204,85 @@ export function Database({
           </div>
         </div>
       </div>
+
+      {/* Password Prompt Modal */}
+      <Modal
+        isOpen={passwordModal.isOpen}
+        onClose={() => {
+          setPasswordModal({ ...passwordModal, isOpen: false });
+          setPasswordInput("");
+        }}
+        title={
+          passwordModal.action === "export"
+            ? "Set Vault Password"
+            : "Unlock Vault"
+        }
+        icon={
+          <i
+            className={`fa-solid ${passwordModal.action === "export" ? "fa-shield-halved" : "fa-lock"} text-cyan-400`}
+          />
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-[11px] text-white/50 leading-relaxed">
+            {passwordModal.action === "export"
+              ? "Choose a strong password to encrypt your vault. You will need this password to restore your data later."
+              : "Enter the password used to encrypt this vault file to decrypt and restore your data."}
+          </p>
+          <div className="space-y-1.5">
+            <label className="text-[10px] uppercase tracking-wider text-white/30 font-semibold">
+              Vault Password
+            </label>
+            <input
+              type="password"
+              autoFocus
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && passwordInput) {
+                  const pass = passwordInput;
+                  setPasswordInput("");
+                  setPasswordModal({ ...passwordModal, isOpen: false });
+                  if (passwordModal.action === "export") {
+                    handleExport(pass);
+                  } else {
+                    handleImport(pass, passwordModal.overwrite);
+                  }
+                }
+              }}
+              placeholder="Enter password..."
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400/30 transition-all"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={() => {
+                setPasswordModal({ ...passwordModal, isOpen: false });
+                setPasswordInput("");
+              }}
+              className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-[11px] font-semibold transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={!passwordInput}
+              onClick={() => {
+                const pass = passwordInput;
+                setPasswordInput("");
+                setPasswordModal({ ...passwordModal, isOpen: false });
+                if (passwordModal.action === "export") {
+                  handleExport(pass);
+                } else {
+                  handleImport(pass, passwordModal.overwrite);
+                }
+              }}
+              className="px-4 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold transition-all disabled:opacity-30"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Backup Status Message */}
       <AnimatePresence>

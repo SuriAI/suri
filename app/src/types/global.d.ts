@@ -169,13 +169,16 @@ declare global {
   }
 
   interface SyncAPI {
-    exportData: () => Promise<{
+    exportData: (password: string) => Promise<{
       success: boolean;
       canceled?: boolean;
       filePath?: string;
       error?: string;
     }>;
-    importData: (overwrite?: boolean) => Promise<{
+    importData: (
+      password: string,
+      overwrite?: boolean,
+    ) => Promise<{
       success: boolean;
       canceled?: boolean;
       message?: string;
