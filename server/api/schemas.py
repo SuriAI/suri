@@ -113,13 +113,11 @@ class GroupSettings(BaseModel):
 
 class AttendanceGroupCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
     settings: Optional[GroupSettings] = None
 
 
 class AttendanceGroupUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
     settings: Optional[GroupSettings] = None
     is_active: Optional[bool] = None
 
@@ -127,7 +125,6 @@ class AttendanceGroupUpdate(BaseModel):
 class AttendanceGroupResponse(BaseModel):
     id: str
     name: str
-    description: Optional[str]
     created_at: datetime
     is_active: bool
     settings: GroupSettings

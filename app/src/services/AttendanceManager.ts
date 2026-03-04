@@ -114,11 +114,8 @@ export class AttendanceManager {
     }
   }
 
-  async createGroup(
-    name: string,
-    description?: string,
-  ): Promise<AttendanceGroup> {
-    return this.groupManager.createGroup(name, description, this.settings);
+  async createGroup(name: string): Promise<AttendanceGroup> {
+    return this.groupManager.createGroup(name, this.settings);
   }
 
   async getGroups(): Promise<AttendanceGroup[]> {

@@ -106,43 +106,14 @@ export function GroupEntry({
               </div>
             )}
 
-            {/* Combined Metadata / Description */}
+            {/* Combined Metadata */}
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">
                 ·
               </span>
-
-              {editingGroup?.groupId === group.id &&
-              editingGroup.field === "description" ? (
-                <input
-                  type="text"
-                  value={editValue}
-                  onChange={(e) => onEditValueChange(e.target.value)}
-                  onBlur={() =>
-                    onSaveGroupEdit(group.id, "description", editValue)
-                  }
-                  onKeyDown={(e) => handleGroupKeyDown(e, "description")}
-                  onClick={(e) => e.stopPropagation()}
-                  autoFocus
-                  disabled={savingGroup === group.id}
-                  placeholder="Description…"
-                  className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5"
-                />
-              ) : (
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStartEditingGroup(group, "description");
-                  }}
-                  className={`text-[10px] transition-colors truncate ${
-                    group.description
-                      ? "text-white/50 hover:text-white/80"
-                      : "text-white/20 italic hover:text-white/40"
-                  }`}
-                >
-                  {group.description || "Add description"}
-                </div>
-              )}
+              <div className="text-[10px] text-white/20 italic">
+                Group ID: {group.id}
+              </div>
             </div>
           </div>
         </div>
@@ -154,7 +125,7 @@ export function GroupEntry({
             </div>
             {registeredCount > 0 && (
               <div className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
-                {registeredCount} Active
+                {registeredCount} Registered
               </div>
             )}
           </div>

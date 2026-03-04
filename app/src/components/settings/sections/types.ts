@@ -6,7 +6,7 @@ export interface GroupWithMembers extends AttendanceGroup {
 }
 
 export type MemberField = "name" | "email" | "role";
-export type GroupField = "name" | "description";
+export type GroupField = "name";
 
 export interface EditingMember {
   personId: string;

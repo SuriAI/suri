@@ -140,12 +140,12 @@ export function Database({
             <div className="flex items-center gap-2 mb-1">
               <i className="fa-solid fa-download text-cyan-400 text-xs" />
               <h4 className="text-xs font-semibold text-white">
-                Create Backup
+                Export Database
               </h4>
             </div>
             <p className="text-[10px] text-white/40">
               Exports an encrypted{" "}
-              <code className="font-mono text-white/30">.suri</code> file —
+              <code className="font-mono text-white/30">.suri</code> database ·
               members, history, and biometric profiles.
             </p>
           </div>
@@ -162,7 +162,7 @@ export function Database({
               ) : (
                 <i className="fa-solid fa-file-export" />
               )}
-              Export (.suri)
+              Export
             </button>
           </div>
         </div>
@@ -173,13 +173,13 @@ export function Database({
             <div className="flex items-center gap-2 mb-1">
               <i className="fa-solid fa-upload text-cyan-400 text-xs" />
               <h4 className="text-xs font-semibold text-white">
-                Restore Backup
+                Import Database
               </h4>
             </div>
             <p className="text-[10px] text-white/40">
               Restores from a{" "}
-              <code className="font-mono text-white/30">.suri</code> file.
-              Requires the original password.
+              <code className="font-mono text-white/30">.suri</code> backup
+              file. Requires the original password.
             </p>
           </div>
           <div className="px-5 py-4">
@@ -199,7 +199,7 @@ export function Database({
               ) : (
                 <i className="fa-solid fa-file-import" />
               )}
-              Restore (.suri)
+              Import
             </button>
           </div>
         </div>

@@ -155,9 +155,9 @@ export function Registration({
             action={
               onAddMember
                 ? {
-                  label: "Add Member",
-                  onClick: onAddMember,
-                }
+                    label: "Add Member",
+                    onClick: onAddMember,
+                  }
                 : undefined
             }
           />

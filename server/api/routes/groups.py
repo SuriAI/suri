@@ -30,7 +30,6 @@ async def create_group(
         db_group_data = {
             "id": group_id,
             "name": group_data.name,
-            "description": group_data.description,
             "settings": group_data.settings.model_dump() if group_data.settings else {},
         }
 

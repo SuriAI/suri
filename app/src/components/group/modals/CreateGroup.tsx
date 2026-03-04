@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { attendanceManager } from "@/services";
 import type { AttendanceGroup } from "@/types/recognition";
-import {
-  ErrorMessage,
-  FormInput,
-  FormTextarea,
-  Modal,
-} from "@/components/common";
+import { ErrorMessage, FormInput, Modal } from "@/components/common";
 
 interface CreateGroupProps {
   onClose: () => void;
@@ -15,7 +10,6 @@ interface CreateGroupProps {
 
 export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,10 +20,7 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
 
     setLoading(true);
     try {
-      const newGroup = await attendanceManager.createGroup(
-        name.trim(),
-        description.trim() || undefined,
-      );
+      const newGroup = await attendanceManager.createGroup(name.trim());
       onSuccess(newGroup);
       onClose();
     } catch (err) {
@@ -64,18 +55,6 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g. CS101 Section A, Engineering Team"
-              focusColor="border-cyan-500/60"
-            />
-          </label>
-
-          <label className="text-sm">
-            <span className="text-white/60 block mb-2">
-              Description (optional)
-            </span>
-            <FormTextarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Brief description of this group..."
               focusColor="border-cyan-500/60"
             />
           </label>
