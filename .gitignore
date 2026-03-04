@@ -33,6 +33,7 @@ app/*.log
 app/.tmp/
 app/*.tsbuildinfo
 app/.electron-vite/
+app/electron.vite.config.*.mjs
 
 .env
 .env*

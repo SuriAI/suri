@@ -35,7 +35,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/vault", tags=["vault"])
 
 
-
 # Schemas
 
 
@@ -57,7 +56,6 @@ class VaultImportRequest(BaseModel):
     exported_at: Optional[str] = None
     attendance: ImportDataRequest
     biometrics: List[BiometricEntry]
-
 
 
 # Routes
@@ -182,7 +180,6 @@ async def import_vault(
                     GroupModel(
                         id=group.id,
                         name=group.name,
-                        description=group.description,
                         late_threshold_minutes=settings_dict.get(
                             "late_threshold_minutes"
                         ),
@@ -197,7 +194,6 @@ async def import_vault(
                 )
             else:
                 existing.name = group.name
-                existing.description = group.description
                 existing.is_active = group.is_active
                 existing.is_deleted = False
             imported_groups += 1
@@ -287,6 +283,7 @@ async def import_vault(
         await repo.session.commit()
 
         from core.lifespan import face_recognizer
+
         if face_recognizer:
             await face_recognizer._refresh_cache()
 

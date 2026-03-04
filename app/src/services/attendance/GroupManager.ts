@@ -16,13 +16,11 @@ export class GroupManager {
 
   async createGroup(
     name: string,
-    description?: string,
     settings?: AttendanceSettings | null,
   ): Promise<AttendanceGroup> {
     try {
       const groupData = {
         name,
-        description,
         settings: {
           late_threshold_minutes: settings?.late_threshold_minutes ?? 15,
           late_threshold_enabled: false,
