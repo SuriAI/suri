@@ -1,4 +1,5 @@
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Display } from "@/components/settings/sections/Display";
 import { Notifications } from "@/components/settings/sections/Notifications";
 import { Database } from "@/components/settings/sections/Database";
@@ -214,76 +215,88 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       </div>
 
       {/* Section Content */}
-      <div className="flex-1 overflow-y-auto custom-scroll">
-        {activeSection === "group" && (
-          <div className="h-full w-full">
-            <GroupPanel
-              onBack={handleGroupBack}
-              initialSection={groupInitialSection}
-              initialGroup={validInitialGroup}
-              triggerCreateGroup={triggerCreateGroup}
-              onRegistrationSourceChange={(source) =>
-                setRegistrationState(source, null)
-              }
-              registrationSource={registrationSource}
-              onRegistrationModeChange={(mode) =>
-                setRegistrationState(registrationSource, mode)
-              }
-              registrationMode={registrationMode}
-              deselectMemberTrigger={deselectMemberTrigger}
-              onHasSelectedMemberChange={setHasSelectedMember}
-              onExportHandlersReady={handleExportHandlersReady}
-              onAddMemberHandlerReady={handleAddMemberHandlerReady}
-              onGroupsChanged={handleGroupsChanged}
-              onSectionChange={setGroupInitialSection}
-              isEmbedded={true}
-            />
-          </div>
-        )}
-        {activeSection === "display" && (
-          <Display
-            quickSettings={quickSettings}
-            toggleQuickSetting={toggleQuickSetting}
-          />
-        )}
-        {activeSection === "notifications" && (
-          <Notifications
-            audioSettings={audioSettings}
-            onAudioSettingsChange={updateAudioSetting}
-          />
-        )}
-        {activeSection === "attendance" && (
-          <Attendance
-            attendanceSettings={attendanceSettings}
-            onLateThresholdChange={(minutes) =>
-              updateAttendanceSetting({ lateThresholdMinutes: minutes })
-            }
-            onLateThresholdToggle={(enabled) =>
-              updateAttendanceSetting({ lateThresholdEnabled: enabled })
-            }
-            onReLogCooldownChange={(seconds) =>
-              updateAttendanceSetting({ reLogCooldownSeconds: seconds })
-            }
-            onSpoofDetectionToggle={(enabled) =>
-              updateAttendanceSetting({ enableSpoofDetection: enabled })
-            }
-            hasSelectedGroup={!!dropdownValue}
-          />
-        )}
-        {activeSection === "database" && (
-          <Database
-            systemData={systemData}
-            groups={groups}
-            isLoading={isLoading}
-            onClearDatabase={handleClearDatabase}
-            onGroupsChanged={() => {
-              loadSystemData();
-              if (onGroupsChanged) onGroupsChanged();
-            }}
-          />
-        )}
-        {activeSection === "cloudsync" && <CloudSync />}
-        {activeSection === "about" && <About />}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scroll">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, scale: 0.995 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.995 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            style={{ willChange: "opacity, transform" }}
+            className="w-full"
+          >
+            {activeSection === "group" && (
+              <div className="h-full w-full">
+                <GroupPanel
+                  onBack={handleGroupBack}
+                  initialSection={groupInitialSection}
+                  initialGroup={validInitialGroup}
+                  triggerCreateGroup={triggerCreateGroup}
+                  onRegistrationSourceChange={(source) =>
+                    setRegistrationState(source, null)
+                  }
+                  registrationSource={registrationSource}
+                  onRegistrationModeChange={(mode) =>
+                    setRegistrationState(registrationSource, mode)
+                  }
+                  registrationMode={registrationMode}
+                  deselectMemberTrigger={deselectMemberTrigger}
+                  onHasSelectedMemberChange={setHasSelectedMember}
+                  onExportHandlersReady={handleExportHandlersReady}
+                  onAddMemberHandlerReady={handleAddMemberHandlerReady}
+                  onGroupsChanged={handleGroupsChanged}
+                  onSectionChange={setGroupInitialSection}
+                  isEmbedded={true}
+                />
+              </div>
+            )}
+            {activeSection === "display" && (
+              <Display
+                quickSettings={quickSettings}
+                toggleQuickSetting={toggleQuickSetting}
+              />
+            )}
+            {activeSection === "notifications" && (
+              <Notifications
+                audioSettings={audioSettings}
+                onAudioSettingsChange={updateAudioSetting}
+              />
+            )}
+            {activeSection === "attendance" && (
+              <Attendance
+                attendanceSettings={attendanceSettings}
+                onLateThresholdChange={(minutes) =>
+                  updateAttendanceSetting({ lateThresholdMinutes: minutes })
+                }
+                onLateThresholdToggle={(enabled) =>
+                  updateAttendanceSetting({ lateThresholdEnabled: enabled })
+                }
+                onReLogCooldownChange={(seconds) =>
+                  updateAttendanceSetting({ reLogCooldownSeconds: seconds })
+                }
+                onSpoofDetectionToggle={(enabled) =>
+                  updateAttendanceSetting({ enableSpoofDetection: enabled })
+                }
+                hasSelectedGroup={!!dropdownValue}
+              />
+            )}
+            {activeSection === "database" && (
+              <Database
+                systemData={systemData}
+                groups={groups}
+                isLoading={isLoading}
+                onClearDatabase={handleClearDatabase}
+                onGroupsChanged={() => {
+                  loadSystemData();
+                  if (onGroupsChanged) onGroupsChanged();
+                }}
+              />
+            )}
+            {activeSection === "cloudsync" && <CloudSync />}
+            {activeSection === "about" && <About />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

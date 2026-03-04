@@ -66,7 +66,7 @@ export function ControlBar({
                   }))}
                   value={selectedCamera}
                   onChange={(deviceId) => {
-                    if (deviceId) setSelectedCamera(deviceId);
+                    if (deviceId) setSelectedCamera(String(deviceId));
                   }}
                   placeholder="Select camera…"
                   emptyMessage="No cameras available"
@@ -82,13 +82,16 @@ export function ControlBar({
         </div>
 
         <div className="flex items-center gap-3">
-          {lateTrackingEnabled && hasSelectedGroup && onStartTimeChange && (
-            <StartTimeChip
-              startTime={classStartTime}
-              onTimeChange={onStartTimeChange}
-              disabled={isStreaming}
-            />
-          )}
+          {lateTrackingEnabled &&
+            hasSelectedGroup &&
+            onStartTimeChange &&
+            !isStreaming && (
+              <StartTimeChip
+                startTime={classStartTime}
+                onTimeChange={onStartTimeChange}
+                disabled={isStreaming}
+              />
+            )}
 
           <Tooltip
             content={

@@ -11,6 +11,8 @@ interface VideoCanvasProps {
   isVideoLoading: boolean;
   isStreaming: boolean;
   hasSelectedGroup: boolean;
+  lateTrackingEnabled?: boolean;
+  classStartTime?: string;
 }
 
 export const VideoCanvas = memo(function VideoCanvas({
@@ -22,7 +24,19 @@ export const VideoCanvas = memo(function VideoCanvas({
   isVideoLoading,
   isStreaming,
   hasSelectedGroup,
+  lateTrackingEnabled,
+  classStartTime,
 }: VideoCanvasProps) {
+  const formatTime = (time: string) => {
+    try {
+      const [hours, minutes] = time.split(":").map(Number);
+      const period = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+    } catch {
+      return time;
+    }
+  };
   return (
     <div className="relative w-full h-full min-h-[260px] overflow-hidden rounded-lg bg-black border border-white/10">
       <video
@@ -38,12 +52,27 @@ export const VideoCanvas = memo(function VideoCanvas({
           mixBlendMode: "normal",
         }}
       />
-
       {quickSettings.showFPS && detectionFps > 0 && (
         <div className="absolute top-4 left-4 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 pointer-events-none z-20">
           <span className="text-white/80 text-sm font-medium">
             {detectionFps.toFixed(1)} FPS
           </span>
+        </div>
+      )}
+
+      {isStreaming && lateTrackingEnabled && (
+        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 pointer-events-none z-50 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-500 shadow-lg">
+          <div className="flex items-center gap-2 pr-3 border-r border-white/10 text-white/50">
+            <span className="text-[10px] uppercase tracking-widest font-black">
+              Scheduled
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <i className="fa-regular fa-clock text-[10px] text-white/30"></i>
+            <span className="text-xs font-mono font-bold text-cyan-400">
+              {formatTime(classStartTime || "08:00")}
+            </span>
+          </div>
         </div>
       )}
 

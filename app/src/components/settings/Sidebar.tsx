@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Dropdown, Tooltip } from "@/components/shared";
 import type { AttendanceGroup } from "@/types/recognition";
 import { useGroupStore } from "@/components/group/stores";
@@ -127,7 +128,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }`}
                   >
                     {isActive && (
-                      <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]" />
+                      <motion.div
+                        layoutId="active-indicator-group"
+                        className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+                      />
                     )}
                     <i
                       className={`${subsection.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-cyan-400" : "text-white/50"}`}
@@ -161,7 +165,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }`}
                 >
                   {isActive && (
-                    <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+                    <motion.div
+                      layoutId="active-indicator-general"
+                      className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                    />
                   )}
                   <i
                     className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/50"}`}

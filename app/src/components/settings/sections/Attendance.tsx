@@ -119,13 +119,10 @@ export function Attendance({
         {attendanceSettings.lateThresholdEnabled && hasSelectedGroup && (
           <div className="flex items-center pb-4 pt-1 border-b border-white/5 gap-4 pl-4 relative">
             {/* Visual indicator of nesting */}
-            <div className="absolute left-0 top-0 bottom-4 w-px bg-white/10 rounded-bl-lg"></div>
-            <div className="absolute left-0 bottom-4 w-3 h-px bg-white/10 rounded-bl-lg"></div>
+            <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-[2px]"></div>
+            <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-[2px]"></div>
 
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white/90">
-                Late Grace Period
-              </div>
               <div className="text-xs text-white/50 mt-0.5">
                 Minutes after the start time before a member is marked as late.
               </div>

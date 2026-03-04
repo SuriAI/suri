@@ -16,10 +16,10 @@ export function Notifications({
         <div className="flex items-center py-3 border-b border-white/5 gap-4">
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-white/90">
-              Recognition Sound
+              Scan Confirmation Sound
             </div>
             <div className="text-xs text-white/50 mt-0.5">
-              Play a sound when an attendance recognition event is recorded
+              Play a sound whenever a member is successfully recognized.
             </div>
           </div>
 
