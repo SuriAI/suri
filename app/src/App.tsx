@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { WindowBar } from "@/components/window";
 import Main from "@/components/main";
 import { useUIStore } from "@/components/main/stores/uiStore";
@@ -8,6 +9,12 @@ import { AppSkeleton } from "@/components/shared/AppSkeleton";
 
 function App() {
   const { hasSeenIntro, isHydrated } = useUIStore();
+
+  useEffect(() => {
+    if (isHydrated) {
+      window.suriElectron?.onAppReady();
+    }
+  }, [isHydrated]);
 
   if (!isHydrated) {
     return (

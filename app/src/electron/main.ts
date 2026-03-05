@@ -127,8 +127,6 @@ app.whenReady().then(async () => {
 
   await Promise.all([backendPromise, windowPromise]);
 
-  WindowManager.destroySplash();
-  WindowManager.showMainWindow();
   TrayManager.createTray();
 
   if (!isDev()) {

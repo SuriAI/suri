@@ -85,7 +85,7 @@ export const useAttendanceStore = create<AttendanceState>()(
     newGroupName: "",
     persistentCooldowns: new Map(),
     // trackingMode removed
-    attendanceCooldownSeconds: 15,
+    attendanceCooldownSeconds: 8,
     reLogCooldownSeconds: 1800,
     enableSpoofDetection: true,
 

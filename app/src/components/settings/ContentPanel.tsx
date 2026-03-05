@@ -191,7 +191,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               )}
             {activeSection === "group" &&
               groupInitialSection === "registration" &&
-              (registrationSource || registrationMode) && (
+              registrationSource && (
                 <button
                   onClick={() => {
                     if (registrationMode === "single" && hasSelectedMember) {
@@ -233,12 +233,12 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                   initialSection={groupInitialSection}
                   initialGroup={validInitialGroup}
                   triggerCreateGroup={triggerCreateGroup}
-                  onRegistrationSourceChange={(source) =>
-                    setRegistrationState(source, null)
+                  onRegistrationSourceChange={(s) =>
+                    setRegistrationState(s, s ? registrationMode : null)
                   }
                   registrationSource={registrationSource}
-                  onRegistrationModeChange={(mode) =>
-                    setRegistrationState(registrationSource, mode)
+                  onRegistrationModeChange={(m) =>
+                    setRegistrationState(registrationSource, m)
                   }
                   registrationMode={registrationMode}
                   deselectMemberTrigger={deselectMemberTrigger}
