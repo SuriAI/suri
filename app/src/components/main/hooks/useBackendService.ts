@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from "react";
 import { startTransition } from "react";
-import { BackendService } from "@/services";
+import { WebSocketService } from "@/services/WebSocketService";
 import type {
   WebSocketDetectionResponse,
   WebSocketConnectionMessage,
@@ -21,7 +21,7 @@ import {
 } from "@/components/main/stores";
 
 interface UseBackendServiceOptions {
-  backendServiceRef: React.RefObject<BackendService | null>;
+  webSocketServiceRef: React.RefObject<WebSocketService | null>;
   isStreamingRef: React.RefObject<boolean>;
   isScanningRef: React.RefObject<boolean>;
   isStartingRef: React.RefObject<boolean>;
@@ -48,7 +48,7 @@ interface UseBackendServiceOptions {
 
 export function useBackendService(options: UseBackendServiceOptions) {
   const {
-    backendServiceRef,
+    webSocketServiceRef,
     isStreamingRef,
     isScanningRef,
     isStartingRef,
@@ -85,10 +85,10 @@ export function useBackendService(options: UseBackendServiceOptions) {
   }>({ initialized: false, isInitializing: false });
 
   useEffect(() => {
-    if (backendServiceRef.current) {
-      backendServiceRef.current.setLivenessDetection(enableSpoofDetection);
+    if (webSocketServiceRef.current) {
+      webSocketServiceRef.current.setLivenessDetection(enableSpoofDetection);
     }
-  }, [enableSpoofDetection, backendServiceRef]);
+  }, [enableSpoofDetection, webSocketServiceRef]);
 
   const waitForBackendReady = useCallback(
     async (
@@ -163,13 +163,13 @@ export function useBackendService(options: UseBackendServiceOptions) {
   );
 
   const registerWebSocketHandlers = useCallback(() => {
-    if (!backendServiceRef.current) return;
+    if (!webSocketServiceRef.current) return;
 
-    backendServiceRef.current.offMessage("detection_response");
-    backendServiceRef.current.offMessage("connection");
-    backendServiceRef.current.offMessage("error");
+    webSocketServiceRef.current.offMessage("detection_response");
+    webSocketServiceRef.current.offMessage("connection");
+    webSocketServiceRef.current.offMessage("error");
 
-    backendServiceRef.current.onMessage(
+    webSocketServiceRef.current.onMessage(
       "detection_response",
       (data: WebSocketDetectionResponse) => {
         if (!isStreamingRef.current || !isScanningRef.current) {
@@ -312,7 +312,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       },
     );
 
-    backendServiceRef.current.onMessage(
+    webSocketServiceRef.current.onMessage(
       "connection",
       (data: WebSocketConnectionMessage) => {
         if (data.status === "connected") {
@@ -324,7 +324,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       },
     );
 
-    backendServiceRef.current.onMessage(
+    webSocketServiceRef.current.onMessage(
       "error",
       (data: WebSocketErrorMessage) => {
         if (!isStreamingRef.current || !isScanningRef.current) {
@@ -344,7 +344,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
   }, [
     recognitionEnabled,
     performFaceRecognition,
-    backendServiceRef,
+    webSocketServiceRef,
     isStreamingRef,
     isScanningRef,
     lastFrameTimestampRef,
@@ -362,11 +362,11 @@ export function useBackendService(options: UseBackendServiceOptions) {
 
   const initializeWebSocket = useCallback(async () => {
     try {
-      if (!backendServiceRef.current) {
-        backendServiceRef.current = new BackendService();
+      if (!webSocketServiceRef.current) {
+        webSocketServiceRef.current = new WebSocketService();
       }
 
-      const currentStatus = backendServiceRef.current.getWebSocketStatus();
+      const currentStatus = webSocketServiceRef.current.getWebSocketStatus();
       if (currentStatus === "connected") {
         registerWebSocketHandlers();
         return;
@@ -376,7 +376,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
         let attempts = 0;
         while (attempts < 50) {
           await new Promise((resolve) => setTimeout(resolve, 50));
-          const status = backendServiceRef.current.getWebSocketStatus();
+          const status = webSocketServiceRef.current.getWebSocketStatus();
           if (status === "connected") {
             registerWebSocketHandlers();
             return;
@@ -396,7 +396,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
         throw new Error(errorMessage);
       }
 
-      await backendServiceRef.current.connectWebSocket();
+      await webSocketServiceRef.current.connectWebSocket();
       registerWebSocketHandlers();
     } catch (error) {
       console.error("❌ WebSocket initialization failed:", error);
@@ -425,7 +425,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
   }, [
     waitForBackendReady,
     registerWebSocketHandlers,
-    backendServiceRef,
+    webSocketServiceRef,
     isStartingRef,
     setError,
   ]);
@@ -449,7 +449,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       initializationRef.current.cleanupTimeout = undefined;
     }
 
-    if (backendServiceRef.current?.isWebSocketReady()) {
+    if (webSocketServiceRef.current?.isWebSocketReady()) {
       registerWebSocketHandlers();
       initializationRef.current.initialized = true;
       initializationRef.current.isInitializing = false;
@@ -462,7 +462,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
 
     if (
       initializationRef.current.initialized &&
-      !backendServiceRef.current?.isWebSocketReady()
+      !webSocketServiceRef.current?.isWebSocketReady()
     ) {
       initializationRef.current.initialized = false;
     }
@@ -522,7 +522,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     isScanningRef,
     animationFrameRef,
     backendServiceReadyRef,
-    backendServiceRef,
+    webSocketServiceRef,
     setIsStreaming,
     setIsVideoLoading,
     setCameraActive,
@@ -533,11 +533,11 @@ export function useBackendService(options: UseBackendServiceOptions) {
   ]);
 
   useEffect(() => {
-    if (!backendServiceRef.current) return;
+    if (!webSocketServiceRef.current) return;
 
     const pollWebSocketStatus = () => {
-      if (backendServiceRef.current) {
-        const actualStatus = backendServiceRef.current.getWebSocketStatus();
+      if (webSocketServiceRef.current) {
+        const actualStatus = webSocketServiceRef.current.getWebSocketStatus();
         if (actualStatus !== websocketStatus) {
           setWebsocketStatus(actualStatus);
         }
@@ -549,7 +549,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     return () => {
       clearInterval(statusInterval);
     };
-  }, [websocketStatus, backendServiceRef, setWebsocketStatus]);
+  }, [websocketStatus, webSocketServiceRef, setWebsocketStatus]);
 
   useEffect(() => {
     if (
@@ -557,7 +557,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       isScanningRef.current &&
       isStreamingRef.current
     ) {
-      if (backendServiceRef.current?.isWebSocketReady()) {
+      if (webSocketServiceRef.current?.isWebSocketReady()) {
         processCurrentFrameRef.current?.();
       }
     }
@@ -565,7 +565,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     websocketStatus,
     isScanningRef,
     isStreamingRef,
-    backendServiceRef,
+    webSocketServiceRef,
     processCurrentFrameRef,
   ]);
 

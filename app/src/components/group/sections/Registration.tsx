@@ -1,4 +1,3 @@
-import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState } from "@/components/group/shared/EmptyState";
 import { CameraQueue } from "@/components/group/sections/registration/CameraQueue";
@@ -16,9 +15,6 @@ interface RegistrationProps {
   onAddMember?: () => void;
 }
 
-type SourceType = "upload" | "camera" | null;
-type RegistrationMode = "single" | "bulk" | "queue" | null;
-
 export function Registration({
   group,
   members,
@@ -29,16 +25,11 @@ export function Registration({
 }: RegistrationProps) {
   const source = useGroupUIStore((state) => state.lastRegistrationSource);
   const mode = useGroupUIStore((state) => state.lastRegistrationMode);
-  const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId);
   const setRegistrationState = useGroupUIStore(
     (state) => state.setRegistrationState,
   );
   const handleBack = useGroupUIStore((state) => state.handleRegistrationBack);
   const resetRegistration = useGroupUIStore((state) => state.resetRegistration);
-
-
-
-
 
   const animationProps = {
     initial: { opacity: 0, scale: 0.995 },
@@ -87,9 +78,9 @@ export function Registration({
             action={
               onAddMember
                 ? {
-                  label: "Add Member",
-                  onClick: onAddMember,
-                }
+                    label: "Add Member",
+                    onClick: onAddMember,
+                  }
                 : undefined
             }
           />
