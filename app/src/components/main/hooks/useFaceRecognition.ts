@@ -300,9 +300,18 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                     const lastLogTime = existingInState?.startTime || 0;
                     const timeSinceLastLog = Date.now() - lastLogTime;
 
+                    const isTrackCheckoutEnabled =
+                      currentGroupValue.settings?.track_checkout ?? false;
+
                     // If the user is trying to log again, check if they are within the "Session Window" (30 mins)
                     // If so, we treat it like a "Visual Cooldown" extension - we update bbox, but we DO NOT create a new event.
-                    if (existingInState && timeSinceLastLog < reLogCooldownMs) {
+                    // EXCEPTION: If trackCheckout is enabled, we ALLOW the scan to go to the backend so it can be recorded as a check-out.
+                    // BUT only if we don't already have a check-out for them (to prevent spamming check-outs).
+                    if (
+                      !isTrackCheckoutEnabled &&
+                      existingInState &&
+                      timeSinceLastLog < reLogCooldownMs
+                    ) {
                       // Update "last known" so the overlay follows them, but DO NOT fire logging event
                       startTransition(() => {
                         setPersistentCooldowns((prev) => {

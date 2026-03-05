@@ -257,6 +257,7 @@ export default function Main() {
     streamRef,
     videoRef,
     backendServiceReadyRef,
+    loadAttendanceDataRef,
   });
 
   const { startCamera, stopCamera } = useCameraControl({
@@ -671,10 +672,32 @@ export default function Main() {
               attendanceCooldownSeconds: attendanceCooldownSeconds,
               reLogCooldownSeconds: reLogCooldownSeconds,
               enableSpoofDetection: enableSpoofDetection,
+              trackCheckout: currentGroup?.settings?.track_checkout ?? false,
             }}
             onAttendanceSettingsChange={async (updates) => {
               if (updates.enableSpoofDetection !== undefined) {
                 setEnableSpoofDetection(updates.enableSpoofDetection);
+              }
+
+              if (updates.trackCheckout !== undefined && currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  track_checkout: updates.trackCheckout,
+                };
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, {
+                    settings: updatedSettings,
+                  });
+                  setCurrentGroup({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  });
+                } catch (error) {
+                  console.error(
+                    "Failed to update track checkout setting:",
+                    error,
+                  );
+                }
               }
 
               if (updates.attendanceCooldownSeconds !== undefined) {

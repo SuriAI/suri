@@ -31,6 +31,7 @@ class AttendanceRepository:
             class_start_time=settings.get(
                 "class_start_time", datetime.now().strftime("%H:%M")
             ),
+            track_checkout=settings.get("track_checkout", False),
             organization_id=self.organization_id,
             is_active=True,
             is_deleted=False,
@@ -69,6 +70,8 @@ class AttendanceRepository:
                     group.late_threshold_enabled = value["late_threshold_enabled"]
                 if "class_start_time" in value:
                     group.class_start_time = value["class_start_time"]
+                if "track_checkout" in value:
+                    group.track_checkout = value["track_checkout"]
             elif hasattr(group, key):
                 setattr(group, key, value)
 
@@ -218,6 +221,7 @@ class AttendanceRepository:
                 group_id=session_data["group_id"],
                 date=session_data["date"],
                 check_in_time=session_data.get("check_in_time"),
+                check_out_time=session_data.get("check_out_time"),
                 total_hours=session_data.get("total_hours"),
                 status=session_data["status"],
                 is_late=session_data.get("is_late", False),

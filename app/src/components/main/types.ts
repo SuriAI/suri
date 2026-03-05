@@ -65,6 +65,17 @@ export interface WebSocketDetectionResponse {
   };
 }
 
+export interface AttendanceEvent {
+  type: "attendance_event";
+  person_id: string;
+  group_id: string;
+  event_type: "check_in" | "check_out";
+  timestamp: string;
+  check_in_time?: string;
+  check_out_time?: string;
+  total_hours?: number;
+}
+
 export interface WebSocketConnectionMessage {
   message?: string;
   status?: string;

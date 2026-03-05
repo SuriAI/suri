@@ -23,6 +23,7 @@ const AttendanceRecordItem = memo(
     classStartTime,
     lateThresholdMinutes,
     lateThresholdEnabled,
+    trackCheckoutEnabled,
     hasCheckedInEarlier,
   }: {
     record: AttendanceRecord;
@@ -30,14 +31,17 @@ const AttendanceRecordItem = memo(
     classStartTime: string;
     lateThresholdMinutes: number;
     lateThresholdEnabled: boolean;
+    trackCheckoutEnabled: boolean;
     hasCheckedInEarlier: boolean;
   }) => {
     const calculateTimeStatus = () => {
       try {
-        if (!classStartTime) return null;
+        if (!classStartTime && !record.event_type) return null;
 
-        // If the user already has a check-in earlier today, this is a check-out scan
-        if (hasCheckedInEarlier) {
+        const effectiveEventType =
+          record.event_type || (hasCheckedInEarlier ? "check_out" : "check_in");
+
+        if (trackCheckoutEnabled && effectiveEventType === "check_out") {
           return {
             status: "check-out",
             minutes: 0,
@@ -62,49 +66,52 @@ const AttendanceRecordItem = memo(
         const severeLateThreshold = 30;
         const earlyThreshold = -5;
 
-        if (lateThresholdEnabled && diffMinutes > lateThresholdMinutes) {
-          const minutesLate = diffMinutes;
-          return {
-            status: minutesLate > severeLateThreshold ? "severe-late" : "late",
-            minutes: minutesLate,
-            label: `${minutesLate}M LATE`,
-            color:
-              minutesLate > severeLateThreshold
-                ? "text-rose-400"
-                : "text-amber-400",
-            pillColor:
-              minutesLate > severeLateThreshold
-                ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
-                : "bg-amber-500/15 text-amber-400 border-amber-500/30",
-            borderColor:
-              minutesLate > severeLateThreshold
-                ? "border-l-rose-500"
-                : "border-l-amber-500",
-            avatarColor:
-              minutesLate > severeLateThreshold
-                ? "bg-rose-500/20 text-rose-400"
-                : "bg-amber-500/20 text-amber-400",
-          };
-        }
+        if (lateThresholdEnabled) {
+          if (diffMinutes > lateThresholdMinutes) {
+            const minutesLate = diffMinutes;
+            return {
+              status:
+                minutesLate > severeLateThreshold ? "severe-late" : "late",
+              minutes: minutesLate,
+              label: `${minutesLate}M LATE`,
+              color:
+                minutesLate > severeLateThreshold
+                  ? "text-rose-400"
+                  : "text-amber-400",
+              pillColor:
+                minutesLate > severeLateThreshold
+                  ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                  : "bg-amber-500/15 text-amber-400 border-amber-500/30",
+              borderColor:
+                minutesLate > severeLateThreshold
+                  ? "border-l-rose-500"
+                  : "border-l-amber-500",
+              avatarColor:
+                minutesLate > severeLateThreshold
+                  ? "bg-rose-500/20 text-rose-400"
+                  : "bg-amber-500/20 text-amber-400",
+            };
+          }
 
-        if (lateThresholdEnabled && diffMinutes < earlyThreshold) {
-          const minutesEarly = Math.abs(diffMinutes);
-          return {
-            status: "early",
-            minutes: minutesEarly,
-            label: `${minutesEarly}M EARLY`,
-            color: "text-emerald-400",
-            pillColor:
-              "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-            borderColor: "border-l-emerald-500",
-            avatarColor: "bg-emerald-500/20 text-emerald-400",
-          };
+          if (diffMinutes < earlyThreshold) {
+            const minutesEarly = Math.abs(diffMinutes);
+            return {
+              status: "early",
+              minutes: minutesEarly,
+              label: `${minutesEarly}M EARLY`,
+              color: "text-emerald-400",
+              pillColor:
+                "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+              borderColor: "border-l-emerald-500",
+              avatarColor: "bg-emerald-500/20 text-emerald-400",
+            };
+          }
         }
 
         return {
           status: "on-time",
           minutes: 0,
-          label: "TIME IN",
+          label: trackCheckoutEnabled ? "TIME IN" : "SCANNED",
           color: "text-slate-400",
           pillColor: "bg-white/10 text-white/60 border-white/20",
           borderColor: "border-l-transparent",
@@ -480,6 +487,9 @@ export const AttendancePanel = memo(function AttendancePanel({
                       }
                       lateThresholdEnabled={
                         lateTrackingSettings.lateThresholdEnabled
+                      }
+                      trackCheckoutEnabled={
+                        currentGroup?.settings?.track_checkout ?? false
                       }
                       hasCheckedInEarlier={hasCheckedInEarlier}
                     />

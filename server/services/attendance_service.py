@@ -63,6 +63,7 @@ class AttendanceService:
         class_start_time: str = None,
         late_threshold_enabled: bool = False,
         existing_sessions: Optional[List[Any]] = None,
+        track_checkout: bool = False,
     ) -> List[dict]:
         """Compute attendance sessions from records using configurable late threshold"""
         sessions = []
@@ -168,6 +169,17 @@ class AttendanceService:
                     "group_id": member.group_id,
                     "date": target_date,
                     "check_in_time": timestamp,
+                    "check_out_time": (
+                        person_records[-1].timestamp
+                        if track_checkout and len(person_records) > 1
+                        else None
+                    ),
+                    "total_hours": (
+                        (person_records[-1].timestamp - timestamp).total_seconds()
+                        / 3600.0
+                        if track_checkout and len(person_records) > 1
+                        else None
+                    ),
                     "status": "present",
                     "is_late": is_late,
                     "late_minutes": late_minutes if is_late else None,
@@ -228,14 +240,22 @@ class AttendanceService:
             )
 
         current_time = true_time
-
         window_seconds = max(cooldown_seconds, relog_seconds)
+
         recent_records = await self.repo.get_records(
             person_id=event_data.person_id,
             start_date=current_time - timedelta(seconds=window_seconds),
             end_date=current_time,
             limit=20,
         )
+
+        today_str = current_time.strftime("%Y-%m-%d")
+
+        # Get group settings for late threshold and check-out tracking
+        group = await self.repo.get_group(member.group_id)
+        track_checkout = getattr(group, "track_checkout", False)
+
+        existing_session = await self.repo.get_session(event_data.person_id, today_str)
 
         # Check if there's a recent record within either cooldown window.
         if recent_records:
@@ -255,7 +275,13 @@ class AttendanceService:
                         error=f"Cooldown active. Wait {int(cooldown_seconds - time_diff)}s.",
                     )
 
-                if time_diff < relog_seconds:
+                # Skip relog_cooldown if we are in check-out mode AND checking out for the first time
+                is_checking_out = (
+                    track_checkout
+                    and existing_session
+                    and not existing_session.check_out_time
+                )
+                if time_diff < relog_seconds and not is_checking_out:
                     return AttendanceEventResponse(
                         id=None,
                         person_id=event_data.person_id,
@@ -285,26 +311,27 @@ class AttendanceService:
         # Add record
         await self.repo.add_record(record_data)
 
-        today_str = timestamp.strftime("%Y-%m-%d")
-
-        # Get group settings for late threshold calculation
-        group = await self.repo.get_group(member.group_id)
-
         late_threshold_minutes = group.late_threshold_minutes or 15
         class_start_time = group.class_start_time or current_time.strftime("%H:%M")
         late_threshold_enabled = group.late_threshold_enabled or False
 
-        existing_session = await self.repo.get_session(event_data.person_id, today_str)
-
-        # Preserve the earliest check-in time for the day.
-        # Re-logs should create additional records but must not push check-in later.
+        # Determine event type and session data
+        event_type = "check_in"
         check_in_time = timestamp
+        check_out_time = None
+        total_hours = None
+
         if existing_session and existing_session.check_in_time:
-            try:
+            check_in_time = existing_session.check_in_time
+            if track_checkout:
+                event_type = "check_out"
+                check_out_time = timestamp
+                # Calculate hours
+                duration = check_out_time - check_in_time
+                total_hours = max(0, duration.total_seconds() / 3600.0)
+            else:
+                # Preserve earliest check-in if not tracking check-out
                 check_in_time = min(existing_session.check_in_time, timestamp)
-            except TypeError:
-                # Defensive: if timezone/naive mismatch ever happens, prefer the stored value.
-                check_in_time = existing_session.check_in_time
 
         if late_threshold_enabled:
             try:
@@ -316,22 +343,12 @@ class AttendanceService:
                 day_start_minute = 0
 
             # Calculate if late (based on earliest check-in)
-            # LOGIC FOR MIDNIGHT CROSSING:
-            # If check_in is early morning (00:00-04:00) and class start is late (20:00-23:59),
-            # then check_in belongs to the "previous day" session context.
-            # We adjust day_start to match the check_in's logical day.
-
             check_in_hour = check_in_time.hour
             is_early_morning_arrival = 0 <= check_in_hour < 4
             is_late_night_start = 20 <= day_start_hour <= 23
 
             base_date = check_in_time
             if is_early_morning_arrival and is_late_night_start:
-                # arrival is technically "next day", so start time should be yesterday relative to arrival
-                # which means we subtract a day from the base_date logic?
-                # Actually, simpler: construct day_start on the same day as check_in_time
-                # If day_start > check_in_time by a huge amount (e.g. 23:00 vs 00:05),
-                # it means day_start refers to YESTERDAY relative to check_in.
                 base_date = check_in_time - timedelta(days=1)
 
             day_start = base_date.replace(
@@ -354,6 +371,8 @@ class AttendanceService:
             "group_id": member.group_id,
             "date": today_str,
             "check_in_time": check_in_time,
+            "check_out_time": check_out_time,
+            "total_hours": total_hours,
             "status": "present",
             "is_late": is_late,
             "late_minutes": late_minutes if is_late else None,
@@ -372,7 +391,18 @@ class AttendanceService:
                     "timestamp": timestamp.isoformat(),
                     "confidence": event_data.confidence,
                     "location": event_data.location,
-                    "member_name": member.name,
+                    "event_type": event_type,
+                    "check_in_time": (
+                        check_in_time.isoformat() if check_in_time else None
+                    ),
+                    "check_out_time": (
+                        check_out_time.isoformat() if check_out_time else None
+                    ),
+                    "total_hours": total_hours,
+                    "member": {
+                        "name": member.name,
+                        "role": member.role,
+                    },
                 },
             }
             asyncio.create_task(self.ws_manager.broadcast(broadcast_message))
@@ -385,6 +415,7 @@ class AttendanceService:
             confidence=event_data.confidence,
             location=event_data.location,
             processed=True,
+            event_type=event_type,
             error=None,
         )
 

@@ -109,6 +109,7 @@ class GroupSettings(BaseModel):
     late_threshold_minutes: Optional[int] = 15
     late_threshold_enabled: bool = False
     class_start_time: Optional[str] = None  # HH:MM, defaults to creation time
+    track_checkout: bool = False
 
 
 class AttendanceGroupCreate(BaseModel):
@@ -196,6 +197,8 @@ class AttendanceSessionResponse(BaseModel):
     group_id: str
     date: str  # YYYY-MM-DD format
     check_in_time: Optional[datetime]
+    check_out_time: Optional[datetime] = None
+    total_hours: Optional[float] = None
     status: AttendanceStatus
     is_late: bool
     late_minutes: Optional[int]
@@ -226,6 +229,7 @@ class AttendanceEventResponse(BaseModel):
     confidence: float
     location: Optional[str]
     processed: bool
+    event_type: Optional[str] = None  # "check_in" or "check_out"
     error: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)

@@ -116,6 +116,7 @@ async def get_sessions(
                 "%H:%M"
             )
             late_threshold_enabled = group.late_threshold_enabled or False
+            track_checkout = getattr(group, "track_checkout", False)
 
             members = await repo.get_group_members(group_id)
             end_date_to_use = end_date or start_date
@@ -144,6 +145,7 @@ async def get_sessions(
                     class_start_time=class_start_time,
                     late_threshold_enabled=late_threshold_enabled,
                     existing_sessions=existing_day_sessions,
+                    track_checkout=track_checkout,
                 )
 
                 for session in day_sessions:
