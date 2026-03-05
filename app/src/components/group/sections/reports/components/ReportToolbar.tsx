@@ -21,7 +21,7 @@ interface ReportToolbarProps {
   search: string;
   setSearch: (val: string) => void;
 
-  allColumns: ReadonlyArray<{ key: ColumnKey; label: string }>;
+  allColumns: readonly { key: ColumnKey; label: string }[];
   defaultColumns: ColumnKey[];
 }
 

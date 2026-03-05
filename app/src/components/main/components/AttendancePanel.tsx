@@ -131,7 +131,7 @@ const AttendanceRecordItem = memo(
             {displayName}
           </span>
 
-          <div className="flex-shrink-0 flex items-center gap-1.5">
+          <div className="shrink-0 flex items-center gap-1.5">
             <span
               className={`text-[10px] font-bold tracking-widest ${timeStatus?.color || "text-white/60"}`}
             >
@@ -292,15 +292,14 @@ export const AttendancePanel = memo(function AttendancePanel({
   const hasMore = processedRecords.length > displayLimit;
 
   useEffect(() => {
-    setDisplayLimit(20);
+    const timer = setTimeout(() => setDisplayLimit(20), 0);
+    return () => clearTimeout(timer);
   }, [searchQuery, sortField, sortOrder]);
 
   if (!attendanceEnabled) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <h3 className="text-lg font-light px-4 pt-4 flex-shrink-0">
-          Recent Logs
-        </h3>
+        <h3 className="text-lg font-light px-4 pt-4 shrink-0">Recent Logs</h3>
         <div className="flex-1 px-4 pb-4 overflow-y-auto space-y-2 min-h-0">
           <div className="text-white/50 text-sm text-center py-4">
             No logs yet
@@ -313,7 +312,7 @@ export const AttendancePanel = memo(function AttendancePanel({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {attendanceGroups.length > 0 ? (
-        <div className="p-2 pb-1.5 flex-shrink-0">
+        <div className="p-2 pb-1.5 shrink-0">
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-[120px]">
               <Dropdown
@@ -346,7 +345,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <Tooltip content="Members" position="top">
               <button
                 onClick={() => setShowManualEntry(true)}
-                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
                 aria-label="Members"
               >
                 <i className="fa-solid fa-users text-sm"></i>
@@ -355,7 +354,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <Tooltip content="Create new group" position="top">
               <button
                 onClick={() => setShowGroupManagement(true)}
-                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
                 aria-label="Create new group"
               >
                 <i className="fa-solid fa-plus text-sm"></i>
@@ -381,7 +380,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {recentAttendance.length > 0 && (
-        <div className="px-2 pb-3 flex-shrink-0">
+        <div className="px-2 pb-3 shrink-0">
           <div className="flex items-center">
             {/* Joined Search and Sort Container */}
             <div className="relative flex-1 group/search">
@@ -391,11 +390,11 @@ export const AttendancePanel = memo(function AttendancePanel({
                 placeholder="Search name..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full h-9 bg-white/[0.03] text-white text-[11px] border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-10 pr-3 placeholder:text-white/20 focus:border-white/20 focus:bg-white/[0.06] focus:outline-none transition-all"
+                className="w-full h-9 bg-white/3 text-white text-[11px] border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-10 pr-3 placeholder:text-white/20 focus:border-white/20 focus:bg-white/6 focus:outline-none transition-all"
               />
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Tooltip
                 content={`Sort: ${sortField === "time" ? "Newest" : "A-Z"}`}
                 position="top"
@@ -414,11 +413,11 @@ export const AttendancePanel = memo(function AttendancePanel({
                         sortField === "time"
                           ? "fa-regular fa-clock"
                           : "fa-solid fa-arrow-down-a-z"
-                      } text-xs text-white/30 hover:!text-cyan-400 transition-colors pointer-events-auto`}
+                      } text-xs text-white/30 hover:text-cyan-400! transition-colors pointer-events-auto`}
                     />
                   }
                   menuWidth={110}
-                  buttonClassName="h-9 w-full bg-white/[0.03] border border-l-0 border-white/10 rounded-r-lg rounded-l-none flex items-center justify-center hover:bg-white/[0.07] transition-all"
+                  buttonClassName="h-9 w-full bg-white/3 border border-l-0 border-white/10 rounded-r-lg rounded-l-none flex items-center justify-center hover:bg-white/[0.07] transition-all"
                   showPlaceholderOption={false}
                   allowClear={false}
                 />
@@ -433,7 +432,7 @@ export const AttendancePanel = memo(function AttendancePanel({
           {visibleRecords.length > 0 ? (
             <>
               {(() => {
-                // Keep track of who has a valid "Time In" scan
+                // Keep track of who has a valid \"Time In\" scan
                 const checkedInSet = new Set<string>();
 
                 // We iterate from oldest to newest to chronologically track check-ins
@@ -503,7 +502,7 @@ export const AttendancePanel = memo(function AttendancePanel({
           ) : searchQuery ? (
             <div className="flex-1 flex items-center justify-center min-h-0">
               <div className="text-white/50 text-sm text-center">
-                No results for "{searchQuery}"
+                No results for &quot;{searchQuery}&quot;
               </div>
             </div>
           ) : !currentGroup ? (

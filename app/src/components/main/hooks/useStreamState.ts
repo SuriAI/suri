@@ -2,14 +2,14 @@ import { useCallback, useEffect } from "react";
 import { useCameraStore } from "@/components/main/stores";
 
 interface UseStreamStateOptions {
-  isProcessingRef: React.RefObject<boolean>;
-  animationFrameRef: React.RefObject<number | undefined>;
-  isScanningRef: React.RefObject<boolean>;
-  isStreamingRef: React.RefObject<boolean>;
-  isStartingRef: React.RefObject<boolean>;
-  isStoppingRef: React.RefObject<boolean>;
-  lastStartTimeRef: React.RefObject<number>;
-  lastStopTimeRef: React.RefObject<number>;
+  isProcessingRef: React.MutableRefObject<boolean>;
+  animationFrameRef: React.MutableRefObject<number | undefined>;
+  isScanningRef: React.MutableRefObject<boolean>;
+  isStreamingRef: React.MutableRefObject<boolean>;
+  isStartingRef: React.MutableRefObject<boolean>;
+  isStoppingRef: React.MutableRefObject<boolean>;
+  lastStartTimeRef: React.MutableRefObject<number>;
+  lastStopTimeRef: React.MutableRefObject<number>;
 }
 
 export function useStreamState(options: UseStreamStateOptions) {
@@ -26,21 +26,20 @@ export function useStreamState(options: UseStreamStateOptions) {
   const { setIsStreaming } = useCameraStore();
 
   const emergencyRecovery = useCallback(() => {
-    (isStartingRef as React.RefObject<boolean>).current = false;
-    (isStoppingRef as React.RefObject<boolean>).current = false;
-    (isProcessingRef as React.RefObject<boolean>).current = false;
-    (lastStartTimeRef as React.RefObject<number>).current = 0;
-    (lastStopTimeRef as React.RefObject<number>).current = 0;
+    isStartingRef.current = false;
+    isStoppingRef.current = false;
+    isProcessingRef.current = false;
+    lastStartTimeRef.current = 0;
+    lastStopTimeRef.current = 0;
     if (isStreamingRef.current) {
-      (isStreamingRef as React.RefObject<boolean>).current = false;
-      (isScanningRef as React.RefObject<boolean>).current = false;
+      isStreamingRef.current = false;
+      isScanningRef.current = false;
       setIsStreaming(false);
     }
 
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
-      (animationFrameRef as React.RefObject<number | undefined>).current =
-        undefined;
+      animationFrameRef.current = undefined;
     }
   }, [
     setIsStreaming,

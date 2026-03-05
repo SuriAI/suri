@@ -143,7 +143,7 @@ export const useAttendanceStore = create<AttendanceState>()(
 
 if (typeof window !== "undefined") {
   loadInitialSettings().then((settings) => {
-    useAttendanceStore.setState(settings as Partial<AttendanceState>);
+    useAttendanceStore.setState(settings);
   });
 
   // Second pass: once groups are set, find the one matching selectedGroupId

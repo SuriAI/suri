@@ -232,7 +232,7 @@ export function useCameraControl({
           errorName === "PermissionDeniedError"
         ) {
           const userAgent = navigator.userAgent.toLowerCase();
-          let instructions = "";
+          let instructions: string;
           if (userAgent.includes("win")) {
             instructions =
               "Please check your Windows Privacy settings: Go to Settings → Privacy → Camera and ensure 'Allow apps to access your camera' is turned ON.";
@@ -337,7 +337,7 @@ export function useCameraControl({
   ]);
 
   const stopCamera = useCallback(
-    (forceCleanup: boolean = false) => {
+    (forceCleanup = false) => {
       const now = Date.now();
       const timeSinceLastStop = now - lastStopTimeRef.current;
 

@@ -23,11 +23,11 @@ interface DetectionRequest {
 }
 
 interface DetectionResponse {
-  faces: Array<{
+  faces: {
     bbox: [number, number, number, number];
     confidence: number;
     landmarks_5?: number[][];
-  }>;
+  }[];
   model_used: string;
   session_id?: string;
 }
@@ -62,13 +62,13 @@ export class BackendService {
   private config: BackendConfig;
   private adapter: ElectronAdapter;
 
-  private enableLivenessDetection: boolean = true;
+  private enableLivenessDetection = true;
   private ws: WebSocket | null = null;
   private wsStatus: WebSocketStatus = "disconnected";
-  private messageHandlers: Map<
+  private messageHandlers = new Map<
     keyof WebSocketEventMap,
     Set<(data: any) => void> // eslint-disable-line @typescript-eslint/no-explicit-any
-  > = new Map();
+  >();
   private clientId: string;
 
   constructor(config?: Partial<BackendConfig>) {

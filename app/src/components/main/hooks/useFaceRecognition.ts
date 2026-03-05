@@ -24,11 +24,11 @@ interface UseFaceRecognitionOptions {
   memberCacheRef: React.RefObject<Map<string, AttendanceMember | null>>;
   calculateAngleConsistencyRef: React.RefObject<
     (
-      history: Array<{
+      history: {
         timestamp: number;
         bbox: { x: number; y: number; width: number; height: number };
         confidence: number;
-      }>,
+      }[],
     ) => number
   >;
   persistentCooldownsRef: React.RefObject<
@@ -273,14 +273,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                               ...existing,
                               lastKnownBbox: face.bbox,
                             });
-                            (
-                              persistentCooldownsRef as React.RefObject<
-                                Map<
-                                  string,
-                                  import("@/components/main/types").CooldownInfo
-                                >
-                              >
-                            ).current = newPersistent;
+                            persistentCooldownsRef.current = newPersistent;
                             return newPersistent;
                           }
                           return prev;
@@ -323,14 +316,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                               memberName: memberName,
                               lastKnownBbox: face.bbox,
                             });
-                            (
-                              persistentCooldownsRef as React.RefObject<
-                                Map<
-                                  string,
-                                  import("@/components/main/types").CooldownInfo
-                                >
-                              >
-                            ).current = newPersistent;
+                            persistentCooldownsRef.current = newPersistent;
                             return newPersistent;
                           }
                           return prev;
@@ -368,14 +354,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                             cooldownDurationSeconds: attendanceCooldownSeconds,
                           };
                           newPersistent.set(cooldownKey, cooldownData);
-                          (
-                            persistentCooldownsRef as React.RefObject<
-                              Map<
-                                string,
-                                import("@/components/main/types").CooldownInfo
-                              >
-                            >
-                          ).current = newPersistent;
+                          persistentCooldownsRef.current = newPersistent;
                           return newPersistent;
                         });
                       });
@@ -390,14 +369,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                               memberName: memberName,
                               lastKnownBbox: face.bbox,
                             });
-                            (
-                              persistentCooldownsRef as React.RefObject<
-                                Map<
-                                  string,
-                                  import("@/components/main/types").CooldownInfo
-                                >
-                              >
-                            ).current = newPersistent;
+                            persistentCooldownsRef.current = newPersistent;
                           }
                           return newPersistent;
                         });
@@ -607,7 +579,7 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
 
         startTransition(() => {
           recognitionResults.forEach((result) => {
-            if (result && result.skipRecognition) {
+            if (result?.skipRecognition) {
               const face = result.face;
               const faceId = `spoofed_track_${face.track_id}`;
               const currentTime = Date.now();

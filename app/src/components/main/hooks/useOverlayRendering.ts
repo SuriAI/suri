@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import type { DetectionResult } from "@/components/main/types";
 import { drawOverlays } from "@/components/main/utils";
 import {
@@ -11,7 +11,7 @@ import {
 interface UseOverlayRenderingOptions {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   overlayCanvasRef: React.RefObject<HTMLCanvasElement | null>;
-  animationFrameRef: React.RefObject<number | undefined>;
+  animationFrameRef: React.MutableRefObject<number | undefined>;
   videoRectRef: React.RefObject<DOMRect | null>;
   lastVideoRectUpdateRef: React.RefObject<number>;
 }
@@ -49,6 +49,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
   const lastDetectionHashRef = useRef<string>("");
   const lastHashCalculationRef = useRef<number>(0);
   const lastDetectionRef = useRef<DetectionResult | null>(null);
+  const animateRef = useRef<() => void>(() => {});
 
   const getVideoRect = useCallback(() => {
     const video = videoRef.current;
@@ -59,9 +60,9 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
       !videoRectRef.current ||
       now - (lastVideoRectUpdateRef.current ?? 0) > 200
     ) {
-      (videoRectRef as React.RefObject<DOMRect | null>).current =
+      (videoRectRef as React.MutableRefObject<DOMRect | null>).current =
         video.getBoundingClientRect();
-      (lastVideoRectUpdateRef as React.RefObject<number>).current = now;
+      (lastVideoRectUpdateRef as React.MutableRefObject<number>).current = now;
     }
 
     return videoRectRef.current;
@@ -168,21 +169,19 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
         }
       }
       if (isStreaming) {
-        (animationFrameRef as React.RefObject<number | undefined>).current =
-          requestAnimationFrame(animate);
+        animationFrameRef.current = requestAnimationFrame(animateRef.current);
       }
       return;
     }
 
-    if (!detectionsToRender || !detectionsToRender.faces?.length) {
+    if (!detectionsToRender?.faces?.length) {
       const ctx = overlayCanvas.getContext("2d", { willReadFrequently: false });
       if (ctx && overlayCanvas.width > 0 && overlayCanvas.height > 0) {
         ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
       }
       lastDetectionHashRef.current = "";
       if (isStreaming) {
-        (animationFrameRef as React.RefObject<number | undefined>).current =
-          requestAnimationFrame(animate);
+        animationFrameRef.current = requestAnimationFrame(animateRef.current);
       }
       return;
     }
@@ -215,7 +214,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
       }
 
       // Include persistentCooldowns in hash to trigger redraw when cooldowns change
-      // This ensures the "Done" indicator appears/disappears correctly
+      // This ensures the \"Done\" indicator appears/disappears correctly
       hashSum += persistentCooldowns.size * 10000;
       let cooldownIndex = 0;
       for (const [personId, cooldownInfo] of persistentCooldowns) {
@@ -244,8 +243,7 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     }
 
     if (isStreaming) {
-      (animationFrameRef as React.RefObject<number | undefined>).current =
-        requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animateRef.current);
     }
   }, [
     isStreaming,
@@ -256,6 +254,10 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     overlayCanvasRef,
     animationFrameRef,
   ]);
+
+  useEffect(() => {
+    animateRef.current = animate;
+  }, [animate]);
 
   const resetOverlayRefs = useCallback(() => {
     lastDetectionHashRef.current = "";

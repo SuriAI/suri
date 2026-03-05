@@ -102,7 +102,10 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }, [group.id, members.length]);
 
   useEffect(() => {
-    loadOverviewData();
+    const timer = setTimeout(() => {
+      loadOverviewData();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadOverviewData]);
 
   if (members.length === 0) {
@@ -131,7 +134,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
   return (
     <section className="space-y-6 h-full flex flex-col overflow-hidden p-6 custom-scroll overflow-y-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/5 bg-[#0a0a0b] rounded-lg overflow-hidden divide-x divide-white/5 flex-shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/5 bg-[#0a0a0b] rounded-lg overflow-hidden divide-x divide-white/5 shrink-0">
         <div className="px-8">
           <StatsCard
             type="present"
@@ -160,8 +163,8 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm overflow-hidden flex-shrink-0 flex flex-col min-h-[400px] shadow-2xl">
-        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 flex-shrink-0 bg-white/[0.02]">
+      <div className="rounded-xl border border-white/10 bg-white/2 backdrop-blur-sm overflow-hidden shrink-0 flex flex-col min-h-[400px] shadow-2xl">
+        <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-white/2">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
               <i className="fa-solid fa-clock-rotate-left text-cyan-500 text-xs"></i>
@@ -169,7 +172,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             </h3>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
             <div className="relative w-full sm:w-56">
               <svg
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30"
@@ -212,7 +215,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             ) : filteredRecords.length === 0 ? (
               <div className="rounded-lg border border-white/5 bg-white/5 px-6 py-8 text-center w-full mt-4">
                 <div className="text-xs text-white/40">
-                  No results found for "{activitySearch}"
+                  No results found for &quot;{activitySearch}&quot;
                 </div>
               </div>
             ) : (
@@ -227,7 +230,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                   return (
                     <div
                       key={record.id}
-                      className="group relative flex items-center gap-3 hover:bg-white/[0.01] transition-all py-1.5 px-2"
+                      className="group/item flex items-center justify-between p-2 rounded-lg hover:bg-white/1 transition-colors"
                     >
                       {/* Unbroken Vertical Line Segment */}
                       <div
@@ -239,7 +242,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                       />
 
                       {/* Timeline Dot Column */}
-                      <div className="relative z-10 w-6 h-10 flex items-center justify-center flex-shrink-0">
+                      <div className="relative z-10 w-6 h-10 flex items-center justify-center shrink-0">
                         <Tooltip
                           content={`${Math.round(record.confidence * 100)}% match`}
                           position="top"

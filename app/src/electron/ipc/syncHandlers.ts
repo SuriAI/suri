@@ -159,12 +159,7 @@ export function registerSyncHandlers() {
 
   ipcMain.handle(
     "sync:import-data",
-    async (
-      _event,
-      password?: string,
-      filePath?: string,
-      overwrite: boolean = false,
-    ) => {
+    async (_event, password?: string, filePath?: string, overwrite = false) => {
       try {
         if (!password) {
           throw new Error("Password is required to restore vault.");

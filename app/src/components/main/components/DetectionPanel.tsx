@@ -54,7 +54,7 @@ const DetectionCard = memo(
         bg-black rounded-lg p-3 border-l-4 min-h-[40px] transition-all
         ${statusStyles.borderColor}
         ${statusStyles.bgColor}
-        ${trackedFace?.isLocked ? "border-cyan-500/50 bg-gradient-to-br from-cyan-500/10 to-transparent" : ""}
+        ${trackedFace?.isLocked ? "border-cyan-500/50 bg-linear-to-br from-cyan-500/10 to-transparent" : ""}
         ${hasName ? "shadow-md" : ""}
       `}
       >
@@ -109,7 +109,7 @@ export function DetectionPanel({
       if (!aIsLive && bIsLive) return 1; // b comes first
       return 0; // maintain original order for same status
     });
-  }, [currentDetections?.faces]);
+  }, [currentDetections]);
 
   const hasDetections = filteredFaces.length > 0;
 
@@ -131,7 +131,7 @@ export function DetectionPanel({
 
                   <div className="absolute inset-1 rounded-lg overflow-hidden">
                     {isStreaming && (
-                      <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent ai-scan-line" />
+                      <div className="absolute left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-cyan-400 to-transparent ai-scan-line" />
                     )}
 
                     <svg

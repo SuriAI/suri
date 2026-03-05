@@ -43,9 +43,9 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
           </h3>
           <p className="text-xs text-white/50 leading-relaxed">
             This application does not collect, transmit, or share any personal
-            information. We don't track usage patterns, gather analytics, or
-            monitor your activity. There are no hidden callbacks, telemetry, or
-            background data transfers.
+            information. We don&apos;t track usage patterns, gather analytics,
+            or monitor your activity. There are no hidden callbacks, telemetry,
+            or background data transfers.
           </p>
         </section>
 

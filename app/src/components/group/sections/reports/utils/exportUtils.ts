@@ -7,13 +7,13 @@ import { parseLocalDate } from "@/utils";
 export function exportReportToCSV(
   groupedRows: Record<string, RowData[]>,
   visibleColumns: ColumnKey[],
-  allColumns: ReadonlyArray<{ key: ColumnKey; label: string }>,
+  allColumns: readonly { key: ColumnKey; label: string }[],
   groupName: string,
   startDate: string,
   endDate: string,
 ) {
   try {
-    const pad = (n: number, len: number = 2) => String(n).padStart(len, "0");
+    const pad = (n: number, len = 2) => String(n).padStart(len, "0");
     const formatLocalDateTime = (d: Date): string => {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     };
@@ -27,7 +27,7 @@ export function exportReportToCSV(
     Object.values(groupedRows).forEach((groupArr) => {
       groupArr.forEach((r) => {
         const row = cols.map((c) => {
-          const v = (r as RowData)[c.key];
+          const v = r[c.key];
 
           if (c.key === "total_hours" && typeof v === "number") {
             const hrs = Math.floor(v);
@@ -38,7 +38,7 @@ export function exportReportToCSV(
           if (typeof v === "boolean") return v ? "true" : "false";
           if (typeof v === "number") return String(v);
           if (v instanceof Date) return formatLocalDateTime(v);
-          return (v as string | undefined) ?? "";
+          return v ?? "";
         });
         rows.push(row);
       });

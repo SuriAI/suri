@@ -101,7 +101,7 @@ export class GroupManager {
   async getGroupMembers(groupId: string): Promise<AttendanceMember[]> {
     try {
       const members = await this.httpClient.get<
-        Array<{
+        {
           person_id: string;
           name: string;
           role?: string;
@@ -110,7 +110,7 @@ export class GroupManager {
           joined_at: string;
           is_active: boolean;
           group_id: string;
-        }>
+        }[]
       >(`${this.apiEndpoints.groups}/${groupId}/persons`);
 
       return members.map((member) => ({
