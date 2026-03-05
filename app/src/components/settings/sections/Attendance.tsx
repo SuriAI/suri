@@ -44,8 +44,8 @@ export function Attendance({
                   {!hasSelectedGroup
                     ? "Select a group to enable this feature"
                     : attendanceSettings.trackCheckout
-                      ? "Record both arrival and when people leave to automatically calculate total hours."
-                      : "Arrival Only: Only the first scan will be recorded."}
+                      ? "ON: Tracking both Time In and Time Out to calculate total hours."
+                      : "OFF: Recording Time In only."}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -101,11 +101,11 @@ export function Attendance({
                         transition={{ duration: 0.15 }}
                       >
                         {attendanceSettings.trackCheckout
-                          ? `Session Window: Wait for ${Math.floor(
+                          ? `Wait ${Math.floor(
                               (attendanceSettings.reLogCooldownSeconds ??
                                 1800) / 60,
-                            )} minutes before starting a NEW session.`
-                          : `Duplicate Prevention: Ignore other scans for ${Math.floor(
+                            )} minutes before starting a new session for the same person.`
+                          : `Ignore repeated scans from the same person for ${Math.floor(
                               (attendanceSettings.reLogCooldownSeconds ??
                                 1800) / 60,
                             )} minutes.`}
@@ -165,8 +165,8 @@ export function Attendance({
                   {!hasSelectedGroup
                     ? "Select a group to enable late tracking"
                     : attendanceSettings.lateThresholdEnabled
-                      ? "Active: Flag members as late based on schedule."
-                      : "Disabled: No late flags will be added to reports."}
+                      ? "ON: Automatically checking for late members."
+                      : "OFF: Late tracking is disabled."}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -253,8 +253,8 @@ export function Attendance({
                 className="text-xs text-white/50"
               >
                 {attendanceSettings.enableSpoofDetection
-                  ? "Active: Protecting against fake faces and photos."
-                  : "Disabled: Fast scanning but less secure."}
+                  ? "ON: Extra security against fake faces or photos."
+                  : "OFF: Standard scanning speed."}
               </motion.div>
             </AnimatePresence>
           </div>
