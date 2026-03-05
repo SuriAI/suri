@@ -65,8 +65,7 @@ export function useReportData(
       endDateTime.setHours(23, 59, 59, 999);
 
       const toLocalDateTimeParam = (d: Date) => {
-        const pad = (n: number, len: number = 2) =>
-          String(n).padStart(len, "0");
+        const pad = (n: number, len = 2) => String(n).padStart(len, "0");
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(), 3)}`;
       };
 

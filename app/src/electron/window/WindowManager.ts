@@ -68,8 +68,8 @@ export class WindowManager {
     state.mainWindow = mainWindow;
 
     // Load content
-    if (isDev() && process.env["ELECTRON_RENDERER_URL"]) {
-      mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    if (isDev() && process.env.ELECTRON_RENDERER_URL) {
+      mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
     } else {
       mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"));
     }

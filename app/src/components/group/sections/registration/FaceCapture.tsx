@@ -42,13 +42,18 @@ export function FaceCapture({
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered"
   >("all");
-  const [memberStatus, setMemberStatus] = useState<Map<string, boolean>>(
-    new Map(),
-  );
+
+  const memberStatus = useMemo(() => {
+    const status = new Map<string, boolean>();
+    for (const member of members) {
+      status.set(member.person_id, !!member.has_face_data);
+    }
+    return status;
+  }, [members]);
 
   useEffect(() => {
     if (preSelectedId) {
-      setSelectedMemberId(preSelectedId);
+      setTimeout(() => setSelectedMemberId(preSelectedId), 0);
     }
   }, [preSelectedId]);
 
@@ -63,18 +68,6 @@ export function FaceCapture({
     startCamera,
     stopCamera,
   } = useCamera();
-
-  const loadStatus = useCallback(async () => {
-    const status = new Map<string, boolean>();
-    for (const member of members) {
-      status.set(member.person_id, !!member.has_face_data);
-    }
-    setMemberStatus(status);
-  }, [members]);
-
-  useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
 
   const {
     frames,
@@ -99,7 +92,7 @@ export function FaceCapture({
 
   useEffect(() => {
     if (deselectMemberTrigger) {
-      setSelectedMemberId("");
+      setTimeout(() => setSelectedMemberId(""), 0);
     }
   }, [deselectMemberTrigger]);
 
@@ -122,14 +115,14 @@ export function FaceCapture({
 
   const handleWrapperRegister = useCallback(async () => {
     if (!selectedMemberId) return;
-    await handleRegister(selectedMemberId, loadStatus, memberStatus);
-  }, [selectedMemberId, handleRegister, loadStatus, memberStatus]);
+    await handleRegister(selectedMemberId, async () => {}, memberStatus);
+  }, [selectedMemberId, handleRegister, memberStatus]);
 
   const handleWrapperRemoveData = useCallback(
     async (member: AttendanceMember) => {
-      await handleRemoveFaceData(member, loadStatus);
+      await handleRemoveFaceData(member, async () => {});
     },
-    [handleRemoveFaceData, loadStatus],
+    [handleRemoveFaceData],
   );
 
   const resetWorkflow = useCallback(() => {

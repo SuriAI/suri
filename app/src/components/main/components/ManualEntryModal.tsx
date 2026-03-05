@@ -115,7 +115,7 @@ export const ManualEntryModal = ({
                   label: m.name,
                 }))}
                 value={selectedPersonId}
-                onChange={setSelectedPersonId}
+                onChange={(val) => setSelectedPersonId(val as string)}
                 placeholder={
                   absentMembers.length > 0
                     ? "Select absent member..."
@@ -153,8 +153,8 @@ export const ManualEntryModal = ({
         )}
 
         {sortedAllMembers.length > 0 && (
-          <div className="border border-white/[0.06] rounded-lg overflow-hidden">
-            <div className="max-h-[220px] overflow-y-auto divide-y divide-white/[0.04]">
+          <div className="border border-white/6 rounded-lg overflow-hidden">
+            <div className="max-h-[220px] overflow-y-auto divide-y divide-white/4">
               {sortedAllMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id);
                 const hasFace =
@@ -168,7 +168,7 @@ export const ManualEntryModal = ({
                     className="flex items-center gap-2.5 px-3 py-2"
                   >
                     <div
-                      className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${
+                      className={`shrink-0 w-1.5 h-1.5 rounded-full ${
                         isPresent ? "bg-emerald-400" : "bg-white/20"
                       }`}
                     />
@@ -177,7 +177,7 @@ export const ManualEntryModal = ({
                       {member.name}
                     </span>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {isPresent && (
                         <span className="text-[9px] font-semibold text-emerald-400/80 uppercase tracking-wide">
                           Present
@@ -202,10 +202,10 @@ export const ManualEntryModal = ({
 
         {noFaceCount > 0 && (
           <p className="text-[9px] text-amber-400/60 leading-relaxed flex items-start gap-1.5">
-            <i className="fa-solid fa-circle-info mt-[1px] flex-shrink-0"></i>
-            Members marked "No face data" weren't registered yet or were
-            imported from another device. They must be enrolled on this device
-            to be recognized by the camera.
+            <i className="fa-solid fa-circle-info mt-px shrink-0"></i>
+            Members marked &quot;No face data&quot; weren&apos;t registered yet
+            or were imported from another device. They must be enrolled on this
+            device to be recognized by the camera.
           </p>
         )}
 

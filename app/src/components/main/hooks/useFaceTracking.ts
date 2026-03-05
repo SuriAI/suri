@@ -6,21 +6,21 @@ export function useFaceTracking() {
 
   const calculateAngleConsistencyRef = useRef<
     (
-      history: Array<{
+      history: {
         timestamp: number;
         bbox: { x: number; y: number; width: number; height: number };
         confidence: number;
-      }>,
+      }[],
     ) => number
   >(() => 1.0);
 
   const calculateAngleConsistency = useCallback(
     (
-      history: Array<{
+      history: {
         timestamp: number;
         bbox: { x: number; y: number; width: number; height: number };
         confidence: number;
-      }>,
+      }[],
     ) => {
       if (history.length < 2) return 1.0;
 

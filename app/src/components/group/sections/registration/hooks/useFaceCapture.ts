@@ -78,7 +78,7 @@ export function useFaceCapture(
           throw new Error("Face detected but bounding box missing.");
         }
 
-        if (!bestFace.landmarks_5 || bestFace.landmarks_5.length !== 5) {
+        if (bestFace.landmarks_5?.length !== 5) {
           throw new Error(
             "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
           );
@@ -123,7 +123,7 @@ export function useFaceCapture(
       const REQUIRED_ANGLE = "Front";
       const frame = frames.find((f) => f.angle === REQUIRED_ANGLE);
 
-      if (!frame || frame.status !== "ready" || !frame.bbox) {
+      if (frame?.status !== "ready" || !frame.bbox) {
         setGlobalError("Please capture a valid face image first.");
         return;
       }
@@ -135,7 +135,7 @@ export function useFaceCapture(
       try {
         const payload = toBase64Payload(frame.dataUrl);
 
-        if (!frame.landmarks_5 || frame.landmarks_5.length !== 5) {
+        if (frame.landmarks_5?.length !== 5) {
           throw new Error(
             "Cannot register: landmarks missing. Please re-capture the face.",
           );

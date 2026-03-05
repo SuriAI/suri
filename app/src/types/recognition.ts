@@ -74,10 +74,10 @@ export interface PersonUpdateResponse {
 
 export interface PersonListResponse {
   success: boolean;
-  persons: Array<{
+  persons: {
     person_id: string;
     embedding_count: number;
-  }>;
+  }[];
   total_count: number;
 }
 

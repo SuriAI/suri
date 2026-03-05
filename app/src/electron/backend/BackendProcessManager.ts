@@ -301,7 +301,7 @@ export class BackendProcessManager {
             );
             pidsOutput.split("\n").forEach((line) => {
               if (line.includes("server.exe")) {
-                const match = line.match(/"(\d+)"/);
+                const match = /"(\d+)"/.exec(line);
                 if (match?.[1]) {
                   try {
                     execSync(`taskkill /F /PID ${match[1]} /T`, {

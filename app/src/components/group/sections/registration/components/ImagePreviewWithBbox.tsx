@@ -13,7 +13,7 @@ export function ImagePreviewWithBbox({ frame }: { frame: CapturedFrame }) {
 
   useEffect(() => {
     if (!frame.bbox || !frame.width || !frame.height || !containerRef.current) {
-      setBboxStyle(null);
+      setTimeout(() => setBboxStyle(null), 0);
       lastBboxStyleRef.current = "";
       return;
     }
@@ -72,7 +72,7 @@ export function ImagePreviewWithBbox({ frame }: { frame: CapturedFrame }) {
       )},${bboxWidth.toFixed(2)},${bboxHeight.toFixed(2)}`;
       if (lastBboxStyleRef.current !== styleKey) {
         lastBboxStyleRef.current = styleKey;
-        setBboxStyle(newStyle);
+        setTimeout(() => setBboxStyle(newStyle), 0);
       }
     };
 

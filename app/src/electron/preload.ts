@@ -148,11 +148,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     pickImportFile: () => {
       return ipcRenderer.invoke("sync:pick-import-file");
     },
-    importData: (
-      password: string,
-      filePath: string,
-      overwrite: boolean = false,
-    ) => {
+    importData: (password: string, filePath: string, overwrite = false) => {
       return ipcRenderer.invoke(
         "sync:import-data",
         password,

@@ -116,7 +116,7 @@ export function useReportTransform(
         const sessionKey = `${member.person_id}_${date}`;
         const session = sessionsMap.get(sessionKey) || null;
 
-        let finalSession: AttendanceSession | null = null;
+        let finalSession: AttendanceSession | null;
         if (shouldShowNoRecords) {
           finalSession = null;
         } else if (session) {

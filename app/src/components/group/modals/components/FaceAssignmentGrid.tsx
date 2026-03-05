@@ -48,7 +48,7 @@ export function FaceAssignmentGrid({
               key={face.faceId}
               className={`group rounded-lg border overflow-hidden transition-all ${
                 face.assignedPersonId
-                  ? "border-cyan-400/40 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5"
+                  ? "border-cyan-400/40 bg-linear-to-br from-cyan-500/10 to-cyan-600/5"
                   : face.isAcceptable
                     ? "border-white/10 bg-white/5 hover:border-white/20"
                     : "border-amber-400/30 bg-amber-500/5"
@@ -86,7 +86,7 @@ export function FaceAssignmentGrid({
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                     <div
-                      className={`h-full ${face.qualityScore >= 60 ? "bg-gradient-to-r from-cyan-400 to-cyan-500" : "bg-gradient-to-r from-yellow-400 to-orange-400"}`}
+                      className={`h-full ${face.qualityScore >= 60 ? "bg-linear-to-r from-cyan-400 to-cyan-500" : "bg-linear-to-r from-yellow-400 to-orange-400"}`}
                       style={{ width: `${face.qualityScore}%` }}
                     />
                   </div>
@@ -174,7 +174,7 @@ export function FaceAssignmentGrid({
         <button
           onClick={onBulkRegister}
           disabled={isRegistering}
-          className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-400/40 px-4 py-4 text-sm font-medium text-cyan-100 hover:from-cyan-500/30 hover:to-cyan-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-cyan-500/10"
+          className="w-full flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-400/40 px-4 py-4 text-sm font-medium text-cyan-100 hover:from-cyan-500/30 hover:to-cyan-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-cyan-500/10"
         >
           {isRegistering ? (
             <>

@@ -3,11 +3,7 @@
 /**
  * Creates the rounded window shape for Windows
  */
-export function createRoundedShape(
-  width: number,
-  height: number,
-  radius: number = 4,
-) {
+export function createRoundedShape(width: number, height: number, radius = 4) {
   const shapes = [];
 
   for (let y = 0; y < height; y++) {

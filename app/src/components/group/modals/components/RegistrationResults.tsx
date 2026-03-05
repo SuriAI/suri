@@ -17,7 +17,7 @@ export function RegistrationResults({
     <div className="space-y-6">
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 p-6">
+        <div className="rounded-lg border border-cyan-400/30 bg-linear-to-br from-cyan-500/10 to-cyan-600/5 p-6">
           <div className="text-3xl font-light text-cyan-200 mb-1">
             {successCount}
           </div>
@@ -25,7 +25,7 @@ export function RegistrationResults({
             Registered
           </div>
         </div>
-        <div className="rounded-lg border border-red-400/30 bg-gradient-to-br from-red-500/10 to-red-600/5 p-6">
+        <div className="rounded-lg border border-red-400/30 bg-linear-to-br from-red-500/10 to-red-600/5 p-6">
           <div className="text-3xl font-light text-red-200 mb-1">
             {failedCount}
           </div>

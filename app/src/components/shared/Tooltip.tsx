@@ -149,10 +149,6 @@ function buildArrowStyle(
   };
 }
 
-type InjectableProps = React.HTMLAttributes<HTMLElement> & {
-  ref?: React.Ref<Element>;
-};
-
 export function Tooltip({
   content,
   children,
@@ -214,38 +210,24 @@ export function Tooltip({
     return () => cancelAnimationFrame(raf);
   }, [visible, position, content]);
 
-  if (!content || disabled) return children;
+  const setTriggerRef = useCallback((node: Element | null) => {
+    (triggerRef as React.MutableRefObject<Element | null>).current = node;
+  }, []);
 
-  const child = React.cloneElement<InjectableProps>(
-    children as ReactElement<InjectableProps>,
-    {
-      ref: triggerRef,
-      onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-        show();
-        const prev = (children.props as InjectableProps).onMouseEnter;
-        if (prev) prev(e);
-      },
-      onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
-        hide();
-        const prev = (children.props as InjectableProps).onMouseLeave;
-        if (prev) prev(e);
-      },
-      onFocus: (e: React.FocusEvent<HTMLElement>) => {
-        show();
-        const prev = (children.props as InjectableProps).onFocus;
-        if (prev) prev(e);
-      },
-      onBlur: (e: React.FocusEvent<HTMLElement>) => {
-        hide();
-        const prev = (children.props as InjectableProps).onBlur;
-        if (prev) prev(e);
-      },
-    },
-  );
+  if (!content || disabled) return children;
 
   return (
     <>
-      {child}
+      <div
+        ref={setTriggerRef}
+        style={{ display: "contents" }}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+      >
+        {children}
+      </div>
       {createPortal(
         <AnimatePresence>
           {visible && coords && (
@@ -256,7 +238,7 @@ export function Tooltip({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.1, ease: "easeOut" }}
-              className="fixed z-[99999] pointer-events-none"
+              className="fixed z-99999 pointer-events-none"
               style={{ top: coords.top, left: coords.left }}
             >
               <div className="relative bg-[#111214] text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.65)] border border-white/10 max-w-[260px] whitespace-nowrap">

@@ -4,9 +4,9 @@
 export async function fetchWithRetry(
   url: string,
   options: RequestInit = {},
-  retries: number = 20,
-  backoff: number = 1.5,
-  maxDelay: number = 3000,
+  retries = 20,
+  backoff = 1.5,
+  maxDelay = 3000,
 ): Promise<Response> {
   const makeRequest = async (attempt: number): Promise<Response> => {
     try {

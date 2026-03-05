@@ -59,6 +59,8 @@ export const Dropdown = forwardRef<
       top: number;
       left: number;
       width: number;
+      buttonRight: number;
+      buttonTop: number;
     } | null>(null);
     const internalRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -122,6 +124,8 @@ export const Dropdown = forwardRef<
             : buttonRect.bottom + 4,
           left: buttonRect.left,
           width: buttonRect.width,
+          buttonRight: buttonRect.right,
+          buttonTop: buttonRect.top,
         });
       } else {
         setMenuPosition(null);
@@ -152,7 +156,7 @@ export const Dropdown = forwardRef<
           focus:outline-none focus:border-white/20 transition-all cursor-pointer text-left
           flex items-center justify-between hover:bg-white/8
           disabled:opacity-50 disabled:cursor-not-allowed min-w-0
-          ${trigger ? "px-0 justify-center" : "pl-3 pr-2"}
+          ${trigger ? "px-0 justify-center" : "ps-3 pe-2"}
           ${buttonClassName}
         `}
         >
@@ -164,7 +168,7 @@ export const Dropdown = forwardRef<
                 {displayText}
               </span>
               <i
-                className={`fa-solid fa-chevron-down text-white/50 text-xs flex-shrink-0 ml-2 transition-transform duration-200 ${
+                className={`fa-solid fa-chevron-down text-white/50 text-xs shrink-0 ms-2 transition-transform duration-200 ${
                   isOpen ? "rotate-180" : ""
                 } ${iconClassName}`}
               ></i>
@@ -181,7 +185,7 @@ export const Dropdown = forwardRef<
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed inset-0 z-[9998]"
+                  className="fixed inset-0 z-9998"
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => setIsOpen(false)}
                 />
@@ -191,14 +195,13 @@ export const Dropdown = forwardRef<
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-[9999] bg-[#0c0c0c] border border-white/10 rounded-lg overflow-hidden shadow-xl"
+                  className="fixed z-9999 bg-[#0c0c0c] border border-white/10 rounded-lg overflow-hidden shadow-xl"
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
                     top: `${menuPosition.top}px`,
                     left: menuWidth ? undefined : `${menuPosition.left}px`,
                     right: menuWidth
-                      ? window.innerWidth -
-                        (buttonRef.current?.getBoundingClientRect().right || 0)
+                      ? window.innerWidth - menuPosition.buttonRight
                       : undefined,
                     width: menuWidth
                       ? typeof menuWidth === "number"
@@ -206,8 +209,7 @@ export const Dropdown = forwardRef<
                         : menuWidth
                       : `${menuPosition.width}px`,
                     transformOrigin:
-                      menuPosition.top <
-                      (buttonRef.current?.getBoundingClientRect().top || 0)
+                      menuPosition.top < menuPosition.buttonTop
                         ? "bottom right"
                         : "top right",
                   }}

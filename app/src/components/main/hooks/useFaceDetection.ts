@@ -8,13 +8,13 @@ interface UseFaceDetectionOptions {
   isScanningRef: React.RefObject<boolean>;
   isStreamingRef: React.RefObject<boolean>;
   captureFrame: () => Promise<ArrayBuffer | null>;
-  lastDetectionFrameRef: React.RefObject<ArrayBuffer | null>;
-  frameCounterRef: React.RefObject<number>;
-  skipFramesRef: React.RefObject<number>;
-  lastFrameTimestampRef: React.RefObject<number>;
-  lastDetectionRef: React.RefObject<DetectionResult | null>;
-  processCurrentFrameRef: React.RefObject<() => Promise<void>>;
-  fpsTrackingRef: React.RefObject<{
+  lastDetectionFrameRef: React.MutableRefObject<ArrayBuffer | null>;
+  frameCounterRef: React.MutableRefObject<number>;
+  skipFramesRef: React.MutableRefObject<number>;
+  lastFrameTimestampRef: React.MutableRefObject<number>;
+  lastDetectionRef: React.MutableRefObject<DetectionResult | null>;
+  processCurrentFrameRef: React.MutableRefObject<() => Promise<void>>;
+  fpsTrackingRef: React.MutableRefObject<{
     timestamps: number[];
     maxSamples: number;
     lastUpdateTime: number;
@@ -49,7 +49,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
       return;
     }
 
-    (frameCounterRef as React.RefObject<number>).current += 1;
+    frameCounterRef.current += 1;
 
     if (
       (frameCounterRef.current ?? 0) % ((skipFramesRef.current ?? 0) + 1) !==
@@ -66,8 +66,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
         return;
       }
 
-      (lastDetectionFrameRef as React.RefObject<ArrayBuffer | null>).current =
-        frameData;
+      lastDetectionFrameRef.current = frameData;
 
       backendServiceRef.current
         .sendDetectionRequest(frameData)
@@ -91,8 +90,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
   ]);
 
   useEffect(() => {
-    (processCurrentFrameRef as React.RefObject<() => Promise<void>>).current =
-      processCurrentFrame;
+    processCurrentFrameRef.current = processCurrentFrame;
   }, [processCurrentFrame, processCurrentFrameRef]);
 
   return {

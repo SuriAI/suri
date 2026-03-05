@@ -7,7 +7,7 @@ import type {
 } from "@/types/recognition";
 
 export interface DetectionResult {
-  faces: Array<{
+  faces: {
     bbox: {
       x: number;
       y: number;
@@ -27,7 +27,7 @@ export interface DetectionResult {
       attack_type?: string;
       message?: string;
     };
-  }>;
+  }[];
   model_used: string;
 }
 
@@ -80,11 +80,11 @@ export interface TrackedFace {
   bbox: { x: number; y: number; width: number; height: number };
   confidence: number;
   lastSeen: number;
-  trackingHistory: Array<{
+  trackingHistory: {
     timestamp: number;
     bbox: { x: number; y: number; width: number; height: number };
     confidence: number;
-  }>;
+  }[];
   isLocked: boolean;
   personId?: string;
   occlusionCount: number;

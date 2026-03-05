@@ -26,7 +26,7 @@ export function cleanupStream(
  */
 export function cleanupVideo(
   videoRef: React.RefObject<HTMLVideoElement | null>,
-  pause: boolean = true,
+  pause = true,
 ): void {
   if (videoRef.current) {
     try {

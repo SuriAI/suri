@@ -116,11 +116,11 @@ declare global {
         nms_threshold?: number;
       },
     ) => Promise<{
-      faces: Array<{
+      faces: {
         bbox: [number, number, number, number];
         confidence: number;
         landmarks_5?: number[][];
-      }>;
+      }[];
       model_used: string;
       session_id?: string;
     }>;
@@ -163,9 +163,7 @@ declare global {
   }
 
   interface AssetsAPI {
-    listRecognitionSounds: () => Promise<
-      Array<{ fileName: string; url: string }>
-    >;
+    listRecognitionSounds: () => Promise<{ fileName: string; url: string }[]>;
   }
 
   interface SyncAPI {

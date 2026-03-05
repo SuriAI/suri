@@ -1,6 +1,6 @@
-type AudioCacheEntry = {
+interface AudioCacheEntry {
   audio: HTMLAudioElement;
-};
+}
 
 const audioCache = new Map<string, AudioCacheEntry>();
 

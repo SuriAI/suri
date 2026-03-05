@@ -282,7 +282,7 @@ export class AttendanceManager {
     }
   }
 
-  async cleanupOldData(daysToKeep: number = 90): Promise<void> {
+  async cleanupOldData(daysToKeep = 90): Promise<void> {
     await this.httpClient.post("/attendance/cleanup", {
       days_to_keep: daysToKeep,
     });
@@ -347,7 +347,7 @@ export class AttendanceManager {
   }
 
   private toLocalDateTimeParam(date: Date): string {
-    const pad = (n: number, len: number = 2) => String(n).padStart(len, "0");
+    const pad = (n: number, len = 2) => String(n).padStart(len, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
   }
 }

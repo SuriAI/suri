@@ -35,11 +35,11 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
       currentGroup: props.currentGroup || null,
     });
 
-    const groupSections: Array<{
+    const groupSections: {
       id: GroupSection;
       label: string;
       icon: string;
-    }> = [
+    }[] = [
       { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
       { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
       { id: "members", label: "Members", icon: "fa-solid fa-users" },
@@ -122,7 +122,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
           style={{ willChange: "opacity" }}
-          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center"
+          className="fixed inset-0 z-60 bg-black/70 flex items-center justify-center"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.98, y: 8 }}
@@ -133,7 +133,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
               ease: [0.16, 1, 0.3, 1], // Custom "snappy" cubic-bezier
             }}
             style={{ willChange: "transform, opacity" }}
-            className="bg-[#0b0b0b] rounded-xl w-full max-w-[100%] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/5 overflow-hidden mt-6 relative"
+            className="bg-[#0b0b0b] rounded-xl w-full max-w-full md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/5 overflow-hidden mt-6 relative"
           >
             <button
               onClick={props.onBack}

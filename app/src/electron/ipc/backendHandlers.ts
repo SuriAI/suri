@@ -31,6 +31,7 @@ export function registerBackendHandlers() {
     } catch (error) {
       throw new Error(
         `Failed to get models: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
       );
     }
   });
@@ -43,6 +44,7 @@ export function registerBackendHandlers() {
       } catch (error) {
         throw new Error(
           `Face detection failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
         );
       }
     },

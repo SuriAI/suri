@@ -92,8 +92,8 @@ export function useBackendService(options: UseBackendServiceOptions) {
 
   const waitForBackendReady = useCallback(
     async (
-      maxWaitTime: number = 60000,
-      pollInterval: number = 100,
+      maxWaitTime = 60000,
+      pollInterval = 100,
     ): Promise<{ ready: boolean; modelsLoaded: boolean; error?: string }> => {
       const startTime = Date.now();
       let lastError: string | undefined;
@@ -187,8 +187,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
           return;
         }
 
-        (lastFrameTimestampRef as React.RefObject<number>).current =
-          responseFrameTimestamp;
+        lastFrameTimestampRef.current = responseFrameTimestamp;
 
         const now = Date.now();
         const fpsTracking = fpsTrackingRef.current;
@@ -218,8 +217,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
 
         if (data.faces && Array.isArray(data.faces)) {
           if (data.suggested_skip !== undefined) {
-            (skipFramesRef as React.RefObject<number>).current =
-              data.suggested_skip;
+            skipFramesRef.current = data.suggested_skip;
           }
 
           if (!data.model_used) {
@@ -289,9 +287,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
           };
 
           setCurrentDetections(detectionResult);
-          (
-            lastDetectionRef as React.RefObject<DetectionResult | null>
-          ).current = detectionResult;
+          lastDetectionRef.current = detectionResult;
 
           if (
             recognitionEnabled &&
@@ -320,7 +316,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
       "connection",
       (data: WebSocketConnectionMessage) => {
         if (data.status === "connected") {
-          (backendServiceReadyRef as React.RefObject<boolean>).current = true;
+          backendServiceReadyRef.current = true;
           setWebsocketStatus("connected");
         } else if (data.status === "disconnected") {
           setWebsocketStatus("disconnected");
@@ -435,9 +431,9 @@ export function useBackendService(options: UseBackendServiceOptions) {
   ]);
 
   useEffect(() => {
-    (isStreamingRef as React.RefObject<boolean>).current = false;
-    (isScanningRef as React.RefObject<boolean>).current = false;
-    (backendServiceReadyRef as React.RefObject<boolean>).current = false;
+    isStreamingRef.current = false;
+    isScanningRef.current = false;
+    backendServiceReadyRef.current = false;
     setError(null);
     setIsStreaming(false);
     setIsVideoLoading(false);
@@ -508,8 +504,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
           }
         } else if (currentAnimationFrame) {
           cancelAnimationFrame(currentAnimationFrame);
-          (animationFrameRef as React.RefObject<number | undefined>).current =
-            undefined;
+          animationFrameRef.current = undefined;
         }
 
         const initRef = initializationRef;

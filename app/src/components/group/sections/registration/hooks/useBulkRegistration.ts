@@ -102,7 +102,7 @@ export function useBulkRegistration(
   );
 
   const handleDetectFaces = useCallback(
-    async (filesToProcess?: File[], startIndex: number = 0) => {
+    async (filesToProcess?: File[], startIndex = 0) => {
       const files = filesToProcess || uploadedFiles;
       if (files.length === 0) {
         if (!filesToProcess) setError("Please upload images first");

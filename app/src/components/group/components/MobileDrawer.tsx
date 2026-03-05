@@ -121,7 +121,7 @@ export function MobileDrawer() {
               </div>
               <button
                 onClick={openCreateGroup}
-                className="h-10 px-3 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors border border-white/10 flex-shrink-0"
+                className="h-10 px-3 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors border border-white/10 shrink-0"
                 aria-label="New Group"
                 title="New Group"
               >

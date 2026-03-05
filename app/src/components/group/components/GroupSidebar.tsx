@@ -18,7 +18,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
     <aside
       className={`
         flex flex-col border-r border-white/10 bg-white/5
-        transition-all duration-300 ease-in-out flex-shrink-0
+        transition-all duration-300 ease-in-out shrink-0
         ${isSidebarCollapsed ? "w-16" : "w-64"} h-full
       `}
     >
@@ -56,7 +56,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
             <Tooltip content="New Group" position="top">
               <button
                 onClick={openCreateGroup}
-                className="w-10 h-10 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center shrink-0"
                 aria-label="New Group"
               >
                 <span className="text-lg">+</span>

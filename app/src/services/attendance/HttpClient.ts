@@ -22,7 +22,7 @@ export class HttpClient {
       const checkInterval = 250;
       const startTime = Date.now();
 
-      if (!window.electronAPI || !window.electronAPI.backend_ready) {
+      if (!window.electronAPI?.backend_ready) {
         console.warn(
           "[HttpClient] Electron API not found, skipping strict readiness check.",
         );

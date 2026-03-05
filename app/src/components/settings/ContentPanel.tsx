@@ -59,7 +59,7 @@ interface ContentPanelProps {
   addMemberHandler: (() => void) | null;
   hasSelectedMember: boolean;
   dropdownGroups: AttendanceGroup[];
-  groupSections: Array<{ id: GroupSection; label: string; icon: string }>;
+  groupSections: { id: GroupSection; label: string; icon: string }[];
 }
 
 export const ContentPanel: React.FC<ContentPanelProps> = ({

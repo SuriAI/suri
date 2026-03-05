@@ -9,7 +9,7 @@ export function AppSkeleton() {
             </div>
           </div>
 
-          <div className="mx-4 mb-4 min-h-[4rem] flex items-center justify-between gap-4">
+          <div className="mx-4 mb-4 min-h-16 flex items-center justify-between gap-4">
             <div className="w-48 h-10 bg-white/5 border border-white/10 rounded-lg" />
 
             <div className="w-40 h-10 bg-cyan-500/10 border border-cyan-500/20 rounded-lg" />

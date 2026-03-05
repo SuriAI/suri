@@ -8,7 +8,7 @@ import { parseLocalDate } from "@/utils";
 interface ReportTableProps {
   groupedRows: Record<string, RowData[]>;
   visibleColumns: ColumnKey[];
-  allColumns: ReadonlyArray<{ key: ColumnKey; label: string; align?: string }>;
+  allColumns: readonly { key: ColumnKey; label: string; align?: string }[];
   search?: string;
   statusFilter?: string;
   onResetSearch?: () => void;

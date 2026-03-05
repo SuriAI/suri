@@ -65,8 +65,8 @@ export function IntroModal() {
           </p>
           <div className="pt-3 border-t border-white/10 mt-2">
             <p className="text-white/40 text-xs text-center italic">
-              By clicking "Get Started", you acknowledge that you understand how
-              Suri handles your data locally.
+              By clicking &quot;Get Started&quot;, you acknowledge that you
+              understand how Suri handles your data locally.
             </p>
           </div>
         </div>

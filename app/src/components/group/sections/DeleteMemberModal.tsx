@@ -26,8 +26,8 @@ export function DeleteMemberModal({
     >
       <div className="mb-6">
         <p className="text-white mb-4">
-          Are you sure you want to remove <strong>"{member.name}"</strong> from
-          this group?
+          Are you sure you want to remove{" "}
+          <strong>&quot;{member.name}&quot;</strong> from this group?
         </p>
         <div className="bg-red-900/30 border border-red-500/40 rounded-lg p-3">
           <p className="text-red-300 text-sm">

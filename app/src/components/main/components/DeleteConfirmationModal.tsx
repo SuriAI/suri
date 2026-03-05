@@ -29,7 +29,10 @@ export function DeleteConfirmationModal({
       <div className="mb-6">
         <p className="text-white/80 text-sm mb-4">
           Are you sure you want to delete the group{" "}
-          <strong className="text-white">"{groupToDelete.name}"</strong>?
+          <strong className="text-white">
+            &quot;{groupToDelete.name}&quot;
+          </strong>
+          ?
         </p>
         <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-4">
           <p className="text-red-300 text-xs">
