@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from "react";
-import type { BackendService } from "@/services";
+import type { WebSocketService } from "@/services/WebSocketService";
 import type { DetectionResult } from "@/components/main/types";
 import { useDetectionStore } from "@/components/main/stores";
 
 interface UseFaceDetectionOptions {
-  backendServiceRef: React.RefObject<BackendService | null>;
+  webSocketServiceRef: React.RefObject<WebSocketService | null>;
   isScanningRef: React.RefObject<boolean>;
   isStreamingRef: React.RefObject<boolean>;
   captureFrame: () => Promise<ArrayBuffer | null>;
@@ -23,7 +23,7 @@ interface UseFaceDetectionOptions {
 
 export function useFaceDetection(options: UseFaceDetectionOptions) {
   const {
-    backendServiceRef,
+    webSocketServiceRef,
     isScanningRef,
     isStreamingRef,
     captureFrame,
@@ -42,7 +42,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
 
   const processCurrentFrame = useCallback(async () => {
     if (
-      !backendServiceRef.current?.isWebSocketReady() ||
+      !webSocketServiceRef.current?.isWebSocketReady() ||
       !isScanningRef.current ||
       !isStreamingRef.current
     ) {
@@ -68,7 +68,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
 
       lastDetectionFrameRef.current = frameData;
 
-      backendServiceRef.current
+      webSocketServiceRef.current
         .sendDetectionRequest(frameData)
         .catch((error) => {
           console.error("❌ WebSocket detection request failed:", error);
@@ -80,7 +80,7 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     }
   }, [
     captureFrame,
-    backendServiceRef,
+    webSocketServiceRef,
     isScanningRef,
     isStreamingRef,
     frameCounterRef,

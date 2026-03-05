@@ -102,43 +102,65 @@ export const useUIStore = create<UIState>((set) => ({
   setGroupInitialSection: (section) => set({ groupInitialSection: section }),
   setSettingsInitialSection: (section) =>
     set({ settingsInitialSection: section }),
-  setHasSeenIntro: (seen) => {
-    set({ hasSeenIntro: seen });
-    persistentSettings.setUIState({ hasSeenIntro: seen }).catch(console.error);
-  },
-  setSidebarCollapsed: (collapsed) => {
-    set({ sidebarCollapsed: collapsed });
-    persistentSettings
-      .setUIState({ sidebarCollapsed: collapsed })
-      .catch(console.error);
-  },
-  setSidebarWidth: (width) => {
-    set({ sidebarWidth: width });
-    persistentSettings.setUIState({ sidebarWidth: width }).catch(console.error);
-  },
+
+  setHasSeenIntro: (seen) => set({ hasSeenIntro: seen }),
+  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  setSidebarWidth: (width) => set({ sidebarWidth: width }),
+
   setQuickSettings: (settings) => {
-    const newSettings =
-      typeof settings === "function"
-        ? settings(useUIStore.getState().quickSettings)
-        : settings;
-    set({ quickSettings: newSettings });
-    // Save to store asynchronously (don't block)
-    persistentSettings.setQuickSettings(newSettings).catch(console.error);
+    set((state) => ({
+      quickSettings:
+        typeof settings === "function"
+          ? settings(state.quickSettings)
+          : settings,
+    }));
   },
 
   setAudioSettings: (settings) => {
-    const prev = useUIStore.getState().audioSettings;
-
-    const merged: AudioSettings =
-      typeof settings === "function"
-        ? settings(prev)
-        : { ...prev, ...(settings as Partial<AudioSettings>) };
-
-    set({ audioSettings: merged });
-    persistentSettings.setAudioSettings(merged).catch(console.error);
+    set((state) => ({
+      audioSettings:
+        typeof settings === "function"
+          ? settings(state.audioSettings)
+          : { ...state.audioSettings, ...(settings as Partial<AudioSettings>) },
+    }));
   },
+
   setIsHydrated: (isHydrated: boolean) => set({ isHydrated }),
 }));
+
+useUIStore.subscribe((state, prevState) => {
+  if (!state.isHydrated) return;
+
+  if (state.hasSeenIntro !== prevState.hasSeenIntro) {
+    persistentSettings
+      .setUIState({ hasSeenIntro: state.hasSeenIntro })
+      .catch(console.error);
+  }
+
+  if (state.sidebarCollapsed !== prevState.sidebarCollapsed) {
+    persistentSettings
+      .setUIState({ sidebarCollapsed: state.sidebarCollapsed })
+      .catch(console.error);
+  }
+
+  if (state.sidebarWidth !== prevState.sidebarWidth) {
+    persistentSettings
+      .setUIState({ sidebarWidth: state.sidebarWidth })
+      .catch(console.error);
+  }
+
+  if (state.quickSettings !== prevState.quickSettings) {
+    persistentSettings
+      .setQuickSettings(state.quickSettings)
+      .catch(console.error);
+  }
+
+  if (state.audioSettings !== prevState.audioSettings) {
+    persistentSettings
+      .setAudioSettings(state.audioSettings)
+      .catch(console.error);
+  }
+});
 
 // Load Settings from store on initialization
 if (typeof window !== "undefined") {

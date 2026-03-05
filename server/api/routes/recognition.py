@@ -4,6 +4,7 @@ import time
 from fastapi import APIRouter, HTTPException, Depends
 
 from api.deps import get_repository
+from api.recognition_deps import get_face_recognizer
 from database.repository import AttendanceRepository
 from api.schemas import (
     FaceRecognitionRequest,
@@ -27,6 +28,7 @@ router = APIRouter()
 async def recognize_face(
     request: FaceRecognitionRequest,
     repo: AttendanceRepository = Depends(get_repository),
+    face_recognizer=Depends(get_face_recognizer),
 ):
     """
     Recognize a face using face recognizer with liveness detection validation
@@ -34,10 +36,6 @@ async def recognize_face(
     start_time = time.time()
 
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         image = decode_base64_image(request.image)
 
@@ -84,17 +82,15 @@ async def recognize_face(
 
 
 @router.post("/face/register", response_model=FaceRegistrationResponse)
-async def register_person(request: FaceRegistrationRequest):
+async def register_person(
+    request: FaceRegistrationRequest, face_recognizer=Depends(get_face_recognizer)
+):
     """
     Register a new person in the face database with liveness detection validation
     """
     start_time = time.time()
 
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         image = decode_base64_image(request.image)
 
@@ -142,15 +138,11 @@ async def register_person(request: FaceRegistrationRequest):
 
 
 @router.delete("/face/person/{person_id}")
-async def remove_person(person_id: str):
+async def remove_person(person_id: str, face_recognizer=Depends(get_face_recognizer)):
     """
     Remove a person from the face database
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         result = await face_recognizer.remove_person(person_id)
 
@@ -173,15 +165,13 @@ async def remove_person(person_id: str):
 
 
 @router.put("/face/person")
-async def update_person(request: PersonUpdateRequest):
+async def update_person(
+    request: PersonUpdateRequest, face_recognizer=Depends(get_face_recognizer)
+):
     """
     Update a person's ID in the face database
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         if not request.old_person_id.strip() or not request.new_person_id.strip():
             raise HTTPException(
@@ -212,15 +202,11 @@ async def update_person(request: PersonUpdateRequest):
 
 
 @router.get("/face/persons")
-async def get_all_persons():
+async def get_all_persons(face_recognizer=Depends(get_face_recognizer)):
     """
     Get list of all registered persons
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         persons = await face_recognizer.get_all_persons()
         stats = await face_recognizer.get_stats()
@@ -238,15 +224,13 @@ async def get_all_persons():
 
 
 @router.post("/face/threshold")
-async def set_similarity_threshold(request: SimilarityThresholdRequest):
+async def set_similarity_threshold(
+    request: SimilarityThresholdRequest, face_recognizer=Depends(get_face_recognizer)
+):
     """
     Set similarity threshold for face recognition
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         if not (0.0 <= request.threshold <= 1.0):
             raise HTTPException(
@@ -269,12 +253,8 @@ async def set_similarity_threshold(request: SimilarityThresholdRequest):
 
 
 @router.post("/face/cache/invalidate")
-async def invalidate_face_cache():
+async def invalidate_face_cache(face_recognizer=Depends(get_face_recognizer)):
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         if hasattr(face_recognizer, "_invalidate_cache"):
             face_recognizer._invalidate_cache()
@@ -291,15 +271,11 @@ async def invalidate_face_cache():
 
 
 @router.delete("/face/database")
-async def clear_database():
+async def clear_database(face_recognizer=Depends(get_face_recognizer)):
     """
     Clear all persons from the face database
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         result = await face_recognizer.clear_database()
 
@@ -322,15 +298,11 @@ async def clear_database():
 
 
 @router.get("/face/stats")
-async def get_face_stats():
+async def get_face_stats(face_recognizer=Depends(get_face_recognizer)):
     """
     Get face recognition statistics and configuration
     """
     try:
-        from core.lifespan import face_recognizer
-
-        if not face_recognizer:
-            raise HTTPException(status_code=500, detail="Face recognizer not available")
 
         stats = await face_recognizer.get_stats()
 

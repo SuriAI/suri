@@ -1,7 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings } from "@/components/settings";
-import { attendanceManager, BackendService } from "@/services";
+import {
+  attendanceManager,
+  BackendService,
+  backendService,
+  WebSocketService,
+} from "@/services";
 import {
   useStreamState,
   useAttendanceCooldown,
@@ -42,7 +47,8 @@ export default function Main() {
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
-  const backendServiceRef = useRef<BackendService | null>(null);
+  const backendServiceRef = useRef<BackendService | null>(backendService);
+  const webSocketServiceRef = useRef<WebSocketService | null>(null);
   const isProcessingRef = useRef<boolean>(false);
   const isStreamingRef = useRef<boolean>(false);
   const lastDetectionFrameRef = useRef<ArrayBuffer | null>(null);
@@ -202,7 +208,7 @@ export default function Main() {
   });
 
   useFaceDetection({
-    backendServiceRef,
+    webSocketServiceRef,
     isScanningRef,
     isStreamingRef,
     captureFrame,
@@ -235,7 +241,7 @@ export default function Main() {
   const stopCameraRef = useRef<((forceCleanup: boolean) => void) | null>(null);
 
   const { initializeWebSocket } = useBackendService({
-    backendServiceRef,
+    webSocketServiceRef,
     isStreamingRef,
     isScanningRef,
     isStartingRef,
@@ -257,7 +263,7 @@ export default function Main() {
     videoRef,
     streamRef,
     animationFrameRef,
-    backendServiceRef,
+    webSocketServiceRef,
     isStreamingRef,
     isScanningRef,
     isStartingRef,
@@ -346,11 +352,11 @@ export default function Main() {
       cleanupVideo(videoRef, true);
       cleanupAnimationFrame(animationFrameRef);
 
-      if (backendServiceRef.current) {
+      if (webSocketServiceRef.current) {
         try {
-          const wsStatus = backendServiceRef.current.getWebSocketStatus();
+          const wsStatus = webSocketServiceRef.current.getWebSocketStatus();
           if (wsStatus === "connected" || wsStatus === "connecting") {
-            backendServiceRef.current.disconnect();
+            webSocketServiceRef.current.disconnect();
           }
         } catch {
           // Ignore disconnect errors

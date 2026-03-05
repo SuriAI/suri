@@ -7,14 +7,14 @@ import {
   resetLastDetectionRef,
 } from "@/components/main/utils";
 import { useDetectionStore } from "@/components/main/stores";
-import type { BackendService } from "@/services/BackendService";
+import type { WebSocketService } from "@/services/WebSocketService";
 import type { DetectionResult } from "@/components/main/types";
 
 interface CameraControlProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   streamRef: React.MutableRefObject<MediaStream | null>;
   animationFrameRef: React.MutableRefObject<number | undefined>;
-  backendServiceRef: React.MutableRefObject<BackendService | null>;
+  webSocketServiceRef: React.MutableRefObject<WebSocketService | null>;
   isStreamingRef: React.MutableRefObject<boolean>;
   isScanningRef: React.MutableRefObject<boolean>;
   isStartingRef: React.MutableRefObject<boolean>;
@@ -53,7 +53,7 @@ export function useCameraControl({
   videoRef,
   streamRef,
   animationFrameRef,
-  backendServiceRef,
+  webSocketServiceRef,
   isStreamingRef,
   isScanningRef,
   isStartingRef,
@@ -104,7 +104,7 @@ export function useCameraControl({
       setError(null);
 
       const currentStatus =
-        backendServiceRef.current?.getWebSocketStatus() || "disconnected";
+        webSocketServiceRef.current?.getWebSocketStatus() || "disconnected";
       if (currentStatus !== "connected") {
         try {
           setError("Connecting to detection service...");
@@ -216,7 +216,7 @@ export function useCameraControl({
         isScanningRef.current = true;
         backendServiceReadyRef.current = true;
 
-        if (backendServiceRef.current?.isWebSocketReady()) {
+        if (webSocketServiceRef.current?.isWebSocketReady()) {
           processCurrentFrameRef.current();
         }
       }
@@ -325,7 +325,7 @@ export function useCameraControl({
     lastStopTimeRef,
     isStartingRef,
     isStreamingRef,
-    backendServiceRef,
+    webSocketServiceRef,
     streamRef,
     videoRef,
     frameCounterRef,
