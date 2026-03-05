@@ -20,6 +20,7 @@ export interface AttendanceSettings {
   attendanceCooldownSeconds: number;
   reLogCooldownSeconds: number; // New setting for database prevention
   enableSpoofDetection: boolean;
+  trackCheckout: boolean;
 }
 
 export interface SettingsOverview {

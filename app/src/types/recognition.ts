@@ -133,6 +133,7 @@ export interface AttendanceGroup {
     late_threshold_minutes?: number;
     late_threshold_enabled?: boolean;
     class_start_time?: string;
+    track_checkout?: boolean;
   };
 }
 
@@ -156,6 +157,7 @@ export interface AttendanceRecord {
   location?: string;
   notes?: string;
   is_manual: boolean;
+  event_type?: "check_in" | "check_out";
   created_by?: string;
 }
 
@@ -165,6 +167,8 @@ export interface AttendanceSession {
   group_id: string;
   date: string;
   check_in_time?: Date;
+  check_out_time?: Date;
+  total_hours?: number;
   status: AttendanceStatus;
   is_late: boolean;
   late_minutes?: number;
@@ -217,5 +221,6 @@ export interface AttendanceEvent {
   confidence: number;
   location?: string;
   processed: boolean;
+  event_type?: "check_in" | "check_out";
   error?: string;
 }

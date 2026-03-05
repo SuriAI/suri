@@ -267,6 +267,9 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 onSpoofDetectionToggle={(enabled) =>
                   updateAttendanceSetting({ enableSpoofDetection: enabled })
                 }
+                onTrackCheckoutToggle={(enabled) =>
+                  updateAttendanceSetting({ trackCheckout: enabled })
+                }
                 hasSelectedGroup={!!dropdownValue}
               />
             )}

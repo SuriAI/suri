@@ -137,10 +137,16 @@ export function useReportTransform(
 
         const recordStats = recordStatsMap.get(sessionKey);
 
-        let checkOutTime: Date | undefined;
-        let totalHours: number | undefined;
+        let checkOutTime = finalSession?.check_out_time;
+        let totalHours = finalSession?.total_hours;
 
-        if (recordStats && recordStats.durationHrs > 0) {
+        // Fallback to client-side calculation if backend didn't provide it (e.g. older sessions)
+        if (
+          !checkOutTime &&
+          !totalHours &&
+          recordStats &&
+          recordStats.durationHrs > 0
+        ) {
           checkOutTime = recordStats.max;
           totalHours = recordStats.durationHrs;
         }

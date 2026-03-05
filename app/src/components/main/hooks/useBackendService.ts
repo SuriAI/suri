@@ -44,6 +44,7 @@ interface UseBackendServiceOptions {
   streamRef: React.RefObject<MediaStream | null>;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   backendServiceReadyRef: React.RefObject<boolean>;
+  loadAttendanceDataRef: React.RefObject<() => Promise<void>>;
 }
 
 export function useBackendService(options: UseBackendServiceOptions) {
@@ -64,6 +65,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     streamRef,
     videoRef,
     backendServiceReadyRef,
+    loadAttendanceDataRef,
   } = options;
 
   const {
@@ -168,6 +170,29 @@ export function useBackendService(options: UseBackendServiceOptions) {
     webSocketServiceRef.current.offMessage("detection_response");
     webSocketServiceRef.current.offMessage("connection");
     webSocketServiceRef.current.offMessage("error");
+    webSocketServiceRef.current.offMessage("attendance_event");
+
+    webSocketServiceRef.current.onMessage(
+      "attendance_event",
+      (data: import("@/components/main/types").AttendanceEvent) => {
+        const { setSuccess } = useUIStore.getState();
+        const { currentGroup } = useAttendanceStore.getState();
+
+        if (currentGroup && data.group_id === currentGroup.id) {
+          const member = useAttendanceStore
+            .getState()
+            .groupMembers.find((m) => m.person_id === data.person_id);
+          const memberName = member ? member.name : "Member";
+          const eventLabel =
+            data.event_type === "check_in" ? "Timed In" : "Timed Out";
+
+          setSuccess(`${memberName} ${eventLabel}`);
+
+          // Refresh attendance data to show in sidebar
+          loadAttendanceDataRef.current?.().catch(console.error);
+        }
+      },
+    );
 
     webSocketServiceRef.current.onMessage(
       "detection_response",

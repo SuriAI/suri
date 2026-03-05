@@ -16,6 +16,7 @@ export interface WebSocketEventMap {
   error: WebSocketErrorMessage;
   config_ack: { success: boolean; timestamp: number };
   pong: { client_id: string; timestamp: number };
+  attendance_event: import("../components/main/types").AttendanceEvent;
 }
 
 interface WebSocketConfig {
