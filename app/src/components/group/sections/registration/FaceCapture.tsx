@@ -17,7 +17,7 @@ interface FaceCaptureProps {
   onRefresh: () => void;
   initialSource?: "live" | "upload";
   deselectMemberTrigger?: number;
-  onSelectedMemberChange?: (hasSelectedMember: boolean) => void;
+  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
 }
 
 type CaptureSource = "live" | "upload";
@@ -28,7 +28,7 @@ export function FaceCapture({
   onRefresh,
   initialSource,
   deselectMemberTrigger,
-  onSelectedMemberChange,
+  onHasSelectedMemberChange: onSelectedMemberChange,
 }: FaceCaptureProps) {
   const dialog = useDialog();
 
@@ -145,6 +145,7 @@ export function FaceCapture({
           setSuccessMessage(null);
           setSelectedMemberId("");
           resetFrames();
+          // No longer calling onClose() or setRegistrationState here to stay in the list
         }}
         title="Success"
         maxWidth="sm"
@@ -163,6 +164,7 @@ export function FaceCapture({
               setSuccessMessage(null);
               setSelectedMemberId("");
               resetFrames();
+              // No longer resetting the entire flow state here
             }}
             className="w-full px-4 py-2.5 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-[10px] font-black uppercase tracking-widest transition-all mt-2"
           >

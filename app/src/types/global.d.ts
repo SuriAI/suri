@@ -73,6 +73,7 @@ declare global {
       memory: { total: number; free: number; appUsage: number };
     }>;
     getVersion: () => Promise<string>;
+    onAppReady: () => void;
   }
 
   interface UpdaterAPI {

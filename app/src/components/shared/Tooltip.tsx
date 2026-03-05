@@ -149,6 +149,49 @@ function buildArrowStyle(
   };
 }
 
+function assignRef(ref: unknown, value: HTMLElement | null) {
+  if (typeof ref === "function") {
+    ref(value);
+  } else if (ref && typeof ref === "object" && "current" in ref) {
+    (ref as React.MutableRefObject<HTMLElement | null>).current = value;
+  }
+}
+
+interface TooltipChildWrapperProps {
+  child: React.ReactElement;
+  onMouseEnter: (e: React.MouseEvent) => void;
+  onMouseLeave: (e: React.MouseEvent) => void;
+  onFocus: (e: React.FocusEvent) => void;
+  onBlur: (e: React.FocusEvent) => void;
+  onClick: (e: React.MouseEvent) => void;
+}
+
+export function TooltipChildWrapper({
+  child,
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
+  onClick,
+  ref,
+  ...props
+}: TooltipChildWrapperProps & { ref?: React.Ref<HTMLElement> }) {
+  const childProps = child.props as React.HTMLAttributes<HTMLElement>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return React.cloneElement(child as any, {
+    ...childProps,
+    ...props,
+    ref,
+    onMouseEnter,
+    onMouseLeave,
+    onFocus,
+    onBlur,
+    onClick,
+  });
+}
+TooltipChildWrapper.displayName = "TooltipChildWrapper";
+
 export function Tooltip({
   content,
   children,
@@ -159,7 +202,7 @@ export function Tooltip({
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState<TooltipCoords | null>(null);
 
-  const triggerRef = useRef<Element>(null);
+  const triggerRef = useRef<HTMLElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -184,11 +227,18 @@ export function Tooltip({
   useEffect(() => {
     if (!visible || !triggerRef.current) return;
 
+    let rafId: number;
+
     const measure = () => {
-      if (!triggerRef.current) return;
+      if (!triggerRef.current || !tooltipRef.current) {
+        // Retry next frame if DOM isn't ready
+        rafId = requestAnimationFrame(measure);
+        return;
+      }
+
       const triggerRect = triggerRef.current.getBoundingClientRect();
-      const tw = tooltipRef.current?.offsetWidth ?? 160;
-      const th = tooltipRef.current?.offsetHeight ?? 30;
+      const tw = tooltipRef.current.offsetWidth;
+      const th = tooltipRef.current.offsetHeight;
 
       const { top, left, actualPosition } = computeCoords(
         triggerRect,
@@ -205,32 +255,83 @@ export function Tooltip({
       setCoords({ top, left, arrowStyle });
     };
 
-    measure();
-    const raf = requestAnimationFrame(measure);
-    return () => cancelAnimationFrame(raf);
+    // Initial measurement
+    rafId = requestAnimationFrame(measure);
+
+    // Also re-measure on window scroll/resize to keep it attached if the user moves things
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
+    };
   }, [visible, position, content]);
 
-  const setTriggerRef = useCallback((node: Element | null) => {
-    (triggerRef as React.MutableRefObject<Element | null>).current = node;
-  }, []);
+  const child = React.Children.only(children);
+  const isChildValid = React.isValidElement(child);
 
+  // Safely grab the child's ref if it exists
+  const childRef = isChildValid
+    ? (
+        child as React.ReactElement<
+          React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<unknown> }
+        >
+      ).props.ref || (child as unknown as { ref?: React.Ref<unknown> }).ref
+    : null;
+
+  const mergedRef = useCallback(
+    (node: HTMLElement | null) => {
+      triggerRef.current = node;
+      assignRef(childRef, node);
+    },
+    [childRef],
+  );
+
+  // Early returns must happen AFTER hooks
   if (!content || disabled) return children;
+
+  const childElement = child as React.ReactElement<
+    React.HTMLAttributes<HTMLElement> & { ref?: React.Ref<unknown> }
+  >;
+  const childProps = childElement.props;
+
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    show();
+    if (childProps.onMouseEnter) childProps.onMouseEnter(e as never);
+  };
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    hide();
+    if (childProps.onMouseLeave) childProps.onMouseLeave(e as never);
+  };
+  const handleFocus = (e: React.FocusEvent) => {
+    show();
+    if (childProps.onFocus) childProps.onFocus(e as never);
+  };
+  const handleBlur = (e: React.FocusEvent) => {
+    hide();
+    if (childProps.onBlur) childProps.onBlur(e as never);
+  };
+  const handleClick = (e: React.MouseEvent) => {
+    hide();
+    if (childProps.onClick) childProps.onClick(e as never);
+  };
 
   return (
     <>
-      <div
-        ref={setTriggerRef}
-        style={{ display: "contents" }}
-        onMouseEnter={show}
-        onMouseLeave={hide}
-        onFocus={show}
-        onBlur={hide}
-      >
-        {children}
-      </div>
+      <TooltipChildWrapper
+        child={child}
+        ref={mergedRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onClick={handleClick}
+      />
       {createPortal(
         <AnimatePresence>
-          {visible && coords && (
+          {visible && (
             <motion.div
               ref={tooltipRef}
               role="tooltip"
@@ -239,11 +340,15 @@ export function Tooltip({
               exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.1, ease: "easeOut" }}
               className="fixed z-99999 pointer-events-none"
-              style={{ top: coords.top, left: coords.left }}
+              style={{
+                top: coords?.top ?? -9999,
+                left: coords?.left ?? -9999,
+                visibility: coords ? "visible" : "hidden",
+              }}
             >
               <div className="relative bg-[#111214] text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.65)] border border-white/10 max-w-[260px] whitespace-nowrap">
                 {content}
-                <div style={coords.arrowStyle} />
+                {coords && <div style={coords.arrowStyle} />}
               </div>
             </motion.div>
           )}

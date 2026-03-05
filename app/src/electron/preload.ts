@@ -191,4 +191,5 @@ contextBridge.exposeInMainWorld("suriElectron", {
   },
   getSystemStats: () => ipcRenderer.invoke("system:get-stats"),
   getVersion: () => ipcRenderer.invoke("updater:get-version"),
+  onAppReady: () => ipcRenderer.send("app:ready"),
 });

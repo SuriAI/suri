@@ -91,12 +91,9 @@ export function Registration({
     if (mode) {
       if (onRegistrationModeChange) onRegistrationModeChange(null);
       else setRegistrationState(source, null);
-    } else {
+    } else if (source) {
       if (onRegistrationSourceChange) onRegistrationSourceChange(null);
-      if (onRegistrationModeChange) onRegistrationModeChange(null);
-      if (!onRegistrationSourceChange && !onRegistrationModeChange) {
-        setRegistrationState(null, null);
-      }
+      else setRegistrationState(null, null);
     }
 
     useGroupUIStore.setState({ preSelectedMemberId: null });
@@ -106,6 +103,17 @@ export function Registration({
     setRegistrationState,
     onRegistrationSourceChange,
     onRegistrationModeChange,
+  ]);
+
+  const handleFullReset = useCallback(() => {
+    if (onRegistrationModeChange) onRegistrationModeChange(null);
+    if (onRegistrationSourceChange) onRegistrationSourceChange(null);
+    setRegistrationState(null, null);
+    useGroupUIStore.setState({ preSelectedMemberId: null });
+  }, [
+    onRegistrationModeChange,
+    onRegistrationSourceChange,
+    setRegistrationState,
   ]);
 
   const animationProps = {
@@ -125,7 +133,7 @@ export function Registration({
             group={group}
             members={members}
             onRefresh={onRefresh}
-            onClose={handleBack}
+            onClose={handleFullReset}
           />
         </motion.div>
       ) : mode === "queue" && source === "camera" ? (
@@ -134,7 +142,7 @@ export function Registration({
             group={group}
             members={members}
             onRefresh={onRefresh}
-            onClose={handleBack}
+            onClose={handleFullReset}
           />
         </motion.div>
       ) : mode === "single" && source ? (
@@ -145,7 +153,7 @@ export function Registration({
             onRefresh={onRefresh}
             initialSource={source === "camera" ? "live" : source}
             deselectMemberTrigger={deselectMemberTrigger}
-            onSelectedMemberChange={onHasSelectedMemberChange}
+            onHasSelectedMemberChange={onHasSelectedMemberChange}
           />
         </motion.div>
       ) : members.length === 0 ? (
@@ -168,21 +176,35 @@ export function Registration({
           {...animationProps}
           className="h-full flex flex-col items-center justify-center px-6"
         >
-          <div className="w-full max-w-lg space-y-8">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-black text-white/90 tracking-tight">
-                How would you like to add faces?
-              </h2>
-              <p className="text-sm text-white/30 max-w-xs mx-auto font-medium leading-relaxed">
-                How would you like to capture faces for{" "}
-                <span className="text-cyan-400/80">{group.name}</span>?
-              </p>
+          <div className="w-full max-w-lg">
+            <div className="flex justify-between items-start mb-12">
+              <div className="space-y-1">
+                <h2 className="text-4xl font-black text-white/90 tracking-tighter">
+                  How would you like to add faces?
+                </h2>
+                <p className="text-sm text-white/30 font-medium uppercase tracking-widest text-[9px]">
+                  How would you like to capture faces for{" "}
+                  <span className="text-cyan-400/80">{group.name}</span>?
+                </p>
+              </div>
+
+              {(source || mode) && (
+                <button
+                  onClick={handleBack}
+                  className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400 transition-all duration-300"
+                >
+                  <i className="fa-solid fa-arrow-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    Back
+                  </span>
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <button
                 onClick={() => handleSourceChange("camera")}
-                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
+                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300"
               >
                 <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
                   <i className="fa-solid fa-camera-retro text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
@@ -199,7 +221,7 @@ export function Registration({
 
               <button
                 onClick={() => handleSourceChange("upload")}
-                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300"
+                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300"
               >
                 <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
                   <i className="fa-solid fa-cloud-arrow-up text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
@@ -238,7 +260,7 @@ export function Registration({
             <div className="grid gap-4">
               <button
                 onClick={() => handleModeChange("single")}
-                className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+                className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
               >
                 <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
                   <i className="fa-solid fa-user text-xl text-white/30 group-hover:text-cyan-400"></i>
@@ -256,7 +278,7 @@ export function Registration({
               {source === "upload" && (
                 <button
                   onClick={() => handleModeChange("bulk")}
-                  className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+                  className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
                 >
                   <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
                     <i className="fa-solid fa-layer-group text-xl text-white/30 group-hover:text-cyan-400"></i>
@@ -275,7 +297,7 @@ export function Registration({
               {source === "camera" && (
                 <button
                   onClick={() => handleModeChange("queue")}
-                  className="group p-6 rounded-[2rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-300 flex items-center gap-6"
+                  className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
                 >
                   <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
                     <i className="fa-solid fa-users-viewfinder text-xl text-white/30 group-hover:text-cyan-400"></i>

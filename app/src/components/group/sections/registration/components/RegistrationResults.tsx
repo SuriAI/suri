@@ -16,7 +16,7 @@ export function RegistrationResults({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg border border-cyan-400/30 bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 p-6">
+        <div className="rounded-lg border border-cyan-400/30 bg-linear-to-br from-cyan-500/10 to-cyan-600/5 p-6">
           <div className="text-3xl font-light text-cyan-200 mb-1">
             {successCount}
           </div>
@@ -24,7 +24,7 @@ export function RegistrationResults({
             Registered
           </div>
         </div>
-        <div className="rounded-lg border border-red-400/30 bg-gradient-to-br from-red-500/10 to-red-600/5 p-6">
+        <div className="rounded-lg border border-red-400/30 bg-linear-to-br from-red-500/10 to-red-600/5 p-6">
           <div className="text-3xl font-light text-red-200 mb-1">
             {failedCount}
           </div>
@@ -35,7 +35,7 @@ export function RegistrationResults({
       </div>
 
       {results.length > 0 && (
-        <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto custom-scroll">
           {results.map((result, idx) => (
             <div
               key={idx}
@@ -54,7 +54,9 @@ export function RegistrationResults({
               </div>
               <div className="flex-1 min-w-0">
                 <div
-                  className={`text-sm font-medium ${result.success ? "text-cyan-200" : "text-red-200"}`}
+                  className={`text-sm font-medium ${
+                    result.success ? "text-cyan-200" : "text-red-200"
+                  }`}
                 >
                   {result.memberName || result.personId}
                 </div>
@@ -76,7 +78,7 @@ export function RegistrationResults({
 
       <button
         onClick={onClose}
-        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all"
+        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all shadow-none"
       >
         Done
       </button>

@@ -22,4 +22,11 @@ export function registerWindowHandlers() {
     if (state.mainWindow) state.mainWindow.close();
     return true;
   });
+
+  ipcMain.on("app:ready", () => {
+    import("../window/WindowManager.js").then(({ WindowManager }) => {
+      WindowManager.destroySplash();
+      WindowManager.showMainWindow();
+    });
+  });
 }
