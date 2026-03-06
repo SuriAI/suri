@@ -61,7 +61,7 @@
 ---
 ## Download
 
-[![Release](https://img.shields.io/github/v/release/suriAI/suri?label=Latest%20Release&color=4caf50)](https://github.com/suriAI/suri/releases/latest)
+[![Release](https://img.shields.io/github/v/release/SuriAI/suri?label=Latest%20Release&color=4caf50&v=1)](https://github.com/SuriAI/suri/releases/latest)
 
 > [!NOTE]
 > **Pre-compiled binaries are currently only available for Windows (`.exe`).**
@@ -138,7 +138,7 @@ Dig into the specifics:
 - [ ] **Mobile Companion**: Remote attendance check-in and automated notifications.
 
 
-Visit the [issues page](https://github.com/johnraivenolazo/suri/issues) to submit feature requests.
+Visit the [issues page](https://github.com/SuriAI/suri/issues) to submit feature requests.
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -172,15 +172,15 @@ This project relies on open source software. See [Third Party Licenses](THIRD_PA
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/SuriAI/suri.svg?style=for-the-badge&color=000000
+[contributors-shield]: https://img.shields.io/github/contributors/SuriAI/suri.svg?style=for-the-badge&color=000000&v=1
 [contributors-url]: https://github.com/SuriAI/suri/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/SuriAI/suri.svg?style=for-the-badge&color=000000
+[forks-shield]: https://img.shields.io/github/forks/SuriAI/suri.svg?style=for-the-badge&color=000000&v=1
 [forks-url]: https://github.com/SuriAI/suri/network/members
-[stars-shield]: https://img.shields.io/github/stars/SuriAI/suri.svg?style=for-the-badge&color=000000
+[stars-shield]: https://img.shields.io/github/stars/SuriAI/suri.svg?style=for-the-badge&color=000000&v=1
 [stars-url]: https://github.com/SuriAI/suri/stargazers
-[issues-shield]: https://img.shields.io/github/issues/SuriAI/suri.svg?style=for-the-badge&color=000000
+[issues-shield]: https://img.shields.io/github/issues/SuriAI/suri.svg?style=for-the-badge&color=000000&v=1
 [issues-url]: https://github.com/SuriAI/suri/issues
-[license-shield]: https://img.shields.io/github/license/SuriAI/suri.svg?style=for-the-badge&color=000000
+[license-shield]: https://img.shields.io/github/license/SuriAI/suri.svg?style=for-the-badge&color=000000&v=1
 [license-url]: LICENSE
 
 [Electron.js]: https://img.shields.io/badge/Electron-2B2E3A?style=for-the-badge&logo=electron&logoColor=9FEAF9
