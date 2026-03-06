@@ -3,7 +3,6 @@ import path from "path";
 import { fileURLToPath } from "node:url";
 import isDev from "../util.js";
 import { state } from "../State.js";
-import { createRoundedShape } from "./windowUtils.js";
 import { persistentStore } from "../persistentStore.js";
 
 const window_filename = fileURLToPath(import.meta.url);
@@ -62,7 +61,8 @@ export class WindowManager {
         devTools: isDev(),
       },
       titleBarStyle: "hidden",
-      transparent: true,
+      transparent: false,
+      backgroundColor: "#000000",
     });
 
     state.mainWindow = mainWindow;
@@ -75,31 +75,20 @@ export class WindowManager {
     }
 
     mainWindow.once("ready-to-show", () => {
-      this.updateWindowShape(mainWindow);
+      // Intentionally left blank or can be removed if nothing else is inside
     });
 
     mainWindow.on("maximize", () => {
       mainWindow.webContents.send("window:maximized");
       mainWindow.setResizable(false);
       if (process.platform === "win32") {
-        try {
-          mainWindow.setShape([]);
-        } catch (error) {
-          console.warn("Could not set window shape:", error);
-        }
+        // No shape workaround needed
       }
     });
 
     mainWindow.on("unmaximize", () => {
       mainWindow.setResizable(true);
       mainWindow.webContents.send("window:unmaximized");
-      this.updateWindowShape(mainWindow);
-    });
-
-    mainWindow.on("resize", () => {
-      if (!mainWindow.isMaximized()) {
-        this.updateWindowShape(mainWindow);
-      }
     });
 
     let isHandlingClose = false;
@@ -168,16 +157,7 @@ export class WindowManager {
     });
   }
 
-  private static updateWindowShape(window: BrowserWindow) {
-    if (process.platform === "win32") {
-      try {
-        const { width, height } = window.getBounds();
-        window.setShape(createRoundedShape(width, height));
-      } catch (error) {
-        console.warn("Could not set window shape:", error);
-      }
-    }
-  }
+
 
   static showMainWindow(): void {
     if (state.mainWindow && !state.mainWindow.isDestroyed()) {
