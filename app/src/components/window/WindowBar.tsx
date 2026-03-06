@@ -41,14 +41,14 @@ export default function WindowBar() {
 
   return (
     <div
-      className="w-full h-[32px] flex items-center justify-between select-none flex-shrink-0 relative"
+      className="w-full h-[32px] flex items-center justify-between select-none shrink-0 relative"
       style={
         {
           WebkitAppRegion: isMaximized ? "no-drag" : "drag",
         } as React.CSSProperties
       }
     >
-      <div className="absolute inset-0 bg-black/90 border-b border-white/[0.06] z-40 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-black/90 border-b border-white/6 z-40 pointer-events-none"></div>
 
       <div className="flex items-center ml-4 space-x-3 flex-1 relative z-40 pointer-events-none">
         <img
@@ -56,16 +56,10 @@ export default function WindowBar() {
           alt="Suri"
           className="w-6 h-6 object-contain opacity-90 -ml-3 mr-1"
         />
-
-        <div className="flex items-center gap-4">
-          <span className="text-[10px] font-bold text-white/30">
-            AI Attendance Tracker
-          </span>
-        </div>
       </div>
 
       <div
-        className="flex items-center h-full relative z-[70] [webkit-app-region:no-drag]"
+        className="flex items-center h-full relative z-70 [webkit-app-region:no-drag]"
         style={
           {
             WebkitAppRegion: "no-drag",
@@ -76,7 +70,7 @@ export default function WindowBar() {
         <button
           onClick={handleMinimize}
           title="Minimize"
-          className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
         >
           &#xE921;
         </button>
@@ -84,7 +78,7 @@ export default function WindowBar() {
         <button
           onClick={handleMaximize}
           title={isMaximized ? "Restore" : "Maximize"}
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
         >
           {isMaximized ? <>&#xE923;</> : <>&#xE922;</>}
         </button>
@@ -92,7 +86,7 @@ export default function WindowBar() {
         <button
           onClick={handleClose}
           title="Close"
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-[#e81123] hover:text-white transition-colors duration-150 border-none bg-transparent p-0 text-[10px]"
+          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-[#e81123] hover:text-white transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
         >
           &#xE8BB;
         </button>
