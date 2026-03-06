@@ -61,7 +61,7 @@
 ---
 ## Download
 
-[![Release](https://img.shields.io/github/v/release/johnraivenolazo/suri?label=Latest%20Release&color=4caf50)](https://github.com/johnraivenolazo/suri/releases/latest)
+[![Release](https://img.shields.io/github/v/release/suriAI/suri?label=Latest%20Release&color=4caf50)](https://github.com/suriAI/suri/releases/latest)
 
 > [!NOTE]
 > **Pre-compiled binaries are currently only available for Windows (`.exe`).**
