@@ -130,7 +130,7 @@ const AttendanceRecordItem = memo(
 
     return (
       <div
-        className={`border-b border-white/5 px-3 py-2.5 relative group transition-colors hover:bg-white/5 border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
+        className={`border-b border-white/5 pr-3 pl-0 py-2.5 relative group transition-colors hover:bg-white/5 border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
         title={
           classStartTime && !hasCheckedInEarlier
             ? `Scheduled: ${classStartTime} | Late after: ${lateThresholdMinutes}m`
@@ -439,7 +439,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {attendanceGroups.length > 0 && (
-        <div className="flex-1 overflow-y-auto min-h-0 custom-scroll flex flex-col">
+        <div className="flex-1 overflow-y-auto min-h-0 hover-scrollbar flex flex-col pl-3.5">
           {visibleRecords.length > 0 ? (
             <>
               {(() => {

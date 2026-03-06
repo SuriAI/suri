@@ -302,7 +302,7 @@ export const Sidebar = memo(function Sidebar({
           <AttendancePanel handleSelectGroup={handleSelectGroup} />
 
           <div className="flex-1 border-t border-white/10 flex flex-col min-h-0 bg-black">
-            <div className="flex-1 overflow-y-auto custom-scroll flex flex-col min-h-0 bg-black">
+            <div className="flex-1 overflow-y-auto hover-scrollbar flex flex-col min-h-0 bg-black pl-3.5">
               <div className="flex-1 flex flex-col min-h-0 px-2 bg-black">
                 <DetectionPanel
                   currentDetections={currentDetections}

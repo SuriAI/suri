@@ -48,35 +48,38 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Settings Sidebar */
-@property --settings-sb-thumb {
+/* Hover-reveal Scrollbar Utility */
+@property --sb-thumb {
   syntax: "<color>";
   inherits: true;
   initial-value: transparent;
 }
 
+.hover-scrollbar,
 .settings-sidebar-scroll {
-  --settings-sb-thumb: transparent;
-  transition: --settings-sb-thumb 0.1s ease;
+  --sb-thumb: transparent;
+  transition: --sb-thumb 0.1s ease;
 }
 
+.hover-scrollbar:hover,
 .settings-sidebar-scroll:hover {
-  --settings-sb-thumb: rgba(255, 255, 255, 0.15);
+  --sb-thumb: rgba(255, 255, 255, 0.15);
 }
 
+.hover-scrollbar::-webkit-scrollbar,
 .settings-sidebar-scroll::-webkit-scrollbar {
   width: 14px;
 }
 
+.hover-scrollbar::-webkit-scrollbar-track,
 .settings-sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.hover-scrollbar::-webkit-scrollbar-thumb,
 .settings-sidebar-scroll::-webkit-scrollbar-thumb {
-  /* Use the transitioned variable */
-  background: var(--settings-sb-thumb);
+  background: var(--sb-thumb);
   background-clip: padding-box;
-  /* This creates the "space to the right" and offsets it from the content */
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   border-left: 6px solid transparent;
@@ -84,7 +87,7 @@
   border-radius: 20px;
 }
 
+.hover-scrollbar::-webkit-scrollbar-thumb:hover,
 .settings-sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  /* Keep instant highlight on direct thumb hover for better UX */
   background-color: rgba(255, 255, 255, 0.25) !important;
 }
