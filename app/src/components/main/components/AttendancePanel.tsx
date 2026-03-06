@@ -111,7 +111,11 @@ const AttendanceRecordItem = memo(
         return {
           status: "on-time",
           minutes: 0,
-          label: trackCheckoutEnabled ? "TIME IN" : "SCANNED",
+          label: trackCheckoutEnabled
+            ? "TIME IN"
+            : lateThresholdEnabled
+              ? "ON TIME"
+              : "",
           color: "text-slate-400",
           pillColor: "bg-white/10 text-white/60 border-white/20",
           borderColor: "border-l-transparent",
@@ -142,7 +146,7 @@ const AttendanceRecordItem = memo(
             <span
               className={`text-[10px] font-bold tracking-widest ${timeStatus?.color || "text-white/60"}`}
             >
-              {timeStatus?.label || "SCANNED"}
+              {timeStatus?.label}
             </span>
             <span className="text-[11px] font-mono text-white/40 tabular-nums">
               {record.timestamp.toLocaleTimeString([], {
@@ -329,7 +333,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 }))}
                 value={
                   currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
+                    attendanceGroups.some((g) => g.id === currentGroup.id)
                     ? currentGroup.id
                     : null
                 }
@@ -416,11 +420,10 @@ export const AttendancePanel = memo(function AttendancePanel({
                   onChange={(val) => handleSortFieldChange(val as SortField)}
                   trigger={
                     <i
-                      className={`${
-                        sortField === "time"
-                          ? "fa-regular fa-clock"
-                          : "fa-solid fa-arrow-down-a-z"
-                      } text-xs text-white/30 hover:text-cyan-400! transition-colors pointer-events-auto`}
+                      className={`${sortField === "time"
+                        ? "fa-regular fa-clock"
+                        : "fa-solid fa-arrow-down-a-z"
+                        } text-xs text-white/30 hover:text-cyan-400! transition-colors pointer-events-auto`}
                     />
                   }
                   menuWidth={110}
