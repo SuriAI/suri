@@ -78,9 +78,9 @@ export function Registration({
             action={
               onAddMember
                 ? {
-                  label: "Add Member",
-                  onClick: onAddMember,
-                }
+                    label: "Add Member",
+                    onClick: onAddMember,
+                  }
                 : undefined
             }
           />
@@ -95,7 +95,8 @@ export function Registration({
             <div className="flex justify-between items-start mb-12">
               <div className="space-y-1">
                 <h2 className="text-2xl text-center font-black text-white/90 tracking-tighter">
-                  How would you like to register members for <span className="text-cyan-400/80">{group.name}</span>?
+                  How would you like to register members for{" "}
+                  <span className="text-cyan-400/80">{group.name}</span>?
                 </h2>
               </div>
 
