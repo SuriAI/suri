@@ -146,6 +146,7 @@ export interface AttendanceMember {
   joined_at: Date;
   is_active: boolean;
   has_face_data?: boolean;
+  has_consent: boolean;
 }
 
 export interface AttendanceRecord {

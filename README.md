@@ -50,7 +50,7 @@
 
 | **Local First** | **Privacy by Default** | **Encrypted** |
 |:---|:---|:---|
-| AI runs on your device. No server or cloud involved. | Face images are never saved. Faces are converted to mathematical embeddings. | AES-256-GCM encrypted. Password required for backup and restoration. |
+| AI runs on your device. No server or cloud involved. | Only scan people who agree. **Privacy Shield** blurs everyone else automatically. | AES-256-GCM encrypted. Hardware-locked local keys and password-protected backups. |
 
 <div align="center">
   <br/>
@@ -127,7 +127,7 @@ Dig into the specifics:
 ### Phase 1: Local Foundation (Completed)
 - [x] **Core AI**: Local Face Recognition & Liveness Detection.
 - [x] **Data Integrity**: Atomic System Backups & Encrypted Vaults (.suri).
-- [x] **Privacy Architecture**: Local-first SQLite & Zero-Knowledge logic.
+- [x] **Privacy Architecture**: Local-first SQLite, **Persistent Biometric Consent**, and **Privacy Shield** enforcement.
 
 ### Phase 2: Connectivity (In-Progress)
 - [ ] **Multi-Camera**: Parallel RTSP stream support for large venues.

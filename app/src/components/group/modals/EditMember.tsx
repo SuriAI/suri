@@ -12,6 +12,9 @@ interface EditMemberProps {
 export function EditMember({ member, onClose, onSuccess }: EditMemberProps) {
   const [name, setName] = useState(member.name);
   const [role, setRole] = useState(member.role || "");
+  const [hasBiometricConsent, setHasBiometricConsent] = useState(
+    member.has_consent || false,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +28,7 @@ export function EditMember({ member, onClose, onSuccess }: EditMemberProps) {
       const updates: Partial<AttendanceMember> = {
         name: name.trim(),
         role: role.trim() || undefined,
+        has_consent: hasBiometricConsent,
       };
 
       await attendanceManager.updateMember(member.person_id, updates);
@@ -80,6 +84,40 @@ export function EditMember({ member, onClose, onSuccess }: EditMemberProps) {
               placeholder="e.g. Staff, Student, Teacher"
             />
           </label>
+
+          {/* Consent Toggle */}
+          <div
+            className={`rounded-xl border transition-all duration-300 ${
+              hasBiometricConsent
+                ? "bg-white/3 border-cyan-500/20"
+                : "bg-white/2 border-white/5"
+            }`}
+          >
+            <label className="flex items-start gap-4 p-4 cursor-pointer group">
+              <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                <input
+                  type="checkbox"
+                  checked={hasBiometricConsent}
+                  onChange={(e) => setHasBiometricConsent(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="h-5 w-5 rounded-md border border-white/20 bg-white/5 transition-all duration-200 peer-checked:border-cyan-500 peer-checked:bg-cyan-500/10 group-hover:border-white/40" />
+                <i className="fa-solid fa-check absolute text-[9px] text-cyan-400 opacity-0 transition-all duration-200 peer-checked:opacity-100" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-sm font-semibold text-white/90 tracking-tight">
+                    I confirm that this member has provided informed biometric
+                    consent.
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-white/40 group-hover:text-white/60 transition-colors">
+                  Facial features are encrypted and stored strictly on this
+                  device. Suri does not upload biometric data to the cloud.
+                </p>
+              </div>
+            </label>
+          </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
           <button

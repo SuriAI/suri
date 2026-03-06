@@ -149,22 +149,21 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
             if (response.success && response.person_id) {
               // Fire sound ASAP: do not wait on member fetch / attendance logging
               // (spoofed faces are already filtered earlier)
-              maybePlayRecognitionSound(
-                response.person_id,
-                currentGroupValue.id,
-              );
-
               const memberResult = await getMemberFromCache(
                 response.person_id,
                 currentGroupValue,
                 memberCacheRef,
               );
 
-              if (!memberResult) {
-                return null;
-              }
+              const hasConsent = memberResult?.member?.has_consent ?? false;
 
-              const { memberName } = memberResult;
+              if (hasConsent) {
+                maybePlayRecognitionSound(
+                  response.person_id,
+                  currentGroupValue.id,
+                );
+              }
+              const { memberName } = memberResult || { memberName: "Unknown" };
               const trackIdStr = `track_${face.track_id}`;
               const currentTime = Date.now();
 
@@ -233,10 +232,11 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
               ) {
                 const livenessStatus = face.liveness?.status ?? null;
                 const shouldSkipAttendanceLogging =
-                  !!face.liveness &&
-                  (face.liveness.is_real !== true ||
-                    (livenessStatus !== null &&
-                      NON_LOGGING_ANTISPOOF_STATUSES.has(livenessStatus)));
+                  !hasConsent ||
+                  (!!face.liveness &&
+                    (face.liveness.is_real !== true ||
+                      (livenessStatus !== null &&
+                        NON_LOGGING_ANTISPOOF_STATUSES.has(livenessStatus))));
 
                 if (
                   face.liveness?.status &&
@@ -432,7 +432,12 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
 
               return {
                 trackId,
-                result: { ...response, name: memberName, memberName },
+                result: {
+                  ...response,
+                  name: hasConsent ? memberName : "Protected",
+                  memberName,
+                  has_consent: hasConsent,
+                },
               };
             } else if (response.success) {
               const trackIdStr = `track_${face.track_id}`;
@@ -457,61 +462,19 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                 if (member) {
                   recoveredMemberName = member.memberName;
                   recoveredPersonId = knownPersonId;
-                }
-              }
+                  // We need to know if they STILL have consent during recovery
+                  const stillHasConsent = member.member?.has_consent ?? false;
 
-              if (recoveredPersonId) {
-                // ** MEMORY HIT **
-                // Treat this exactly like a successful recognition
-
-                // Update track state
-                startTransition(() => {
-                  setTrackedFaces((prev) => {
-                    const newTracked = new Map(prev);
-                    const track = newTracked.get(trackIdStr);
-                    if (track) {
-                      track.lastSeen = currentTime;
-                      track.confidence = face.confidence;
-                      track.trackingHistory.push({
-                        timestamp: currentTime,
-                        bbox: face.bbox,
-                        confidence: face.confidence,
-                      });
-                      track.trackingHistory = trimTrackingHistory(
-                        track.trackingHistory,
-                      );
-
-                      // Confidence Decay Logic
-                      track.unknownFramesCount =
-                        (track.unknownFramesCount || 0) + 1;
-
-                      if (track.unknownFramesCount > 30 && track.isLocked) {
-                        // Drop the lock if it has been unknown for too long (~1 to 2 seconds of frames)
-                        track.isLocked = false;
-                        track.personId = undefined;
-                        track.unknownFramesCount = 0;
-                        recoveredPersonId = null; // Prevent UI from rendering the old name
-                      }
-
-                      // Keep occlusion/angle logic...
-                      newTracked.set(trackIdStr, track);
-                    }
-                    return newTracked;
-                  });
-                });
-
-                if (recoveredPersonId) {
-                  // Return SUCCESS result to UI so it stays Green
-                  // (We can optionally mark it as "memory" if we want UI to know)
                   return {
                     trackId,
                     result: {
                       success: true,
                       person_id: recoveredPersonId,
-                      similarity: 0.99, // Fake high similarity to keep it solid
+                      similarity: 0.99,
                       processing_time: 0,
-                      name: recoveredMemberName,
+                      name: stillHasConsent ? recoveredMemberName : "Protected",
                       memberName: recoveredMemberName,
+                      has_consent: stillHasConsent,
                       error: null,
                     },
                   };
@@ -574,7 +537,8 @@ export function useFaceRecognition(options: UseFaceRecognitionOptions) {
                 });
               }
             } else if (result.result && result.trackId !== undefined) {
-              newRecognitionResults.set(result.trackId, result.result);
+              const res = result.result;
+              newRecognitionResults.set(result.trackId, res);
             }
           }
         });

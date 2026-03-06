@@ -29,6 +29,7 @@ export function AddMember({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDuplicate, setConfirmDuplicate] = useState(false);
+  const [hasBiometricConsent, setHasBiometricConsent] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,6 +97,7 @@ export function AddMember({
     try {
       await attendanceManager.addMember(group.id, newMemberName.trim(), {
         role: newMemberRole.trim() || undefined,
+        hasConsent: hasBiometricConsent,
       });
       resetForm();
       onSuccess();
@@ -136,6 +138,7 @@ export function AddMember({
         try {
           await attendanceManager.addMember(group.id, name, {
             role: role || undefined,
+            hasConsent: hasBiometricConsent,
           });
           success++;
         } catch (err) {
@@ -262,12 +265,81 @@ export function AddMember({
                 }}
               />
             </label>
+
+            {/* Consent Toggle */}
+            <div
+              className={`rounded-xl border transition-all duration-300 ${
+                hasBiometricConsent
+                  ? "bg-white/3 border-cyan-500/20"
+                  : "bg-white/2 border-white/5"
+              }`}
+            >
+              <label className="flex items-start gap-4 p-4 cursor-pointer group">
+                <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={hasBiometricConsent}
+                    onChange={(e) => setHasBiometricConsent(e.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <div className="h-5 w-5 rounded-md border border-white/20 bg-white/5 transition-all duration-200 peer-checked:border-cyan-500 peer-checked:bg-cyan-500/10 group-hover:border-white/40" />
+                  <i className="fa-solid fa-check absolute text-[9px] text-cyan-400 opacity-0 transition-all duration-200 peer-checked:opacity-100" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-sm font-semibold text-white/90 tracking-tight">
+                      I confirm that this member has provided informed biometric
+                      consent.
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-white/40 group-hover:text-white/60 transition-colors">
+                    Facial features will be encrypted and stored strictly on
+                    this device. Suri does not upload biometric data to any
+                    cloud servers by default.
+                  </p>
+                </div>
+              </label>
+            </div>
           </div>
         )}
 
         {/* Bulk Add Form */}
         {isBulkMode && (
           <div className="space-y-4">
+            {/* Consent Toggle (Bulk) */}
+            <div
+              className={`rounded-xl border transition-all duration-300 ${
+                hasBiometricConsent
+                  ? "bg-white/3 border-cyan-500/20"
+                  : "bg-white/2 border-white/5"
+              }`}
+            >
+              <label className="flex items-start gap-4 p-4 cursor-pointer group">
+                <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={hasBiometricConsent}
+                    onChange={(e) => setHasBiometricConsent(e.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <div className="h-5 w-5 rounded-md border border-white/20 bg-white/5 transition-all duration-200 peer-checked:border-cyan-500 peer-checked:bg-cyan-500/10 group-hover:border-white/40" />
+                  <i className="fa-solid fa-check absolute text-[9px] text-cyan-400 opacity-0 transition-all duration-200 peer-checked:opacity-100" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-sm font-semibold text-white/90 tracking-tight">
+                      I verify that all members in this list have provided
+                      explicit consent.
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-white/40 group-hover:text-white/60 transition-colors">
+                    As an administrator, you are responsible for ensuring
+                    offline consent records are maintained. All data remains
+                    within your local encrypted vault.
+                  </p>
+                </div>
+              </label>
+            </div>
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-white/60">
@@ -338,31 +410,33 @@ export function AddMember({
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 mt-6">
-          {!isBulkMode ? (
-            <button
-              onClick={handleAddMember}
-              disabled={!newMemberName.trim() || loading}
-              className={`w-full px-4 py-2 rounded-lg border transition-colors text-sm font-medium disabled:opacity-50 ${
-                confirmDuplicate
-                  ? "bg-amber-500/20 border-amber-400/40 text-amber-200 hover:bg-amber-500/30"
-                  : "bg-cyan-500/20 border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30"
-              }`}
-            >
-              {loading
-                ? "Adding…"
-                : confirmDuplicate
+          <button
+            onClick={
+              isBulkMode ? () => void handleBulkAddMembers() : handleAddMember
+            }
+            disabled={
+              loading ||
+              isProcessingBulk ||
+              (!isBulkMode && !newMemberName.trim()) ||
+              (isBulkMode && !bulkMembersText.trim()) ||
+              !hasBiometricConsent
+            }
+            className={`w-full px-4 py-2 rounded-lg border transition-colors text-sm font-medium disabled:opacity-50 ${
+              confirmDuplicate && !isBulkMode
+                ? "bg-amber-500/20 border-amber-400/40 text-amber-200 hover:bg-amber-500/30"
+                : "bg-cyan-500/20 border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30"
+            }`}
+          >
+            {loading || isProcessingBulk
+              ? "Processing…"
+              : !hasBiometricConsent
+                ? "Consent Required"
+                : confirmDuplicate && !isBulkMode
                   ? "Add Anyway"
-                  : "Add Member"}
-            </button>
-          ) : (
-            <button
-              onClick={() => void handleBulkAddMembers()}
-              disabled={!bulkMembersText.trim() || isProcessingBulk}
-              className="w-full px-4 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50"
-            >
-              {isProcessingBulk ? "Processing…" : `Add Members`}
-            </button>
-          )}
+                  : isBulkMode
+                    ? "Add Members"
+                    : "Add Member"}
+          </button>
         </div>
       </div>
     </Modal>

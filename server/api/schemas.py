@@ -145,6 +145,7 @@ class AttendanceMemberCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     role: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=255)
+    has_consent: bool = False
 
 
 class AttendanceMemberUpdate(BaseModel):
@@ -153,6 +154,7 @@ class AttendanceMemberUpdate(BaseModel):
     role: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=255)
     is_active: Optional[bool] = None
+    has_consent: Optional[bool] = None
 
 
 class AttendanceMemberResponse(BaseModel):
@@ -163,6 +165,7 @@ class AttendanceMemberResponse(BaseModel):
     email: Optional[str]
     joined_at: datetime
     is_active: bool
+    has_consent: bool
 
     model_config = ConfigDict(from_attributes=True)
 

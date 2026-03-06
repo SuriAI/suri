@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Tuple, Any
 
 from database.session import AsyncSessionLocal
 from database.repository import FaceRepository
+from core.cipher import encrypt_local_data, decrypt_local_data
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,9 @@ class FaceDatabaseManager:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
                 embedding_blob = self._embedding_to_blob(embedding)
+                encrypted_blob = encrypt_local_data(embedding_blob)
                 await repo.upsert_face(
-                    person_id, embedding_blob, len(embedding), image_hash
+                    person_id, encrypted_blob, len(embedding), image_hash
                 )
                 return True
         except Exception as e:
@@ -71,7 +73,8 @@ class FaceDatabaseManager:
                 repo = FaceRepository(session, self.organization_id)
                 face = await repo.get_face(person_id)
                 if face:
-                    return self._blob_to_embedding(face.embedding)
+                    decrypted_blob = decrypt_local_data(face.embedding)
+                    return self._blob_to_embedding(decrypted_blob)
                 return None
         except Exception as e:
             logger.error(f"Failed to get person {person_id}: {e}")
@@ -93,9 +96,12 @@ class FaceDatabaseManager:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
                 faces = await repo.get_all_faces()
-                return {
-                    f.person_id: self._blob_to_embedding(f.embedding) for f in faces
-                }
+
+                result = {}
+                for f in faces:
+                    decrypted_blob = decrypt_local_data(f.embedding)
+                    result[f.person_id] = self._blob_to_embedding(decrypted_blob)
+                return result
         except Exception as e:
             logger.error(f"Failed to get all persons: {e}")
             return {}
@@ -190,8 +196,9 @@ class FaceDatabaseManager:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
                 for row in rows:
+                    encrypted_blob = encrypt_local_data(row["embedding"])
                     await repo.upsert_face(
-                        row["person_id"], row["embedding"], row["embedding_dimension"]
+                        row["person_id"], encrypted_blob, row["embedding_dimension"]
                     )
                     migrated_count += 1
 

@@ -132,6 +132,17 @@ export function CameraQueue({
       return;
     }
 
+    // Check for member-level consent
+    const memberRecord = members.find(
+      (m) => m.person_id === currentMember.personId,
+    );
+    if (!memberRecord?.has_consent) {
+      setError(
+        `Cannot capture: ${currentMember.name} has not provided biometric consent.`,
+      );
+      return;
+    }
+
     // Update status
     setMemberQueue((prev) =>
       prev.map((m, idx) =>
@@ -265,6 +276,7 @@ export function CameraQueue({
     totalMembers,
     onRefresh,
     videoRef,
+    members,
   ]);
 
   useEffect(() => {
@@ -274,7 +286,14 @@ export function CameraQueue({
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         if (!isProcessing && isVideoReady) {
-          void capturePhoto();
+          const mRecord = members.find(
+            (m) => m.person_id === currentMember.personId,
+          );
+          if (mRecord?.has_consent) {
+            void capturePhoto();
+          } else {
+            setError(`Consent required for ${currentMember.name}`);
+          }
         }
       } else if (e.key === "n" || e.key === "N") {
         e.preventDefault();
@@ -327,6 +346,7 @@ export function CameraQueue({
     currentIndex,
     memberQueue.length,
     capturePhoto,
+    members,
   ]);
 
   useEffect(() => () => stopCamera(), [stopCamera]);
@@ -631,8 +651,38 @@ export function CameraQueue({
                   </div>
                 )}
 
+                {/* Privacy Shield Overlay */}
+                {(() => {
+                  const mRec = members.find(
+                    (m) => m.person_id === currentMember?.personId,
+                  );
+                  if (currentMember && !mRec?.has_consent && isStreaming) {
+                    return (
+                      <div className="absolute inset-0 z-5 bg-black/60 backdrop-blur-xs flex items-center justify-center animate-in fade-in duration-700">
+                        <div className="flex flex-col items-center gap-4 text-white/20">
+                          <div className="relative">
+                            <i className="fa-solid fa-shield-halved text-7xl opacity-10"></i>
+                            <div className="absolute inset-0 flex items-center justify-center translate-y-2">
+                              <i className="fa-solid fa-lock text-xl opacity-30 text-white"></i>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">
+                              Privacy Shield
+                            </div>
+                            <div className="text-[9px] font-medium text-white/30 tracking-tight">
+                              Biometric Authorization Required
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
                 {currentMember && (
-                  <div className="absolute top-2 left-2 z-10">
+                  <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                     <div className="text-md font-medium text-white/80 truncate">
                       {currentMember.name}
                     </div>
@@ -641,6 +691,50 @@ export function CameraQueue({
                         {currentMember.role}
                       </div>
                     )}
+                    {(() => {
+                      const mRec = members.find(
+                        (m) => m.person_id === currentMember.personId,
+                      );
+                      if (!mRec?.has_consent) {
+                        return (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-200 font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                              <i className="fa-solid fa-shield-slash text-[9px]"></i>
+                              Biometric Consent Missing
+                            </div>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const confirmed = window.confirm(
+                                  `Authorize biometric data collection for ${currentMember.name}?`,
+                                );
+                                if (confirmed) {
+                                  try {
+                                    await attendanceManager.updateMember(
+                                      currentMember.personId,
+                                      {
+                                        has_consent: true,
+                                      },
+                                    );
+                                    onRefresh?.();
+                                  } catch (err) {
+                                    console.error(
+                                      "Failed to quick-authorize:",
+                                      err,
+                                    );
+                                  }
+                                }
+                              }}
+                              className="w-fit flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-[10px] text-cyan-200 font-black uppercase tracking-widest hover:bg-cyan-500/30 transition-all shadow-lg active:scale-95"
+                            >
+                              <i className="fa-solid fa-key text-[9px]"></i>
+                              Authorize Now
+                            </button>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 
@@ -723,17 +817,45 @@ export function CameraQueue({
                       !isVideoReady ||
                       isProcessing ||
                       !currentMember ||
-                      !!cameraError
+                      !!cameraError ||
+                      !members.find(
+                        (m) => m.person_id === currentMember?.personId,
+                      )?.has_consent
                     }
-                    className="flex-1 px-4 py-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 text-cyan-100 hover:bg-cyan-500/50 text-xs font-medium transition-all disabled:bg-black/40 disabled:border-white/10 disabled:text-white/30 disabled:cursor-not-allowed"
+                    className={`flex-1 px-4 py-2 rounded-lg border transition-all disabled:cursor-not-allowed ${(() => {
+                      const mRec = members.find(
+                        (m) => m.person_id === currentMember?.personId,
+                      );
+                      if (currentMember && !mRec?.has_consent) {
+                        return "border-white/5 bg-white/2 text-white/20 cursor-not-allowed";
+                      }
+                      return "border-cyan-500/30 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20 disabled:bg-black/40 disabled:border-white/10 disabled:text-white/30";
+                    })()}`}
                   >
                     {isProcessing ? (
-                      <span className="flex items-center justify-center gap-2">
+                      <span className="flex items-center justify-center gap-2 text-xs font-medium">
                         <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                         Processing...
                       </span>
                     ) : (
-                      "Capture (Space)"
+                      (() => {
+                        const mRec = members.find(
+                          (m) => m.person_id === currentMember?.personId,
+                        );
+                        if (currentMember && !mRec?.has_consent) {
+                          return (
+                            <span className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest">
+                              <i className="fa-solid fa-lock text-[10px]"></i>
+                              Locked
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-xs font-medium">
+                            Capture (Space)
+                          </span>
+                        );
+                      })()
                     )}
                   </button>
 
