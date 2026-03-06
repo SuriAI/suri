@@ -87,7 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   maxHeight={256}
                 />
               </div>
-              <Tooltip content="Create new group" position="top">
+              <Tooltip content="Create Group" position="top">
                 <button
                   onClick={() => {
                     setActiveSection("group");

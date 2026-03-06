@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, memo, useCallback } from "react";
+import { AnimatePresence } from "framer-motion";
 import { createDisplayNameMap } from "@/utils";
 import { Dropdown, Tooltip } from "@/components/shared";
 import type {
@@ -76,19 +77,19 @@ const AttendanceRecordItem = memo(
               label: `${minutesLate}M LATE`,
               color:
                 minutesLate > severeLateThreshold
-                  ? "text-rose-400"
+                  ? "text-red-400"
                   : "text-amber-400",
               pillColor:
                 minutesLate > severeLateThreshold
-                  ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                  ? "bg-red-500/15 text-red-400 border-red-500/30"
                   : "bg-amber-500/15 text-amber-400 border-amber-500/30",
               borderColor:
                 minutesLate > severeLateThreshold
-                  ? "border-l-rose-500"
+                  ? "border-l-red-500"
                   : "border-l-amber-500",
               avatarColor:
                 minutesLate > severeLateThreshold
-                  ? "bg-rose-500/20 text-rose-400"
+                  ? "bg-red-500/20 text-red-400"
                   : "bg-amber-500/20 text-amber-400",
             };
           }
@@ -99,11 +100,10 @@ const AttendanceRecordItem = memo(
               status: "early",
               minutes: minutesEarly,
               label: `${minutesEarly}M EARLY`,
-              color: "text-emerald-400",
-              pillColor:
-                "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-              borderColor: "border-l-emerald-500",
-              avatarColor: "bg-emerald-500/20 text-emerald-400",
+              color: "text-cyan-400",
+              pillColor: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
+              borderColor: "border-l-cyan-500",
+              avatarColor: "bg-cyan-500/20 text-cyan-400",
             };
           }
         }
@@ -362,11 +362,11 @@ export const AttendancePanel = memo(function AttendancePanel({
                 <i className="fa-solid fa-users text-sm"></i>
               </button>
             </Tooltip>
-            <Tooltip content="Create new group" position="top">
+            <Tooltip content="Create Group" position="top">
               <button
                 onClick={() => setShowGroupManagement(true)}
                 className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
-                aria-label="Create new group"
+                aria-label="Create Group"
               >
                 <i className="fa-solid fa-plus text-sm"></i>
               </button>
@@ -384,7 +384,7 @@ export const AttendancePanel = memo(function AttendancePanel({
               className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors flex items-center gap-2"
             >
               <i className="fa-solid fa-plus text-xs"></i>
-              New Group
+              Create Group
             </button>
           </div>
         </div>
@@ -395,13 +395,13 @@ export const AttendancePanel = memo(function AttendancePanel({
           <div className="flex items-center">
             {/* Joined Search and Sort Container */}
             <div className="relative flex-1 group/search">
-              <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 text-[10px] pointer-events-none group-focus-within/search:text-cyan-400/60 transition-colors" />
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/20 text-[10px] pointer-events-none group-focus-within/search:text-cyan-400/60 transition-colors" />
               <input
                 type="text"
                 placeholder="Search name..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full h-9 bg-white/3 text-white text-[11px] border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-10 pr-3 placeholder:text-white/20 focus:border-white/20 focus:bg-white/6 focus:outline-none transition-all"
+                className="w-full h-9 bg-white/3 text-white text-xs border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-8 pr-3 placeholder:text-white/20 focus:border-white/20 focus:bg-white/6 focus:outline-none transition-all"
               />
             </div>
 
@@ -564,19 +564,21 @@ export const AttendancePanel = memo(function AttendancePanel({
           )}
         </div>
       )}
-      {showManualEntry && (
-        <ManualEntryModal
-          onClose={() => setShowManualEntry(false)}
-          onSuccess={() => {
-            // Optional: refreshed logic handled by store/websocket usually,
-            // but we can force refresh if needed.
-          }}
-          members={groupMembers}
-          presentPersonIds={presentPersonIds}
-          onAddMember={handleOpenSettingsForRegistration}
-          currentGroup={currentGroup}
-        />
-      )}
+      <AnimatePresence>
+        {showManualEntry && (
+          <ManualEntryModal
+            onClose={() => setShowManualEntry(false)}
+            onSuccess={() => {
+              // Optional: refreshed logic handled by store/websocket usually,
+              // but we can force refresh if needed.
+            }}
+            members={groupMembers}
+            presentPersonIds={presentPersonIds}
+            onAddMember={handleOpenSettingsForRegistration}
+            currentGroup={currentGroup}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 });

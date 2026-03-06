@@ -146,7 +146,7 @@
 .disabled-dot {
   width: 0.25rem;
   height: 0.25rem;
-  background: #ef4444;
+  background: var(--error);
   border-radius: 50%;
 }
 

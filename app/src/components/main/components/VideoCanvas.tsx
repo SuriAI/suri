@@ -61,7 +61,7 @@ export const VideoCanvas = memo(function VideoCanvas({
       )}
 
       {isStreaming && lateTrackingEnabled && (
-        <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 pointer-events-none z-50 flex items-center gap-4 animate-in fade-in zoom-in-95 duration-500 shadow-lg">
+        <div className="absolute bottom-4 right-4 bg-black/60  px-4 py-2 rounded-full border border-white/20 pointer-events-none z-50 flex items-center gap-4 animate-in fade-in zoom-in-95 duration-500 shadow-lg">
           <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/40">
             Start Time
           </span>

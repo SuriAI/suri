@@ -67,7 +67,7 @@ export function MemberSidebar({
 
   return (
     <div className="space-y-3 flex flex-col overflow-hidden min-h-0 h-full p-6">
-      <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         <div className="relative flex-1">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
@@ -92,7 +92,7 @@ export function MemberSidebar({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 flex-shrink-0">
+      <div className="flex items-center justify-between gap-2 shrink-0">
         {members.length > 0 && filteredMembers.length > 0 && (
           <div className="text-xs text-white/30">
             Showing {filteredMembers.length} of {members.length} member
@@ -206,7 +206,7 @@ export function MemberSidebar({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0 relative z-10">
+              <div className="flex items-center gap-3 shrink-0 relative z-10">
                 {!isRegistered ? (
                   <button
                     onClick={() => onSelectMember(member.person_id)}

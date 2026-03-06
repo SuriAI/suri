@@ -76,8 +76,8 @@ export function BulkUploadArea({
 
   return (
     <div className="mb-6">
-      <label className="group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-gradient-to-br from-white/5 to-transparent hover:border-white/20 hover:from-white/10 transition-all overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-transparent transition-all" />
+      <label className="group relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-linear-to-br from-white/5 to-transparent hover:border-white/20 hover:from-white/10 transition-all overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-white/0 to-white/0 group-hover:from-white/5 group-hover:to-transparent transition-all" />
         <div className="relative flex flex-col items-center gap-3">
           <div className="text-center">
             <div className="text-sm text-white/70 mb-1">

@@ -51,37 +51,37 @@
 .btn-success {
   background: rgba(34, 211, 238, 0.1);
   border-color: rgba(34, 211, 238, 0.3);
-  color: #22d3ee;
+  color: var(--success);
 }
 
 .btn-success:hover {
   background: rgba(34, 211, 238, 0.2);
   border-color: rgba(34, 211, 238, 0.5);
-  color: #22d3ee;
+  color: var(--success);
 }
 
 .btn-warning {
   background: rgba(255, 170, 0, 0.1);
   border-color: rgba(255, 170, 0, 0.3);
-  color: #ffaa00;
+  color: var(--warning);
 }
 
 .btn-warning:hover {
   background: rgba(255, 170, 0, 0.2);
   border-color: rgba(255, 170, 0, 0.5);
-  color: #ffaa00;
+  color: var(--warning);
 }
 
 .btn-error {
   background: rgba(255, 68, 68, 0.1);
   border-color: rgba(255, 68, 68, 0.3);
-  color: #ff4444;
+  color: var(--error);
 }
 
 .btn-error:hover {
   background: rgba(255, 68, 68, 0.2);
   border-color: rgba(255, 68, 68, 0.5);
-  color: #ff4444;
+  color: var(--error);
 }
 
 .titlebar-btn {

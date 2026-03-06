@@ -18,7 +18,7 @@ export function InfoBanner({
     inline:
       "px-6 py-2 bg-cyan-500/10 border-b border-cyan-500/20 text-cyan-200",
     floating:
-      "absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-3 bg-cyan-950/90 backdrop-blur-md border border-cyan-500/40 text-cyan-100 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_20px_rgba(34,211,238,0.1)] z-20 min-w-[320px] max-w-[90%] animate-in fade-in slide-in-from-bottom-4 duration-500",
+      "absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-3 bg-gray-950/90 text-cyan-100 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_20px_rgba(34,211,238,0.1)] z-20 min-w-[320px] max-w-[90%] animate-in fade-in slide-in-from-bottom-4 duration-500",
   };
 
   return (

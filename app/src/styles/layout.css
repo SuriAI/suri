@@ -64,11 +64,11 @@
 }
 
 .status-dot.connected {
-  background-color: #10b981;
+  background-color: var(--success);
 }
 
 .status-dot.disconnected {
-  background-color: #ef4444;
+  background-color: var(--error);
 }
 
 .status-text {

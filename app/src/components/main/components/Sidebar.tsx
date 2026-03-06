@@ -267,7 +267,7 @@ export const Sidebar = memo(function Sidebar({
                 ></motion.i>
 
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-[6px] right-[6px] w-[6px] h-[6px] bg-emerald-500 rounded-full border border-black shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                  <div className="absolute top-[6px] right-[6px] w-[6px] h-[6px] bg-cyan-500 rounded-full border border-black shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
                 )}
               </motion.button>
             </Tooltip>
@@ -303,7 +303,7 @@ export const Sidebar = memo(function Sidebar({
 
           <div className="flex-1 border-t border-white/10 flex flex-col min-h-0 bg-black">
             <div className="flex-1 overflow-y-auto custom-scroll flex flex-col min-h-0 bg-black">
-              <div className="flex-1 flex flex-col min-h-[0] px-2 bg-black">
+              <div className="flex-1 flex flex-col min-h-0 px-2 bg-black">
                 <DetectionPanel
                   currentDetections={currentDetections}
                   currentRecognitionResults={currentRecognitionResults}
@@ -335,7 +335,7 @@ export const Sidebar = memo(function Sidebar({
               </button>
             </Tooltip>
 
-            <div className="w-8 h-px bg-white/[0.06] my-1"></div>
+            <div className="w-8 h-px bg-white/6 my-1"></div>
 
             <Tooltip
               content={
@@ -368,7 +368,7 @@ export const Sidebar = memo(function Sidebar({
 
                 {/* Update Badge */}
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-2 right-2 w-[8px] h-[8px] bg-emerald-500 rounded-full border border-black shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <div className="absolute top-2 right-2 w-[8px] h-[8px] bg-cyan-500 rounded-full border border-black shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
                 )}
               </motion.button>
             </Tooltip>

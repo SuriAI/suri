@@ -512,11 +512,11 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 p-4 rounded-xl text-emerald-100/90 shadow-2xl flex items-start gap-3"
+              className="pointer-events-auto mb-3 bg-cyan-500/10  border border-cyan-500/20 p-4 rounded-xl text-cyan-100/90 shadow-2xl flex items-start gap-3"
             >
-              <i className="fa-solid fa-circle-check mt-0.5 text-emerald-500"></i>
+              <i className="fa-solid fa-circle-check mt-0.5 text-cyan-500"></i>
               <div className="flex-1 text-sm leading-relaxed">
-                <span className="font-semibold text-emerald-500 mr-1.5 whitespace-nowrap">
+                <span className="font-semibold text-cyan-500 mr-1.5 whitespace-nowrap">
                   Success:
                 </span>
                 {success}
@@ -538,7 +538,7 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 bg-amber-500/10 backdrop-blur-md border border-amber-500/20 p-4 rounded-xl text-amber-200/90 shadow-2xl flex items-start gap-3"
+              className="pointer-events-auto mb-3 bg-amber-500/10  border border-amber-500/20 p-4 rounded-xl text-amber-200/90 shadow-2xl flex items-start gap-3"
             >
               <i className="fa-solid fa-triangle-exclamation mt-0.5 text-amber-400"></i>
               <div className="flex-1 text-sm leading-relaxed">
@@ -564,7 +564,7 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto bg-red-500/10 backdrop-blur-md border border-red-500/20 p-4 rounded-xl text-red-100/90 shadow-2xl flex items-start gap-3"
+              className="pointer-events-auto bg-red-500/10  border border-red-500/20 p-4 rounded-xl text-red-100/90 shadow-2xl flex items-start gap-3"
             >
               <i className="fa-solid fa-circle-xmark mt-0.5 text-red-500"></i>
               <div className="flex-1 text-sm leading-relaxed">
@@ -639,13 +639,17 @@ export default function Main() {
         />
       </div>
 
-      <GroupManagementModal
-        showGroupManagement={showGroupManagement}
-        setShowGroupManagement={setShowGroupManagement}
-        newGroupName={newGroupName}
-        setNewGroupName={setNewGroupName}
-        handleCreateGroup={handleCreateGroup}
-      />
+      <AnimatePresence>
+        {showGroupManagement && (
+          <GroupManagementModal
+            showGroupManagement={showGroupManagement}
+            setShowGroupManagement={setShowGroupManagement}
+            newGroupName={newGroupName}
+            setNewGroupName={setNewGroupName}
+            handleCreateGroup={handleCreateGroup}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showSettings && (
@@ -767,13 +771,17 @@ export default function Main() {
         )}
       </AnimatePresence>
 
-      <DeleteConfirmationModal
-        showDeleteConfirmation={showDeleteConfirmation}
-        groupToDelete={groupToDelete}
-        currentGroup={currentGroup}
-        cancelDeleteGroup={cancelDeleteGroup}
-        confirmDeleteGroup={confirmDeleteGroup}
-      />
+      <AnimatePresence>
+        {showDeleteConfirmation && (
+          <DeleteConfirmationModal
+            showDeleteConfirmation={showDeleteConfirmation}
+            groupToDelete={groupToDelete}
+            currentGroup={currentGroup}
+            cancelDeleteGroup={cancelDeleteGroup}
+            confirmDeleteGroup={confirmDeleteGroup}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

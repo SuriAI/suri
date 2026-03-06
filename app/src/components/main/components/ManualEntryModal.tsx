@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { attendanceManager } from "@/services/AttendanceManager";
-import { Dropdown } from "@/components/shared";
 import { Modal } from "@/components/common";
+import { Tooltip } from "@/components/shared";
+import { useAttendanceStore } from "@/components/main/stores";
 import type {
   AttendanceMember,
   AttendanceGroup,
@@ -24,8 +25,9 @@ export const ManualEntryModal = ({
   onAddMember,
   currentGroup,
 }: ManualEntryModalProps) => {
-  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [faceDataMap, setFaceDataMap] = useState<Map<string, boolean>>(
     new Map(),
@@ -44,15 +46,11 @@ export const ManualEntryModal = ({
       .catch(() => {});
   }, [currentGroup?.id]);
 
-  const absentMembers = useMemo(() => {
-    return members
-      .filter((m) => !presentPersonIds.has(m.person_id))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [members, presentPersonIds]);
-
   const sortedAllMembers = useMemo(() => {
-    return [...members].sort((a, b) => a.name.localeCompare(b.name));
-  }, [members]);
+    return members
+      .filter((m) => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [members, searchQuery]);
 
   const noFaceCount = useMemo(() => {
     return sortedAllMembers.filter(
@@ -60,19 +58,26 @@ export const ManualEntryModal = ({
     ).length;
   }, [sortedAllMembers, faceDataMap]);
 
-  const handleSubmit = async () => {
-    if (!selectedPersonId) return;
+  const handleManualEntry = async (personId: string) => {
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
+    setSubmittingId(personId);
     setError(null);
 
     try {
-      await attendanceManager.addRecord({
-        person_id: selectedPersonId,
+      const record = await attendanceManager.addRecord({
+        person_id: personId,
         timestamp: new Date(),
         is_manual: true,
         notes: "Manual entry by admin",
       });
+
+      // Optimistic update: Add the fresh record to the store immediately
+      // This ensures the parent UI (AttendancePanel) reflects the change without a refresh
+      const store = useAttendanceStore.getState();
+      store.setRecentAttendance([record, ...store.recentAttendance]);
+
       onSuccess();
       onClose();
     } catch (err) {
@@ -80,6 +85,7 @@ export const ManualEntryModal = ({
       console.error(err);
     } finally {
       setIsSubmitting(false);
+      setSubmittingId(null);
     }
   };
 
@@ -97,7 +103,7 @@ export const ManualEntryModal = ({
             {members.length} Total • {presentPersonIds.size} Present
             {noFaceCount > 0 && (
               <span className="text-amber-400/80 ml-1">
-                • {noFaceCount} need re-enrollment
+                • {noFaceCount} not registered yet
               </span>
             )}
           </p>
@@ -106,57 +112,44 @@ export const ManualEntryModal = ({
       maxWidth="sm"
     >
       <div className="space-y-4">
-        <div className=" rounded-lg p-1.5 pt-0">
-          <div className="flex gap-2">
-            <div className="flex-1 min-w-0">
-              <Dropdown
-                options={absentMembers.map((m) => ({
-                  value: m.person_id,
-                  label: m.name,
-                }))}
-                value={selectedPersonId}
-                onChange={(val) => setSelectedPersonId(val as string)}
-                placeholder={
-                  absentMembers.length > 0
-                    ? "Select absent member..."
-                    : "All members present"
-                }
-                emptyMessage="No absent members"
-                maxHeight={200}
-                buttonClassName="w-full bg-transparent border-none hover:bg-white/5 text-xs py-2 rounded-lg transition-all text-white/90 h-8"
-                allowClear={true}
-                iconClassName="text-[10px] opacity-50"
-              />
-            </div>
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPersonId || isSubmitting}
-              className="px-3 py-1.5 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-white rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap h-8"
-            >
-              {isSubmitting ? (
-                <i className="fa-solid fa-circle-notch fa-spin"></i>
-              ) : (
-                <>
-                  <i className="fa-solid fa-plus text-[10px]"></i>
-                  Add
-                </>
-              )}
-            </button>
+        {/* Search & Add Header */}
+        <div className="flex items-center gap-2">
+          <div className="relative group/search flex-1">
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[10px] text-white/20 group-focus-within/search:text-cyan-400/50 transition-colors"></i>
+            <input
+              type="text"
+              placeholder="Search members..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-9 bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 text-xs text-white placeholder:text-white/20 focus:bg-white/10 focus:border-cyan-500/30 outline-none transition-all"
+            />
           </div>
+          <Tooltip content="Add member" position="top">
+            <button
+              onClick={() => {
+                onClose();
+                onAddMember();
+              }}
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/40 hover:text-white group/add"
+            >
+              <i className="fa-solid fa-plus text-xs group-hover/add:scale-110 transition-transform"></i>
+            </button>
+          </Tooltip>
         </div>
 
         {error && (
-          <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-medium flex items-center gap-2">
+          <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-medium flex items-center gap-2">
             <i className="fa-solid fa-circle-exclamation"></i>
             {error}
           </div>
         )}
 
-        {sortedAllMembers.length > 0 && (
-          <div className="border border-white/6 rounded-lg overflow-hidden">
-            <div className="max-h-[220px] overflow-y-auto divide-y divide-white/4">
+        {sortedAllMembers.length > 0 ? (
+          <div className="rounded-lg overflow-hidden bg-black/20">
+            <div className="max-h-35 overflow-y-auto custom-scroll divide-y divide-white/4">
               {sortedAllMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id);
+                const isEntrySubmitting = submittingId === member.person_id;
                 const hasFace =
                   faceDataMap.size === 0
                     ? null
@@ -165,32 +158,45 @@ export const ManualEntryModal = ({
                 return (
                   <div
                     key={member.person_id}
-                    className="flex items-center gap-2.5 px-3 py-2"
+                    onClick={() =>
+                      !isPresent && handleManualEntry(member.person_id)
+                    }
+                    className={`flex items-center gap-2.5 px-3 py-2 transition-all group/item ${
+                      isPresent
+                        ? "opacity-60 grayscale-[0.5] cursor-default bg-white/1"
+                        : "hover:bg-cyan-500/5 cursor-pointer active:scale-[0.995]"
+                    }`}
                   >
-                    <div
-                      className={`shrink-0 w-1.5 h-1.5 rounded-full ${
-                        isPresent ? "bg-emerald-400" : "bg-white/20"
-                      }`}
-                    />
-
-                    <span className="flex-1 text-[11px] text-white/80 truncate">
+                    <span className="flex-1 text-[11px] text-white/70 truncate font-medium group-hover/item:text-white transition-colors">
                       {member.name}
                     </span>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {isPresent && (
-                        <span className="text-[9px] font-semibold text-emerald-400/80 uppercase tracking-wide">
-                          Present
-                        </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {isPresent ? (
+                        <div className="flex items-center gap-1.5 px-2 py-1">
+                          <i className="fa-solid fa-check text-[8px] text-cyan-400"></i>
+                          <span className="text-[9px] font-bold text-cyan-400/80 uppercase tracking-widest">
+                            Present
+                          </span>
+                        </div>
+                      ) : isEntrySubmitting ? (
+                        <div className="w-[88px] flex justify-center">
+                          <i className="fa-solid fa-spinner fa-spin text-[10px] text-cyan-400"></i>
+                        </div>
+                      ) : (
+                        <div className="opacity-0 group-hover/item:opacity-100 transition-all flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest text-cyan-400 active:scale-95 shadow-sm shadow-cyan-900/10">
+                          <i className="fa-solid fa-plus text-[8px]"></i>
+                          Mark Present
+                        </div>
                       )}
-                      {hasFace === false && (
-                        <span
-                          className="flex items-center gap-1 text-[9px] font-medium text-amber-400/70 bg-amber-400/10 border border-amber-400/20 px-1.5 py-0.5 rounded"
-                          title="Face not enrolled! This member wasn't registered yet or was imported from another device. They must be enrolled on this device to be recognized by the camera."
+                      {!isPresent && hasFace === false && (
+                        <div
+                          className={`flex items-center gap-1 text-[9px] font-medium text-amber-500/50 px-1.5 py-0.5 italic ${isEntrySubmitting || searchQuery ? "hidden" : "group-hover/item:opacity-0"} transition-opacity`}
+                          title="Face not enrolled! This member must be enrolled on this device to be recognized by the camera."
                         >
-                          <i className="fa-solid fa-user-slash text-[8px]"></i>
-                          No face data
-                        </span>
+                          <i className="fa-solid fa-user-slash text-[8px] opacity-70"></i>
+                          Not Registered Yet
+                        </div>
                       )}
                     </div>
                   </div>
@@ -198,29 +204,31 @@ export const ManualEntryModal = ({
               })}
             </div>
           </div>
+        ) : (
+          <div className="py-12 flex flex-col items-center justify-center bg-black/20 rounded-lg border border-white/5 border-dashed">
+            <i className="fa-solid fa-user-slash text-white/10 text-xl mb-3"></i>
+            <p className="text-xs text-white/30 font-medium">
+              No results found
+            </p>
+          </div>
         )}
 
         {noFaceCount > 0 && (
-          <p className="text-[9px] text-amber-400/60 leading-relaxed flex items-start gap-1.5">
-            <i className="fa-solid fa-circle-info mt-px shrink-0"></i>
-            Members marked &quot;No face data&quot; weren&apos;t registered yet
-            or were imported from another device. They must be enrolled on this
-            device to be recognized by the camera.
-          </p>
+          <div className="rounded-lg border border-white/6 bg-black/50 px-3 py-2.5">
+            <p className="text-[10px] text-amber-500/60 leading-relaxed flex items-start gap-2">
+              <i className="fa-solid fa-circle-info mt-0.5 shrink-0 text-amber-500/40"></i>
+              <span>
+                Members marked{" "}
+                <span className="text-amber-500/80 font-bold">
+                  &quot;No face data&quot;
+                </span>{" "}
+                weren&apos;t registered yet or were imported from another
+                device. They must be enrolled on this device to be recognized by
+                the camera.
+              </span>
+            </p>
+          </div>
         )}
-
-        <div className="pt-3 border-t border-white/5">
-          <button
-            onClick={() => {
-              onClose();
-              onAddMember();
-            }}
-            className="w-full px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors flex items-center justify-center gap-2"
-          >
-            <i className="fa-solid fa-user-plus text-xs"></i>
-            Add Member
-          </button>
-        </div>
       </div>
     </Modal>
   );

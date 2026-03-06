@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { attendanceManager } from "@/services";
 import { createDisplayNameMap } from "@/utils";
-import { Tooltip } from "@/components/shared";
 import { StatsCard, EmptyState } from "@/components/group/shared";
 import type {
   AttendanceGroup,
@@ -163,7 +162,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-white/10 bg-white/2 backdrop-blur-sm overflow-hidden shrink-0 flex flex-col min-h-[400px] shadow-2xl">
+      <div className="rounded-xl border border-white/10 bg-white/2  overflow-hidden shrink-0 flex flex-col min-h-[400px] shadow-2xl">
         <div className="p-4 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 bg-white/2">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
@@ -219,61 +218,35 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 </div>
               </div>
             ) : (
-              <div className="relative ml-1 overflow-visible">
-                {filteredRecords.slice(0, 50).map((record, idx) => {
+              <div className="overflow-visible">
+                {filteredRecords.slice(0, 50).map((record) => {
                   const displayName =
                     displayNameMap.get(record.person_id) || "Unknown";
-                  const isHighConfidence = record.confidence >= 0.85;
-                  const itemsCount = Math.min(filteredRecords.length, 50);
-                  const isLast = idx === itemsCount - 1;
 
                   return (
                     <div
                       key={record.id}
-                      className="group/item relative flex items-center justify-between p-2 rounded-lg hover:bg-white/1 transition-colors"
+                      className="group/item relative flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/2 transition-all border border-transparent hover:border-white/5"
                     >
-                      {/* Unbroken Vertical Line Segment */}
-                      <div
-                        className="absolute w-px bg-white/20 left-[20px]"
-                        style={{
-                          top: idx === 0 ? "50%" : "0",
-                          bottom: isLast ? "50%" : "0",
-                        }}
-                      />
-
-                      {/* Timeline Dot Column */}
-                      <div className="relative z-10 w-6 h-10 flex items-center justify-center shrink-0">
-                        <Tooltip
-                          content={`${Math.round(record.confidence * 100)}% match`}
-                          position="top"
-                        >
-                          <div
-                            className={`w-1.5 h-1.5 rounded-full ring-[3px] ring-black/40 transition-all duration-300 cursor-help ${
-                              isHighConfidence
-                                ? "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-                                : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]"
-                            }`}
-                          />
-                        </Tooltip>
-                      </div>
-
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
                         <div className="flex items-baseline gap-2">
                           <span className="font-bold text-white text-[13px] tracking-tight group-hover:text-cyan-400 transition-colors">
                             {displayName}
                           </span>
-                          <span className="text-[10px] font-medium text-white/20 uppercase tracking-[0.15em]">
+                          <span className="text-[10px] font-medium text-white/20 uppercase tracking-[0.2em] ml-auto">
                             {getRelativeTime(record.timestamp)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-white/40">
-                          <i className="fa-regular fa-clock text-[9px] opacity-40"></i>
-                          <span>{formatTime(record.timestamp)}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+                            <i className="fa-regular fa-clock text-[9px] opacity-40"></i>
+                            <span>{formatTime(record.timestamp)}</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Right-side decorative arrow or status icon */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity pr-2 text-white/10">
+                      <div className="opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0 ml-4 text-white/20">
                         <i className="fa-solid fa-chevron-right text-[10px]"></i>
                       </div>
                     </div>

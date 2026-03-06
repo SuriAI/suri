@@ -42,7 +42,7 @@ export function MemberEntry({
   };
 
   return (
-    <div className="group/member relative px-3 py-1.5 bg-white/[0.01] hover:bg-white/5 border border-transparent hover:border-white/10 rounded-lg transition-all">
+    <div className="group/member relative px-3 py-1.5 bg-white/1 hover:bg-white/5 border border-transparent hover:border-white/10 rounded-lg transition-all">
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0 flex items-center gap-3">
           {/* Name */}
@@ -130,7 +130,7 @@ export function MemberEntry({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
             {member.has_face_data ? (
               <div className="text-[10px] font-black tracking-widest text-cyan-400 uppercase">

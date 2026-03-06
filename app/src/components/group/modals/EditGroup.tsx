@@ -52,15 +52,12 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
         {error && <ErrorMessage message={error} />}
 
         <div className="grid gap-4">
-          <label className="text-sm">
-            <span className="text-white/60 block mb-2">Group name *</span>
-            <FormInput
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. CS101 Section A, Engineering Team"
-              focusColor="border-cyan-500/60"
-            />
-          </label>
+          <FormInput
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Enter Group Name"
+            focusColor="border-cyan-500/60"
+          />
         </div>
 
         <div className="flex justify-end gap-3 mt-6">

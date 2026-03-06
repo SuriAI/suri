@@ -132,8 +132,8 @@ export function ReportTable({
                         if (c.key === "status") {
                           const s = row.status;
                           let textColor = "text-white/40";
-                          if (s === "present") textColor = "text-emerald-400";
-                          if (s === "absent") textColor = "text-rose-400";
+                          if (s === "present") textColor = "text-cyan-400";
+                          if (s === "absent") textColor = "text-red-400";
                           if (s === "no_records") textColor = "text-white/20";
 
                           content = (

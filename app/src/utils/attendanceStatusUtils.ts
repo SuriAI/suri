@@ -30,8 +30,8 @@ export function getStatusConfig(
     return {
       label: "Absent",
       shortLabel: "absent",
-      className: "bg-rose-500/15 text-rose-200 border border-rose-400/30",
-      color: "text-rose-200",
+      className: "bg-red-500/15 text-red-200 border border-red-400/30",
+      color: "text-red-200",
     };
   }
 
@@ -39,8 +39,8 @@ export function getStatusConfig(
     return {
       label: "Absent",
       shortLabel: "absent",
-      className: "bg-rose-500/15 text-rose-200 border border-rose-400/30",
-      color: "text-rose-200",
+      className: "bg-red-500/15 text-red-200 border border-red-400/30",
+      color: "text-red-200",
     };
   }
 
@@ -65,8 +65,8 @@ export function getStatusConfig(
   return {
     label: "Absent",
     shortLabel: "absent",
-    className: "bg-rose-500/15 text-rose-200 border border-rose-400/30",
-    color: "text-rose-200",
+    className: "bg-red-500/15 text-red-200 border border-red-400/30",
+    color: "text-red-200",
   };
 }
 
