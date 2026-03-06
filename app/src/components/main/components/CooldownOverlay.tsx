@@ -42,7 +42,7 @@ export function CooldownOverlay({ persistentCooldowns }: CooldownOverlayProps) {
             className="group relative"
           >
             {/* Main Card */}
-            <div className="relative flex items-center gap-3 bg-[#0a0a0b]/90 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl min-w-[200px] overflow-hidden">
+            <div className="relative flex items-center gap-3 bg-[#0a0a0b]/90  border border-white/10 rounded-xl p-3 shadow-2xl min-w-50 overflow-hidden">
               {/* Smaller Avatar */}
               <div className="shrink-0 w-7 h-7 rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                 <i className="fa-solid fa-check text-cyan-400 text-xs"></i>

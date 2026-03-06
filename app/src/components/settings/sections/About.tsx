@@ -133,12 +133,12 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     return (
       <div className="flex flex-col items-end gap-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-emerald-400 font-bold tracking-wide">
+          <span className="text-xs text-cyan-400 font-bold tracking-wide">
             Update available (v{updateInfo.latestVersion})
           </span>
           <button
             onClick={onDownload}
-            className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-all border border-emerald-500/20 active:scale-95"
+            className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold transition-all border border-cyan-500/20 active:scale-95"
           >
             Download
           </button>
@@ -175,7 +175,7 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
     <div className="flex flex-col items-end gap-1.5">
       <div className="flex items-center gap-3">
         {showSuccess && (
-          <span className="text-xs text-emerald-500/60 font-medium">
+          <span className="text-xs text-cyan-500/60 font-medium">
             Up to date
           </span>
         )}

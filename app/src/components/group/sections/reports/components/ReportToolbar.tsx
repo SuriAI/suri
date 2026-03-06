@@ -78,9 +78,9 @@ export function ReportToolbar({
   }, []);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-white/5 flex-shrink-0">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-white/5 shrink-0">
       {/* ── Date Range ── */}
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         <Tooltip content="Start date" position="bottom">
           <input
             type="date"
@@ -118,7 +118,7 @@ export function ReportToolbar({
       <div className="flex-1" />
 
       {/* ── Right Controls ── */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {/* Search */}
         <div className="relative">
           <i className="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-white/20 text-[9px]" />
@@ -212,7 +212,7 @@ export function ReportToolbar({
                       key={c.key}
                       className="flex items-center gap-2.5 px-1.5 py-1 hover:bg-white/5 cursor-pointer transition-colors"
                     >
-                      <div className="relative flex items-center flex-shrink-0">
+                      <div className="relative flex items-center shrink-0">
                         <input
                           type="checkbox"
                           checked={visibleColumns.includes(c.key)}
@@ -242,7 +242,7 @@ export function ReportToolbar({
 
               {/* Group By */}
               <div className="px-3 py-2.5 flex items-center justify-between gap-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/20 flex-shrink-0">
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">
                   Group by
                 </span>
                 <Dropdown

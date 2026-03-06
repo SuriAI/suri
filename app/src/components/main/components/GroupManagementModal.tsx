@@ -47,14 +47,11 @@ export function GroupManagementModal({
     <Modal
       isOpen={showGroupManagement}
       onClose={() => setShowGroupManagement(false)}
-      title="Create New Group"
+      title="Create Group"
       maxWidth="sm"
     >
       <div className="space-y-3 mt-2">
         <div>
-          <label className="block text-xs font-medium mb-1.5 text-white/60">
-            Group Name:
-          </label>
           <FormInput
             ref={inputRef}
             value={newGroupName}

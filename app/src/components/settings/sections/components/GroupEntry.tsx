@@ -65,7 +65,7 @@ export function GroupEntry({
   };
 
   return (
-    <div className="group/row rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/5 transition-all overflow-hidden font-sans">
+    <div className="group/row rounded-lg border border-white/5 bg-white/1 hover:bg-white/5 transition-all overflow-hidden font-sans">
       {/* Group Header */}
       <div
         onClick={() => onToggle(group.id)}
@@ -118,7 +118,7 @@ export function GroupEntry({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+        <div className="flex items-center gap-4 shrink-0 ml-4">
           <div className="flex items-center gap-2.5">
             <div className="text-[9px] font-bold text-white/40 uppercase tracking-tighter">
               {memberCount} {memberCount === 1 ? "Member" : "Members"}

@@ -31,9 +31,9 @@ const DetectionCard = memo(
     const getStatusStyles = () => {
       if (isRecognized) {
         return {
-          borderColor: "border-green-500/60",
-          bgColor: "bg-green-950/10",
-          textColor: "text-green-400",
+          borderColor: "border-cyan-500/60",
+          bgColor: "bg-cyan-950/10",
+          textColor: "text-cyan-400",
         };
       }
 

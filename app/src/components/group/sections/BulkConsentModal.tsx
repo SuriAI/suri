@@ -17,36 +17,34 @@ export function BulkConsentModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Grant Biometric Consent"
       icon={<i className="fa-solid fa-shield-check text-cyan-400"></i>}
       maxWidth="md"
     >
-      <div className="mb-6">
-        <p className="text-white mb-4">
-          Are you sure you want to grant biometric consent to{" "}
-          <strong className="text-cyan-400">{memberCount}</strong> member
-          {memberCount !== 1 ? "s" : ""} in this group?
+      <div className="mt-2 space-y-4">
+        <p className="text-sm text-center leading-relaxed text-white/85">
+          Are you sure you want to grant biometric consent to
+          <span className="font-semibold text-cyan-300"> {memberCount}</span>
+          <span className="text-white/65">
+            {" "}
+            member{memberCount !== 1 ? "s" : ""}
+          </span>
+          <span className="text-white/85"> in this group?</span>
         </p>
-        <div className="bg-cyan-900/30 border border-cyan-500/40 rounded-xl p-4">
-          <p className="text-cyan-200 text-sm leading-relaxed">
-            <strong className="text-cyan-400">Important:</strong> By proceeding,
-            you confirm that you have obtained explicit, informed permission
-            from these individuals (or their legal representatives) to process
-            their biometric data on this device.
+
+        <div className="rounded-lg border border-white/6 bg-black/30 px-4 py-3">
+          <p className="text-xs leading-relaxed text-white/50">
+            Proceed only if explicit and informed permission has already been
+            obtained from each individual, or from their legal representative
+            where required.
           </p>
         </div>
       </div>
 
-      <div className="flex gap-3 mt-8">
+      <div className="mt-6">
         <button
-          onClick={onClose}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all text-sm font-bold uppercase tracking-wider"
-        >
-          Cancel
-        </button>
-        <button
+          type="button"
           onClick={onConfirm}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-200 hover:bg-cyan-500/30 transition-all text-sm font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(34,211,238,0.1)] active:scale-95"
+          className="w-full rounded-lg border border-cyan-400/30 bg-cyan-500/15 px-4 py-2.5 text-sm font-medium text-cyan-100 transition-colors hover:bg-cyan-500/25"
         >
           Grant Consent
         </button>

@@ -81,7 +81,7 @@ body {
 
 .bolt {
   fill: none;
-  stroke: #22d3ee;
+  stroke: var(--accent);
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;

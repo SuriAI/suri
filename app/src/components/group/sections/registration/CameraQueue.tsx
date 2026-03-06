@@ -403,7 +403,7 @@ export function CameraQueue({
 
               <div className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <div className="relative flex-1 min-w-[220px]">
+                  <div className="relative flex-1 min-w-55">
                     <svg
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30"
                       fill="none"
@@ -441,7 +441,7 @@ export function CameraQueue({
                     }}
                     showPlaceholderOption={false}
                     allowClear={false}
-                    className="min-w-[170px]"
+                    className="min-w-42.5"
                   />
                 </div>
 
@@ -658,7 +658,7 @@ export function CameraQueue({
                   );
                   if (currentMember && !mRec?.has_consent && isStreaming) {
                     return (
-                      <div className="absolute inset-0 z-5 bg-black/60 backdrop-blur-xs flex items-center justify-center animate-in fade-in duration-700">
+                      <div className="absolute inset-0 z-5 bg-black/60  flex items-center justify-center animate-in fade-in duration-700">
                         <div className="flex flex-col items-center gap-4 text-white/20">
                           <div className="relative">
                             <i className="fa-solid fa-shield-halved text-7xl opacity-10"></i>
@@ -925,7 +925,7 @@ export function CameraQueue({
                             {currentMember.status === "error" && "Error"}
                           </div>
                           {currentMember.error && (
-                            <div className="text-xs text-red-300 mt-1 max-w-[200px]">
+                            <div className="text-xs text-red-300 mt-1 max-w-50">
                               {currentMember.error}
                             </div>
                           )}

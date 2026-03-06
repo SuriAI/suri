@@ -58,7 +58,7 @@ function GroupContentComponent({
         <EmptyState
           title={hasGroups ? "Select a group to continue" : "No groups yet"}
           action={{
-            label: hasGroups ? "Create new group" : "Create your first group",
+            label: hasGroups ? "Create Group" : "Create first group",
             onClick: openCreateGroup,
           }}
           className="h-full"

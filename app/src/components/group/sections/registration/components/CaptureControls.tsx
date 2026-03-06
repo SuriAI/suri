@@ -29,7 +29,7 @@ export function CaptureControls({
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="flex gap-2 flex-shrink-0">
+      <div className="flex gap-2 shrink-0">
         {(["upload", "live"] as CaptureSource[]).map((option) => (
           <button
             key={option}
@@ -54,8 +54,8 @@ export function CaptureControls({
               label: device.label || `Camera ${index + 1}`,
             }))}
             value={selectedCamera}
-            onChange={(deviceId: string | null) => {
-              if (deviceId) {
+            onChange={(deviceId: string | number | null) => {
+              if (deviceId && typeof deviceId === "string") {
                 setSelectedCamera(deviceId);
                 if (isStreaming) {
                   stopCamera();

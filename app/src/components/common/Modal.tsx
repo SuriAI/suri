@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 import { ModalCloseButton } from "@/components/common/ModalCloseButton";
 
 interface ModalProps {
@@ -32,8 +33,6 @@ export function Modal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const maxWidthClass =
     {
       sm: "max-w-sm",
@@ -43,14 +42,34 @@ export function Modal({
       "2xl": "max-w-2xl",
     }[maxWidth] || maxWidth;
 
+  const snappyTransition = {
+    duration: 0.25,
+    ease: [0.16, 1, 0.3, 1] as const,
+  };
+
+  if (!isOpen) return null;
+
   const modalContent = (
-    <div
-      className="fixed inset-0 z-999 flex items-center justify-center bg-black/60 px-4"
-      onClick={onClose}
-    >
-      <div
+    <div className="fixed inset-0 z-100 flex items-center justify-center px-4 overflow-hidden">
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+      />
+
+      {/* Modal Content */}
+      <motion.div
         ref={modalRef}
-        className={`w-full ${maxWidthClass} bg-[#09090b]/95 border border-white/10 rounded-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        transition={snappyTransition}
+        style={{ willChange: "transform, opacity" }}
+        className={`w-full ${maxWidthClass} bg-[#09090b] rounded-xl overflow-hidden border border-white/5 shadow-2xl relative z-10`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5">
@@ -61,7 +80,7 @@ export function Modal({
               {title && (
                 <div className="flex items-center gap-2">
                   {icon}
-                  <h2 className="text-base font-semibold text-white tracking-tight">
+                  <h2 className="text-base font-semibold text-white tracking-tight leading-none">
                     {title}
                   </h2>
                 </div>
@@ -73,7 +92,7 @@ export function Modal({
           )}
           {children}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 

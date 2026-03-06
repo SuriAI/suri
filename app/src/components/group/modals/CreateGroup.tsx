@@ -37,10 +37,7 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
       onClose={onClose}
       title={
         <div>
-          <h3 className="text-xl font-semibold mb-2">Create New Group</h3>
-          <p className="text-sm text-white/60 font-normal">
-            Set up a new attendance group
-          </p>
+          <h3 className="text-xl font-semibold mb-2">Create Group</h3>
         </div>
       }
       maxWidth="lg"
@@ -49,15 +46,12 @@ export function CreateGroup({ onClose, onSuccess }: CreateGroupProps) {
         {error && <ErrorMessage message={error} />}
 
         <div className="grid gap-4">
-          <label className="text-sm">
-            <span className="text-white/60 block mb-2">Group name *</span>
-            <FormInput
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. CS101 Section A, Engineering Team"
-              focusColor="border-cyan-500/60"
-            />
-          </label>
+          <FormInput
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Enter Group Name"
+            focusColor="border-cyan-500/60"
+          />
         </div>
 
         <div className="flex justify-end gap-3 mt-6">

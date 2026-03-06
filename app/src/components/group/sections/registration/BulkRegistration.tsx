@@ -49,7 +49,7 @@ export function BulkRegistration({
         <>
           <div className="absolute inset-0 bg-black/40 z-40" />
 
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-[1.5rem] border border-amber-500/30 bg-black/90 p-6 min-w-[360px] max-w-[95%] intro-y shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-3xl border border-amber-500/30 bg-black/90 p-6 min-w-[360px] max-w-[95%] intro-y shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
                 <i className="fa-solid fa-triangle-exclamation text-xl text-amber-400"></i>
@@ -114,7 +114,7 @@ export function BulkRegistration({
       )}
 
       {error && (
-        <div className="mx-6 mt-4 rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-200 flex items-center gap-3 flex-shrink-0">
+        <div className="mx-6 mt-4 rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-200 flex items-center gap-3 shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />
           <span className="flex-1">{error}</span>
           <button

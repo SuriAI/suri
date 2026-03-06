@@ -246,8 +246,8 @@ export function Members({
 
                   <div className="flex items-center gap-3 shrink-0 relative z-10">
                     {!member.has_consent && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[9px] font-bold uppercase tracking-wider">
-                        <i className="fa-solid fa-shield-slash text-[8px]"></i>
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-m text-red-400 text-[9px] font-bold uppercase tracking-wider">
+                        <i className="fa-solid fa-xmark" />
                         No Consent
                       </div>
                     )}
@@ -261,7 +261,7 @@ export function Members({
                       </button>
                       <button
                         onClick={() => setMemberToDelete(member)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
                         title="Delete"
                       >
                         <i className="fa-solid fa-trash-can text-xs"></i>
