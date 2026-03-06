@@ -171,6 +171,7 @@ async def get_group_persons(
                     "email": member.email,
                     "has_face_data": has_face_data,
                     "joined_at": member.joined_at,
+                    "has_consent": member.has_consent,
                 }
             )
 

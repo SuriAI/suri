@@ -144,7 +144,12 @@ export class AttendanceManager {
   async addMember(
     groupId: string,
     name: string,
-    options?: { personId?: string; role?: string; email?: string },
+    options?: {
+      personId?: string;
+      role?: string;
+      email?: string;
+      hasConsent?: boolean;
+    },
   ): Promise<AttendanceMember> {
     return this.memberManager.addMember(groupId, name, options);
   }

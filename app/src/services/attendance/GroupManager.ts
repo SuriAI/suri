@@ -110,6 +110,7 @@ export class GroupManager {
           joined_at: string;
           is_active: boolean;
           group_id: string;
+          has_consent: boolean;
         }[]
       >(`${this.apiEndpoints.groups}/${groupId}/persons`);
 
@@ -122,6 +123,7 @@ export class GroupManager {
         joined_at: new Date(member.joined_at),
         is_active: member.is_active,
         has_face_data: member.has_face_data,
+        has_consent: member.has_consent,
       }));
     } catch (error) {
       console.error("Error getting group members:", error);

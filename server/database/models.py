@@ -84,6 +84,7 @@ class AttendanceMember(Base, SyncMixin):
         DateTime, server_default=func.current_timestamp()
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    has_consent: Mapped[bool] = mapped_column(Boolean, default=False)
 
     group: Mapped["AttendanceGroup"] = relationship(back_populates="members")
     records: Mapped[List["AttendanceRecord"]] = relationship(back_populates="member")

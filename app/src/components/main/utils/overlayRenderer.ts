@@ -3,17 +3,20 @@ import type { ExtendedFaceRecognitionResponse } from "./recognitionHelpers";
 import type { QuickSettings } from "@/components/settings";
 
 export const getFaceColor = (
-  recognitionResult: {
-    person_id: string | null;
-    confidence?: number;
-    name?: string;
-  } | null,
+  recognitionResult: ExtendedFaceRecognitionResponse | null,
   recognitionEnabled: boolean,
+  livenessStatus?: string,
 ) => {
-  const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+  // Security first: Spoofing always triggers Red
+  if (livenessStatus === "spoof") return "#ef4444"; // Red-500
 
-  if (isRecognized) return "#00ff41"; // Green for recognized faces
-  return "#ff0000"; // Red for all unknown faces
+  const isRecognized = recognitionEnabled && recognitionResult?.person_id;
+  if (!isRecognized) return "#ef4444"; // Red for unknown
+
+  // Privacy second: No consent triggers Indigo (Shield)
+  if (recognitionResult?.has_consent === false) return "#6366f1"; // Indigo-500
+
+  return "#00ff41"; // Matrix Green for logged members
 };
 
 // Helper to draw rounded rectangle (manual implementation for compatibility)
@@ -181,6 +184,9 @@ export const drawOverlays = ({
       : (bbox.x + bbox.width) * scaleX + offsetX;
     const y2 = (bbox.y + bbox.height) * scaleY + offsetY;
 
+    const width = x2 - x1;
+    const height = y2 - y1;
+
     if (!isFinite(x1) || !isFinite(y1) || !isFinite(x2) || !isFinite(y2))
       return;
 
@@ -188,10 +194,57 @@ export const drawOverlays = ({
 
     const trackId = face.track_id!;
     const recognitionResult = currentRecognitionResults.get(trackId);
-    const color = getFaceColor(recognitionResult || null, recognitionEnabled);
+    const color = getFaceColor(
+      recognitionResult || null,
+      recognitionEnabled,
+      face.liveness?.status,
+    );
 
-    setupCanvasContext(ctx, color);
-    drawBoundingBox(ctx, x1, y1, x2, y2);
+    const isBlocked = recognitionResult?.has_consent === false;
+
+    if (isBlocked && face.liveness?.status !== "spoof") {
+      // PREMIUM SHIELD: Blur the face area
+      ctx.save();
+      const cornerRadius = 8;
+      ctx.beginPath();
+      drawRoundedRect(ctx, x1, y1, width, height, cornerRadius);
+      ctx.clip();
+
+      // Draw mirrored or normal video section
+      ctx.filter = "blur(20px)";
+      if (quickSettings.cameraMirrored) {
+        ctx.translate(displayWidth, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(
+          video,
+          0,
+          0,
+          video.videoWidth,
+          video.videoHeight,
+          offsetX,
+          offsetY,
+          displayWidth - 2 * offsetX,
+          displayHeight - 2 * offsetY,
+        );
+      } else {
+        ctx.drawImage(
+          video,
+          0,
+          0,
+          video.videoWidth,
+          video.videoHeight,
+          offsetX,
+          offsetY,
+          displayWidth - 2 * offsetX,
+          displayHeight - 2 * offsetY,
+        );
+      }
+      ctx.filter = "none";
+      ctx.restore();
+    } else {
+      setupCanvasContext(ctx, color);
+      drawBoundingBox(ctx, x1, y1, x2, y2);
+    }
 
     const isRecognized = recognitionEnabled && recognitionResult?.person_id;
     let label = "";
@@ -202,20 +255,39 @@ export const drawOverlays = ({
       recognitionResult &&
       quickSettings.showRecognitionNames
     ) {
-      label =
-        recognitionResult.name || recognitionResult.person_id || "Unknown";
+      if (recognitionResult.has_consent === false) {
+        label = "No Consent";
+      } else {
+        label =
+          recognitionResult.name || recognitionResult.person_id || "Unknown";
+      }
       shouldShowLabel = true;
     }
 
-    if (shouldShowLabel) {
+    if (shouldShowLabel && recognitionResult) {
       ctx.save();
 
-      const labelX = x1 + 4;
-      const labelY = y1 - 6;
+      const isShield = recognitionResult.has_consent === false;
+      const text = label;
+      ctx.font = "bold 12px system-ui, sans-serif";
+      const textWidth = ctx.measureText(text).width;
+      const paddingH = 10;
+      const badgeW = textWidth + paddingH * 2;
+      const badgeH = 20;
 
-      ctx.font = "600 13px system-ui, -apple-system, sans-serif";
+      const badgeX = x1 + (width - badgeW) / 2;
+      const badgeY = y1 - 25;
+
+      // Draw Badge Background
       ctx.fillStyle = color;
-      ctx.fillText(label, labelX, labelY);
+      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 10);
+      ctx.fill();
+
+      // Draw Text
+      ctx.fillStyle = isShield ? "#FFFFFF" : "#000000";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, badgeX + badgeW / 2, badgeY + badgeH / 2);
 
       ctx.restore();
     }

@@ -32,6 +32,7 @@ export class MemberManager {
       personId?: string;
       role?: string;
       email?: string;
+      hasConsent?: boolean;
     },
   ): Promise<AttendanceMember> {
     try {
@@ -40,12 +41,14 @@ export class MemberManager {
         name: string;
         role?: string;
         email?: string;
+        has_consent?: boolean;
         person_id?: string;
       } = {
         group_id: groupId,
         name,
         role: options?.role,
         email: options?.email,
+        has_consent: options?.hasConsent ?? false,
       };
 
       if (options?.personId) {

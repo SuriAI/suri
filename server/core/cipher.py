@@ -10,6 +10,7 @@ import hashlib
 import hmac
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from config.paths import DATA_DIR
 
 SALT_SIZE = 16
 IV_SIZE = 12
@@ -47,3 +48,50 @@ def decrypt_vault(blob: bytes, password: str) -> bytes:
     salt, iv = blob[o : o + SALT_SIZE], blob[o + SALT_SIZE : o + SALT_SIZE + IV_SIZE]
     ciphertext = blob[o + SALT_SIZE + IV_SIZE :]
     return AESGCM(_derive_key(password, salt)).decrypt(iv, ciphertext, None)
+
+
+def get_machine_key() -> bytes:
+    """Get or generate a machine-specific key for local database encryption."""
+    key_path = DATA_DIR / ".machine_key"
+    if key_path.exists():
+        with open(key_path, "rb") as f:
+            return f.read()
+    else:
+        key = os.urandom(KEY_SIZE)
+        with open(key_path, "wb") as f:
+            f.write(key)
+        # Attempt to hide the key file on Windows
+        if os.name == "nt":
+            import ctypes
+
+            FILE_ATTRIBUTE_HIDDEN = 0x02
+            try:
+                ctypes.windll.kernel32.SetFileAttributesW(
+                    str(key_path), FILE_ATTRIBUTE_HIDDEN
+                )
+            except Exception:
+                pass
+        return key
+
+
+def encrypt_local_data(plaintext: bytes) -> bytes:
+    """Encrypt data for local SQLite database storage using a machine ring key."""
+    key = get_machine_key()
+    iv = os.urandom(IV_SIZE)
+    encrypted = AESGCM(key).encrypt(iv, plaintext, None)
+    return iv + encrypted
+
+
+def decrypt_local_data(blob: bytes) -> bytes:
+    """Decrypt data from local SQLite database storage."""
+    key = get_machine_key()
+    if len(blob) < IV_SIZE:
+        return blob  # Too short to be encrypted with our scheme
+
+    iv = blob[:IV_SIZE]
+    ciphertext = blob[IV_SIZE:]
+    try:
+        return AESGCM(key).decrypt(iv, ciphertext, None)
+    except Exception:
+        # Fallback for backwards compatibility with unencrypted legacy databases
+        return blob

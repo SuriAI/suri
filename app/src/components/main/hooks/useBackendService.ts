@@ -383,6 +383,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     setDetectionFps,
     setWebsocketStatus,
     setError,
+    loadAttendanceDataRef,
   ]);
 
   const initializeWebSocket = useCallback(async () => {

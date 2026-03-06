@@ -85,6 +85,23 @@ class AttendanceRepository:
             return False
         group.is_active = False
         group.is_deleted = True
+
+        # Soft delete members and hard delete their faces
+        members_query = select(AttendanceMember).where(
+            AttendanceMember.group_id == group_id
+        )
+        members_result = await self.session.execute(members_query)
+        members = members_result.scalars().all()
+        for member in members:
+            member.is_active = False
+            member.is_deleted = True
+
+            face_query = select(Face).where(Face.person_id == member.person_id)
+            face_result = await self.session.execute(face_query)
+            face = face_result.scalars().first()
+            if face:
+                await self.session.delete(face)
+
         await self.session.commit()
         return True
 
@@ -97,6 +114,7 @@ class AttendanceRepository:
                 name=member_data["name"],
                 role=member_data.get("role"),
                 email=member_data.get("email"),
+                has_consent=member_data.get("has_consent", False),
                 is_active=True,
                 is_deleted=False,
             )
@@ -164,6 +182,13 @@ class AttendanceRepository:
             return False
         member.is_active = False
         member.is_deleted = True
+
+        face_query = select(Face).where(Face.person_id == person_id)
+        face_result = await self.session.execute(face_query)
+        face = face_result.scalars().first()
+        if face:
+            await self.session.delete(face)
+
         await self.session.commit()
         return True
 
@@ -405,7 +430,7 @@ class FaceRepository:
         face = await self.get_face(person_id)
         if not face:
             return False
-        face.is_deleted = True
+        await self.session.delete(face)
         await self.session.commit()
         return True
 
