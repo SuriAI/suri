@@ -231,9 +231,10 @@ export function CloudSync() {
             Your privacy matters
           </h5>
           <p className="text-[10px] text-white/40 leading-relaxed max-w-lg">
-            Face signatures (biometric data) never leave this computer. They are
-            intentionally excluded from backup files to ensure they stay under
-            your direct control at all times.
+            Vault backups can include encrypted biometric templates so a system
+            can be restored without re-registering everyone. In the current
+            desktop app, biometric processing still happens locally on the
+            device.
           </p>
         </div>
       </div>

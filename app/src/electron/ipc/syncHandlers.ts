@@ -5,6 +5,11 @@ import crypto from "node:crypto";
 import { backendService } from "../backendService.js";
 import { syncManager } from "../managers/BackgroundSyncManager.js";
 
+function authHeaders(extra: Record<string, string> = {}) {
+  const token = backendService.getToken();
+  return token ? { "X-Suri-Token": token, ...extra } : { ...extra };
+}
+
 // Cryptographic Constants
 const SURI_MAGIC = Buffer.from("SURI\x00\x01"); // 6 bytes
 const SALT_SIZE = 16;
@@ -121,7 +126,7 @@ export function registerSyncHandlers() {
       const exportUrl = `${backendService.getUrl()}/vault/export`;
       const exportRes = await fetch(exportUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         signal: AbortSignal.timeout(60_000),
       });
 
@@ -191,7 +196,7 @@ export function registerSyncHandlers() {
         const importUrl = `${backendService.getUrl()}/vault/import`;
         const importRes = await fetch(importUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify({
             version: vaultPayload.version ?? 1,
             exported_at: vaultPayload.exported_at,
