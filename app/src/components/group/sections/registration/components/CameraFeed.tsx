@@ -60,7 +60,7 @@ export function CameraFeed({
           emptyMessage="No cameras available"
           disabled={isStreaming || cameraDevices.length <= 1}
           maxHeight={256}
-          buttonClassName="text-[11px] px-3 py-1.5 bg-black/60 border border-white/10 hover:bg-black/80 transition-all font-medium backdrop-blur-md"
+          buttonClassName="text-[11px] px-3 py-1.5 bg-black/60 border border-white/10 hover:bg-black/80 transition-all font-medium"
           showPlaceholderOption={false}
           allowClear={false}
         />

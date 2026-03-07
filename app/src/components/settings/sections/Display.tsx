@@ -35,7 +35,7 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
   ];
 
   return (
-    <div className="space-y-4 max-w-auto p-10">
+    <div className="space-y-4 max-w-auto pt-4 px-10 pb-10">
       {settingItems.map(({ key, label, descriptions }) => (
         <div
           key={key}
@@ -61,13 +61,13 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
 
           <button
             onClick={() => toggleQuickSetting(key)}
-            className={`relative w-11 h-6 rounded-full focus:outline-none transition-colors duration-150 shrink-0 flex items-center ml-auto ${
+            className={`relative w-10 h-5.5 rounded-full focus:outline-none transition-colors duration-200 shrink-0 flex items-center ml-auto ${
               quickSettings[key] ? "bg-cyan-500/30" : "bg-white/10"
             }`}
           >
             <div
-              className={`absolute left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-150 ${
-                quickSettings[key] ? "translate-x-5" : "translate-x-0"
+              className={`absolute left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
+                quickSettings[key] ? "translate-x-4.5" : "translate-x-0"
               }`}
             ></div>
           </button>

@@ -45,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </h1>
       </div>
 
-      <div className="flex-1 pl-3 pr-0.5 space-y-10 overflow-y-auto hover-scrollbar settings-sidebar-scroll pb-6">
+      <div className="flex-1 pl-3 pr-1 space-y-10 overflow-y-auto hover-scrollbar settings-sidebar-scroll pb-6">
         <section>
           <div className="px-3 mb-4 flex items-center justify-between">
             <h2 className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
@@ -85,6 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className="bg-white/5 border-white/10 hover:bg-white/5"
                   emptyMessage="No groups available"
                   maxHeight={256}
+                  showPlaceholderOption={false}
                 />
               </div>
               <Tooltip content="Create Group" position="top">

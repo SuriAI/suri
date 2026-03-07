@@ -149,7 +149,7 @@ export function Database({
   };
 
   return (
-    <div className="space-y-6 max-w-auto p-10">
+    <div className="space-y-6 max-w-auto pt-4 px-10 pb-10">
       {/* Statistics Overview */}
       <DatabaseStats
         groupsCount={groups.length}
@@ -395,37 +395,45 @@ export function Database({
       </div>
 
       {/* Clear Actions */}
-      <div className="pt-6 border-t border-white/5 flex items-center justify-between gap-4 px-2">
-        <div className="flex-1">
-          <p className="text-[9px] text-white/30 leading-relaxed font-sans">
-            Deleting groups is permanent. Face data is managed separately from
-            records.
-          </p>
+      <div className="overflow-hidden">
+        <div className="py-2 border-b border-white/5">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/50 flex items-center gap-2">
+            <i className="fa-solid fa-triangle-exclamation text-[9px]"></i>
+            Danger Zone
+          </h3>
         </div>
+        <div className="py-4 flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-[10px] text-white/30 leading-relaxed font-sans mt-0.5">
+              Deleting groups is permanent. Face data is managed separately from
+              records.
+            </p>
+          </div>
 
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={handleClearAllGroups}
-            disabled={
-              isLoading || deletingGroup === "all" || groups.length === 0
-            }
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-[10px] font-bold text-red-400 hover:text-red-300 transition-all disabled:opacity-20"
-          >
-            {deletingGroup === "all" ? (
-              <i className="fa-solid fa-spinner fa-spin"></i>
-            ) : (
-              <i className="fa-solid fa-layer-group"></i>
-            )}
-            Clear Groups
-          </button>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={handleClearAllGroups}
+              disabled={
+                isLoading || deletingGroup === "all" || groups.length === 0
+              }
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-[10px] font-bold text-red-400 hover:text-red-300 transition-all disabled:opacity-20"
+            >
+              {deletingGroup === "all" ? (
+                <i className="fa-solid fa-spinner fa-spin"></i>
+              ) : (
+                <i className="fa-solid fa-layer-group"></i>
+              )}
+              Clear Groups
+            </button>
 
-          <button
-            onClick={onClearDatabase}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all disabled:opacity-20"
-          >
-            Clear Face Data
-          </button>
+            <button
+              onClick={onClearDatabase}
+              disabled={isLoading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-all disabled:opacity-20"
+            >
+              Clear Face Data
+            </button>
+          </div>
         </div>
       </div>
     </div>

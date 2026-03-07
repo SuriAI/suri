@@ -59,6 +59,7 @@
 .settings-sidebar-scroll {
   --sb-thumb: transparent;
   transition: --sb-thumb 0.1s ease;
+  scrollbar-gutter: stable;
 }
 
 .hover-scrollbar:hover,
