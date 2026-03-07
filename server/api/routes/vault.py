@@ -199,6 +199,7 @@ async def import_vault(
                             "late_threshold_enabled", False
                         ),
                         class_start_time=settings_dict.get("class_start_time", "08:00"),
+                        track_checkout=settings_dict.get("track_checkout", False),
                         organization_id=repo.organization_id,
                         is_active=group.is_active,
                         is_deleted=False,
@@ -206,6 +207,20 @@ async def import_vault(
                 )
             else:
                 existing.name = group.name
+                if group.settings:
+                    settings_dict = group.settings.model_dump()
+                    existing.late_threshold_minutes = settings_dict.get(
+                        "late_threshold_minutes"
+                    )
+                    existing.late_threshold_enabled = settings_dict.get(
+                        "late_threshold_enabled", False
+                    )
+                    existing.class_start_time = settings_dict.get(
+                        "class_start_time", existing.class_start_time
+                    )
+                    existing.track_checkout = settings_dict.get(
+                        "track_checkout", existing.track_checkout
+                    )
                 existing.is_active = group.is_active
                 existing.is_deleted = False
             imported_groups += 1
@@ -276,6 +291,8 @@ async def import_vault(
                     group_id=session.group_id,
                     date=session.date,
                     check_in_time=session.check_in_time,
+                    check_out_time=session.check_out_time,
+                    total_hours=session.total_hours,
                     status=session.status,
                     is_late=session.is_late,
                     late_minutes=session.late_minutes,

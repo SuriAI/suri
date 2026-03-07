@@ -152,7 +152,13 @@ async def get_group_persons(
             return [
                 {
                     "person_id": member.person_id,
+                    "group_id": member.group_id,
                     "name": member.name,
+                    "role": member.role,
+                    "email": member.email,
+                    "joined_at": member.joined_at,
+                    "is_active": member.is_active,
+                    "has_consent": member.has_consent,
                     "has_face_data": False,
                 }
                 for member in members
@@ -166,11 +172,13 @@ async def get_group_persons(
             persons_with_face_data.append(
                 {
                     "person_id": member.person_id,
+                    "group_id": member.group_id,
                     "name": member.name,
                     "role": member.role,
                     "email": member.email,
                     "has_face_data": has_face_data,
                     "joined_at": member.joined_at,
+                    "is_active": member.is_active,
                     "has_consent": member.has_consent,
                 }
             )

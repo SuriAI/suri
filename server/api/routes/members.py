@@ -193,9 +193,13 @@ async def update_member(
                 select(Face).where(Face.person_id == person_id)
             )
             face = face_result.scalars().first()
-            if face and core.lifespan.face_recognizer:
+            if face:
                 try:
-                    await core.lifespan.face_recognizer.remove_person(person_id)
+                    if core.lifespan.face_recognizer:
+                        await core.lifespan.face_recognizer.remove_person(person_id)
+                    else:
+                        await repo.session.delete(face)
+                        await repo.session.commit()
                     logger.info(
                         f"Biometric data erased for {person_id} after consent revocation"
                     )

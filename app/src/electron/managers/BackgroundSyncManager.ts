@@ -2,6 +2,11 @@ import { persistentStore } from "../persistentStore.js";
 import { backendService } from "../backendService.js";
 import { getCurrentVersion } from "../updater.js";
 
+function authHeaders(extra: Record<string, string> = {}) {
+  const token = backendService.getToken();
+  return token ? { "X-Suri-Token": token, ...extra } : { ...extra };
+}
+
 export class BackgroundSyncManager {
   private timer: NodeJS.Timeout | null = null;
   private isSyncing = false;
@@ -55,7 +60,7 @@ export class BackgroundSyncManager {
       const exportUrl = `${backendService.getUrl()}/attendance/export`;
       const response = await fetch(exportUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         signal: AbortSignal.timeout(60000),
       });
 
