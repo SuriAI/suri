@@ -12,7 +12,7 @@ Suri is a local-first desktop attendance system. The current app processes face 
 
 - **Consent is required before registration**: A member must have biometric consent on record before face registration is accepted by the backend.
 - **Non-consenting members are blocked from biometric enrollment**: The UI blocks capture for members without consent, and the backend rejects direct registration attempts without consent.
-- **Privacy Shield overlay**: During registration, Suri can cover the live camera view for a selected member who does not yet have consent. The current implementation uses a shield-style overlay, not a blur effect.
+- **Privacy Shield overlay**: During registration, Suri can cover the live camera view for a selected member who does not yet have consent.
 - **Consent is recorded**: Consent status, consent timestamp, and consent metadata are stored with the member record.
 
 ## 3. Storage and Deletion
@@ -42,7 +42,7 @@ Suri does **not** by itself guarantee full legal compliance for every deployment
 
 ## 6. Cloud Features
 
-The current desktop codebase does **not** implement a production cloud biometric sync service. Any future hosted sync, dashboard, or SaaS features would need separate documentation, privacy terms, and security review.
+The current desktop codebase does **not** include a production cloud biometric sync service. If a separate hosted sync service, web dashboard, or SaaS layer is built around Suri later, that service should have its own documentation, privacy terms, and security review.
 
 ---
 
