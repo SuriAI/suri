@@ -133,6 +133,14 @@ async def register_person(
             request.person_id, image, landmarks_5
         )
 
+        if result["success"]:
+            await repo.add_audit_log(
+                action="MEMBER_REGISTERED",
+                target_type="member",
+                target_id=request.person_id,
+                details=f"Face data registered in group {request.group_id}",
+            )
+
         processing_time = time.time() - start_time
 
         return FaceRegistrationResponse(
@@ -158,7 +166,11 @@ async def register_person(
 
 
 @router.delete("/face/person/{person_id}")
-async def remove_person(person_id: str, face_recognizer=Depends(get_face_recognizer)):
+async def remove_person(
+    person_id: str,
+    repo: AttendanceRepository = Depends(get_repository),
+    face_recognizer=Depends(get_face_recognizer),
+):
     """
     Remove a person from the face database
     """
@@ -167,6 +179,12 @@ async def remove_person(person_id: str, face_recognizer=Depends(get_face_recogni
         result = await face_recognizer.remove_person(person_id)
 
         if result["success"]:
+            await repo.add_audit_log(
+                action="FACE_DATA_REMOVED",
+                target_type="member",
+                target_id=person_id,
+                details="Individual face data removed",
+            )
             return {
                 "success": True,
                 "message": f"Person {person_id} removed successfully",
@@ -291,7 +309,10 @@ async def invalidate_face_cache(face_recognizer=Depends(get_face_recognizer)):
 
 
 @router.delete("/face/database")
-async def clear_database(face_recognizer=Depends(get_face_recognizer)):
+async def clear_database(
+    repo: AttendanceRepository = Depends(get_repository),
+    face_recognizer=Depends(get_face_recognizer),
+):
     """
     Clear all persons from the face database
     """
@@ -300,6 +321,12 @@ async def clear_database(face_recognizer=Depends(get_face_recognizer)):
         result = await face_recognizer.clear_database()
 
         if result["success"]:
+            await repo.add_audit_log(
+                action="DATABASE_CLEARED",
+                target_type="system",
+                target_id="biometrics",
+                details="Entire face database wiped",
+            )
             return {
                 "success": True,
                 "message": "Face database cleared successfully",

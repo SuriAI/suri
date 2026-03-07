@@ -63,6 +63,18 @@ async def add_member(
                 )
 
         added_member = await repo.add_member(db_member_data)
+
+        await repo.add_audit_log(
+            action="MEMBER_CREATED",
+            target_type="member",
+            target_id=(
+                added_member.person_id
+                if hasattr(added_member, "person_id")
+                else db_member_data.get("person_id")
+            ),
+            details=f"Member '{added_member.name}' added to group {added_member.group_id}",
+        )
+
         return added_member
 
     except HTTPException:
@@ -103,6 +115,12 @@ async def add_members_bulk(
 
                 if member:
                     success_count += 1
+                    await repo.add_audit_log(
+                        action="MEMBER_CREATED",
+                        target_type="member",
+                        target_id=member.person_id,
+                        details=f"Bulk add: Member '{member.name}' added to group {member.group_id}",
+                    )
                 else:
                     errors.append(
                         {
@@ -207,6 +225,20 @@ async def update_member(
                     logger.error(
                         f"Failed to erase biometric for {person_id}: {bio_err}"
                     )
+
+        # Log profile update (if anything other than consent was changed)
+        non_audit_fields = [
+            f
+            for f in update_data.keys()
+            if f not in ["has_consent", "consent_granted_by"]
+        ]
+        if non_audit_fields:
+            await repo.add_audit_log(
+                action="MEMBER_UPDATED",
+                target_type="member",
+                target_id=person_id,
+                details=f"Fields updated: {', '.join(non_audit_fields)}",
+            )
 
         return updated_member
 

@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="space-y-6">
-            <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center px-1">
               <div className="flex-1 min-w-0" key={storeGroups.length}>
                 <Dropdown
                   options={dropdownGroups.map((group) => ({
@@ -80,9 +80,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                   }}
                   placeholder="Select group…"
-                  className="bg-white/5 border-white/10 hover:bg-white/5"
                   emptyMessage="No groups available"
                   maxHeight={256}
+                  buttonClassName="h-9 border-r-0 rounded-r-none focus:ring-0! focus:border-white/20!"
                   showPlaceholderOption={false}
                 />
               </div>
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     setTriggerCreateGroup(Date.now());
                   }}
-                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-white/40 hover:text-cyan-400 group/btn"
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-l-none rounded-r-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/40 hover:text-cyan-400 group/btn focus:outline-none"
                 >
                   <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
                 </button>
