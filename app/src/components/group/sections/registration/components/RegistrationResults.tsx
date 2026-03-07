@@ -20,16 +20,16 @@ export function RegistrationResults({
           <div className="text-3xl font-light text-cyan-200 mb-1">
             {successCount}
           </div>
-          <div className="text-xs text-cyan-300/70 uppercase tracking-wide">
-            Registered
+          <div className="text-[11px] text-cyan-300/50 font-medium tracking-normal">
+            Successfully Registered
           </div>
         </div>
         <div className="rounded-lg border border-red-400/30 bg-linear-to-br from-red-500/10 to-red-600/5 p-6">
           <div className="text-3xl font-light text-red-200 mb-1">
             {failedCount}
           </div>
-          <div className="text-xs text-red-300/70 uppercase tracking-wide">
-            Failed
+          <div className="text-[11px] text-red-300/50 font-medium tracking-normal">
+            Registration Failed
           </div>
         </div>
       </div>
@@ -61,13 +61,14 @@ export function RegistrationResults({
                   {result.memberName || result.personId}
                 </div>
                 {result.error && (
-                  <div className="text-xs text-red-300/80 mt-1">
+                  <div className="text-[11px] text-red-300/60 mt-1 font-medium leading-relaxed">
                     {result.error}
                   </div>
                 )}
                 {result.qualityWarning && (
-                  <div className="text-xs text-yellow-300/80 mt-1">
-                    ⚠️ {result.qualityWarning}
+                  <div className="text-[11px] text-amber-400/60 mt-1 font-medium leading-relaxed flex items-center gap-1.5">
+                    <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                    {result.qualityWarning}
                   </div>
                 )}
               </div>
@@ -78,7 +79,7 @@ export function RegistrationResults({
 
       <button
         onClick={onClose}
-        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all shadow-none"
+        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-[11px] font-semibold text-white/50 hover:bg-white/10 hover:text-white transition-all shadow-none"
       >
         Done
       </button>

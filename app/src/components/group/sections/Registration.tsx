@@ -103,12 +103,10 @@ export function Registration({
               {source && (
                 <button
                   onClick={handleBack}
-                  className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 hover:bg-cyan-500/5 text-white/40 hover:text-cyan-400 transition-all duration-300"
+                  className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 text-white/50 hover:text-white transition-all duration-300"
                 >
                   <i className="fa-solid fa-arrow-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    Back
-                  </span>
+                  <span className="text-[11px] font-medium">Back</span>
                 </button>
               )}
             </div>
@@ -122,10 +120,10 @@ export function Registration({
                   <i className="fa-solid fa-camera-retro text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
                 </div>
                 <div className="text-center">
-                  <span className="block text-lg font-black text-white/80 group-hover:text-white transition-colors">
+                  <span className="block text-lg font-medium text-white/80 group-hover:text-white transition-colors">
                     Camera
                   </span>
-                  <span className="text-[10px] uppercase font-black tracking-widest text-white/20 group-hover:text-cyan-500/50 transition-colors">
+                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
                     Live Capture
                   </span>
                 </div>
@@ -139,10 +137,10 @@ export function Registration({
                   <i className="fa-solid fa-cloud-arrow-up text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
                 </div>
                 <div className="text-center">
-                  <span className="block text-lg font-black text-white/80 group-hover:text-white transition-colors">
+                  <span className="block text-lg font-medium text-white/80 group-hover:text-white transition-colors">
                     File
                   </span>
-                  <span className="text-[10px] uppercase font-black tracking-widest text-white/20 group-hover:text-cyan-500/50 transition-colors">
+                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
                     Local Photos
                   </span>
                 </div>
@@ -161,9 +159,9 @@ export function Registration({
               <h2 className="text-2xl font-black text-white/90 tracking-tight">
                 Registration Method
               </h2>
-              <p className="text-sm text-white/30 max-w-xs mx-auto font-medium leading-relaxed uppercase tracking-widest text-[9px]">
+              <p className="text-[10px] text-white/20 max-w-xs mx-auto font-medium leading-relaxed">
                 Selected Source:{" "}
-                <span className="text-cyan-400/80">
+                <span className="text-cyan-400/60">
                   {source === "camera" ? "Live Camera" : "Photo Upload"}
                 </span>
               </p>
@@ -178,10 +176,10 @@ export function Registration({
                   <i className="fa-solid fa-user text-xl text-white/30 group-hover:text-cyan-400"></i>
                 </div>
                 <div className="text-left">
-                  <span className="block text-lg font-black text-white/80 group-hover:text-white">
+                  <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                     One person
                   </span>
-                  <span className="text-[10px] uppercase font-black tracking-widest text-white/20 group-hover:text-cyan-500/50">
+                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
                     One member at a time
                   </span>
                 </div>
@@ -196,10 +194,10 @@ export function Registration({
                     <i className="fa-solid fa-layer-group text-xl text-white/30 group-hover:text-cyan-400"></i>
                   </div>
                   <div className="text-left">
-                    <span className="block text-lg font-black text-white/80 group-hover:text-white">
+                    <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                       Multiple photos
                     </span>
-                    <span className="text-[10px] uppercase font-black tracking-widest text-white/20 group-hover:text-cyan-500/50">
+                    <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
                       Upload several portraits
                     </span>
                   </div>
@@ -215,10 +213,10 @@ export function Registration({
                     <i className="fa-solid fa-users-viewfinder text-xl text-white/30 group-hover:text-cyan-400"></i>
                   </div>
                   <div className="text-left">
-                    <span className="block text-lg font-black text-white/80 group-hover:text-white">
+                    <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                       Queue
                     </span>
-                    <span className="text-[10px] uppercase font-black tracking-widest text-white/20 group-hover:text-cyan-500/50">
+                    <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
                       Multi-member capture
                     </span>
                   </div>

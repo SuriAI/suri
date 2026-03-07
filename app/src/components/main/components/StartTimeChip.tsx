@@ -110,8 +110,8 @@ export function StartTimeChip({
               {time}
             </span>
             <span
-              className={`text-[9px] font-bold uppercase ${
-                outdated ? "text-amber-400/70" : "text-white/40"
+              className={`text-[9px] font-medium ${
+                outdated ? "text-amber-400/60" : "text-white/30"
               }`}
             >
               {period}
@@ -133,7 +133,7 @@ export function StartTimeChip({
               content="Attendance is tracked relative to this scheduled time"
               position="top"
             >
-              <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold cursor-help block py-1">
+              <span className="text-[9px] text-white/30 font-medium cursor-help block py-1">
                 Start Time
               </span>
             </Tooltip>
@@ -160,7 +160,7 @@ export function StartTimeChip({
             <div className="py-2.5 px-3 text-center pointer-events-none">
               <div className="font-mono text-xl text-white tracking-widest flex justify-center items-baseline gap-1">
                 <span>{formatTimeDisplay(startTime).time}</span>
-                <span className="text-[10px] text-white/40 font-sans font-bold uppercase tracking-wider">
+                <span className="text-[10px] text-white/30 font-medium tracking-tight">
                   {formatTimeDisplay(startTime).period}
                 </span>
               </div>

@@ -108,7 +108,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
           <h2 className="text-xl font-semibold flex items-center">
             {activeSection === "group" ? (
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-cyan-400/80 uppercase tracking-widest mb-0.5">
+                <span className="text-[11px] font-medium text-cyan-400/60 mb-0.5">
                   {dropdownValue
                     ? dropdownGroups.find((g) => g.id === dropdownValue)?.name
                     : "Group Management"}
@@ -122,7 +122,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               </div>
             ) : (
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-white/30 uppercase tracking-widest mb-0.5">
+                <span className="text-[11px] font-medium text-white/30 mb-0.5">
                   General
                 </span>
                 <span className="text-xl font-semibold text-white">
@@ -141,7 +141,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               members.length > 0 && (
                 <button
                   onClick={addMemberHandler}
-                  className="px-3 py-1.5 text-[10px] text-white/40 hover:text-white hover:bg-white/5 rounded-md transition-all flex items-center gap-2 font-bold uppercase tracking-widest"
+                  className="px-3 py-1.5 text-[11px] text-white/40 hover:text-white/80 hover:bg-white/10 rounded-md transition-all flex items-center gap-2 font-medium"
                 >
                   <i className="fa-solid fa-user-plus text-[10px]"></i>
                   Add Member
@@ -152,10 +152,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               validInitialGroup && (
                 <button
                   onClick={openEditGroup}
-                  className="px-3 py-1.5 text-[10px] text-white/40 hover:text-white hover:bg-white/5 rounded-md transition-all flex items-center gap-2 font-bold uppercase tracking-widest"
+                  className="px-3 py-1.5 text-[11px] text-white/40 hover:text-white/80 hover:bg-white/10 rounded-md transition-all flex items-center gap-2 font-medium"
                 >
                   <svg
-                    className="w-3 h-3 mb-0.5"
+                    className="w-3.5 h-3.5 mb-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -176,14 +176,14 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={reportsExportHandlers.exportCSV}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/5 text-white/40 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-white/40 hover:text-white/80 transition-all text-[11px] font-medium"
                   >
                     <i className="fa-solid fa-file-csv text-[10px]"></i>
                     Export CSV
                   </button>
                   <button
                     onClick={reportsExportHandlers.print}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/5 text-white/40 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-white/40 hover:text-white/80 transition-all text-[11px] font-medium"
                   >
                     <i className="fa-solid fa-print text-[10px]"></i>
                     Print
@@ -201,7 +201,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                     }
                     handleRegistrationBack();
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/5 text-white/40 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-all text-[11px] font-medium"
                 >
                   <i className="fa-solid fa-arrow-left text-[10px]"></i>
                   Back

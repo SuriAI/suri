@@ -32,10 +32,10 @@ export function BulkUploadArea({
                   ? "Analyzing images..."
                   : `${uploadedCount} images uploaded`}
               </div>
-              <div className="text-xs text-white/40">
+              <div className="text-[11px] text-white/50 font-bold tracking-tight">
                 {isDetecting
                   ? "Please wait while we process faces"
-                  : "Ready for assignment"}
+                  : "READY FOR ASSIGNMENT"}
               </div>
             </div>
           </div>
@@ -85,10 +85,10 @@ export function BulkUploadArea({
           </div>
 
           <div className="text-center">
-            <div className="text-sm font-medium text-white/70 mb-1 group-hover:text-white/90 transition-colors">
+            <div className="text-[13px] font-bold text-white/60 mb-1 group-hover:text-white/90 transition-colors tracking-tight">
               Drop images or click to browse
             </div>
-            <div className="text-xs text-white/40">
+            <div className="text-[11px] text-white/40 font-bold uppercase tracking-wider">
               Up to 50 photos • JPG, PNG supported
             </div>
           </div>

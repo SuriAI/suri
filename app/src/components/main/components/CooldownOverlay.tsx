@@ -51,10 +51,10 @@ export function CooldownOverlay({ persistentCooldowns }: CooldownOverlayProps) {
               {/* Content */}
               <div className="flex-1 min-w-0 flex flex-col justify-center pr-1">
                 <div className="flex items-center justify-between gap-3">
-                  <h4 className="text-white text-[13px] font-bold truncate leading-tight">
+                  <h4 className="text-white text-xs font-semibold truncate leading-tight">
                     {info.memberName || "Authorized Personnel"}
                   </h4>
-                  <span className="text-[9px] font-bold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-1.5 py-0.5 rounded-md border border-cyan-500/20">
+                  <span className="text-[11px] font-medium text-cyan-400/80 bg-cyan-500/5 px-1.5 py-0.5 rounded-md border border-cyan-500/10">
                     Logged
                   </span>
                 </div>

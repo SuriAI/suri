@@ -104,7 +104,7 @@ export function CloudSync() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">
+        <label className="text-[11px] font-medium text-white/30">
           Vault Password
         </label>
         <input
@@ -112,7 +112,7 @@ export function CloudSync() {
           placeholder="Enter password to lock/unlock backup..."
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full max-w-md h-10 bg-white/5 border border-white/10 rounded-lg px-4 text-xs text-white placeholder:text-white/20 focus:border-cyan-500/50 focus:bg-white/10 outline-none transition-all"
+          className="w-full max-w-md h-10 bg-white/5 border border-white/10 rounded-lg px-4 text-xs text-white placeholder:text-white/20 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:bg-white/10 focus:ring-4 focus:ring-cyan-500/10"
         />
         <p className="text-[10px] text-white/30 italic">
           This password is used to encrypt your backup file. Don&apos;t lose it!
@@ -227,7 +227,7 @@ export function CloudSync() {
       <div className="flex items-start gap-4 p-4 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
         <i className="fa-solid fa-shield-halved mt-0.5 shrink-0 text-cyan-400/40" />
         <div className="space-y-1">
-          <h5 className="text-[11px] font-semibold text-cyan-400/80">
+          <h5 className="text-[11px] font-medium text-cyan-400/80">
             Your privacy matters
           </h5>
           <p className="text-[10px] text-white/40 leading-relaxed max-w-lg">

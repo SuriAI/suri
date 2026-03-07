@@ -87,18 +87,18 @@ export function MemberSidebar({
             value={memberSearch}
             onChange={(e) => setMemberSearch(e.target.value)}
             placeholder="Search members..."
-            className="w-full rounded-lg border border-white/10 bg-white/5 pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/10 focus:outline-none transition-all"
+            className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-3 py-2.5 text-[11px] font-medium text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:bg-white/10 focus:ring-4 focus:ring-cyan-500/10"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 shrink-0">
         {members.length > 0 && filteredMembers.length > 0 && (
-          <div className="text-xs text-white/30">
+          <div className="text-[11px] text-white/40 font-medium">
             Showing {filteredMembers.length} of {members.length} member
             {members.length !== 1 ? "s" : ""}
             {registrationFilter !== "all" && (
-              <span className="ml-1">
+              <span className="ml-1 text-white/30">
                 (
                 {registrationFilter === "registered"
                   ? "registered"
@@ -111,30 +111,30 @@ export function MemberSidebar({
         <div className="flex items-center gap-2 ml-auto">
           <button
             onClick={() => setRegistrationFilter("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
               registrationFilter === "all"
                 ? "bg-white/10 text-white border border-white/20"
-                : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:text-white/80"
+                : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/8 hover:text-white/80"
             }`}
           >
             All
           </button>
           <button
             onClick={() => setRegistrationFilter("non-registered")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
               registrationFilter === "non-registered"
                 ? "bg-amber-500/20 text-amber-200 border border-amber-500/30"
-                : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:text-white/80"
+                : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/8 hover:text-white/80"
             }`}
           >
             Unregistered
           </button>
           <button
             onClick={() => setRegistrationFilter("registered")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
               registrationFilter === "registered"
                 ? "bg-cyan-500/20 text-cyan-200 border border-cyan-500/30"
-                : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/8 hover:text-white/80"
+                : "bg-white/5 text-white/40 border border-white/10 hover:bg-white/8 hover:text-white/80"
             }`}
           >
             Registered
@@ -151,13 +151,13 @@ export function MemberSidebar({
 
         {members.length > 0 && filteredMembers.length === 0 && (
           <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center w-full">
-            <div className="text-xs text-white/40">
+            <div className="text-[11px] font-medium text-white/40 leading-relaxed max-w-[200px] mx-auto">
               {memberSearch.trim()
                 ? `No results for "${memberSearch}"`
                 : registrationFilter === "registered"
-                  ? "No registered members"
+                  ? "No registered members yet"
                   : registrationFilter === "non-registered"
-                    ? "All members are registered"
+                    ? "All members are already registered"
                     : "No members found"}
             </div>
           </div>
@@ -187,17 +187,17 @@ export function MemberSidebar({
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   {member.role ? (
                     <div
-                      className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${
-                        isSelected ? "text-cyan-300/50" : "text-white/40"
+                      className={`flex items-center gap-1.5 text-[11px] font-medium ${
+                        isSelected ? "text-cyan-300/60" : "text-white/40"
                       }`}
                     >
-                      <i className="fa-solid fa-briefcase text-[9px]"></i>
+                      <i className="fa-solid fa-briefcase text-[10px]"></i>
                       {member.role}
                     </div>
                   ) : (
                     <div
-                      className={`text-[11px] font-bold uppercase tracking-wider italic ${
-                        isSelected ? "text-cyan-300/20" : "text-white/20"
+                      className={`text-[11px] font-medium italic ${
+                        isSelected ? "text-cyan-300/30" : "text-white/20"
                       }`}
                     >
                       Member
@@ -210,20 +210,17 @@ export function MemberSidebar({
                 {!isRegistered ? (
                   <button
                     onClick={() => onSelectMember(member.person_id)}
-                    className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:bg-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] active:scale-95"
+                    className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium transition-all hover:bg-cyan-500/20 hover:border-cyan-500/40 active:scale-95"
                   >
                     Register
                   </button>
                 ) : (
                   <button
                     onClick={() => onSelectMember(member.person_id)}
-                    className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+                    className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] font-semibold text-white/40 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400"
                   >
-                    {/* Check icon - visible by default, hidden on hover */}
-                    <i className="fa-solid fa-check text-[8px] transition-all duration-300 group-hover/btn:opacity-0 group-hover/btn:scale-75 group-hover/btn:absolute"></i>
-                    {/* Rotate icon - hidden by default, visible on hover */}
-                    <i className="fa-solid fa-rotate-right text-[10px] absolute opacity-0 scale-75 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-100 group-hover/btn:relative"></i>
-                    {/* Text swap */}
+                    <i className="fa-solid fa-check text-[10px] transition-all duration-300 group-hover/btn:opacity-0 group-hover/btn:scale-75 group-hover/btn:absolute"></i>
+                    <i className="fa-solid fa-rotate-right text-[11px] absolute opacity-0 scale-75 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:scale-100 group-hover/btn:relative"></i>
                     <span className="transition-all duration-300 group-hover/btn:hidden">
                       Registered
                     </span>
@@ -240,7 +237,7 @@ export function MemberSidebar({
                     e.stopPropagation();
                     onRemoveFaceData(member);
                   }}
-                  className="absolute bottom-0 left-0 right-0 py-1 bg-red-500/20 text-[8px] font-black uppercase tracking-widest text-red-300 text-center hover:bg-red-500/30 transition-all z-20 cursor-pointer"
+                  className="absolute bottom-0 left-0 right-0 py-1.5 bg-red-500/10 text-[10px] font-bold text-red-300/80 text-center hover:bg-red-500/20 transition-all z-20 cursor-pointer"
                 >
                   Remove Face Data
                 </div>

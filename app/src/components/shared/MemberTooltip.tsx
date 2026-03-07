@@ -20,14 +20,14 @@ export function MemberTooltip({
   const content = (
     <div className="flex flex-col items-center gap-1.5 p-1 min-w-[120px] text-center">
       <div className="flex flex-col items-center">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+        <span className="text-[11px] font-medium text-white/40">
           {memberRole}
         </span>
       </div>
 
       <div className="flex items-center justify-center">
         <span
-          className={`text-[10px] font-black uppercase tracking-widest ${
+          className={`text-[11px] font-semibold ${
             isRegistered ? "text-cyan-400" : "text-white/30"
           }`}
         >
@@ -37,8 +37,8 @@ export function MemberTooltip({
 
       {member?.email && (
         <div className="flex items-center justify-center gap-2 mt-0.5">
-          <i className="fa-solid fa-envelope text-[9px] text-white/20"></i>
-          <span className="text-[10px] text-white/50 truncate max-w-[140px]">
+          <i className="fa-solid fa-envelope text-[10px] text-white/30"></i>
+          <span className="text-[11px] text-white/60 truncate max-w-[140px]">
             {member.email}
           </span>
         </div>

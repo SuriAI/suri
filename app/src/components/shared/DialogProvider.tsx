@@ -32,10 +32,10 @@ type ActiveDialogState =
 
 function getButtonClasses(variant: DialogVariant): string {
   if (variant === "danger") {
-    return "px-4 py-2 rounded-lg bg-red-500/20 border border-red-500/40 text-red-200 hover:bg-red-500/30 transition-colors";
+    return "px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all";
   }
 
-  return "px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-white/10 transition-colors";
+  return "px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all";
 }
 
 export function DialogProvider({ children }: { children: ReactNode }) {
@@ -126,7 +126,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
             {active?.type === "confirm" && (
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+                className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
                 onClick={() => {
                   active.resolve(false);
                   close();

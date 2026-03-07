@@ -195,7 +195,7 @@ export const Dropdown = forwardRef<
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-9999 bg-[#0c0c0c] border border-white/10 rounded-lg overflow-hidden shadow-xl"
+                  className="fixed z-9999 bg-[#080808] border border-white/10 rounded-lg overflow-hidden shadow-xl"
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
                     top: `${menuPosition.top}px`,
@@ -219,7 +219,7 @@ export const Dropdown = forwardRef<
                     style={{ maxHeight: `${maxHeight}px` }}
                   >
                     {options.length === 0 ? (
-                      <div className="px-3 py-2 text-center text-white/50 text-sm">
+                      <div className="px-3 py-2 text-center text-white/40 text-[11px] font-medium">
                         {emptyMessage}
                       </div>
                     ) : (

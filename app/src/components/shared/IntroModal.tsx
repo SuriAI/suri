@@ -14,7 +14,7 @@ export function IntroModal() {
           <p className="text-white/80">
             Suri is an offline attendance system focused on privacy.
           </p>
-          <p className="text-white/60 text-sm">
+          <p className="text-white/40 text-[11px] font-medium leading-relaxed">
             Here are 3 distinct features regarding how the data works.
           </p>
         </div>
@@ -25,10 +25,10 @@ export function IntroModal() {
       content: (
         <div className="space-y-4">
           <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <h4 className="text-red-200 font-medium mb-1">
+            <h4 className="text-red-200 font-bold mb-1">
               Suri does not save images
             </h4>
-            <p className="text-red-200/70 text-sm">
+            <p className="text-red-200/50 text-[11px] font-medium leading-relaxed">
               The system converts faces into a unique digital code. It is
               impossible to rebuild a photo from this data.
             </p>
@@ -41,10 +41,10 @@ export function IntroModal() {
       content: (
         <div className="space-y-4">
           <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
-            <h4 className="text-cyan-200 font-medium mb-1">
+            <h4 className="text-cyan-200 font-bold mb-1">
               Data stays on this device
             </h4>
-            <p className="text-cyan-200/70 text-sm">
+            <p className="text-cyan-200/50 text-[11px] font-medium leading-relaxed">
               Everything runs locally. Nothing is sent to the internet unless
               you choose to enable sync features.
             </p>
@@ -60,11 +60,11 @@ export function IntroModal() {
             Suri is Open Source (AGPL-3.0). You can inspect the code yourself,
             and you have full control over the local database file.
           </p>
-          <p className="text-white/60 text-sm">
+          <p className="text-white/40 text-[11px] font-medium leading-relaxed">
             Built to be secure, simple, and transparent.
           </p>
           <div className="pt-3 border-t border-white/10 mt-2">
-            <p className="text-white/40 text-xs text-center italic">
+            <p className="text-white/30 text-[11px] text-center italic font-medium leading-relaxed">
               By clicking &quot;Get Started&quot;, you acknowledge that you
               understand how Suri handles your data locally.
             </p>
@@ -112,7 +112,7 @@ export function IntroModal() {
             <button
               onClick={handleBack}
               disabled={step === 0}
-              className={`text-sm text-white/40 hover:text-white/80 transition-colors px-2 py-1 ${
+              className={`text-[11px] font-bold text-white/30 hover:text-white transition-colors px-2 py-1 ${
                 step === 0 ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
             >
@@ -132,7 +132,7 @@ export function IntroModal() {
 
             <button
               onClick={handleNext}
-              className="px-5 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium active:scale-95"
+              className="px-5 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all text-[11px] font-bold active:scale-95"
             >
               {step === steps.length - 1 ? "Get Started" : "Next"}
             </button>

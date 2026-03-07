@@ -42,7 +42,7 @@ export function UploadArea({ onFileProcessed, onError }: UploadAreaProps) {
             <div className="text-sm font-semibold text-white/80 mb-1">
               Drop image or click to browse
             </div>
-            <div className="text-[10px] uppercase font-black tracking-widest text-white/20">
+            <div className="text-[10px] font-medium text-white/10">
               PNG, JPG up to 10MB
             </div>
           </div>

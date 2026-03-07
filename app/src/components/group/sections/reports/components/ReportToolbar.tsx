@@ -86,7 +86,7 @@ export function ReportToolbar({
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            className="bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
+            className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-[11px] font-medium text-white/60 cursor-pointer outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 min-w-[110px]"
             style={
               {
                 colorScheme: "dark",
@@ -95,15 +95,13 @@ export function ReportToolbar({
             }
           />
         </Tooltip>
-        <span className="text-[9px] font-black uppercase tracking-widest text-white/20 px-0.5">
-          To
-        </span>
+        <span className="text-[11px] font-bold text-white/35 px-1">To</span>
         <Tooltip content="End date" position="bottom">
           <input
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            className="bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-[11px] font-bold text-white/75 cursor-pointer focus:outline-none focus:border-cyan-500/30 transition-all min-w-[110px]"
+            className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-[11px] font-medium text-white/60 cursor-pointer outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 min-w-[110px]"
             style={
               {
                 colorScheme: "dark",
@@ -127,7 +125,7 @@ export function ReportToolbar({
             placeholder="Search…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-white/5 border border-white/5 rounded-lg pl-7 pr-3 py-1.5 text-[11px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/30 transition-all font-medium w-36 focus:w-52"
+            className="bg-white/5 border border-white/10 rounded-lg pl-7 pr-3 py-1.5 text-[11px] text-white placeholder:text-white/25 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 font-medium w-36 focus:w-52"
           />
         </div>
 
@@ -165,7 +163,7 @@ export function ReportToolbar({
                     setStatusFilter(st as ReportStatusFilter);
                     setShowFilter(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-[11px] font-bold transition-colors border-0 ${
+                  className={`w-full text-left px-3 py-1.5 text-[11px] font-medium transition-colors border-0 ${
                     statusFilter === st
                       ? "text-cyan-400 bg-cyan-500/10"
                       : "text-white/50 hover:text-white hover:bg-white/5"
@@ -200,7 +198,7 @@ export function ReportToolbar({
             >
               {/* Columns */}
               <div className="px-3 pt-3 pb-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/20">
+                <span className="text-[11px] font-bold text-white/35">
                   Columns
                 </span>
                 <div
@@ -242,7 +240,7 @@ export function ReportToolbar({
 
               {/* Group By */}
               <div className="px-3 py-2.5 flex items-center justify-between gap-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">
+                <span className="text-[11px] font-bold text-white/35 shrink-0">
                   Group by
                 </span>
                 <Dropdown
@@ -255,7 +253,7 @@ export function ReportToolbar({
                   showPlaceholderOption={false}
                   allowClear={false}
                   className="flex-1"
-                  buttonClassName="!py-1 !pl-2 !pr-1.5 !text-[11px] !font-bold !rounded-none !bg-white/5 !border-transparent"
+                  buttonClassName="!py-1 !pl-2 !pr-1.5 !text-[11px] !font-medium !rounded-none !bg-white/5 !border-transparent"
                   iconClassName="!text-[8px]"
                 />
               </div>

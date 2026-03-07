@@ -89,7 +89,7 @@ function buildArrowStyle(
 ): React.CSSProperties {
   const midX = triggerRect.left + triggerRect.width / 2;
   const midY = triggerRect.top + triggerRect.height / 2;
-  const solidDark = `${ARROW_SIZE}px solid #111214`;
+  const solidDark = `${ARROW_SIZE}px solid #080808`;
   const transparent = `${ARROW_SIZE}px solid transparent`;
 
   if (actual === "top") {
@@ -346,7 +346,7 @@ export function Tooltip({
                 visibility: coords ? "visible" : "hidden",
               }}
             >
-              <div className="relative bg-[#111214] text-white text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.65)] border border-white/10 max-w-[260px] whitespace-nowrap">
+              <div className="relative bg-[#080808] text-white/90 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.85)] border border-white/10 max-w-[260px] whitespace-nowrap">
                 {content}
                 {coords && <div style={coords.arrowStyle} />}
               </div>

@@ -364,7 +364,7 @@ export function CameraQueue({
         <div className="mx-6 mt-4 rounded-lg border border-blue-500/25 bg-blue-500/8 px-4 py-3 text-xs text-blue-200/80 flex items-start gap-3 shrink-0">
           <i className="fa-solid fa-circle-info mt-0.5 text-blue-400 shrink-0" />
           <div className="flex-1 leading-relaxed">
-            <span className="font-semibold text-blue-200">
+            <span className="font-bold text-blue-200">
               Privacy Notice for Data Subjects:&nbsp;
             </span>
             Facial features are converted to a numeric signature and stored
@@ -452,7 +452,7 @@ export function CameraQueue({
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                       placeholder="Search members..."
-                      className="w-full rounded-lg border border-white/10 bg-white/5 pl-10 pr-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/10 focus:outline-none transition-all"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-3 py-2 text-[11px] font-medium text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:bg-white/10 focus:ring-4 focus:ring-cyan-500/10"
                     />
                   </div>
                   <Dropdown
@@ -559,7 +559,7 @@ export function CameraQueue({
                           </div>
                           <div className="flex items-center gap-2">
                             {isRegistered && (
-                              <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                              <span className="text-[11px] font-black text-cyan-400/80 uppercase tracking-wider">
                                 Registered
                               </span>
                             )}
@@ -587,7 +587,7 @@ export function CameraQueue({
             {memberQueue.length > 0 && (
               <button
                 onClick={() => setQueueStarted(true)}
-                className="btn-success w-full px-4 py-3 text-sm font-semibold"
+                className="w-full flex items-center justify-center gap-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 px-4 py-3 text-sm font-medium text-cyan-400 hover:bg-cyan-500/20 transition-all active:scale-95"
               >
                 Start Queue ({memberQueue.length} members)
               </button>
@@ -642,7 +642,7 @@ export function CameraQueue({
                       <button
                         onClick={() => void startCamera()}
                         disabled={!selectedCamera && cameraDevices.length > 0}
-                        className="w-full px-4 py-2.5 rounded-lg border border-cyan-400/50 bg-cyan-500/30 text-cyan-100 hover:bg-cyan-500/40 text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 text-sm font-medium transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <i className="fa-solid fa-play mr-2"></i>
                         Start Camera
@@ -673,7 +673,7 @@ export function CameraQueue({
                       </div>
                       <button
                         onClick={() => void startCamera()}
-                        className="px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-all"
+                        className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white/50 hover:text-white text-xs font-medium transition-all"
                       >
                         Try Again
                       </button>
@@ -697,10 +697,10 @@ export function CameraQueue({
                             </div>
                           </div>
                           <div className="flex flex-col items-center gap-1">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">
+                            <div className="text-[10px] font-medium opacity-20">
                               Privacy Shield
                             </div>
-                            <div className="text-[9px] font-medium text-white/30 tracking-tight">
+                            <div className="text-[9px] font-medium text-white/20 tracking-tight">
                               Biometric Authorization Required
                             </div>
                           </div>
@@ -728,7 +728,7 @@ export function CameraQueue({
                       if (!mRec?.has_consent) {
                         return (
                           <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-200 font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[10px] text-amber-200/60 font-medium  shadow-[0_0_15px_rgba(245,158,11,0.05)]">
                               <i className="fa-solid fa-shield-slash text-[9px]"></i>
                               Biometric Consent Missing
                             </div>
@@ -737,7 +737,7 @@ export function CameraQueue({
                                 e.stopPropagation();
                                 setActiveSection("members");
                               }}
-                              className="w-fit flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-[10px] text-cyan-200 font-black uppercase tracking-widest hover:bg-cyan-500/30 transition-all shadow-lg active:scale-95"
+                              className="w-fit flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[10px] text-cyan-400 font-medium hover:bg-cyan-500/20 transition-all active:scale-95"
                             >
                               <i className="fa-solid fa-key text-[9px]"></i>
                               Review Consent
@@ -757,7 +757,7 @@ export function CameraQueue({
                   {isStreaming && (
                     <button
                       onClick={() => stopCamera()}
-                      className="px-2 py-1 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 text-xs font-medium transition-all"
+                      className="px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-medium transition-all"
                     >
                       <i className="fa-solid fa-stop mr-1"></i>
                       Stop
@@ -765,7 +765,7 @@ export function CameraQueue({
                   )}
                   <button
                     onClick={() => setQueueStarted(false)}
-                    className="px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/50 hover:text-white hover:bg-white/20 text-xs font-medium transition-all"
+                    className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-white hover:bg-white/10 text-xs font-medium transition-all"
                   >
                     <i className="fa-solid fa-list-ul mr-1"></i>
                     Queue

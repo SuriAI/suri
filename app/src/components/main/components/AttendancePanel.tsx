@@ -147,7 +147,7 @@ const AttendanceRecordItem = memo(
 
             <div className="shrink-0 flex items-center gap-1.5">
               <span
-                className={`text-[9px] font-black tracking-widest uppercase opacity-70 ${timeStatus?.color || "text-white/40"}`}
+                className={`text-[11px] font-bold ${timeStatus?.color || "text-white/50"}`}
               >
                 {timeStatus?.label}
               </span>
@@ -366,7 +366,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <Tooltip content="Members" position="top">
               <button
                 onClick={() => setShowManualEntry(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white"
                 aria-label="Members"
               >
                 <i className="fa-solid fa-users text-sm"></i>
@@ -375,7 +375,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <Tooltip content="Create Group" position="top">
               <button
                 onClick={() => setShowGroupManagement(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/70 hover:text-white"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white"
                 aria-label="Create Group"
               >
                 <i className="fa-solid fa-plus text-sm"></i>
@@ -391,7 +391,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             </div>
             <button
               onClick={() => setShowGroupManagement(true)}
-              className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
             >
               <i className="fa-solid fa-plus text-xs"></i>
               Create Group
@@ -546,7 +546,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 </div>
                 <button
                   onClick={handleOpenSettingsForRegistration}
-                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <i className="fa-solid fa-user-plus text-xs"></i>
                   Add Member
@@ -561,7 +561,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 </div>
                 <button
                   onClick={handleOpenSettingsForRegistration}
-                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors flex items-center gap-2"
+                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <i className="fa-solid fa-user-plus text-xs"></i>
                   Register Face

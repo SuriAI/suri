@@ -39,7 +39,7 @@ export function ReportTable({
               return (
                 <th
                   key={c.key}
-                  className={`px-4 py-2.5 border-b border-white/10 text-[10px] uppercase font-bold tracking-widest text-white/30 bg-[#0f0f0f] ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}
+                  className={`px-4 py-2.5 border-b border-white/5 text-[11px] font-medium text-white/40 bg-black ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}
                 >
                   {c.label}
                 </th>
@@ -61,7 +61,7 @@ export function ReportTable({
                         : "No results found"}
                   </h3>
 
-                  <p className="text-xs text-white/30 max-w-70 mb-8 leading-relaxed">
+                  <p className="text-[11px] text-white/40 max-w-70 mb-8 leading-relaxed font-medium">
                     {search
                       ? "We couldn't find anything matching your search. Try a different keyword."
                       : statusFilter !== "all"
@@ -73,21 +73,21 @@ export function ReportTable({
                     {statusFilter !== "all" && (
                       <button
                         onClick={onResetFilter}
-                        className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-all text-xs font-bold uppercase tracking-wider"
+                        className="px-4 py-2 rounded-lg bg-white/5 border border-white/5 text-white/40 hover:text-white/80 hover:bg-white/10 transition-all text-xs font-medium"
                       >
                         Reset Filter
                       </button>
                     )}
                     {!search && statusFilter === "all" && (
                       <div className="flex flex-col items-center gap-2">
-                        <span className="text-[10px] text-white/20 font-black uppercase tracking-[0.2em] mb-2">
+                        <span className="text-[11px] text-white/40 font-semibold mb-2">
                           Suggestions
                         </span>
                         <div className="flex gap-2">
-                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-bold">
+                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
                             Try Previous Week
                           </span>
-                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-bold">
+                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
                             Expand Range
                           </span>
                         </div>
@@ -112,7 +112,7 @@ export function ReportTable({
                           <span className="text-xs font-bold text-cyan-100/90 tracking-wide">
                             {groupInfo}
                           </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg bg-white/5 border border-white/5 text-[10px] text-white/40 font-medium">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
                             {rows.length}{" "}
                             {rows.length === 1 ? "record" : "records"}
                           </span>
@@ -134,18 +134,18 @@ export function ReportTable({
                           let textColor = "text-white/40";
                           if (s === "present") textColor = "text-cyan-400";
                           if (s === "absent") textColor = "text-red-400";
-                          if (s === "no_records") textColor = "text-white/20";
+                          if (s === "no_records") textColor = "text-white/30";
 
                           content = (
                             <div
-                              className={`inline-flex items-center text-[11px] uppercase tracking-widest font-bold ${textColor}`}
+                              className={`inline-flex items-center text-[11px] font-semibold ${textColor}`}
                             >
                               {s === "no_records" ? "N/A" : s}
                             </div>
                           );
                         } else if (c.key === "is_late") {
                           content = row.is_late ? (
-                            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px] uppercase tracking-tight">
+                            <div className="flex items-center gap-1.5 text-amber-400/80 font-semibold text-[11px]">
                               <i className="fa-solid fa-clock text-[9px]"></i>
                               Late
                             </div>
@@ -165,7 +165,7 @@ export function ReportTable({
                                   })}
                                 </span>
                                 {row.is_late && row.late_minutes > 0 && (
-                                  <span className="text-[10px] text-amber-500/70 font-bold uppercase mt-0.5">
+                                  <span className="text-[11px] text-amber-500/60 font-semibold mt-0.5">
                                     +{row.late_minutes}m
                                   </span>
                                 )}
@@ -199,7 +199,7 @@ export function ReportTable({
                             );
 
                             content = (
-                              <span className="text-cyan-400 font-bold whitespace-nowrap">
+                              <span className="text-cyan-400/80 font-medium whitespace-nowrap">
                                 {hrs > 0 ? `${hrs}h ` : ""}
                                 {mins > 0 || hrs === 0 ? `${mins}m` : ""}
                               </span>
@@ -210,7 +210,7 @@ export function ReportTable({
                         } else if (c.key === "late_minutes") {
                           content =
                             row.late_minutes > 0 ? (
-                              <span className="text-amber-400 font-bold">
+                              <span className="text-amber-400/80 font-medium">
                                 {row.late_minutes}m
                               </span>
                             ) : (

@@ -25,6 +25,12 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref,
   ) => {
+    const focusStyles = focusColor.includes("amber")
+      ? "focus:border-amber-500/30 focus:ring-amber-500/10"
+      : focusColor.includes("red")
+        ? "focus:border-red-500/30 focus:ring-red-500/10"
+        : "focus:border-cyan-500/30 focus:ring-cyan-500/10";
+
     return (
       <input
         ref={ref}
@@ -34,7 +40,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:${focusColor} ${className}`}
+        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-[11px] font-medium text-white placeholder:text-white/20 outline-none transition-all duration-300 focus:bg-white/10 focus:ring-4 ${focusStyles} ${className}`}
       />
     );
   },

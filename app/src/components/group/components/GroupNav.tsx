@@ -106,8 +106,8 @@ export function GroupNav({
                       isActive
                         ? "bg-white/10 text-white"
                         : isDisabled
-                          ? "text-white/30 cursor-not-allowed"
-                          : "text-white/70 hover:text-white hover:bg-white/5"
+                          ? "text-white/20 cursor-not-allowed"
+                          : "text-white/50 hover:text-white hover:bg-white/8"
                     }
                   `}
                   aria-label={section.label}

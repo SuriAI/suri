@@ -1,87 +1,128 @@
 @layer base {
   button {
-    border-radius: 6px;
+    border-radius: 8px;
+    /* Standardized to 8px for premium feel */
     border: 1px solid var(--border-primary);
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
+    /* Regularized weight */
     font-family: inherit;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
+    letter-spacing: normal;
+    /* No more AI spaceship spacing */
+  }
+
+  button:active {
+    transform: scale(0.98);
+    /* Tactile feedback */
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
   }
 }
 
+/* Premium Design System */
+
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-premium-primary {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.2);
+  color: #22d3ee;
+  /* Refined Cyan */
+}
+
+.btn-premium-primary:hover {
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.4);
+  color: #22d3ee;
+}
+
+.btn-premium-secondary {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-premium-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.btn-premium-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  /* Desaturated red */
+}
+
+.btn-premium-danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.btn-premium-success {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.btn-premium-success:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+/* Legacy Support (Updated to match Premium) */
+
 .btn-primary {
-  background: var(--gradient-primary);
-  border-color: var(--border-accent);
-  color: var(--text-primary);
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.2);
+  color: #22d3ee;
 }
 
 .btn-primary:hover {
-  background: var(--gradient-secondary);
-  border-color: var(--border-hover);
+  background: rgba(34, 211, 238, 0.15);
+  border-color: rgba(34, 211, 238, 0.4);
 }
 
 .btn-secondary {
-  background: var(--surface-primary);
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .btn-secondary:hover {
-  background: var(--surface-secondary);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-.btn-accent {
-  background: var(--gradient-accent);
-  border-color: var(--border-accent);
-  color: var(--text-primary);
-}
-
-.btn-accent:hover {
-  background: var(--gradient-secondary);
-  border-color: var(--border-hover);
-}
-
-.btn-success {
-  background: rgba(34, 211, 238, 0.1);
-  border-color: rgba(34, 211, 238, 0.3);
-  color: var(--success);
-}
-
-.btn-success:hover {
-  background: rgba(34, 211, 238, 0.2);
-  border-color: rgba(34, 211, 238, 0.5);
-  color: var(--success);
-}
-
-.btn-warning {
-  background: rgba(255, 170, 0, 0.1);
-  border-color: rgba(255, 170, 0, 0.3);
-  color: var(--warning);
-}
-
-.btn-warning:hover {
-  background: rgba(255, 170, 0, 0.2);
-  border-color: rgba(255, 170, 0, 0.5);
-  color: var(--warning);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 .btn-error {
-  background: rgba(255, 68, 68, 0.1);
-  border-color: rgba(255, 68, 68, 0.3);
-  color: var(--error);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
 }
 
 .btn-error:hover {
-  background: rgba(255, 68, 68, 0.2);
-  border-color: rgba(255, 68, 68, 0.5);
-  color: var(--error);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .titlebar-btn {
@@ -137,7 +178,7 @@
 
 @layer base {
   button:active {
-    transform: translateY(0);
+    transform: scale(0.98);
   }
 
   button:focus-visible {
