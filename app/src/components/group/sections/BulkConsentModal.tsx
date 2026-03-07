@@ -90,7 +90,7 @@ export function BulkConsentModal({
                   {member.name}
                 </div>
                 {member.role && (
-                  <div className="text-[11px] text-white/40 uppercase tracking-wider">
+                  <div className="text-[11px] text-white/40 font-medium">
                     {member.role}
                   </div>
                 )}

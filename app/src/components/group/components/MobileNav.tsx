@@ -65,15 +65,15 @@ export function MobileNav({
                     isActive
                       ? "bg-white/10 text-white"
                       : isDisabled
-                        ? "text-white/30 cursor-not-allowed"
-                        : "text-white/70 hover:text-white hover:bg-white/5 active:bg-white/10"
+                        ? "text-white/20 cursor-not-allowed"
+                        : "text-white/50 hover:text-white hover:bg-white/8 active:bg-white/10"
                   }
                 `}
               >
                 {/* Content */}
                 <div className="flex-1 text-left">
                   <div className="font-medium text-base">{section.label}</div>
-                  <div className="text-xs text-white/50 mt-0.5">
+                  <div className="text-[11px] text-white/40 mt-1 font-medium">
                     {section.description}
                   </div>
                 </div>

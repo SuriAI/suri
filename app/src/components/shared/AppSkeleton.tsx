@@ -16,7 +16,7 @@ export function AppSkeleton() {
           </div>
         </div>
 
-        <div className="w-[360px] border-l border-white/10 bg-[#0a0a0a] flex flex-col p-4 gap-4">
+        <div className="w-[360px] border-l border-white/5 bg-[#080808] flex flex-col p-4 gap-4">
           <div className="h-10 w-full bg-white/5 rounded-lg" />
           <div className="h-32 w-full bg-white/5 rounded-lg border border-white/5" />
           <div className="flex-1 w-full bg-white/5 rounded-lg border border-white/5 opacity-50" />

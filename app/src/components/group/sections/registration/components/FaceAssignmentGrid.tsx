@@ -28,11 +28,11 @@ export function FaceAssignmentGrid({
         <div className="flex items-center gap-3">
           <div className="text-2xl font-light text-white">
             {assignedCount}
-            <span className="text-white/40">/{detectedFaces.length}</span>
+            <span className="text-white/20">/{detectedFaces.length}</span>
           </div>
-          <div className="text-xs text-white/40">assigned</div>
+          <div className="text-[11px] text-white/40 font-medium">assigned</div>
         </div>
-        <div className="text-xs text-white/40">
+        <div className="text-[11px] text-white/40 font-medium">
           {availableMembers.length} members available
         </div>
       </div>
@@ -62,7 +62,7 @@ export function FaceAssignmentGrid({
                 />
                 <div className="absolute top-2 right-2 flex items-center p-1.5 rounded-full bg-black/80  shadow-sm border border-white/5">
                   <div
-                    className={`h-2 w-2 rounded-full ${face.confidence > 0.8 ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]" : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"}`}
+                    className={`h-2 w-2 rounded-full ${face.confidence > 0.8 ? "bg-cyan-400/80 shadow-[0_0_8px_rgba(34,211,238,0.3)]" : "bg-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.3)]"}`}
                     title={
                       face.confidence > 0.8
                         ? "High Confidence"
@@ -71,9 +71,10 @@ export function FaceAssignmentGrid({
                   />
                 </div>
                 {!face.isAcceptable && (
-                  <div className="absolute bottom-2 left-2 right-2 px-2 py-1 rounded-lg bg-amber-500/90 text-center">
-                    <div className="text-[10px] font-medium text-black">
-                      ⚠️ Low quality
+                  <div className="absolute bottom-2 left-2 right-2 px-2 py-1.5 rounded-lg bg-amber-500/90 text-center shadow-lg transform translate-z-0">
+                    <div className="text-[11px] font-bold text-black flex items-center justify-center gap-1.5">
+                      <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                      Quality Issue
                     </div>
                   </div>
                 )}
@@ -123,7 +124,7 @@ export function FaceAssignmentGrid({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-cyan-500/10 border border-cyan-400/20">
-                    <div className="flex-1 truncate text-xs text-cyan-200 font-medium">
+                    <div className="flex-1 truncate text-[11px] text-cyan-200 font-semibold">
                       {assignedMember?.name}
                     </div>
                     <button
@@ -156,7 +157,7 @@ export function FaceAssignmentGrid({
         <button
           onClick={onBulkRegister}
           disabled={isRegistering}
-          className="w-full flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-cyan-500/20 to-cyan-600/20 border border-cyan-400/40 px-4 py-4 text-sm font-medium text-cyan-100 hover:from-cyan-500/30 hover:to-cyan-600/30 disabled:from-white/5 disabled:to-white/5 disabled:border-white/10 disabled:text-white/30 transition-all shadow-lg shadow-cyan-500/10"
+          className="w-full flex items-center justify-center gap-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 px-4 py-4 text-sm font-medium text-cyan-400 hover:bg-cyan-500/20 disabled:bg-white/5 disabled:border-white/10 disabled:text-white/20 transition-all active:scale-95"
         >
           {isRegistering ? (
             <>

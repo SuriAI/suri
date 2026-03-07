@@ -182,9 +182,9 @@ export function AddMember({
           <h3 className="text-xl font-semibold mb-1 tracking-tight">
             Add Members
           </h3>
-          <p className="text-sm text-white/40 font-normal">
-            Enroll new people to{" "}
-            <span className="text-cyan-400/70 font-medium">{group.name}</span>
+          <p className="text-[11px] text-white/50 font-normal">
+            Enroll new people into{" "}
+            <span className="text-cyan-400/80 font-medium">{group.name}</span>
           </p>
         </div>
       }
@@ -199,10 +199,10 @@ export function AddMember({
               setBulkMembersText("");
               setConfirmDuplicate(false);
             }}
-            className={`px-4 py-2 text-sm rounded-lg transition ${
+            className={`px-4 py-2 text-[11px] font-medium rounded-lg transition ${
               !isBulkMode
                 ? "bg-cyan-500/20 text-cyan-200"
-                : "text-white/60 hover:text-white"
+                : "text-white/40 hover:text-white/80 hover:bg-white/10"
             }`}
           >
             One person
@@ -214,10 +214,10 @@ export function AddMember({
               setNewMemberRole("");
               setConfirmDuplicate(false);
             }}
-            className={`px-4 py-2 text-sm rounded-lg transition ${
+            className={`px-4 py-2 text-[11px] font-medium rounded-lg transition ${
               isBulkMode
                 ? "bg-cyan-500/20 text-cyan-200"
-                : "text-white/60 hover:text-white"
+                : "text-white/40 hover:text-white/80 hover:bg-white/10"
             }`}
           >
             Bulk Add
@@ -249,12 +249,10 @@ export function AddMember({
                 }
                 className={`${isDuplicate && !confirmDuplicate ? "border-amber-500/50" : ""}`}
               />
-              {isDuplicate && !confirmDuplicate && (
-                <div className="mt-2 text-xs text-amber-300 flex items-center gap-2">
-                  <i className="fa-solid fa-triangle-exclamation"></i>A member
-                  with this name already exists.
-                </div>
-              )}
+              <div className="mt-2 text-[11px] text-amber-400/80 flex items-center gap-2">
+                <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>{" "}
+                A member with this name already exists.
+              </div>
             </label>
             <label className="text-sm">
               <FormInput
@@ -294,10 +292,10 @@ export function AddMember({
                       consent.
                     </span>
                   </div>
-                  <p className="text-[11px] leading-relaxed text-white/40 group-hover:text-white/60 transition-colors">
+                  <p className="text-[11px] leading-relaxed text-white/40 group-hover:text-white/50 transition-colors">
                     Facial features will be encrypted and stored strictly on
                     this device. Suri does not upload biometric data to any
-                    cloud servers by default.
+                    cloud servers.
                   </p>
                 </div>
               </label>
@@ -364,12 +362,12 @@ export function AddMember({
               <textarea
                 value={bulkMembersText}
                 onChange={(event) => setBulkMembersText(event.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500/60 font-mono text-sm min-h-[200px]"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 outline-none transition-all duration-300 focus:bg-white/10 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 font-mono text-sm min-h-[200px]"
                 placeholder="Enter one member per line. Format:&#10;Name, Role (optional)&#10;&#10;Example:&#10;John Doe, Student&#10;Jane Smith, Teacher&#10;Bob Johnson"
               />
-              <div className="mt-2 text-xs text-white/50">
+              <div className="mt-2 text-[11px] text-white/30">
                 Format:{" "}
-                <span className="text-white/70 font-mono">Name, Role</span> (one
+                <span className="text-white/50 font-mono">Name, Role</span> (one
                 per line, role is optional)
               </div>
             </div>
@@ -417,7 +415,7 @@ export function AddMember({
               resetForm();
               onClose();
             }}
-            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-[11px] font-medium"
           >
             Cancel
           </button>

@@ -41,7 +41,7 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
       title={
         <div>
           <h3 className="text-xl font-semibold mb-2">Edit Group</h3>
-          <p className="text-sm text-white/60 font-normal">
+          <p className="text-[11px] text-white/50 font-normal">
             Update group information
           </p>
         </div>
@@ -63,7 +63,7 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
         <div className="flex justify-end gap-3 mt-8">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-[11px] font-medium"
           >
             Cancel
           </button>

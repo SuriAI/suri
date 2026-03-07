@@ -56,7 +56,7 @@ export function MemberEntry({
                 onKeyDown={(e) => handleKeyDown(e, "name")}
                 autoFocus
                 disabled={savingMember === member.person_id}
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[11px] font-bold text-white focus:outline-none focus:border-cyan-400/50 transition-colors h-5"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[11px] font-bold text-white outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10 h-5"
               />
             ) : (
               <div
@@ -68,7 +68,7 @@ export function MemberEntry({
             )}
           </div>
 
-          <span className="text-[9px] font-black text-white/10 shrink-0 select-none">
+          <span className="text-[9px] font-medium text-white/5 shrink-0 select-none">
             /
           </span>
 
@@ -84,14 +84,14 @@ export function MemberEntry({
                 autoFocus
                 disabled={savingMember === member.person_id}
                 placeholder="Role"
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5 max-w-[100px]"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10 h-5 max-w-[100px]"
               />
             ) : (
               <div
                 onClick={() => onStartEditing(member, "role")}
-                className={`text-[10px] cursor-pointer transition-colors truncate ${
+                className={`text-[11px] font-bold cursor-pointer transition-colors truncate ${
                   member.role
-                    ? "text-white/60 hover:text-white/80"
+                    ? "text-white/45 hover:text-white/80"
                     : "text-white/20 italic hover:text-white/40"
                 }`}
               >
@@ -113,14 +113,14 @@ export function MemberEntry({
                 autoFocus
                 disabled={savingMember === member.person_id}
                 placeholder="Email"
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 focus:outline-none focus:border-cyan-400/50 transition-colors h-5 max-w-[150px]"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] text-white/70 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10 h-5 max-w-[150px]"
               />
             ) : (
               <div
                 onClick={() => onStartEditing(member, "email")}
-                className={`text-[10px] cursor-pointer transition-colors truncate ${
+                className={`text-[11px] font-bold cursor-pointer transition-colors truncate ${
                   member.email
-                    ? "text-white/50 hover:text-white/70"
+                    ? "text-white/40 hover:text-white/70"
                     : "text-white/20 italic hover:text-white/40"
                 }`}
               >
@@ -133,11 +133,9 @@ export function MemberEntry({
         <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
             {member.has_face_data ? (
-              <div className="text-[10px] font-black tracking-widest text-cyan-400 uppercase">
-                Face
-              </div>
+              <div className="text-[11px] font-bold text-cyan-400/80">Face</div>
             ) : (
-              <div className="text-[10px] font-black tracking-widest text-amber-500/60 uppercase">
+              <div className="text-[11px] font-bold text-amber-500/50">
                 Empty
               </div>
             )}

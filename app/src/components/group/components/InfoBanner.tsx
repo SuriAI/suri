@@ -29,7 +29,7 @@ export function InfoBanner({
       {action && (
         <button
           onClick={action.onClick}
-          className="ml-4 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-[10px] font-bold uppercase tracking-widest transition-all border border-cyan-500/30 whitespace-nowrap active:scale-95 shadow-lg"
+          className="ml-4 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-[9px] font-medium transition-all border border-cyan-500/30 whitespace-nowrap active:scale-95 shadow-lg"
         >
           {action.label}
         </button>

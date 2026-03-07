@@ -107,7 +107,7 @@ export function CameraFeed({
           <button
             onClick={() => onCapture()}
             disabled={!isVideoReady || !!cameraError}
-            className="px-8 py-2.5 rounded-lg border border-cyan-400/40 bg-cyan-500/20 text-cyan-100 font-bold text-[10px] uppercase tracking-widest hover:bg-cyan-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-500/10"
+            className="px-8 py-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 font-medium text-sm hover:bg-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             Capture Face
           </button>
@@ -118,9 +118,9 @@ export function CameraFeed({
         <button
           onClick={isStreaming ? onStop : onStart}
           disabled={!isStreaming && !isCameraSelected}
-          className={`px-6 py-2.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all min-w-[140px] ${
+          className={`px-6 py-2 rounded-lg border text-sm font-medium transition-all min-w-[140px] ${
             isStreaming
-              ? "bg-red-500/20 border-red-500/30 text-red-200 hover:bg-red-500/30 shadow-lg shadow-red-500/10"
+              ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
               : isCameraSelected
                 ? "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
                 : "bg-black/20 border-white/5 text-white/20 cursor-not-allowed opacity-50"

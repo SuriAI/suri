@@ -10,9 +10,9 @@ export function DatabaseStats({
   totalPersons,
 }: DatabaseStatsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/5 bg-[#0a0a0b] rounded-lg overflow-hidden divide-x divide-white/5 shrink-0">
+    <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/10 bg-[#080808] rounded-xl overflow-hidden divide-x divide-white/10 shrink-0">
       <div className="flex flex-col gap-3 py-6 px-10">
-        <p className="text-[11px] font-bold text-white/40 uppercase tracking-tight">
+        <p className="text-[11px] font-bold text-white/35 uppercase tracking-wider">
           Total Groups
         </p>
         <div className="flex items-baseline gap-1.5">
@@ -23,7 +23,7 @@ export function DatabaseStats({
       </div>
 
       <div className="flex flex-col gap-3 py-6 px-10">
-        <p className="text-[11px] font-bold text-white/40 uppercase tracking-tight">
+        <p className="text-[11px] font-bold text-white/35 uppercase tracking-wider">
           Total Members
         </p>
         <div className="flex items-baseline gap-1.5">
@@ -34,7 +34,7 @@ export function DatabaseStats({
       </div>
 
       <div className="flex flex-col gap-3 py-6 px-10">
-        <p className="text-[11px] font-bold text-white/40 uppercase tracking-tight">
+        <p className="text-[11px] font-bold text-white/35 uppercase tracking-wider">
           Registered Faces
         </p>
         <div className="flex items-baseline gap-1.5">

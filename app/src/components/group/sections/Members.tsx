@@ -139,7 +139,7 @@ export function Members({
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
                 placeholder="Search members..."
-                className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-3 py-3 text-sm text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/10 focus:outline-none transition-all shadow-inner"
+                className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-3 py-3 text-[11px] font-medium text-white placeholder:text-white/30 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:bg-white/10 focus:ring-4 focus:ring-cyan-500/10 shadow-inner"
               />
             </div>
           </div>
@@ -224,17 +224,17 @@ export function Members({
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       {member.role ? (
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/40">
+                        <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40">
                           <i className="fa-solid fa-briefcase text-[9px]"></i>
                           {member.role}
                         </div>
                       ) : (
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-white/20 italic">
+                        <div className="text-[11px] font-medium text-white/20 italic">
                           Member
                         </div>
                       )}
                       {member.email && (
-                        <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/25">
+                        <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40">
                           <i className="fa-solid fa-envelope text-[9px]"></i>
                           {member.email}
                         </div>
@@ -244,7 +244,7 @@ export function Members({
 
                   <div className="flex items-center gap-3 shrink-0 relative z-10">
                     {!member.has_consent && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-m text-red-400 text-[9px] font-bold uppercase tracking-wider">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-m text-red-400/80 text-[11px] font-medium">
                         <i className="fa-solid fa-xmark" />
                         No Consent
                       </div>
@@ -273,7 +273,7 @@ export function Members({
                             useGroupUIStore.getState().jumpToRegistration;
                           jump(member.person_id);
                         }}
-                        className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-black uppercase tracking-widest hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] active:scale-95"
+                        className="px-4 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all active:scale-95"
                       >
                         Register
                       </button>
@@ -284,7 +284,7 @@ export function Members({
                             useGroupUIStore.getState().jumpToRegistration;
                           jump(member.person_id);
                         }}
-                        className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-white/30 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+                        className="group/btn relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-medium text-white/20 transition-all duration-300 hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-400"
                       >
                         <i className="fa-solid fa-check text-[8px] transition-all duration-300 group-hover/btn:opacity-0 group-hover/btn:scale-75 group-hover/btn:absolute"></i>
 
@@ -305,17 +305,20 @@ export function Members({
           </div>
         </div>
 
-        {/* Consent banner — floats over content at the bottom */}
+        {/* Consent banner — premium floating snackbar centered at the bottom */}
         {members.some((m) => !m.has_consent) && (
-          <div className="absolute bottom-4 left-4 z-10 max-w-sm">
-            <div className="flex items-center gap-3 text-xs px-4 py-2.5 bg-neutral-800 text-white/70 rounded-xl border border-white/15 shadow-lg">
-              <i className="fa-solid fa-triangle-exclamation text-[10px] text-amber-400/70 shrink-0" />
-              <span className="leading-snug">
-                Some members need biometric consent.
-              </span>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-fit max-w-[90%] pointer-events-none">
+            <div className="flex items-center gap-4 text-[11px] font-medium px-4 py-2.5 bg-[#080808] text-white/60 rounded-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.8)] pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-triangle-exclamation text-amber-500/80 shrink-0" />
+                <span className="leading-snug whitespace-nowrap">
+                  Some members need biometric consent.
+                </span>
+              </div>
+              <div className="w-px h-4 bg-white/5" />
               <button
                 onClick={() => setIsBulkConsentModalOpen(true)}
-                className="ml-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-semibold tracking-wide transition-colors whitespace-nowrap shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 text-[10px] font-bold tracking-wide transition-all active:scale-95 whitespace-nowrap border border-white/5"
               >
                 Grant all
               </button>

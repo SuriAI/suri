@@ -41,7 +41,7 @@ export function ControlBar({
       return {
         label: "Stop Tracking",
         className:
-          "bg-red-500/20 border border-red-400/40 text-red-200 hover:bg-red-500/30",
+          "bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20",
         tooltip: "Stop tracking attendance",
         enabled: true,
       };
@@ -58,7 +58,7 @@ export function ControlBar({
     }
 
     const cyanStyle =
-      "bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 shadow-lg shadow-cyan-500/10";
+      "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20";
 
     const standardTooltip = hasCameraDevices
       ? "Start tracking attendance"
@@ -119,7 +119,7 @@ export function ControlBar({
             <button
               onClick={handlePrimaryAction}
               disabled={!buttonState.enabled}
-              className={`min-w-35 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${buttonState.className}`}
+              className={`min-w-35 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${buttonState.className}`}
             >
               {buttonState.label}
             </button>

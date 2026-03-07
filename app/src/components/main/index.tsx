@@ -526,7 +526,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setSuccess(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/10 text-white/50 hover:text-white transition-all shadow-none"
+                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
                 aria-label="Dismiss success"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>
@@ -552,7 +552,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setWarning(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/10 text-white/50 hover:text-white transition-all shadow-none"
+                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
                 aria-label="Dismiss warning"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>
@@ -578,7 +578,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setError(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/10 text-white/50 hover:text-white transition-all shadow-none"
+                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
                 aria-label="Dismiss error"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>

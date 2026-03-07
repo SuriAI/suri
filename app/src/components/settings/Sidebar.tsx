@@ -38,17 +38,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const storeGroups = useGroupStore((state) => state.groups);
 
   return (
-    <div className="w-[200px] sm:w-[240px] lg:w-[280px] shrink-0 flex flex-col bg-[#0b0b0b] border-r border-white/5">
+    <div className="w-[200px] sm:w-[240px] lg:w-[280px] shrink-0 flex flex-col bg-[#080808] border-r border-white/5">
       <div className="px-6 py-8 flex items-center justify-between">
-        <h1 className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
-          Settings
-        </h1>
+        <h1 className="text-[11px] font-medium text-white/30">Settings</h1>
       </div>
 
       <div className="flex-1 pl-3 pr-1 space-y-10 overflow-y-auto hover-scrollbar settings-sidebar-scroll pb-6">
         <section>
           <div className="px-3 mb-4 flex items-center justify-between">
-            <h2 className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
+            <h2 className="text-[11px] font-medium text-white/30">
               Group Management
             </h2>
           </div>
@@ -97,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     setTriggerCreateGroup(Date.now());
                   }}
-                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-white/50 hover:text-cyan-400 group/btn"
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-all text-white/40 hover:text-cyan-400 group/btn"
                 >
                   <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
                 </button>
@@ -147,9 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <section>
           <div className="px-3 mb-4">
-            <h2 className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
-              General
-            </h2>
+            <h2 className="text-[11px] font-medium text-white/30">General</h2>
           </div>
 
           <div className="space-y-0.5">
@@ -172,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     />
                   )}
                   <i
-                    className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/50"}`}
+                    className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/70"}`}
                   ></i>
                   {section.label}
                 </button>

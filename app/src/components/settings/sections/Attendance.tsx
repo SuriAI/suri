@@ -27,8 +27,8 @@ export function Attendance({
       {/* 1. Core Logic & Rules */}
       <div className="overflow-hidden">
         <div className="py-2 border-b border-white/5">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/50 flex items-center gap-2">
-            <i className="fa-solid fa-clock-rotate-left text-[9px]"></i>
+          <h3 className="text-[11px] font-medium text-cyan-400/50 flex items-center gap-2">
+            <i className="fa-solid fa-clock-rotate-left text-[11px]"></i>
             Attendance Logic
           </h3>
         </div>
@@ -127,9 +127,9 @@ export function Attendance({
 
                     <div className="flex items-center gap-3 shrink-0 ml-auto">
                       <span
-                        className={`text-[10px] font-black uppercase tracking-widest min-w-10 text-right whitespace-nowrap transition-colors duration-150 ${
+                        className={`text-[11px] font-medium min-w-10 text-right whitespace-nowrap transition-colors duration-150 ${
                           attendanceSettings.trackCheckout
-                            ? "text-cyan-400"
+                            ? "text-cyan-400/80"
                             : "text-white/20"
                         }`}
                       >
@@ -233,7 +233,7 @@ export function Attendance({
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0 ml-auto">
-                      <span className="text-cyan-400 text-[10px] font-black uppercase tracking-widest min-w-10 text-right whitespace-nowrap">
+                      <span className="text-cyan-400/80 text-[11px] font-medium min-w-10 text-right whitespace-nowrap">
                         {attendanceSettings.lateThresholdMinutes} min
                       </span>
                       <input
@@ -259,8 +259,8 @@ export function Attendance({
       {/* 2. Security & Compliance */}
       <div className="overflow-hidden">
         <div className="py-2 border-b border-white/5">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400/50 flex items-center gap-2">
-            <i className="fa-solid fa-shield-halved text-[9px]"></i>
+          <h3 className="text-[11px] font-medium text-cyan-400/50 flex items-center gap-2">
+            <i className="fa-solid fa-shield-halved text-[11px]"></i>
             Security & Compliance
           </h3>
         </div>
@@ -283,8 +283,8 @@ export function Attendance({
                     className="text-xs text-white/40 font-normal"
                   >
                     {attendanceSettings.enableSpoofDetection
-                      ? "ON: Extra security against fake faces or photos."
-                      : "OFF: Standard scanning speed."}
+                      ? "ON: Protects against spoofing."
+                      : "OFF: No protection against spoofing."}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -326,7 +326,7 @@ export function Attendance({
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-auto">
-              <span className="text-[10px] uppercase font-black tracking-widest text-white/20">
+              <span className="text-[11px] font-medium text-white/40">
                 days
               </span>
               <input
@@ -339,7 +339,7 @@ export function Attendance({
                     Math.max(0, parseInt(e.target.value) || 0),
                   )
                 }
-                className="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-cyan-400/30 transition-all font-bold"
+                className="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-center text-white outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 font-bold"
               />
             </div>
           </div>

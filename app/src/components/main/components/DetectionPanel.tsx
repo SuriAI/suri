@@ -171,7 +171,7 @@ export function DetectionPanel({
             </div>
 
             <div
-              className={`text-[10px] font-black uppercase tracking-[0.2em] transition-opacity duration-500 ${isStreaming ? "text-cyan-400 animate-pulse" : "text-white/20"}`}
+              className={`text-[11px] font-bold transition-opacity duration-500 ${isStreaming ? "text-cyan-400/60 animate-pulse" : "text-white/35"}`}
             >
               {isVideoLoading ? null : isStreaming ? "Radar Scanning" : "Ready"}
             </div>

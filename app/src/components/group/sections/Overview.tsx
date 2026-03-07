@@ -133,7 +133,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
   return (
     <section className="space-y-6 h-full flex flex-col overflow-hidden p-6 custom-scroll overflow-y-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/5 bg-[#0a0a0b] rounded-lg overflow-hidden divide-x divide-white/5 shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-3 border border-white/10 bg-[#080808] rounded-xl overflow-hidden divide-x divide-white/10 shrink-0">
         <div className="px-8">
           <StatsCard
             type="present"
@@ -172,26 +172,14 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
-            <div className="relative w-full sm:w-56">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+            <div className="relative w-full sm:w-64 group/search">
+              <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[11px] text-white/35 group-focus-within/search:text-cyan-400 transition-colors pointer-events-none"></i>
               <input
                 type="search"
                 value={activitySearch}
                 onChange={(e) => setActivitySearch(e.target.value)}
                 placeholder="Search records..."
-                className="w-full rounded-lg border border-white/10 bg-black/40 pl-9 pr-3 py-1.5 text-xs text-white placeholder:text-white/30 focus:border-cyan-400/50 focus:bg-white/5 focus:outline-none transition-all"
+                className="w-full rounded-xl border border-white/10 bg-black/40 pl-9 pr-3 py-2 text-[11px] font-medium text-white placeholder:text-white/25 outline-none transition-all duration-300 focus:border-cyan-500/30 focus:bg-white/5 focus:ring-4 focus:ring-cyan-500/10"
               />
             </div>
           </div>
@@ -204,10 +192,10 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
                   <i className="fa-regular fa-clock text-white/20 text-xl"></i>
                 </div>
-                <div className="text-sm font-medium text-white/60">
+                <div className="text-[11px] font-bold text-white/60">
                   No activity yet
                 </div>
-                <div className="text-xs text-white/30 mt-1 text-center max-w-xs">
+                <div className="text-[11px] text-white/35 font-bold mt-1 text-center max-w-xs uppercase tracking-tight">
                   Check-ins and registrations will appear here.
                 </div>
               </div>
@@ -233,13 +221,13 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                           <span className="font-bold text-white text-[13px] tracking-tight group-hover:text-cyan-400 transition-colors">
                             {displayName}
                           </span>
-                          <span className="text-[10px] font-medium text-white/20 uppercase tracking-[0.2em] ml-auto">
+                          <span className="text-[11px] font-medium text-white/30 ml-auto">
                             {getRelativeTime(record.timestamp)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <div className="flex items-center gap-1.5 text-[10px] text-white/30">
-                            <i className="fa-regular fa-clock text-[9px] opacity-40"></i>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold text-white/35">
+                            <i className="fa-regular fa-clock text-[10px] opacity-80"></i>
                             <span>{formatTime(record.timestamp)}</span>
                           </div>
                         </div>

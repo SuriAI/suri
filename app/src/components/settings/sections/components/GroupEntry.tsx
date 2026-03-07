@@ -89,7 +89,7 @@ export function GroupEntry({
                 onClick={(e) => e.stopPropagation()}
                 autoFocus
                 disabled={savingGroup === group.id}
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-xs font-bold text-white focus:outline-none focus:border-cyan-400/50 transition-colors h-6"
+                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-xs font-bold text-white outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10 h-6"
               />
             ) : (
               <div
@@ -108,10 +108,10 @@ export function GroupEntry({
 
             {/* Combined Metadata */}
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[9px] font-black uppercase tracking-widest text-white/20 shrink-0">
+              <span className="text-[9px] font-medium text-white/5 shrink-0">
                 ·
               </span>
-              <div className="text-[10px] text-white/20 italic">
+              <div className="text-[11px] font-bold text-white/35">
                 Group ID: {group.id}
               </div>
             </div>
@@ -120,11 +120,11 @@ export function GroupEntry({
 
         <div className="flex items-center gap-4 shrink-0 ml-4">
           <div className="flex items-center gap-2.5">
-            <div className="text-[9px] font-bold text-white/40 uppercase tracking-tighter">
+            <div className="text-[11px] font-bold text-white/35">
               {memberCount} {memberCount === 1 ? "Member" : "Members"}
             </div>
             {registeredCount > 0 && (
-              <div className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">
+              <div className="text-[11px] font-bold text-cyan-400/80">
                 {registeredCount} Registered
               </div>
             )}

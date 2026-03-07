@@ -90,7 +90,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ onClose }) => {
         <div className="flex justify-end mt-8">
           <button
             onClick={onClose}
-            className="px-6 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+            className="px-6 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
           >
             Close
           </button>
@@ -139,7 +139,7 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
           </span>
           <button
             onClick={onDownload}
-            className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold transition-all border border-cyan-500/20 active:scale-95"
+            className="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-medium transition-all border border-cyan-500/20 active:scale-95"
           >
             Download
           </button>
@@ -163,7 +163,7 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
           <button
             onClick={onCheck}
             disabled={isChecking}
-            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-colors border border-white/5"
+            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-medium transition-colors border border-white/5"
           >
             Retry
           </button>
@@ -294,23 +294,23 @@ export const About: React.FC = () => {
             <h1 className="text-4xl font-black text-white tracking-[-0.04em]">
               Suri
             </h1>
-            <p className="text-sm text-white/30 font-medium tracking-widest uppercase">
+            <p className="text-[11px] text-white/40 font-medium">
               AI Attendance Tracker
             </p>
           </div>
 
           <div className="space-y-1 w-full text-left">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-[11px] uppercase tracking-widest font-bold text-white/20">
+              <span className="text-[11px] font-medium text-white/30">
                 Version
               </span>
-              <span className="text-xs font-mono text-white/40">
+              <span className="text-xs font-mono text-white/60">
                 {version || "—"}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-[11px] uppercase tracking-widest font-bold text-white/20">
+              <span className="text-[11px] font-medium text-white/30">
                 Updates
               </span>
               <UpdateStatus
@@ -324,7 +324,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-[11px] uppercase tracking-widest font-bold text-white/20">
+              <span className="text-[11px] font-medium text-white/30">
                 License
               </span>
               <button
@@ -336,7 +336,7 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-[11px] uppercase tracking-widest font-bold text-white/20">
+              <span className="text-[11px] font-medium text-white/30">
                 Source code
               </span>
               <button
@@ -348,12 +348,12 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-[11px] uppercase tracking-widest font-bold text-white/20">
+              <span className="text-[11px] font-medium text-white/30">
                 Privacy & Data
               </span>
               <button
                 onClick={() => setShowPrivacyModal(true)}
-                className="px-3 py-1.5 rounded-lg bg-transparent hover:bg-cyan-500/10 text-white/40 hover:text-cyan-400 text-xs font-medium transition-all border border-transparent hover:border-cyan-500/20 active:scale-95"
+                className="px-3 py-1.5 rounded-lg bg-transparent hover:bg-cyan-500/10 text-white/50 hover:text-cyan-400 text-xs font-medium transition-all border border-transparent hover:border-cyan-500/10 active:scale-95"
               >
                 Read Policy
               </button>
@@ -365,26 +365,24 @@ export const About: React.FC = () => {
           <div className="flex items-center justify-center gap-6 mb-6">
             <button
               onClick={openLink("https://github.com/suriAI/suri/releases")}
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-white/20 hover:text-white/60 transition-colors"
+              className="text-[11px] font-semibold text-white/35 hover:text-white/80 transition-colors"
             >
               Releases
             </button>
             <button
               onClick={openLink("https://github.com/suriAI/suri/issues")}
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-white/20 hover:text-white/60 transition-colors"
+              className="text-[11px] font-semibold text-white/35 hover:text-white/80 transition-colors"
             >
               Support
             </button>
             <button
               onClick={openLink("https://github.com/suriAI/suri#readme")}
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-white/20 hover:text-white/60 transition-colors"
+              className="text-[11px] font-semibold text-white/35 hover:text-white/80 transition-colors"
             >
               Docs
             </button>
           </div>
-          <p className="text-[10px] text-white/5 font-black uppercase tracking-[0.3em]">
-            © 2026 Suri
-          </p>
+          <p className="text-[11px] text-white/25 font-medium">© 2026 Suri</p>
         </div>
       </div>
     </div>
