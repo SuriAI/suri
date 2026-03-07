@@ -21,6 +21,7 @@ export interface AttendanceSettings {
   reLogCooldownSeconds: number; // New setting for database prevention
   enableSpoofDetection: boolean;
   trackCheckout: boolean;
+  dataRetentionDays?: number;
 }
 
 export interface SettingsOverview {

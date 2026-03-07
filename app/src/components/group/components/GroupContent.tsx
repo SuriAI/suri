@@ -76,7 +76,7 @@ function GroupContentComponent({
         exit={{ opacity: 0, scale: 0.995 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
         style={{ willChange: "opacity, transform" }}
-        className="flex-1 w-full h-full flex flex-col"
+        className="flex-1 w-full min-h-0 flex flex-col"
       >
         {activeSection === "overview" && (
           <Overview

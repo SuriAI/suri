@@ -47,13 +47,20 @@ export interface DetectionResponse {
 
 export class BackendClient {
   private getBaseUrl: () => string;
+  private getToken: () => string;
 
-  constructor(getBaseUrl: () => string) {
+  constructor(getBaseUrl: () => string, getToken: () => string) {
     this.getBaseUrl = getBaseUrl;
+    this.getToken = getToken;
   }
 
   private getUrl(path: string): string {
     return `${this.getBaseUrl()}${path}`;
+  }
+
+  private authHeaders(): Record<string, string> {
+    const token = this.getToken();
+    return token ? { "X-Suri-Token": token } : {};
   }
 
   async checkAvailability(): Promise<{
@@ -78,6 +85,7 @@ export class BackendClient {
   async getModels(): Promise<ModelsResponse> {
     const response = await fetch(this.getUrl("/models"), {
       method: "GET",
+      headers: this.authHeaders(),
       signal: AbortSignal.timeout(10000),
     });
 
@@ -99,7 +107,7 @@ export class BackendClient {
 
     const response = await fetch(this.getUrl("/detect"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...this.authHeaders() },
       body: JSON.stringify(request),
       signal: AbortSignal.timeout(30000),
     });
@@ -126,7 +134,7 @@ export class BackendClient {
 
     const response = await fetch(this.getUrl("/face/recognize"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...this.authHeaders() },
       body: JSON.stringify(request),
       signal: AbortSignal.timeout(30000),
     });

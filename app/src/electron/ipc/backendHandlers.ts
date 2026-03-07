@@ -1,7 +1,19 @@
 import { ipcMain } from "electron";
 import { backendService, type DetectionOptions } from "../backendService.js";
 
+/** Build auth headers for all direct fetch calls to the local backend. */
+function authHeaders(
+  extra: Record<string, string> = {},
+): Record<string, string> {
+  const token = backendService.getToken();
+  return token ? { "X-Suri-Token": token, ...extra } : { ...extra };
+}
+
 export function registerBackendHandlers() {
+  ipcMain.handle("backend:get-token", () => {
+    return backendService.getToken();
+  });
+
   ipcMain.handle("backend:check-availability", async () => {
     try {
       return await backendService.checkAvailability();
@@ -64,7 +76,7 @@ export function registerBackendHandlers() {
         const url = `${backendService.getUrl()}/face/recognize`;
         const response = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({
             image: imageData,
             bbox,
@@ -99,7 +111,7 @@ export function registerBackendHandlers() {
         const url = `${backendService.getUrl()}/face/register`;
         const response = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({
             image: imageData,
             person_id: personId,
@@ -121,7 +133,9 @@ export function registerBackendHandlers() {
   );
 
   ipcMain.handle("backend:get-face-stats", async () => {
-    const response = await fetch(`${backendService.getUrl()}/face/stats`);
+    const response = await fetch(`${backendService.getUrl()}/face/stats`, {
+      headers: authHeaders(),
+    });
     if (!response.ok) throw new Error("Failed to get stats");
     return await response.json();
   });
@@ -129,7 +143,7 @@ export function registerBackendHandlers() {
   ipcMain.handle("backend:remove-person", async (_event, personId: string) => {
     const response = await fetch(
       `${backendService.getUrl()}/face/person/${encodeURIComponent(personId)}`,
-      { method: "DELETE" },
+      { method: "DELETE", headers: authHeaders() },
     );
     return await response.json();
   });
@@ -139,7 +153,7 @@ export function registerBackendHandlers() {
     async (_event, oldPersonId: string, newPersonId: string) => {
       const response = await fetch(`${backendService.getUrl()}/face/person`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           old_person_id: oldPersonId,
           new_person_id: newPersonId,
@@ -150,14 +164,16 @@ export function registerBackendHandlers() {
   );
 
   ipcMain.handle("backend:get-all-persons", async () => {
-    const response = await fetch(`${backendService.getUrl()}/face/persons`);
+    const response = await fetch(`${backendService.getUrl()}/face/persons`, {
+      headers: authHeaders(),
+    });
     return await response.json();
   });
 
   ipcMain.handle("backend:set-threshold", async (_event, threshold: number) => {
     const response = await fetch(`${backendService.getUrl()}/face/threshold`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ threshold }),
     });
     return await response.json();
@@ -166,6 +182,7 @@ export function registerBackendHandlers() {
   ipcMain.handle("backend:clear-database", async () => {
     const response = await fetch(`${backendService.getUrl()}/face/database`, {
       method: "DELETE",
+      headers: authHeaders(),
     });
     return await response.json();
   });

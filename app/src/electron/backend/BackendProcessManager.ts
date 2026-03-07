@@ -1,4 +1,5 @@
 import { spawn, exec, execSync, type ChildProcess } from "child_process";
+import { randomBytes } from "crypto";
 import { app } from "electron";
 import path from "path";
 import fs from "fs";
@@ -31,10 +32,17 @@ export class BackendProcessManager {
   private status: BackendStatus;
   private healthCheckTimer: NodeJS.Timeout | null = null;
   private startupPromise: Promise<void> | null = null;
+  /** Session token injected into the Python process via SURI_API_TOKEN. */
+  private token: string = "";
 
   constructor(config: BackendConfig, status: BackendStatus) {
     this.config = config;
     this.status = status;
+  }
+
+  /** Return the per-session API token so callers can include it as X-Suri-Token. */
+  getToken(): string {
+    return this.token;
   }
 
   async start(): Promise<void> {
@@ -45,6 +53,9 @@ export class BackendProcessManager {
 
   private async _start(): Promise<void> {
     if (this.status.isRunning) return;
+
+    // Generate a fresh per-session token before spawning the backend.
+    this.token = randomBytes(32).toString("hex");
 
     await this.killAllBackendProcesses();
 
@@ -75,6 +86,7 @@ export class BackendProcessManager {
       const env: Record<string, string | undefined> = {
         ...process.env,
         ENVIRONMENT: isDev() ? "development" : "production",
+        SURI_API_TOKEN: this.token,
       };
 
       // In production, force data to AppData. In dev, let backend use repo root/data

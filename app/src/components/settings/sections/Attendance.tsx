@@ -8,6 +8,7 @@ interface AttendanceProps {
   onReLogCooldownChange: (seconds: number) => void;
   onSpoofDetectionToggle: (enabled: boolean) => void;
   onTrackCheckoutToggle: (enabled: boolean) => void;
+  onDataRetentionChange: (days: number) => void;
   hasSelectedGroup?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function Attendance({
   onReLogCooldownChange,
   onSpoofDetectionToggle,
   onTrackCheckoutToggle,
+  onDataRetentionChange,
   hasSelectedGroup = false,
 }: AttendanceProps) {
   return (
@@ -83,8 +85,8 @@ export function Attendance({
             >
               <div className="flex items-center pb-4 pt-1 border-b border-white/5 gap-4 pl-4 relative">
                 {/* Visual indicator of nesting */}
-                <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-[2px]"></div>
-                <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-[2px]"></div>
+                <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-xs"></div>
+                <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-xs"></div>
 
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-white/50 mt-0.5">
@@ -214,8 +216,8 @@ export function Attendance({
             >
               <div className="flex items-center pb-4 pt-1 border-b border-white/5 gap-4 pl-4 relative">
                 {/* Visual indicator of nesting */}
-                <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-[2px]"></div>
-                <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-[2px]"></div>
+                <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-xs"></div>
+                <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-xs"></div>
 
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-white/50 mt-0.5">
@@ -288,6 +290,34 @@ export function Attendance({
             }`}
           ></div>
         </button>
+      </div>
+
+      {/* 4. Privacy: Data Retention */}
+      <div className="flex items-center py-3 gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-white/90">
+            Data Retention
+          </div>
+          <div className="text-xs text-white/50 mt-0.5">
+            {attendanceSettings.dataRetentionDays &&
+            attendanceSettings.dataRetentionDays > 0
+              ? `Records older than ${attendanceSettings.dataRetentionDays} days are deleted automatically on startup.`
+              : "Records are kept indefinitely. Set a day limit to auto-delete old records."}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
+          <input
+            type="number"
+            min={0}
+            max={3650}
+            value={attendanceSettings.dataRetentionDays ?? 0}
+            onChange={(e) =>
+              onDataRetentionChange(Math.max(0, parseInt(e.target.value) || 0))
+            }
+            className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-center text-white focus:outline-none focus:border-cyan-400/30 transition-all"
+          />
+          <span className="text-xs text-white/40">days</span>
+        </div>
       </div>
     </div>
   );

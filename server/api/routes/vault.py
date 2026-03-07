@@ -29,6 +29,7 @@ from api.schemas import (
     ImportDataRequest,
     SuccessResponse,
 )
+from core.cipher import encrypt_local_data
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +148,17 @@ async def export_vault(
     except Exception as e:
         logger.error(f"[Vault] Export failed: {e}")
         raise HTTPException(status_code=500, detail=f"Vault export failed: {e}")
+
+    finally:
+        # Audit log is written even if export partially succeeded
+        try:
+            await repo.add_audit_log(
+                action="VAULT_EXPORTED",
+                target_type="vault",
+                details=f"exported_at={datetime.now().isoformat()}",
+            )
+        except Exception as audit_err:
+            logger.warning(f"[Vault] Failed to write audit log for export: {audit_err}")
 
 
 @router.post("/import", response_model=SuccessResponse)
@@ -269,10 +281,12 @@ async def import_vault(
         imported_biometrics = 0
         for entry in payload.biometrics:
             raw_bytes = base64.b64decode(entry.embedding_b64)
+            # Encrypt before persisting — same as the normal registration path.
+            encrypted_bytes = encrypt_local_data(raw_bytes)
             await repo.session.merge(
                 FaceModel(
                     person_id=entry.person_id,
-                    embedding=raw_bytes,
+                    embedding=encrypted_bytes,
                     embedding_dimension=entry.embedding_dim,
                     organization_id=repo.organization_id,
                     is_deleted=False,
@@ -298,4 +312,17 @@ async def import_vault(
 
     except Exception as e:
         logger.error(f"Import failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Import failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Vault import failed: {e}")
+
+    finally:
+        try:
+            await repo.add_audit_log(
+                action="VAULT_IMPORTED",
+                target_type="vault",
+                details=(
+                    f"overwrite={payload.attendance.overwrite_existing}, "
+                    f"imported_at={datetime.now().isoformat()}"
+                ),
+            )
+        except Exception as audit_err:
+            logger.warning(f"[Vault] Failed to write audit log for import: {audit_err}")

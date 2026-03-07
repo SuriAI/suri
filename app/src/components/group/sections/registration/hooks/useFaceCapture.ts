@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { attendanceManager, backendService } from "@/services";
+import { attendanceManager } from "@/services";
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
 import type { DialogAPI } from "@/components/shared";
 import type { CapturedFrame } from "@/components/group/sections/registration/types";
@@ -54,7 +54,7 @@ export function useFaceCapture(
       ]);
 
       try {
-        const detection = await backendService.detectFaces(
+        const detection = await window.electronAPI.backend.detectFaces(
           toBase64Payload(dataUrl),
           { model_type: "face_detector" },
         );

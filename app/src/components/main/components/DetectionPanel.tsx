@@ -52,7 +52,7 @@ const DetectionCard = memo(
       <div
         key={index}
         className={`
-        bg-black rounded-lg p-3 border-l-4 min-h-[40px] transition-all
+        bg-black rounded-lg p-3 border-l-4 min-h-10 transition-all
         ${statusStyles.borderColor}
         ${statusStyles.bgColor}
         ${trackedFace?.isLocked ? "border-cyan-500/50 bg-linear-to-br from-cyan-500/10 to-transparent" : ""}

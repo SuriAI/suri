@@ -1,3 +1,4 @@
+import hmac
 import logging
 import os
 import uvicorn
@@ -36,6 +37,37 @@ app = FastAPI(
 setup_cors(app)
 
 
+@app.middleware("http")
+async def verify_local_token(request: Request, call_next):
+    """Reject requests that don’t carry the session token injected by Electron.
+
+    Only active when SURI_API_TOKEN is set in the environment (i.e. when the
+    backend is launched by the Electron shell).  Direct ‘python run.py’
+    invocations without the variable skip validation so development remains
+    convenient, but a warning is emitted.
+    """
+    # Health-check and CORS preflight are always public
+    if request.url.path == "/" or request.method == "OPTIONS":
+        return await call_next(request)
+
+    expected_token = os.getenv("SURI_API_TOKEN")
+    if not expected_token:
+        # Token not configured — allow but warn once
+        if not getattr(app.state, "_token_warn_emitted", False):
+            logger.warning(
+                "SURI_API_TOKEN is not set. API is accessible without authentication. "
+                "In production this variable is always injected by Electron."
+            )
+            app.state._token_warn_emitted = True
+        return await call_next(request)
+
+    provided = request.headers.get("X-Suri-Token", "")
+    if not hmac.compare_digest(provided, expected_token):
+        return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+
+    return await call_next(request)
+
+
 app.include_router(router)
 
 
@@ -48,7 +80,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "success": False,
             "error": "Internal Server Error",
-            "detail": str(exc) if os.getenv("ENVIRONMENT") != "production" else None,
+            # Only expose detail in explicit development mode; default is safe.
+            "detail": str(exc) if os.getenv("ENVIRONMENT") == "development" else None,
         },
     )
 

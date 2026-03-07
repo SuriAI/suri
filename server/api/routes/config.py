@@ -1,5 +1,8 @@
+import csv
+import io
 import logging
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 
 from api.schemas import (
     AttendanceSettingsUpdate,
@@ -52,4 +55,33 @@ async def update_settings(
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.get("/audit-log")
+async def export_audit_log(repo: AttendanceRepository = Depends(get_repository)):
+    """Export audit log as CSV for compliance review."""
+    try:
+        logs = await repo.get_audit_logs()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["timestamp", "action", "target_type", "target_id", "details"])
+        for log in logs:
+            writer.writerow(
+                [
+                    log.timestamp.isoformat() if log.timestamp else "",
+                    log.action or "",
+                    log.target_type or "",
+                    log.target_id or "",
+                    log.details or "",
+                ]
+            )
+        output.seek(0)
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=audit_log.csv"},
+        )
+    except Exception as e:
+        logger.error(f"Error exporting audit log: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

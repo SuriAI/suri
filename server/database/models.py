@@ -7,6 +7,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     DateTime,
+    Text,
     func,
     Index,
     LargeBinary,
@@ -85,6 +86,11 @@ class AttendanceMember(Base, SyncMixin):
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     has_consent: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Compliance: record who granted consent and when (DPA Sec.12 / GDPR Art.7)
+    consent_granted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
+    consent_granted_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     group: Mapped["AttendanceGroup"] = relationship(back_populates="members")
     records: Mapped[List["AttendanceRecord"]] = relationship(back_populates="member")
@@ -171,6 +177,8 @@ class AttendanceSettings(Base, SyncMixin):
     attendance_cooldown_seconds: Mapped[int] = mapped_column(Integer, default=10)
     # Longer anti-duplicate window (e.g., 30 minutes) to prevent re-logging.
     relog_cooldown_seconds: Mapped[int] = mapped_column(Integer, default=1800)
+    # Compliance: auto-purge records older than N days (0 = keep forever)
+    data_retention_days: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Face(Base, SyncMixin):
@@ -185,3 +193,26 @@ class Face(Base, SyncMixin):
     )
 
     __table_args__ = (Index("ix_face_person_id", "person_id"),)
+
+
+class AuditLog(Base):
+    """Immutable audit trail for sensitive administrative actions."""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.current_timestamp(), index=True
+    )
+    action: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    target_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    target_id: Mapped[Optional[str]] = mapped_column(String, nullable=True, index=True)
+    details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    organization_id: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True, index=True
+    )
+
+    __table_args__ = (
+        Index("ix_audit_timestamp", "timestamp"),
+        Index("ix_audit_action", "action"),
+    )

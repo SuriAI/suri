@@ -88,6 +88,29 @@ async def lifespan(app: FastAPI):
         attendance_routes.face_detector = face_detector
         attendance_routes.face_recognizer = face_recognizer
 
+        # Run data retention purge on startup (respects configured retention policy)
+        try:
+            from database.session import AsyncSessionLocal
+            from database.repository import AttendanceRepository
+
+            async with AsyncSessionLocal() as session:
+                repo = AttendanceRepository(session)
+                settings = await repo.get_settings()
+                if settings.data_retention_days > 0:
+                    result = await repo.cleanup_old_data(settings.data_retention_days)
+                    total_deleted = result.get("records_deleted", 0) + result.get(
+                        "sessions_deleted", 0
+                    )
+                    if total_deleted > 0:
+                        logger.info(
+                            "Retention purge: removed %d records and %d sessions older than %d days.",
+                            result.get("records_deleted", 0),
+                            result.get("sessions_deleted", 0),
+                            settings.data_retention_days,
+                        )
+        except Exception as purge_err:
+            logger.warning("Retention purge failed (non-fatal): %s", purge_err)
+
         logger.info("Startup complete")
 
     except Exception as e:

@@ -30,7 +30,7 @@ function App() {
       <div className="electron-window-container">
         <WindowBar />
         <div className="app-content-wrapper">
-          <div className="text-white h-full">
+          <div className="text-white h-full overflow-hidden">
             {hasSeenIntro ? (
               <Main />
             ) : (

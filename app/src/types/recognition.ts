@@ -212,6 +212,7 @@ export interface AttendanceSettings {
   confidence_threshold?: number;
   attendance_cooldown_seconds: number;
   relog_cooldown_seconds?: number;
+  data_retention_days?: number;
 }
 
 export interface AttendanceEvent {

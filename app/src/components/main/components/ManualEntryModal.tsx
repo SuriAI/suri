@@ -180,7 +180,7 @@ export const ManualEntryModal = ({
                           </span>
                         </div>
                       ) : isEntrySubmitting ? (
-                        <div className="w-[88px] flex justify-center">
+                        <div className="w-22 flex justify-center">
                           <i className="fa-solid fa-spinner fa-spin text-[10px] text-cyan-400"></i>
                         </div>
                       ) : (
