@@ -334,7 +334,7 @@ export const AttendancePanel = memo(function AttendancePanel({
     <div className="flex-1 flex flex-col overflow-hidden">
       {attendanceGroups.length > 0 ? (
         <div className="px-3 py-2 pb-1.5 shrink-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <div className="flex-1 min-w-30">
               <Dropdown
                 options={attendanceGroups.map((group) => ({
@@ -358,27 +358,27 @@ export const AttendancePanel = memo(function AttendancePanel({
                 placeholder="Select group…"
                 emptyMessage="No groups available"
                 maxHeight={256}
-                buttonClassName="text-xs py-1.5"
+                buttonClassName="text-xs h-9 border-r-0 rounded-r-none focus:ring-0! focus:border-white/20!"
                 allowClear={false}
                 showPlaceholderOption={false}
               />
             </div>
-            <Tooltip content="Members" position="top">
-              <button
-                onClick={() => setShowManualEntry(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white"
-                aria-label="Members"
-              >
-                <i className="fa-solid fa-users text-sm"></i>
-              </button>
-            </Tooltip>
             <Tooltip content="Create Group" position="top">
               <button
                 onClick={() => setShowGroupManagement(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white"
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-none bg-white/5 hover:bg-white/10 border border-r-0 border-white/10 transition-all text-white/50 hover:text-white focus:outline-none"
                 aria-label="Create Group"
               >
                 <i className="fa-solid fa-plus text-sm"></i>
+              </button>
+            </Tooltip>
+            <Tooltip content="Members" position="top">
+              <button
+                onClick={() => setShowManualEntry(true)}
+                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-l-none rounded-r-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white focus:outline-none"
+                aria-label="Members"
+              >
+                <i className="fa-solid fa-users text-sm"></i>
               </button>
             </Tooltip>
           </div>

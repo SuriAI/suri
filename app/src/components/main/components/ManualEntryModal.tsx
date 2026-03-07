@@ -115,7 +115,7 @@ export const ManualEntryModal = ({
     >
       <div className="space-y-4">
         {/* Search & Add Header */}
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center mt-2">
           <div className="relative group/search flex-1">
             <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[11px] text-white/35 group-focus-within/search:text-cyan-400 transition-colors"></i>
             <input
@@ -123,7 +123,7 @@ export const ManualEntryModal = ({
               placeholder="Search members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 text-[11px] font-medium text-white placeholder:text-white/25 outline-none transition-all duration-300 focus:bg-white/10 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10"
+              className="w-full h-9 bg-white/5 border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-9 pr-4 text-[11px] font-medium text-white placeholder:text-white/25 outline-none transition-all duration-300 focus:bg-white/10 focus:border-white/20"
             />
           </div>
           <Tooltip content="Add member" position="top">
@@ -132,7 +132,7 @@ export const ManualEntryModal = ({
                 onClose();
                 onAddMember();
               }}
-              className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white group/add"
+              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-l-none rounded-r-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white group/add focus:outline-none"
             >
               <i className="fa-solid fa-plus text-xs group-hover/add:scale-110 transition-transform"></i>
             </button>

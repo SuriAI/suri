@@ -189,14 +189,11 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           <div className="h-full">
             {recentRecords.length === 0 ? (
               <div className="flex flex-col flex-1 items-center justify-center p-12 h-full min-h-[250px]">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4">
                   <i className="fa-regular fa-clock text-white/20 text-xl"></i>
                 </div>
-                <div className="text-[11px] font-bold text-white/60">
+                <div className="text-xs font-bold text-white/60">
                   No activity yet
-                </div>
-                <div className="text-[11px] text-white/35 font-bold mt-1 text-center max-w-xs uppercase tracking-tight">
-                  Check-ins and registrations will appear here.
                 </div>
               </div>
             ) : filteredRecords.length === 0 ? (

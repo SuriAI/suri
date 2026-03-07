@@ -23,6 +23,13 @@ async def cleanup_old_data(
         days = cleanup_data.days_to_keep or 30
         results = await repo.cleanup_old_data(days)
 
+        await repo.add_audit_log(
+            action="DATA_CLEANUP_RUN",
+            target_type="system",
+            target_id="attendance_records",
+            details=f"Cleanup for data older than {days} days. Deleted {results['records_deleted']} records and {results['sessions_deleted']} sessions.",
+        )
+
         return SuccessResponse(
             message=f"Cleanup successful: {results['records_deleted']} records and {results['sessions_deleted']} sessions deleted."
         )

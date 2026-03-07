@@ -34,6 +34,14 @@ async def create_group(
         }
 
         created_group = await repo.create_group(db_group_data)
+
+        await repo.add_audit_log(
+            action="GROUP_CREATED",
+            target_type="group",
+            target_id=group_id,
+            details=f"Group '{group_data.name}' created",
+        )
+
         return created_group
 
     except HTTPException:
@@ -106,6 +114,13 @@ async def update_group(
         if not updated_group:
             raise HTTPException(status_code=500, detail="Failed to update group")
 
+        await repo.add_audit_log(
+            action="GROUP_UPDATED",
+            target_type="group",
+            target_id=group_id,
+            details=f"Fields updated: {', '.join(update_data.keys())}",
+        )
+
         return updated_group
 
     except HTTPException:
@@ -124,6 +139,13 @@ async def delete_group(
         success = await repo.delete_group(group_id)
         if not success:
             raise HTTPException(status_code=404, detail="Group not found")
+
+        await repo.add_audit_log(
+            action="GROUP_DELETED",
+            target_type="group",
+            target_id=group_id,
+            details="Group deleted (soft delete)",
+        )
 
         return SuccessResponse(message=f"Group {group_id} deleted successfully")
 
