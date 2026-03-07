@@ -288,7 +288,7 @@ export const About: React.FC = () => {
         <PrivacyModal onClose={() => setShowPrivacyModal(false)} />
       )}
 
-      <div className="p-10 h-full flex flex-col items-center max-w-lg mx-auto text-center">
+      <div className="pt-4 px-10 pb-10 h-full flex flex-col items-center max-w-lg mx-auto text-center">
         <div className="w-full flex-1 space-y-12">
           <div className="space-y-2">
             <h1 className="text-4xl font-black text-white tracking-[-0.04em]">

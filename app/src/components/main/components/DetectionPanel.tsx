@@ -21,27 +21,25 @@ const DetectionCard = memo(
     recognitionResult,
     isRecognized,
     displayName,
+    member,
     trackedFace,
   }: {
     index: number;
     recognitionResult: ExtendedFaceRecognitionResponse | undefined;
     isRecognized: boolean;
     displayName: string;
+    member?: AttendanceMember | null;
     trackedFace: TrackedFace | undefined;
   }) => {
     const getStatusStyles = () => {
       if (isRecognized) {
         return {
-          borderColor: "border-cyan-500/60",
-          bgColor: "bg-cyan-950/10",
           textColor: "text-cyan-400",
         };
       }
 
       return {
-        borderColor: "border-white/10",
-        bgColor: "",
-        textColor: "text-white/60",
+        textColor: "text-white/40",
       };
     };
 
@@ -52,21 +50,15 @@ const DetectionCard = memo(
       <div
         key={index}
         className={`
-        bg-black rounded-lg p-3 border-l-4 min-h-10 transition-all
-        ${statusStyles.borderColor}
-        ${statusStyles.bgColor}
-        ${trackedFace?.isLocked ? "border-cyan-500/50 bg-linear-to-br from-cyan-500/10 to-transparent" : ""}
-        ${hasName ? "shadow-md" : ""}
+        bg-white/2 border border-white/5 rounded-lg p-2.5 min-h-10 transition-all
+        ${trackedFace?.isLocked ? "border-cyan-500/30 bg-cyan-500/3" : ""}
+        ${hasName ? "shadow-sm shadow-black/20" : ""}
       `}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {hasName ? (
-              <MemberTooltip
-                displayName={displayName}
-                position="right"
-                role="Recognized"
-              >
+              <MemberTooltip member={member} position="right" role="Recognized">
                 <span
                   className={`font-semibold text-sm truncate cursor-help ${statusStyles.textColor}`}
                 >
@@ -102,6 +94,12 @@ export function DetectionPanel({
     () => Array.from(trackedFaces.values()),
     [trackedFaces],
   );
+
+  const memberMap = useMemo(() => {
+    const map = new Map<string, AttendanceMember>();
+    groupMembers.forEach((m) => map.set(m.person_id, m));
+    return map;
+  }, [groupMembers]);
 
   const filteredFaces = useMemo(() => {
     if (!currentDetections?.faces) return [];
@@ -173,20 +171,9 @@ export function DetectionPanel({
             </div>
 
             <div
-              className={`text-sm font-medium ${isStreaming ? "text-cyan-400/60" : "text-white/40"}`}
+              className={`text-[10px] font-black uppercase tracking-[0.2em] transition-opacity duration-500 ${isStreaming ? "text-cyan-400 animate-pulse" : "text-white/20"}`}
             >
-              {isVideoLoading ? null : isStreaming ? (
-                <span className="flex items-center gap-1">
-                  <span>Tracking</span>
-                  <span className="flex gap-0.5">
-                    <span className="ai-dot-1">.</span>
-                    <span className="ai-dot-2">.</span>
-                    <span className="ai-dot-3">.</span>
-                  </span>
-                </span>
-              ) : (
-                <span>Ready to Track</span>
-              )}
+              {isVideoLoading ? null : isStreaming ? "Radar Scanning" : "Ready"}
             </div>
           </div>
         </div>
@@ -215,6 +202,11 @@ export function DetectionPanel({
                 recognitionResult={recognitionResult}
                 isRecognized={isRecognized}
                 displayName={displayName}
+                member={
+                  recognitionResult?.person_id
+                    ? memberMap.get(recognitionResult.person_id)
+                    : null
+                }
                 trackedFace={trackedFace}
               />
             );

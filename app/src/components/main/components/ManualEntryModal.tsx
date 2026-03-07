@@ -97,16 +97,21 @@ export const ManualEntryModal = ({
         <div className="flex flex-col -mt-0.5">
           <div className="flex items-center gap-2">
             <i className="fa-solid fa-users text-cyan-400 text-sm"></i>
-            <span>Members</span>
+            <span className="font-bold tracking-tight">Members</span>
           </div>
-          <p className="text-white/40 text-[10px] mt-0.5 font-medium">
-            {members.length} Total • {presentPersonIds.size} Present
+          <div className="flex items-center gap-2 mt-2">
+            <div className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/40">
+              {members.length} Total
+            </div>
+            <div className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/10 text-[9px] font-black uppercase tracking-widest text-cyan-400/80">
+              {presentPersonIds.size} Present
+            </div>
             {noFaceCount > 0 && (
-              <span className="text-amber-400/80 ml-1">
-                • {noFaceCount} not registered yet
-              </span>
+              <div className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/10 text-[9px] font-black uppercase tracking-widest text-amber-500/70">
+                {noFaceCount} Unregistered
+              </div>
             )}
-          </p>
+          </div>
         </div>
       }
       maxWidth="sm"
@@ -145,8 +150,8 @@ export const ManualEntryModal = ({
         )}
 
         {sortedAllMembers.length > 0 ? (
-          <div className="rounded-lg overflow-hidden bg-black/20">
-            <div className="max-h-35 overflow-y-auto custom-scroll divide-y divide-white/4">
+          <div className="rounded-lg overflow-hidden bg-white/1 border border-white/5">
+            <div className="max-h-35 overflow-y-auto custom-scroll">
               {sortedAllMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id);
                 const isEntrySubmitting = submittingId === member.person_id;
@@ -191,11 +196,9 @@ export const ManualEntryModal = ({
                       )}
                       {!isPresent && hasFace === false && (
                         <div
-                          className={`flex items-center gap-1 text-[9px] font-medium text-amber-500/50 px-1.5 py-0.5 italic ${isEntrySubmitting || searchQuery ? "hidden" : "group-hover/item:opacity-0"} transition-opacity`}
-                          title="Face not enrolled! This member must be enrolled on this device to be recognized by the camera."
+                          className={`text-[9px] font-black uppercase tracking-widest text-amber-500/30 px-2 py-1 ${isEntrySubmitting || searchQuery ? "hidden" : "group-hover/item:opacity-0"} transition-opacity`}
                         >
-                          <i className="fa-solid fa-user-slash text-[8px] opacity-70"></i>
-                          Not Registered Yet
+                          Not Registered
                         </div>
                       )}
                     </div>

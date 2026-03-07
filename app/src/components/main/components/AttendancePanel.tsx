@@ -5,6 +5,7 @@ import { Dropdown, Tooltip, MemberTooltip } from "@/components/shared";
 import type {
   AttendanceGroup,
   AttendanceRecord,
+  AttendanceMember,
 } from "@/components/main/types";
 
 import { useAttendanceStore, useUIStore } from "@/components/main/stores";
@@ -21,6 +22,7 @@ const AttendanceRecordItem = memo(
   ({
     record,
     displayName,
+    member,
     classStartTime,
     lateThresholdMinutes,
     lateThresholdEnabled,
@@ -29,6 +31,7 @@ const AttendanceRecordItem = memo(
   }: {
     record: AttendanceRecord;
     displayName: string;
+    member?: AttendanceMember | null;
     classStartTime: string;
     lateThresholdMinutes: number;
     lateThresholdEnabled: boolean;
@@ -50,7 +53,7 @@ const AttendanceRecordItem = memo(
             color: "text-cyan-400",
             pillColor: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
             borderColor: "border-l-cyan-500",
-            avatarColor: "bg-cyan-500/20 text-cyan-400",
+            avatarColor: "bg-cyan-500/10 text-cyan-400",
           };
         }
 
@@ -89,8 +92,8 @@ const AttendanceRecordItem = memo(
                   : "border-l-amber-500",
               avatarColor:
                 minutesLate > severeLateThreshold
-                  ? "bg-red-500/20 text-red-400"
-                  : "bg-amber-500/20 text-amber-400",
+                  ? "bg-red-500/10 text-red-500/70"
+                  : "bg-amber-500/10 text-amber-500/70",
             };
           }
 
@@ -100,10 +103,10 @@ const AttendanceRecordItem = memo(
               status: "early",
               minutes: minutesEarly,
               label: `${minutesEarly}M EARLY`,
-              color: "text-cyan-400",
-              pillColor: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
-              borderColor: "border-l-cyan-500",
-              avatarColor: "bg-cyan-500/20 text-cyan-400",
+              color: "text-cyan-400/80",
+              pillColor: "bg-cyan-500/10 text-cyan-400/80 border-cyan-500/20",
+              borderColor: "border-l-transparent",
+              avatarColor: "bg-cyan-500/10 text-cyan-400",
             };
           }
         }
@@ -116,10 +119,10 @@ const AttendanceRecordItem = memo(
             : lateThresholdEnabled
               ? "ON TIME"
               : "",
-          color: "text-slate-400",
-          pillColor: "bg-white/10 text-white/60 border-white/20",
+          color: "text-white/40",
+          pillColor: "bg-white/5 text-white/40 border-white/10",
           borderColor: "border-l-transparent",
-          avatarColor: "bg-white/10 text-white/60",
+          avatarColor: "bg-white/5 text-white/40",
         };
       } catch {
         return null;
@@ -130,12 +133,12 @@ const AttendanceRecordItem = memo(
 
     return (
       <MemberTooltip
-        displayName={displayName}
+        member={member}
         position="right"
         role={record.event_type === "check_out" ? "Exiting" : "Present"}
       >
         <div
-          className={`border-b border-white/5 pr-3 pl-0 py-2.5 relative group transition-colors hover:bg-white/5 border-l-2 ${timeStatus?.borderColor ?? "border-l-transparent"}`}
+          className={`border-b border-white/5 px-3 py-2.5 relative group transition-colors hover:bg-white/5`}
         >
           <div className="flex items-center gap-2 py-0.5">
             <span className="flex-1 min-w-0 text-[12px] font-medium text-white/90 truncate">
@@ -144,7 +147,7 @@ const AttendanceRecordItem = memo(
 
             <div className="shrink-0 flex items-center gap-1.5">
               <span
-                className={`text-[10px] font-bold tracking-widest ${timeStatus?.color || "text-white/60"}`}
+                className={`text-[9px] font-black tracking-widest uppercase opacity-70 ${timeStatus?.color || "text-white/40"}`}
               >
                 {timeStatus?.label}
               </span>
@@ -246,6 +249,12 @@ export const AttendancePanel = memo(function AttendancePanel({
     return createDisplayNameMap(groupMembers);
   }, [groupMembers]);
 
+  const memberMap = useMemo(() => {
+    const map = new Map<string, (typeof groupMembers)[0]>();
+    groupMembers.forEach((m) => map.set(m.person_id, m));
+    return map;
+  }, [groupMembers]);
+
   const processedRecords = useMemo(() => {
     if (!recentAttendance.length) {
       return [];
@@ -324,7 +333,7 @@ export const AttendancePanel = memo(function AttendancePanel({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {attendanceGroups.length > 0 ? (
-        <div className="p-2 pb-1.5 shrink-0">
+        <div className="px-3 py-2 pb-1.5 shrink-0">
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-30">
               <Dropdown
@@ -392,7 +401,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {recentAttendance.length > 0 && (
-        <div className="px-2 pb-3 shrink-0">
+        <div className="px-3 pb-3 shrink-0">
           <div className="flex items-center">
             {/* Joined Search and Sort Container */}
             <div className="relative flex-1 group/search">
@@ -440,7 +449,7 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {attendanceGroups.length > 0 && (
-        <div className="flex-1 overflow-y-auto min-h-0 hover-scrollbar flex flex-col pl-3.5">
+        <div className="flex-1 overflow-y-auto min-h-0 hover-scrollbar flex flex-col">
           {visibleRecords.length > 0 ? (
             <>
               {(() => {
@@ -481,11 +490,14 @@ export const AttendancePanel = memo(function AttendancePanel({
                   const hasCheckedInEarlier =
                     recordCheckInStatus.get(record.id) ?? false;
 
+                  const member = memberMap.get(record.person_id);
+
                   return (
                     <AttendanceRecordItem
                       key={record.id}
                       record={record}
                       displayName={displayName}
+                      member={member}
                       classStartTime={lateTrackingSettings.classStartTime}
                       lateThresholdMinutes={
                         lateTrackingSettings.lateThresholdMinutes
