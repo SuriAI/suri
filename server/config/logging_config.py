@@ -68,9 +68,9 @@ def get_logging_config():
         },
     }
 
-    # Adjust for environment
-    env = os.getenv("ENVIRONMENT", "development")
-    if env == "production":
+    # Default to production-safe logging. Set ENVIRONMENT=development for verbose output.
+    env = os.getenv("ENVIRONMENT", "production")
+    if env != "development":
         config["handlers"]["console"]["level"] = "WARNING"
 
     return config

@@ -24,6 +24,7 @@ interface AttendanceState {
   attendanceCooldownSeconds: number;
   reLogCooldownSeconds: number;
   enableSpoofDetection: boolean;
+  dataRetentionDays: number;
 
   setCurrentGroup: (group: AttendanceGroup | null) => void;
   setAttendanceGroups: (groups: AttendanceGroup[]) => void;
@@ -41,6 +42,7 @@ interface AttendanceState {
   setAttendanceCooldownSeconds: (seconds: number) => void;
   setReLogCooldownSeconds: (seconds: number) => void;
   setEnableSpoofDetection: (enabled: boolean) => void;
+  setDataRetentionDays: (days: number) => void;
 }
 
 const loadInitialSettings = async (): Promise<Partial<AttendanceState>> => {
@@ -88,6 +90,7 @@ export const useAttendanceStore = create<AttendanceState>()(
     attendanceCooldownSeconds: 8,
     reLogCooldownSeconds: 1800,
     enableSpoofDetection: true,
+    dataRetentionDays: 0,
 
     setCurrentGroup: (group) => {
       set({ currentGroup: group });
@@ -137,6 +140,9 @@ export const useAttendanceStore = create<AttendanceState>()(
       persistentSettings
         .setAttendanceSettings({ enableSpoofDetection: enabled })
         .catch(console.error);
+    },
+    setDataRetentionDays: (days) => {
+      set({ dataRetentionDays: days });
     },
   })),
 );

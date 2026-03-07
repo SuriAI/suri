@@ -293,6 +293,19 @@ export class AttendanceManager {
     });
   }
 
+  async downloadAuditLog(): Promise<void> {
+    const csv = await this.httpClient.getText("/attendance/settings/audit-log");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit_log_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   async isBackendAvailable(): Promise<boolean> {
     try {
       await this.httpClient.get("/");

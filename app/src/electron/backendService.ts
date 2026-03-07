@@ -41,7 +41,10 @@ export class BackendService {
     };
 
     this.processManager = new BackendProcessManager(this.config, this.status);
-    this.client = new BackendClient(() => this.getUrl());
+    this.client = new BackendClient(
+      () => this.getUrl(),
+      () => this.getToken(),
+    );
   }
 
   async start(): Promise<void> {
@@ -69,6 +72,10 @@ export class BackendService {
 
   getUrl(): string {
     return this.processManager.getUrl();
+  }
+
+  getToken(): string {
+    return this.processManager.getToken();
   }
 
   async isAvailable(): Promise<boolean> {

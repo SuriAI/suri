@@ -113,7 +113,7 @@ function GroupPanelComponent({
           <ErrorBanner error={error} onDismiss={() => setError(null)} />
         )}
 
-        <div className="h-full overflow-hidden">
+        <div className="h-full overflow-hidden flex flex-col">
           <GroupContent
             onMembersChange={handleMembersChange}
             deselectMemberTrigger={deselectMemberTrigger}

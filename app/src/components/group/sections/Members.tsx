@@ -5,7 +5,6 @@ import { generateDisplayNames } from "@/utils";
 import type { AttendanceMember } from "@/types/recognition";
 import { EmptyState } from "@/components/group/shared/EmptyState";
 import { DeleteMemberModal } from "./DeleteMemberModal";
-import { InfoBanner } from "@/components/group/components/InfoBanner";
 import { BulkConsentModal } from "./BulkConsentModal";
 
 interface MembersProps {
@@ -72,12 +71,11 @@ export function Members({
 
   const [isBulkConsentModalOpen, setIsBulkConsentModalOpen] = useState(false);
 
-  const handleBulkConsent = async () => {
+  const handleBulkConsent = async (confirmedIds: string[]) => {
     try {
-      const membersToUpdate = members.filter((m) => !m.has_consent);
       await Promise.all(
-        membersToUpdate.map((m) =>
-          attendanceManager.updateMember(m.person_id, {
+        confirmedIds.map((id) =>
+          attendanceManager.updateMember(id, {
             has_consent: true,
           }),
         ),
@@ -119,8 +117,8 @@ export function Members({
 
   return (
     <>
-      <div className="relative flex flex-col h-full overflow-hidden">
-        <div className="space-y-3 flex flex-col overflow-hidden min-h-0 h-full p-6">
+      <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="space-y-3 flex flex-col overflow-hidden min-h-0 flex-1 p-6">
           <div className="flex items-center gap-3 shrink-0">
             <div className="relative flex-1">
               <svg
@@ -197,7 +195,7 @@ export function Members({
             </div>
           </div>
 
-          <div className="flex-1 space-y-1.5 overflow-y-auto custom-scroll overflow-x-hidden min-h-0">
+          <div className="flex-1 space-y-1.5 overflow-y-auto custom-scroll overflow-x-hidden min-h-0 pb-16">
             {filteredMembers.length === 0 && (
               <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center w-full">
                 <div className="text-xs text-white/40">
@@ -307,16 +305,22 @@ export function Members({
           </div>
         </div>
 
-        {/* Floating Bulk Consent Alert */}
+        {/* Consent banner — floats over content at the bottom */}
         {members.some((m) => !m.has_consent) && (
-          <InfoBanner
-            variant="floating"
-            message="Biometric consent is required for some members."
-            action={{
-              label: "Grant All",
-              onClick: () => setIsBulkConsentModalOpen(true),
-            }}
-          />
+          <div className="absolute bottom-4 left-4 z-10 max-w-sm">
+            <div className="flex items-center gap-3 text-xs px-4 py-2.5 bg-neutral-800 text-white/70 rounded-xl border border-white/15 shadow-lg">
+              <i className="fa-solid fa-triangle-exclamation text-[10px] text-amber-400/70 shrink-0" />
+              <span className="leading-snug">
+                Some members need biometric consent.
+              </span>
+              <button
+                onClick={() => setIsBulkConsentModalOpen(true)}
+                className="ml-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-semibold tracking-wide transition-colors whitespace-nowrap shrink-0"
+              >
+                Grant all
+              </button>
+            </div>
+          </div>
         )}
 
         <DeleteMemberModal
@@ -330,7 +334,7 @@ export function Members({
           isOpen={isBulkConsentModalOpen}
           onClose={() => setIsBulkConsentModalOpen(false)}
           onConfirm={handleBulkConsent}
-          memberCount={members.filter((m) => !m.has_consent).length}
+          members={members}
         />
       </div>
     </>

@@ -2,6 +2,7 @@ import logging
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends
 
+import core.lifespan
 from api.schemas import (
     AttendanceMemberCreate,
     AttendanceMemberUpdate,
@@ -170,6 +171,33 @@ async def update_member(
         if not updated_member:
             raise HTTPException(status_code=500, detail="Failed to update member")
 
+        # Audit consent changes
+        new_consent = update_data.get("has_consent")
+        if new_consent is True and not existing_member.has_consent:
+            await repo.add_audit_log(
+                action="CONSENT_GRANTED",
+                target_type="member",
+                target_id=person_id,
+                details=f"granted_by={update_data.get('consent_granted_by', 'admin')}",
+            )
+        elif new_consent is False and existing_member.has_consent:
+            await repo.add_audit_log(
+                action="CONSENT_REVOKED",
+                target_type="member",
+                target_id=person_id,
+            )
+            # DPA/GDPR: revoked consent means the biometric must be erased
+            if existing_member.has_face_data and core.lifespan.face_recognizer:
+                try:
+                    await core.lifespan.face_recognizer.remove_person(person_id)
+                    logger.info(
+                        f"Biometric data erased for {person_id} after consent revocation"
+                    )
+                except Exception as bio_err:
+                    logger.error(
+                        f"Failed to erase biometric for {person_id}: {bio_err}"
+                    )
+
         return updated_member
 
     except HTTPException:
@@ -188,6 +216,12 @@ async def remove_member(
         success = await repo.remove_member(person_id)
         if not success:
             raise HTTPException(status_code=404, detail="Member not found")
+
+        await repo.add_audit_log(
+            action="MEMBER_DELETED",
+            target_type="member",
+            target_id=person_id,
+        )
 
         return SuccessResponse(message=f"Member {person_id} removed successfully")
 

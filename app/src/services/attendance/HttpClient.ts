@@ -3,9 +3,23 @@ import { fetchWithRetry } from "../../utils/http";
 export class HttpClient {
   private baseUrl: string;
   private readinessPromise: Promise<void> | null = null;
+  /** Cached per-session API token. `null` = not fetched yet, `""` = unavailable. */
+  private token: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+  }
+
+  /** Lazy-fetch the session token from the Electron main process (once per session). */
+  private async getApiToken(): Promise<string> {
+    if (this.token !== null) return this.token;
+    try {
+      const t = await window.electronAPI?.backend?.getToken?.();
+      this.token = typeof t === "string" ? t : "";
+    } catch {
+      this.token = "";
+    }
+    return this.token;
   }
 
   /**
@@ -66,6 +80,11 @@ export class HttpClient {
       headers["Content-Type"] = "application/json";
     }
 
+    const token = await this.getApiToken();
+    if (token) {
+      headers["X-Suri-Token"] = token;
+    }
+
     const response = await fetchWithRetry(url, { ...options, headers });
 
     if (!response.ok) {
@@ -112,5 +131,18 @@ export class HttpClient {
     return this.request<T>(endpoint, {
       method: "DELETE",
     });
+  }
+
+  async getText(endpoint: string): Promise<string> {
+    await this.ensureBackendReady();
+    const url = `${this.baseUrl}${endpoint}`;
+    const token = await this.getApiToken();
+    const headers: Record<string, string> = {};
+    if (token) headers["X-Suri-Token"] = token;
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.text();
   }
 }

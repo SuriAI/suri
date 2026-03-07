@@ -146,6 +146,7 @@ class AttendanceMemberCreate(BaseModel):
     role: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=255)
     has_consent: bool = False
+    consent_granted_by: Optional[str] = Field(None, max_length=100)
 
 
 class AttendanceMemberUpdate(BaseModel):
@@ -155,6 +156,7 @@ class AttendanceMemberUpdate(BaseModel):
     email: Optional[str] = Field(None, max_length=255)
     is_active: Optional[bool] = None
     has_consent: Optional[bool] = None
+    consent_granted_by: Optional[str] = Field(None, max_length=100)
 
 
 class AttendanceMemberResponse(BaseModel):
@@ -166,6 +168,8 @@ class AttendanceMemberResponse(BaseModel):
     joined_at: datetime
     is_active: bool
     has_consent: bool
+    consent_granted_at: Optional[datetime] = None
+    consent_granted_by: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -245,6 +249,9 @@ class AttendanceSettingsUpdate(BaseModel):
     confidence_threshold: Optional[float] = Field(None, ge=0.0, le=1.0)
     attendance_cooldown_seconds: Optional[int] = Field(None, ge=1, le=300)
     relog_cooldown_seconds: Optional[int] = Field(None, ge=300, le=7200)
+    data_retention_days: Optional[int] = Field(
+        None, ge=0, le=3650
+    )  # 0=keep forever, max 10 years
 
 
 class AttendanceSettingsResponse(BaseModel):
@@ -253,6 +260,7 @@ class AttendanceSettingsResponse(BaseModel):
     confidence_threshold: float
     attendance_cooldown_seconds: int
     relog_cooldown_seconds: int
+    data_retention_days: int
 
     model_config = ConfigDict(from_attributes=True)
 

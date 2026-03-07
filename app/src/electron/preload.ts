@@ -17,6 +17,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     checkReadiness: () => {
       return ipcRenderer.invoke("backend:check-readiness");
     },
+    getToken: () => {
+      return ipcRenderer.invoke("backend:get-token");
+    },
     getModels: () => {
       return ipcRenderer.invoke("backend:get-models");
     },

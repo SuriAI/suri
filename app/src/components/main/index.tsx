@@ -109,6 +109,8 @@ export default function Main() {
     setReLogCooldownSeconds,
     enableSpoofDetection,
     setEnableSpoofDetection,
+    dataRetentionDays,
+    setDataRetentionDays,
     persistentCooldowns,
   } = useAttendanceStore();
 
@@ -588,7 +590,7 @@ export default function Main() {
 
       <div className="flex-1 flex min-h-0">
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="relative flex flex-1 min-h-0 items-center justify-center px-4 pt-4">
+          <div className="relative flex flex-1 min-h-0 items-center justify-center p-4">
             <VideoCanvas
               videoRef={videoRef}
               canvasRef={canvasRef}
@@ -677,6 +679,7 @@ export default function Main() {
               reLogCooldownSeconds: reLogCooldownSeconds,
               enableSpoofDetection: enableSpoofDetection,
               trackCheckout: currentGroup?.settings?.track_checkout ?? false,
+              dataRetentionDays: dataRetentionDays,
             }}
             onAttendanceSettingsChange={async (updates) => {
               if (updates.enableSpoofDetection !== undefined) {
@@ -725,6 +728,20 @@ export default function Main() {
                 } catch (error) {
                   console.error(
                     "Failed to update re-log cooldown setting:",
+                    error,
+                  );
+                }
+              }
+
+              if (updates.dataRetentionDays !== undefined) {
+                setDataRetentionDays(updates.dataRetentionDays);
+                try {
+                  await attendanceManager.updateSettings({
+                    data_retention_days: updates.dataRetentionDays,
+                  });
+                } catch (error) {
+                  console.error(
+                    "Failed to update data retention setting:",
                     error,
                   );
                 }

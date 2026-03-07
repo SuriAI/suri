@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { attendanceManager, backendService } from "@/services";
+import { attendanceManager } from "@/services";
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
 import { useCamera } from "@/components/group/sections/registration/hooks/useCamera";
 import { toBase64Payload } from "@/components/group/sections/registration/hooks/useImageProcessing";
@@ -47,6 +47,7 @@ export function CameraQueue({
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered"
   >("all");
+  const [showPrivacyNotice, setShowPrivacyNotice] = useState(true);
 
   const {
     videoRef,
@@ -171,9 +172,12 @@ export function CameraQueue({
     setError(null);
 
     try {
-      const detection = await backendService.detectFaces(base64Payload, {
-        model_type: "face_detector",
-      });
+      const detection = await window.electronAPI.backend.detectFaces(
+        base64Payload,
+        {
+          model_type: "face_detector",
+        },
+      );
 
       if (!detection.faces || detection.faces.length === 0) {
         throw new Error(
@@ -353,6 +357,30 @@ export function CameraQueue({
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#0f0f0f] text-white">
+      {/* Privacy Notice — DPA Sec.16(a) / GDPR Art.13: inform data subjects at point of collection */}
+      {showPrivacyNotice && (
+        <div className="mx-6 mt-4 rounded-lg border border-blue-500/25 bg-blue-500/8 px-4 py-3 text-xs text-blue-200/80 flex items-start gap-3 shrink-0">
+          <i className="fa-solid fa-circle-info mt-0.5 text-blue-400 shrink-0" />
+          <div className="flex-1 leading-relaxed">
+            <span className="font-semibold text-blue-200">
+              Privacy Notice for Data Subjects:&nbsp;
+            </span>
+            Facial features are converted to a numeric signature and stored
+            encrypted on this device only. No photos are kept. Data is used
+            solely for attendance tracking and is not shared with third parties.
+            Individuals may withdraw consent and request deletion at any time by
+            contacting the administrator.
+          </div>
+          <button
+            onClick={() => setShowPrivacyNotice(false)}
+            title="Dismiss notice"
+            className="bg-transparent border-none p-0 text-blue-200/40 hover:text-blue-100 transition shrink-0"
+          >
+            <i className="fa fa-times text-xs"></i>
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="mx-6 mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200 flex items-center gap-3 shrink-0">
           <div className="h-1 w-1 rounded-full bg-red-400 animate-pulse" />

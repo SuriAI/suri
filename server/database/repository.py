@@ -2,6 +2,7 @@ from typing import Optional, List, Any, Dict
 from datetime import datetime, timedelta
 from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
+import ulid
 
 from database.models import (
     AttendanceGroup,
@@ -9,6 +10,7 @@ from database.models import (
     AttendanceRecord,
     AttendanceSession,
     AttendanceSettings,
+    AuditLog,
     Face,
 )
 
@@ -107,6 +109,7 @@ class AttendanceRepository:
 
     # Member Methods
     async def add_member(self, member_data: Dict[str, Any]) -> AttendanceMember:
+        has_consent = member_data.get("has_consent", False)
         member = await self.session.merge(
             AttendanceMember(
                 person_id=member_data["person_id"],
@@ -114,7 +117,13 @@ class AttendanceRepository:
                 name=member_data["name"],
                 role=member_data.get("role"),
                 email=member_data.get("email"),
-                has_consent=member_data.get("has_consent", False),
+                has_consent=has_consent,
+                consent_granted_at=datetime.utcnow() if has_consent else None,
+                consent_granted_by=(
+                    member_data.get("consent_granted_by", "admin")
+                    if has_consent
+                    else None
+                ),
                 is_active=True,
                 is_deleted=False,
             )
@@ -167,6 +176,16 @@ class AttendanceRepository:
         member = await self.get_member(person_id)
         if not member:
             return None
+
+        # Track consent changes for timestamp bookkeeping
+        new_consent = updates.get("has_consent")
+        if new_consent is True and not member.has_consent:
+            updates["consent_granted_at"] = datetime.utcnow()
+            if "consent_granted_by" not in updates:
+                updates["consent_granted_by"] = "admin"
+        elif new_consent is False and member.has_consent:
+            updates["consent_granted_at"] = None
+            updates["consent_granted_by"] = None
 
         for key, value in updates.items():
             if hasattr(member, key):
@@ -315,6 +334,36 @@ class AttendanceRepository:
 
         await self.session.commit()
         return True
+
+    # Audit Log Methods
+    async def add_audit_log(
+        self,
+        action: str,
+        target_type: Optional[str] = None,
+        target_id: Optional[str] = None,
+        details: Optional[str] = None,
+    ) -> AuditLog:
+        """Record an immutable audit event for a sensitive administrative action."""
+        log = AuditLog(
+            id=ulid.ulid(),
+            action=action,
+            target_type=target_type,
+            target_id=target_id,
+            details=details,
+            organization_id=self.organization_id,
+        )
+        self.session.add(log)
+        await self.session.commit()
+        return log
+
+    async def get_audit_logs(self) -> List[AuditLog]:
+        """Return all audit logs for this organization, newest first."""
+        result = await self.session.execute(
+            select(AuditLog)
+            .where(AuditLog.organization_id == self.organization_id)
+            .order_by(desc(AuditLog.timestamp))
+        )
+        return list(result.scalars().all())
 
     # Stats
     async def get_stats(self) -> Dict[str, Any]:

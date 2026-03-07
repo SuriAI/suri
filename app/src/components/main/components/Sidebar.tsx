@@ -267,7 +267,7 @@ export const Sidebar = memo(function Sidebar({
                 ></motion.i>
 
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-[6px] right-[6px] w-[6px] h-[6px] bg-cyan-500 rounded-full border border-black shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
+                  <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-500 rounded-full border border-black shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
                 )}
               </motion.button>
             </Tooltip>
@@ -275,7 +275,7 @@ export const Sidebar = memo(function Sidebar({
         </div>
 
         <div
-          className={`sidebar flex-1 flex flex-col relative transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          className={`sidebar flex-1 flex flex-col relative min-h-0 transition-opacity duration-200 ${isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}
           style={{ minWidth: isResizing ? undefined : sidebarWidth }}
         >
           {!isCollapsed && (
@@ -299,22 +299,20 @@ export const Sidebar = memo(function Sidebar({
             </Tooltip>
           )}
 
-          <AttendancePanel handleSelectGroup={handleSelectGroup} />
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <AttendancePanel handleSelectGroup={handleSelectGroup} />
+          </div>
 
-          <div className="flex-1 border-t border-white/10 flex flex-col min-h-0 bg-black">
-            <div className="flex-1 overflow-y-auto hover-scrollbar flex flex-col min-h-0 bg-black pl-3.5">
-              <div className="flex-1 flex flex-col min-h-0 px-2 bg-black">
-                <DetectionPanel
-                  currentDetections={currentDetections}
-                  currentRecognitionResults={currentRecognitionResults}
-                  recognitionEnabled={recognitionEnabled}
-                  trackedFaces={trackedFaces}
-                  groupMembers={groupMembers}
-                  isStreaming={isStreaming}
-                  isVideoLoading={isVideoLoading}
-                />
-              </div>
-            </div>
+          <div className="flex-1 border-t border-white/10 flex flex-col min-h-0 bg-black overflow-y-auto hover-scrollbar">
+            <DetectionPanel
+              currentDetections={currentDetections}
+              currentRecognitionResults={currentRecognitionResults}
+              recognitionEnabled={recognitionEnabled}
+              trackedFaces={trackedFaces}
+              groupMembers={groupMembers}
+              isStreaming={isStreaming}
+              isVideoLoading={isVideoLoading}
+            />
           </div>
         </div>
 
@@ -368,7 +366,7 @@ export const Sidebar = memo(function Sidebar({
 
                 {/* Update Badge */}
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-2 right-2 w-[8px] h-[8px] bg-cyan-500 rounded-full border border-black shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+                  <div className="absolute top-2 right-2 w-2 h-2 bg-cyan-500 rounded-full border border-black shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
                 )}
               </motion.button>
             </Tooltip>

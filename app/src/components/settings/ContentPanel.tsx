@@ -212,7 +212,9 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       </div>
 
       {/* Section Content */}
-      <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scroll relative">
+      <div
+        className={`flex-1 flex flex-col relative ${activeSection === "group" ? "overflow-hidden min-h-0" : "overflow-y-auto overflow-x-hidden custom-scroll"}`}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSection}
@@ -221,10 +223,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             exit={{ opacity: 0, scale: 0.995 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             style={{ willChange: "opacity, transform" }}
-            className="flex-1 flex flex-col w-full relative"
+            className="flex-1 flex flex-col w-full relative min-h-0"
           >
             {activeSection === "group" && (
-              <div className="flex-1 w-full relative flex flex-col">
+              <div className="flex-1 min-h-0 w-full relative flex flex-col overflow-hidden">
                 <GroupPanel
                   onBack={handleGroupBack}
                   initialSection={groupInitialSection}
@@ -269,6 +271,9 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 }
                 onTrackCheckoutToggle={(enabled) =>
                   updateAttendanceSetting({ trackCheckout: enabled })
+                }
+                onDataRetentionChange={(days) =>
+                  updateAttendanceSetting({ dataRetentionDays: days })
                 }
                 hasSelectedGroup={!!dropdownValue}
               />
