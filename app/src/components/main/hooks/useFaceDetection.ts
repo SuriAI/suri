@@ -1,24 +1,24 @@
-import { useCallback, useEffect } from "react";
-import type { WebSocketService } from "@/services/WebSocketService";
-import type { DetectionResult } from "@/components/main/types";
-import { useDetectionStore } from "@/components/main/stores";
+import { useCallback, useEffect } from "react"
+import type { WebSocketService } from "@/services/WebSocketService"
+import type { DetectionResult } from "@/components/main/types"
+import { useDetectionStore } from "@/components/main/stores"
 
 interface UseFaceDetectionOptions {
-  webSocketServiceRef: React.RefObject<WebSocketService | null>;
-  isScanningRef: React.RefObject<boolean>;
-  isStreamingRef: React.RefObject<boolean>;
-  captureFrame: () => Promise<ArrayBuffer | null>;
-  lastDetectionFrameRef: React.MutableRefObject<ArrayBuffer | null>;
-  frameCounterRef: React.MutableRefObject<number>;
-  skipFramesRef: React.MutableRefObject<number>;
-  lastFrameTimestampRef: React.MutableRefObject<number>;
-  lastDetectionRef: React.MutableRefObject<DetectionResult | null>;
-  processCurrentFrameRef: React.MutableRefObject<() => Promise<void>>;
+  webSocketServiceRef: React.RefObject<WebSocketService | null>
+  isScanningRef: React.RefObject<boolean>
+  isStreamingRef: React.RefObject<boolean>
+  captureFrame: () => Promise<ArrayBuffer | null>
+  lastDetectionFrameRef: React.MutableRefObject<ArrayBuffer | null>
+  frameCounterRef: React.MutableRefObject<number>
+  skipFramesRef: React.MutableRefObject<number>
+  lastFrameTimestampRef: React.MutableRefObject<number>
+  lastDetectionRef: React.MutableRefObject<DetectionResult | null>
+  processCurrentFrameRef: React.MutableRefObject<() => Promise<void>>
   fpsTrackingRef: React.MutableRefObject<{
-    timestamps: number[];
-    maxSamples: number;
-    lastUpdateTime: number;
-  }>;
+    timestamps: number[]
+    maxSamples: number
+    lastUpdateTime: number
+  }>
 }
 
 export function useFaceDetection(options: UseFaceDetectionOptions) {
@@ -31,14 +31,10 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     frameCounterRef,
     skipFramesRef,
     processCurrentFrameRef,
-  } = options;
+  } = options
 
-  const {
-    detectionFps,
-    currentDetections,
-    setDetectionFps,
-    setCurrentDetections,
-  } = useDetectionStore();
+  const { detectionFps, currentDetections, setDetectionFps, setCurrentDetections } =
+    useDetectionStore()
 
   const processCurrentFrame = useCallback(async () => {
     if (
@@ -46,37 +42,32 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
       !isScanningRef.current ||
       !isStreamingRef.current
     ) {
-      return;
+      return
     }
 
-    frameCounterRef.current += 1;
+    frameCounterRef.current += 1
 
-    if (
-      (frameCounterRef.current ?? 0) % ((skipFramesRef.current ?? 0) + 1) !==
-      0
-    ) {
-      requestAnimationFrame(() => processCurrentFrameRef.current?.());
-      return;
+    if ((frameCounterRef.current ?? 0) % ((skipFramesRef.current ?? 0) + 1) !== 0) {
+      requestAnimationFrame(() => processCurrentFrameRef.current?.())
+      return
     }
 
     try {
-      const frameData = await captureFrame();
+      const frameData = await captureFrame()
       if (!frameData) {
-        requestAnimationFrame(() => processCurrentFrameRef.current?.());
-        return;
+        requestAnimationFrame(() => processCurrentFrameRef.current?.())
+        return
       }
 
-      lastDetectionFrameRef.current = frameData;
+      lastDetectionFrameRef.current = frameData
 
-      webSocketServiceRef.current
-        .sendDetectionRequest(frameData)
-        .catch((error) => {
-          console.error("❌ WebSocket detection request failed:", error);
-          requestAnimationFrame(() => processCurrentFrameRef.current?.());
-        });
+      webSocketServiceRef.current.sendDetectionRequest(frameData).catch((error) => {
+        console.error("❌ WebSocket detection request failed:", error)
+        requestAnimationFrame(() => processCurrentFrameRef.current?.())
+      })
     } catch (error) {
-      console.error("❌ Frame capture failed:", error);
-      requestAnimationFrame(() => processCurrentFrameRef.current?.());
+      console.error("❌ Frame capture failed:", error)
+      requestAnimationFrame(() => processCurrentFrameRef.current?.())
     }
   }, [
     captureFrame,
@@ -87,16 +78,16 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     lastDetectionFrameRef,
     processCurrentFrameRef,
     skipFramesRef,
-  ]);
+  ])
 
   useEffect(() => {
-    processCurrentFrameRef.current = processCurrentFrame;
-  }, [processCurrentFrame, processCurrentFrameRef]);
+    processCurrentFrameRef.current = processCurrentFrame
+  }, [processCurrentFrame, processCurrentFrameRef])
 
   return {
     detectionFps,
     setDetectionFps,
     currentDetections,
     setCurrentDetections,
-  };
+  }
 }

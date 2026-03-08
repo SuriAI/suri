@@ -6,18 +6,16 @@
 /**
  * Cleans up a media stream by stopping all tracks
  */
-export function cleanupStream(
-  streamRef: React.RefObject<MediaStream | null>,
-): void {
+export function cleanupStream(streamRef: React.RefObject<MediaStream | null>): void {
   if (streamRef.current) {
     streamRef.current.getTracks().forEach((track) => {
       try {
-        track.stop();
+        track.stop()
       } catch {
         // Ignore cleanup errors
       }
-    });
-    (streamRef as React.MutableRefObject<MediaStream | null>).current = null;
+    })
+    ;(streamRef as React.MutableRefObject<MediaStream | null>).current = null
   }
 }
 
@@ -30,9 +28,9 @@ export function cleanupVideo(
 ): void {
   if (videoRef.current) {
     try {
-      videoRef.current.srcObject = null;
+      videoRef.current.srcObject = null
       if (pause) {
-        videoRef.current.pause();
+        videoRef.current.pause()
       }
     } catch {
       // Ignore cleanup errors
@@ -48,10 +46,8 @@ export function cleanupAnimationFrame(
 ): void {
   if (animationFrameRef.current) {
     try {
-      cancelAnimationFrame(animationFrameRef.current);
-      (
-        animationFrameRef as React.MutableRefObject<number | undefined>
-      ).current = undefined;
+      cancelAnimationFrame(animationFrameRef.current)
+      ;(animationFrameRef as React.MutableRefObject<number | undefined>).current = undefined
     } catch {
       // Ignore cleanup errors
     }

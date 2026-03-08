@@ -1,97 +1,86 @@
-import { spawn, exec, execSync, type ChildProcess } from "child_process";
-import { randomBytes } from "crypto";
-import { app } from "electron";
-import path from "path";
-import fs from "fs";
-import { promisify } from "util";
-import isDev from "../util.js";
+import { spawn, exec, execSync, type ChildProcess } from "child_process"
+import { randomBytes } from "crypto"
+import { app } from "electron"
+import path from "path"
+import fs from "fs"
+import { promisify } from "util"
+import isDev from "../util.js"
 
-const sleep = promisify(setTimeout);
-const execAsync = promisify(exec);
+const sleep = promisify(setTimeout)
+const execAsync = promisify(exec)
 
 export interface BackendConfig {
-  port: number;
-  host: string;
-  timeout: number;
-  maxRetries: number;
-  healthCheckInterval: number;
+  port: number
+  host: string
+  timeout: number
+  maxRetries: number
+  healthCheckInterval: number
 }
 
 export interface BackendStatus {
-  isRunning: boolean;
-  port: number;
-  pid?: number;
-  startTime?: Date;
-  lastHealthCheck?: Date;
-  error?: string;
+  isRunning: boolean
+  port: number
+  pid?: number
+  startTime?: Date
+  lastHealthCheck?: Date
+  error?: string
 }
 
 export class BackendProcessManager {
-  private process: ChildProcess | null = null;
-  private config: BackendConfig;
-  private status: BackendStatus;
-  private healthCheckTimer: NodeJS.Timeout | null = null;
-  private startupPromise: Promise<void> | null = null;
+  private process: ChildProcess | null = null
+  private config: BackendConfig
+  private status: BackendStatus
+  private healthCheckTimer: NodeJS.Timeout | null = null
+  private startupPromise: Promise<void> | null = null
   /** Session token injected into the Python process via SURI_API_TOKEN. */
-  private token: string = "";
+  private token: string = ""
 
   constructor(config: BackendConfig, status: BackendStatus) {
-    this.config = config;
-    this.status = status;
+    this.config = config
+    this.status = status
   }
 
   /** Return the per-session API token so callers can include it as X-Suri-Token. */
   getToken(): string {
-    return this.token;
+    return this.token
   }
 
   async start(): Promise<void> {
-    if (this.startupPromise) return this.startupPromise;
-    this.startupPromise = this._start();
-    return this.startupPromise;
+    if (this.startupPromise) return this.startupPromise
+    this.startupPromise = this._start()
+    return this.startupPromise
   }
 
   private async _start(): Promise<void> {
-    if (this.status.isRunning) return;
+    if (this.status.isRunning) return
 
     // Generate a fresh per-session token before spawning the backend.
-    this.token = randomBytes(32).toString("hex");
+    this.token = randomBytes(32).toString("hex")
 
-    await this.killAllBackendProcesses();
+    await this.killAllBackendProcesses()
 
     try {
-      const executablePath = this.getBackendExecutablePath();
-      let command: string;
-      let args: string[];
+      const executablePath = this.getBackendExecutablePath()
+      let command: string
+      let args: string[]
 
       if (isDev()) {
-        command = await this.findPythonExecutable();
-        args = [
-          executablePath,
-          "--port",
-          this.config.port.toString(),
-          "--host",
-          this.config.host,
-        ];
+        command = await this.findPythonExecutable()
+        args = [executablePath, "--port", this.config.port.toString(), "--host", this.config.host]
       } else {
-        command = executablePath;
-        args = [
-          "--port",
-          this.config.port.toString(),
-          "--host",
-          this.config.host,
-        ];
+        command = executablePath
+        args = ["--port", this.config.port.toString(), "--host", this.config.host]
       }
 
       const env: Record<string, string | undefined> = {
         ...process.env,
         ENVIRONMENT: isDev() ? "development" : "production",
         SURI_API_TOKEN: this.token,
-      };
+      }
 
       // In production, force data to AppData. In dev, let backend use repo root/data
       if (!isDev()) {
-        env.SURI_DATA_DIR = app.getPath("userData");
+        env.SURI_DATA_DIR = app.getPath("userData")
       }
 
       this.process = spawn(command, args, {
@@ -99,125 +88,109 @@ export class BackendProcessManager {
         detached: false,
         windowsHide: true,
         env,
-      });
+      })
 
-      const logDir = isDev()
-        ? path.join(process.cwd(), "..", "data")
-        : app.getPath("userData");
-      const logFile = path.join(logDir, "backend-startup.log");
-      fs.writeFileSync(
-        logFile,
-        `[${new Date().toISOString()}] Backend starting...\n`,
-      );
-      const logStream = fs.createWriteStream(logFile, { flags: "a" });
+      const logDir = isDev() ? path.join(process.cwd(), "..", "data") : app.getPath("userData")
+      const logFile = path.join(logDir, "backend-startup.log")
+      fs.writeFileSync(logFile, `[${new Date().toISOString()}] Backend starting...\n`)
+      const logStream = fs.createWriteStream(logFile, { flags: "a" })
 
       this.process.stdout?.on("data", (data) => {
-        const str = data.toString();
-        logStream.write(`[STDOUT] ${str}`);
-        if (isDev()) console.log(`[Backend] ${str.trim()}`);
-      });
+        const str = data.toString()
+        logStream.write(`[STDOUT] ${str}`)
+        if (isDev()) console.log(`[Backend] ${str.trim()}`)
+      })
 
       this.process.stderr?.on("data", (data) => {
-        const msg = data.toString();
-        logStream.write(`[STDERR] ${msg}`);
+        const msg = data.toString()
+        logStream.write(`[STDERR] ${msg}`)
         if (/(\bERROR\b|\bCRITICAL\b|Traceback|Exception)/.test(msg)) {
-          console.error(`[Backend Error] ${msg.trim()}`);
+          console.error(`[Backend Error] ${msg.trim()}`)
         } else {
-          console.log(`[Backend] ${msg.trim()}`);
+          console.log(`[Backend] ${msg.trim()}`)
         }
-      });
+      })
 
-      this.setupProcessHandlers();
-      await this.waitForBackendReady();
+      this.setupProcessHandlers()
+      await this.waitForBackendReady()
 
-      this.status.isRunning = true;
-      this.status.pid = this.process.pid;
-      this.status.startTime = new Date();
-      this.status.error = undefined;
+      this.status.isRunning = true
+      this.status.pid = this.process.pid
+      this.status.startTime = new Date()
+      this.status.error = undefined
 
-      this.startHealthMonitoring();
+      this.startHealthMonitoring()
     } catch (error) {
-      console.error(`[BackendProcessManager] Failed to start: ${error}`);
-      this.status.error =
-        error instanceof Error ? error.message : String(error);
-      this.cleanup();
-      throw error;
+      console.error(`[BackendProcessManager] Failed to start: ${error}`)
+      this.status.error = error instanceof Error ? error.message : String(error)
+      this.cleanup()
+      throw error
     } finally {
-      this.startupPromise = null;
+      this.startupPromise = null
     }
   }
 
   private setupProcessHandlers(): void {
-    if (!this.process) return;
+    if (!this.process) return
 
     this.process.on("error", (error) => {
-      console.error(`[BackendProcessManager] Process error: ${error.message}`);
-      this.status.error = error.message;
-      this.status.isRunning = false;
-    });
+      console.error(`[BackendProcessManager] Process error: ${error.message}`)
+      this.status.error = error.message
+      this.status.isRunning = false
+    })
 
     this.process.on("exit", (code, signal) => {
       console.log(
         `[BackendProcessManager] Process exited with code ${code}${signal ? ` and signal ${signal}` : ""}`,
-      );
-      this.status.isRunning = false;
-      if (this.process !== null) this.cleanup();
-    });
+      )
+      this.status.isRunning = false
+      if (this.process !== null) this.cleanup()
+    })
   }
 
   private async waitForBackendReady(): Promise<void> {
-    const startTime = Date.now();
-    const safetyTimeout = this.config.timeout;
+    const startTime = Date.now()
+    const safetyTimeout = this.config.timeout
 
     while (Date.now() - startTime < safetyTimeout) {
-      if (
-        this.process?.exitCode !== null &&
-        this.process?.exitCode !== undefined
-      ) {
-        throw new Error(
-          `Backend process exited unexpectedly with code ${this.process.exitCode}`,
-        );
+      if (this.process?.exitCode !== null && this.process?.exitCode !== undefined) {
+        throw new Error(`Backend process exited unexpectedly with code ${this.process.exitCode}`)
       }
 
-      if (await this.healthCheck()) return;
-      await sleep(250);
+      if (await this.healthCheck()) return
+      await sleep(250)
     }
 
-    throw new Error(
-      `Backend failed to start within safety timeout (${safetyTimeout}ms)`,
-    );
+    throw new Error(`Backend failed to start within safety timeout (${safetyTimeout}ms)`)
   }
 
   private async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(
-        `http://${this.config.host}:${this.config.port}/`,
-        {
-          method: "GET",
-          signal: AbortSignal.timeout(5000),
-        },
-      );
+      const response = await fetch(`http://${this.config.host}:${this.config.port}/`, {
+        method: "GET",
+        signal: AbortSignal.timeout(5000),
+      })
 
       if (response.ok) {
-        this.status.lastHealthCheck = new Date();
-        return true;
+        this.status.lastHealthCheck = new Date()
+        return true
       }
-      return false;
+      return false
     } catch {
-      return false;
+      return false
     }
   }
 
   private startHealthMonitoring(): void {
-    if (this.healthCheckTimer) clearInterval(this.healthCheckTimer);
+    if (this.healthCheckTimer) clearInterval(this.healthCheckTimer)
 
     this.healthCheckTimer = setInterval(async () => {
       if (this.status.isRunning) {
         if (!(await this.healthCheck())) {
-          this.status.isRunning = false;
+          this.status.isRunning = false
         }
       }
-    }, this.config.healthCheckInterval);
+    }, this.config.healthCheckInterval)
   }
 
   async stop(): Promise<void> {
@@ -225,36 +198,36 @@ export class BackendProcessManager {
       if (process.platform === "win32") {
         for (let i = 0; i < 3; i++) {
           try {
-            await execAsync("taskkill /F /IM server.exe /T");
-            await sleep(50);
+            await execAsync("taskkill /F /IM server.exe /T")
+            await sleep(50)
           } catch (error: unknown) {
-            const err = error as { message?: string; code?: number };
-            if (err?.message?.includes("not found") || err?.code === 128) break;
+            const err = error as { message?: string; code?: number }
+            if (err?.message?.includes("not found") || err?.code === 128) break
           }
         }
       } else {
         for (let i = 0; i < 3; i++) {
           try {
-            const checkResult = await execAsync("pgrep -f server");
-            if (!checkResult.stdout.trim()) break;
-            await execAsync("pkill -9 server");
-            await sleep(50);
+            const checkResult = await execAsync("pgrep -f server")
+            if (!checkResult.stdout.trim()) break
+            await execAsync("pkill -9 server")
+            await sleep(50)
           } catch {
-            break;
+            break
           }
         }
       }
     } catch (error: unknown) {
-      const err = error as { message?: string };
+      const err = error as { message?: string }
       if (!err?.message?.includes("not found")) {
-        console.error("[BackendProcessManager] Error stopping:", error);
+        console.error("[BackendProcessManager] Error stopping:", error)
       }
     }
 
-    this.process = null;
-    this.status.isRunning = false;
-    this.status.pid = undefined;
-    this.cleanup();
+    this.process = null
+    this.status.isRunning = false
+    this.status.pid = undefined
+    this.cleanup()
   }
 
   killSync(): void {
@@ -265,17 +238,17 @@ export class BackendProcessManager {
         execSync("taskkill /F /IM server.exe /T", {
           stdio: "ignore",
           timeout: 3000,
-        });
+        })
       } else {
-        execSync("pkill -9 server", { stdio: "ignore", timeout: 3000 });
+        execSync("pkill -9 server", { stdio: "ignore", timeout: 3000 })
       }
     } catch {
       /* silent — process may not be running */
     }
-    this.process = null;
-    this.status.isRunning = false;
-    this.status.pid = undefined;
-    this.cleanup();
+    this.process = null
+    this.status.isRunning = false
+    this.status.pid = undefined
+    this.cleanup()
   }
 
   /**
@@ -283,49 +256,45 @@ export class BackendProcessManager {
    * Uses async sleep() instead of a CPU busy-spin to avoid blocking the main process.
    */
   private async killAllBackendProcesses(): Promise<void> {
-    const isWin = process.platform === "win32";
-    const maxAttempts = isWin ? 5 : 3;
+    const isWin = process.platform === "win32"
+    const maxAttempts = isWin ? 5 : 3
 
     for (let i = 0; i < maxAttempts; i++) {
       try {
         if (isWin) {
-          const checkResult = execSync(
-            'tasklist /FI "IMAGENAME eq server.exe" /NH',
-            { encoding: "utf8", timeout: 2000 },
-          );
-          if (
-            checkResult.includes("INFO: No tasks") ||
-            !checkResult.includes("server.exe")
-          )
-            return;
+          const checkResult = execSync('tasklist /FI "IMAGENAME eq server.exe" /NH', {
+            encoding: "utf8",
+            timeout: 2000,
+          })
+          if (checkResult.includes("INFO: No tasks") || !checkResult.includes("server.exe")) return
           try {
             execSync("taskkill /F /IM server.exe /T", {
               stdio: "ignore",
               timeout: 2000,
-            });
+            })
           } catch {
             /* silent */
           }
           try {
-            const pidsOutput = execSync(
-              'tasklist /FI "IMAGENAME eq server.exe" /NH /FO CSV',
-              { encoding: "utf8", timeout: 2000 },
-            );
+            const pidsOutput = execSync('tasklist /FI "IMAGENAME eq server.exe" /NH /FO CSV', {
+              encoding: "utf8",
+              timeout: 2000,
+            })
             pidsOutput.split("\n").forEach((line) => {
               if (line.includes("server.exe")) {
-                const match = /"(\d+)"/.exec(line);
+                const match = /"(\d+)"/.exec(line)
                 if (match?.[1]) {
                   try {
                     execSync(`taskkill /F /PID ${match[1]} /T`, {
                       stdio: "ignore",
                       timeout: 1000,
-                    });
+                    })
                   } catch {
                     /* silent */
                   }
                 }
               }
-            });
+            })
           } catch {
             /* silent */
           }
@@ -334,50 +303,48 @@ export class BackendProcessManager {
             const checkResult = execSync("pgrep -f server", {
               encoding: "utf8",
               timeout: 2000,
-            });
-            if (!checkResult.trim()) return;
-            execSync("pkill -9 server", { stdio: "ignore", timeout: 2000 });
+            })
+            if (!checkResult.trim()) return
+            execSync("pkill -9 server", { stdio: "ignore", timeout: 2000 })
           } catch {
-            return;
+            return
           }
         }
         // Non-blocking async sleep — does NOT block the Electron main process
-        await sleep(300);
+        await sleep(300)
       } catch (error: unknown) {
-        const err = error as { message?: string };
-        if (err?.message?.includes("not found")) return;
+        const err = error as { message?: string }
+        if (err?.message?.includes("not found")) return
       }
     }
   }
 
   private cleanup(): void {
     if (this.healthCheckTimer) {
-      clearInterval(this.healthCheckTimer);
-      this.healthCheckTimer = null;
+      clearInterval(this.healthCheckTimer)
+      this.healthCheckTimer = null
     }
   }
 
   private getBackendExecutablePath(): string {
     if (isDev()) {
-      return path.join(app.getAppPath(), "..", "server", "run.py");
+      return path.join(app.getAppPath(), "..", "server", "run.py")
     }
 
-    const platform = process.platform;
-    const executableName = platform === "win32" ? "server.exe" : "server";
+    const platform = process.platform
+    const executableName = platform === "win32" ? "server.exe" : "server"
     const possiblePaths = [
       path.join(process.resourcesPath, "server", executableName),
       path.join(process.resourcesPath, executableName),
       path.join(app.getAppPath(), "server", executableName),
       path.join(app.getAppPath(), "resources", "server", executableName),
-    ];
+    ]
 
     for (const execPath of possiblePaths) {
-      if (fs.existsSync(execPath)) return execPath;
+      if (fs.existsSync(execPath)) return execPath
     }
 
-    throw new Error(
-      `Server executable not found. Searched paths: ${possiblePaths.join(", ")}`,
-    );
+    throw new Error(`Server executable not found. Searched paths: ${possiblePaths.join(", ")}`)
   }
 
   private async findPythonExecutable(): Promise<string> {
@@ -396,17 +363,17 @@ export class BackendProcessManager {
       "/usr/bin/python3",
       "/usr/local/bin/python3",
       "/opt/homebrew/bin/python3",
-    ];
+    ]
 
     for (const p of possiblePaths) {
       try {
         if (fs.existsSync(p)) {
-          const result = await execAsync(`"${p}" --version`);
-          if (result.stdout.includes("Python")) return p;
+          const result = await execAsync(`"${p}" --version`)
+          if (result.stdout.includes("Python")) return p
         } else if (!p.includes("\\") && !p.includes("/")) {
           try {
-            const result = await execAsync(`${p} --version`);
-            if (result.stdout.includes("Python")) return p;
+            const result = await execAsync(`${p} --version`)
+            if (result.stdout.includes("Python")) return p
           } catch {
             /* silent */
           }
@@ -418,14 +385,14 @@ export class BackendProcessManager {
 
     throw new Error(
       "Python executable not found. Please ensure Python is installed and accessible.",
-    );
+    )
   }
 
   getUrl(): string {
-    return `http://${this.config.host}:${this.config.port}`;
+    return `http://${this.config.host}:${this.config.port}`
   }
 
   getStatus(): BackendStatus {
-    return { ...this.status };
+    return { ...this.status }
   }
 }

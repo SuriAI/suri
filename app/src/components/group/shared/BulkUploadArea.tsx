@@ -1,8 +1,8 @@
 interface BulkUploadAreaProps {
-  uploadedCount: number;
-  isDetecting: boolean;
-  onFilesSelected: (files: FileList | null) => void;
-  onClear: () => void;
+  uploadedCount: number
+  isDetecting: boolean
+  onFilesSelected: (files: FileList | null) => void
+  onClear: () => void
 }
 
 export function BulkUploadArea({
@@ -14,28 +14,23 @@ export function BulkUploadArea({
   if (uploadedCount > 0) {
     return (
       <div className="mb-6">
-        <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+        <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4">
           <div className="flex items-center gap-3">
-            {isDetecting ? (
-              <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300">
+            {isDetecting ?
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300">
                 <i className="fa-solid fa-circle-notch fa-spin text-lg"></i>
               </div>
-            ) : (
-              <div className="h-10 w-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-300">
+            : <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300">
                 <i className="fa-solid fa-check text-lg"></i>
               </div>
-            )}
+            }
 
             <div>
               <div className="text-sm font-medium text-white">
-                {isDetecting
-                  ? "Analyzing images..."
-                  : `${uploadedCount} images uploaded`}
+                {isDetecting ? "Analyzing images..." : `${uploadedCount} images uploaded`}
               </div>
-              <div className="text-[11px] text-white/50 font-bold tracking-tight">
-                {isDetecting
-                  ? "Please wait while we process faces"
-                  : "READY FOR ASSIGNMENT"}
+              <div className="text-[11px] font-bold tracking-tight text-white/50">
+                {isDetecting ? "Please wait while we process faces" : "READY FOR ASSIGNMENT"}
               </div>
             </div>
           </div>
@@ -44,13 +39,12 @@ export function BulkUploadArea({
             <button
               onClick={onClear}
               disabled={isDetecting}
-              className="h-9 w-9 flex items-center justify-center rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Clear all files"
-            >
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/20 text-red-200 transition hover:bg-red-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              title="Clear all files">
               <i className="fa-solid fa-trash text-sm"></i>
             </button>
 
-            <label className="cursor-pointer px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-white border border-white/10 transition flex items-center gap-2">
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/10">
               <input
                 type="file"
                 accept="image/*"
@@ -59,9 +53,9 @@ export function BulkUploadArea({
                 disabled={isDetecting}
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
-                    onFilesSelected(e.target.files);
+                    onFilesSelected(e.target.files)
                     // Reset input value to allow selecting same files again if needed
-                    e.target.value = "";
+                    e.target.value = ""
                   }
                 }}
               />
@@ -71,24 +65,24 @@ export function BulkUploadArea({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center p-6">
-      <label className="group relative flex w-full max-w-lg cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 hover:border-white/30 hover:bg-white/5 transition-all p-12 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-cyan-500/0 to-cyan-500/0 group-hover:from-cyan-500/5 group-hover:to-transparent transition-all rounded-xl" />
+    <div className="flex flex-1 items-center justify-center p-6">
+      <label className="group relative flex w-full max-w-lg cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-white/20 bg-white/5 p-12 transition-all hover:border-white/30 hover:bg-white/5">
+        <div className="absolute inset-0 rounded-xl bg-linear-to-br from-cyan-500/0 to-cyan-500/0 transition-all group-hover:from-cyan-500/5 group-hover:to-transparent" />
 
         <div className="relative flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
-            <i className="fa-solid fa-cloud-arrow-up text-2xl text-white/40 group-hover:text-white/60 transition-colors"></i>
+          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-all group-hover:border-white/20 group-hover:bg-white/10">
+            <i className="fa-solid fa-cloud-arrow-up text-2xl text-white/40 transition-colors group-hover:text-white/60"></i>
           </div>
 
           <div className="text-center">
-            <div className="text-[13px] font-bold text-white/60 mb-1 group-hover:text-white/90 transition-colors tracking-tight">
+            <div className="mb-1 text-[13px] font-bold tracking-tight text-white/60 transition-colors group-hover:text-white/90">
               Drop images or click to browse
             </div>
-            <div className="text-[11px] text-white/40 font-bold uppercase tracking-wider">
+            <div className="text-[11px] font-bold tracking-wider text-white/40 uppercase">
               Up to 50 photos • JPG, PNG supported
             </div>
           </div>
@@ -103,5 +97,5 @@ export function BulkUploadArea({
         />
       </label>
     </div>
-  );
+  )
 }

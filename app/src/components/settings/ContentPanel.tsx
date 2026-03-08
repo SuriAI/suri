@@ -1,56 +1,56 @@
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Display } from "@/components/settings/sections/Display";
-import { Notifications } from "@/components/settings/sections/Notifications";
-import { Database } from "@/components/settings/sections/Database";
-import { Attendance } from "@/components/settings/sections/Attendance";
-import { About } from "@/components/settings/sections/About";
-import { CloudSync } from "@/components/settings/sections/CloudSync";
-import { GroupPanel, type GroupSection } from "@/components/group";
-import { useGroupModals } from "@/components/group/hooks";
-import { useGroupUIStore } from "@/components/group/stores";
+import React from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Display } from "@/components/settings/sections/Display"
+import { Notifications } from "@/components/settings/sections/Notifications"
+import { Database } from "@/components/settings/sections/Database"
+import { Attendance } from "@/components/settings/sections/Attendance"
+import { About } from "@/components/settings/sections/About"
+import { CloudSync } from "@/components/settings/sections/CloudSync"
+import { GroupPanel, type GroupSection } from "@/components/group"
+import { useGroupModals } from "@/components/group/hooks"
+import { useGroupUIStore } from "@/components/group/stores"
 import type {
   QuickSettings,
   AttendanceSettings,
   AudioSettings,
   SettingsOverview,
-} from "@/components/settings/types";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
+} from "@/components/settings/types"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface ContentPanelProps {
-  activeSection: string;
-  groupInitialSection: GroupSection | undefined;
-  setGroupInitialSection: (section: GroupSection) => void;
-  validInitialGroup: AttendanceGroup | null;
-  triggerCreateGroup: number;
-  deselectMemberTrigger: number;
-  setDeselectMemberTrigger: (trigger: number) => void;
-  setHasSelectedMember: (hasSelected: boolean) => void;
-  handleExportHandlersReady: (handlers: { exportCSV: () => void }) => void;
-  handleAddMemberHandlerReady: (handler: () => void) => void;
-  handleGroupsChanged: (newGroup?: AttendanceGroup) => void;
-  handleGroupBack: () => void;
-  quickSettings: QuickSettings;
-  toggleQuickSetting: (key: keyof QuickSettings) => void;
-  audioSettings: AudioSettings;
-  updateAudioSetting: (updates: Partial<AudioSettings>) => void;
-  attendanceSettings: AttendanceSettings;
-  updateAttendanceSetting: (updates: Partial<AttendanceSettings>) => void;
-  dropdownValue: string | null;
-  systemData: SettingsOverview;
-  groups: AttendanceGroup[];
-  isLoading: boolean;
-  handleClearDatabase: () => void;
-  loadSystemData: () => void;
-  onGroupsChanged?: () => void;
-  members: AttendanceMember[];
+  activeSection: string
+  groupInitialSection: GroupSection | undefined
+  setGroupInitialSection: (section: GroupSection) => void
+  validInitialGroup: AttendanceGroup | null
+  triggerCreateGroup: number
+  deselectMemberTrigger: number
+  setDeselectMemberTrigger: (trigger: number) => void
+  setHasSelectedMember: (hasSelected: boolean) => void
+  handleExportHandlersReady: (handlers: { exportCSV: () => void }) => void
+  handleAddMemberHandlerReady: (handler: () => void) => void
+  handleGroupsChanged: (newGroup?: AttendanceGroup) => void
+  handleGroupBack: () => void
+  quickSettings: QuickSettings
+  toggleQuickSetting: (key: keyof QuickSettings) => void
+  audioSettings: AudioSettings
+  updateAudioSetting: (updates: Partial<AudioSettings>) => void
+  attendanceSettings: AttendanceSettings
+  updateAttendanceSetting: (updates: Partial<AttendanceSettings>) => void
+  dropdownValue: string | null
+  systemData: SettingsOverview
+  groups: AttendanceGroup[]
+  isLoading: boolean
+  handleClearDatabase: () => void
+  loadSystemData: () => void
+  onGroupsChanged?: () => void
+  members: AttendanceMember[]
   reportsExportHandlers: {
-    exportCSV: () => void;
-  } | null;
-  addMemberHandler: (() => void) | null;
-  hasSelectedMember: boolean;
-  dropdownGroups: AttendanceGroup[];
-  groupSections: { id: GroupSection; label: string; icon: string }[];
+    exportCSV: () => void
+  } | null
+  addMemberHandler: (() => void) | null
+  hasSelectedMember: boolean
+  dropdownGroups: AttendanceGroup[]
+  groupSections: { id: GroupSection; label: string; icon: string }[]
 }
 
 export const ContentPanel: React.FC<ContentPanelProps> = ({
@@ -86,47 +86,36 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   dropdownGroups,
   groupSections,
 }) => {
-  const { openEditGroup } = useGroupModals();
-  const registrationSource = useGroupUIStore(
-    (state) => state.lastRegistrationSource,
-  );
-  const registrationMode = useGroupUIStore(
-    (state) => state.lastRegistrationMode,
-  );
-  const handleRegistrationBack = useGroupUIStore(
-    (state) => state.handleRegistrationBack,
-  );
+  const { openEditGroup } = useGroupModals()
+  const registrationSource = useGroupUIStore((state) => state.lastRegistrationSource)
+  const registrationMode = useGroupUIStore((state) => state.lastRegistrationMode)
+  const handleRegistrationBack = useGroupUIStore((state) => state.handleRegistrationBack)
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#090909]">
+    <div className="flex flex-1 flex-col overflow-hidden bg-[#090909]">
       {/* Section Header */}
       <div className="px-10 pt-10 pb-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold flex items-center">
-            {activeSection === "group" ? (
+          <h2 className="flex items-center text-xl font-semibold">
+            {activeSection === "group" ?
               <div className="flex flex-col">
-                <span className="text-[11px] font-medium text-cyan-400/60 mb-0.5">
-                  {dropdownValue
-                    ? dropdownGroups.find((g) => g.id === dropdownValue)?.name
-                    : "Group Management"}
+                <span className="mb-0.5 text-[11px] font-medium text-cyan-400/60">
+                  {dropdownValue ?
+                    dropdownGroups.find((g) => g.id === dropdownValue)?.name
+                  : "Group Management"}
                 </span>
                 <span className="text-xl font-semibold text-white">
-                  {groupInitialSection
-                    ? groupSections.find((s) => s.id === groupInitialSection)
-                        ?.label
-                    : "Overview"}
+                  {groupInitialSection ?
+                    groupSections.find((s) => s.id === groupInitialSection)?.label
+                  : "Overview"}
                 </span>
               </div>
-            ) : (
-              <div className="flex flex-col">
-                <span className="text-[11px] font-medium text-white/30 mb-0.5">
-                  General
-                </span>
+            : <div className="flex flex-col">
+                <span className="mb-0.5 text-[11px] font-medium text-white/30">General</span>
                 <span className="text-xl font-semibold text-white">
-                  {activeSection.charAt(0).toUpperCase() +
-                    activeSection.slice(1)}
+                  {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
                 </span>
               </div>
-            )}
+            }
           </h2>
 
           <div className="flex items-center gap-4">
@@ -137,8 +126,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               members.length > 0 && (
                 <button
                   onClick={addMemberHandler}
-                  className="px-3 py-1.5 text-[11px] text-white/40 hover:text-white/80 hover:bg-white/10 rounded-md transition-all flex items-center gap-2 font-medium"
-                >
+                  className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80">
                   <i className="fa-solid fa-user-plus text-[10px]"></i>
                   Add Member
                 </button>
@@ -148,14 +136,12 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               validInitialGroup && (
                 <button
                   onClick={openEditGroup}
-                  className="px-3 py-1.5 text-[11px] text-white/40 hover:text-white/80 hover:bg-white/10 rounded-md transition-all flex items-center gap-2 font-medium"
-                >
+                  className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80">
                   <svg
-                    className="w-3.5 h-3.5 mb-0.5"
+                    className="mb-0.5 h-3.5 w-3.5"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                    viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -172,8 +158,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={reportsExportHandlers.exportCSV}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-white/40 hover:text-white/80 transition-all text-[11px] font-medium"
-                  >
+                    className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80">
                     <i className="fa-solid fa-file-csv text-[10px]"></i>
                     Export CSV
                   </button>
@@ -185,13 +170,12 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 <button
                   onClick={() => {
                     if (registrationMode === "single" && hasSelectedMember) {
-                      setDeselectMemberTrigger(Date.now());
-                      return;
+                      setDeselectMemberTrigger(Date.now())
+                      return
                     }
-                    handleRegistrationBack();
+                    handleRegistrationBack()
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-white/10 text-white/50 hover:text-white transition-all text-[11px] font-medium"
-                >
+                  className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white">
                   <i className="fa-solid fa-arrow-left text-[10px]"></i>
                   Back
                 </button>
@@ -202,8 +186,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
 
       {/* Section Content */}
       <div
-        className={`flex-1 flex flex-col relative ${activeSection === "group" ? "overflow-hidden min-h-0" : "overflow-y-auto overflow-x-hidden custom-scroll"}`}
-      >
+        className={`relative flex flex-1 flex-col ${activeSection === "group" ? "min-h-0 overflow-hidden" : "custom-scroll overflow-x-hidden overflow-y-auto"}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSection}
@@ -212,10 +195,9 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             exit={{ opacity: 0, scale: 0.995 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             style={{ willChange: "opacity, transform" }}
-            className="flex-1 flex flex-col w-full relative min-h-0"
-          >
+            className="relative flex min-h-0 w-full flex-1 flex-col">
             {activeSection === "group" && (
-              <div className="flex-1 min-h-0 w-full relative flex flex-col overflow-hidden">
+              <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
                 <GroupPanel
                   onBack={handleGroupBack}
                   initialSection={groupInitialSection}
@@ -232,10 +214,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               </div>
             )}
             {activeSection === "display" && (
-              <Display
-                quickSettings={quickSettings}
-                toggleQuickSetting={toggleQuickSetting}
-              />
+              <Display quickSettings={quickSettings} toggleQuickSetting={toggleQuickSetting} />
             )}
             {activeSection === "notifications" && (
               <Notifications
@@ -274,8 +253,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 isLoading={isLoading}
                 onClearDatabase={handleClearDatabase}
                 onGroupsChanged={() => {
-                  loadSystemData();
-                  if (onGroupsChanged) onGroupsChanged();
+                  loadSystemData()
+                  if (onGroupsChanged) onGroupsChanged()
                 }}
               />
             )}
@@ -285,5 +264,5 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         </AnimatePresence>
       </div>
     </div>
-  );
-};
+  )
+}

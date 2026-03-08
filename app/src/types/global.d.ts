@@ -7,131 +7,123 @@ import type {
   PersonUpdateResponse,
   PersonListResponse,
   DatabaseClearResponse,
-} from "@/types/recognition";
+} from "@/types/recognition"
 
-export {};
+export {}
 
 export interface UpdateInfo {
-  currentVersion: string;
-  latestVersion: string;
-  hasUpdate: boolean;
-  releaseUrl: string;
-  releaseNotes: string;
-  publishedAt: string;
-  downloadUrl: string | null;
-  error?: string;
-  isOffline?: boolean;
+  currentVersion: string
+  latestVersion: string
+  hasUpdate: boolean
+  releaseUrl: string
+  releaseNotes: string
+  publishedAt: string
+  downloadUrl: string | null
+  error?: string
+  isOffline?: boolean
 }
 
 declare global {
   interface SuriWSClientAPI {
-    connect: (url?: string) => Promise<void>;
-    send: (msg: unknown) => void;
-    sendRequest: (
-      action: string,
-      payload?: unknown,
-      timeoutMs?: number,
-    ) => Promise<unknown>;
-    onMessage: (handler: (msg: Record<string, unknown>) => void) => () => void;
-    close: () => void;
+    connect: (url?: string) => Promise<void>
+    send: (msg: unknown) => void
+    sendRequest: (action: string, payload?: unknown, timeoutMs?: number) => Promise<unknown>
+    onMessage: (handler: (msg: Record<string, unknown>) => void) => () => void
+    close: () => void
   }
 
   interface SuriVideoAPI {
     start: (opts?: {
-      device?: number;
-      width?: number;
-      height?: number;
-      fps?: number;
-      annotate?: boolean;
-    }) => Promise<boolean>;
+      device?: number
+      width?: number
+      height?: number
+      fps?: number
+      annotate?: boolean
+    }) => Promise<boolean>
     startFast: (opts?: {
-      device?: number;
-      width?: number;
-      height?: number;
-      fps?: number;
-      annotate?: boolean;
-    }) => Promise<boolean>;
-    stop: () => Promise<boolean>;
-    pause: () => Promise<boolean>;
-    resume: () => Promise<boolean>;
-    setDevice: (device: number) => Promise<boolean>;
-    onFrame: (handler: (buf: ArrayBuffer | Uint8Array) => void) => () => void;
-    onEvent: (handler: (evt: Record<string, unknown>) => void) => () => void;
-    onWebSocketBroadcast: (
-      handler: (evt: Record<string, unknown>) => void,
-    ) => () => void;
+      device?: number
+      width?: number
+      height?: number
+      fps?: number
+      annotate?: boolean
+    }) => Promise<boolean>
+    stop: () => Promise<boolean>
+    pause: () => Promise<boolean>
+    resume: () => Promise<boolean>
+    setDevice: (device: number) => Promise<boolean>
+    onFrame: (handler: (buf: ArrayBuffer | Uint8Array) => void) => () => void
+    onEvent: (handler: (evt: Record<string, unknown>) => void) => () => void
+    onWebSocketBroadcast: (handler: (evt: Record<string, unknown>) => void) => () => void
   }
 
   interface SuriElectronAPI {
-    minimize: () => Promise<boolean>;
-    maximize: () => Promise<boolean>;
-    close: () => Promise<boolean>;
-    onMaximize: (callback: () => void) => () => void;
-    onUnmaximize: (callback: () => void) => () => void;
+    minimize: () => Promise<boolean>
+    maximize: () => Promise<boolean>
+    close: () => Promise<boolean>
+    onMaximize: (callback: () => void) => () => void
+    onUnmaximize: (callback: () => void) => () => void
     getSystemStats: () => Promise<{
-      cpu: number;
-      memory: { total: number; free: number; appUsage: number };
-    }>;
-    getVersion: () => Promise<string>;
-    onAppReady: () => void;
+      cpu: number
+      memory: { total: number; free: number; appUsage: number }
+    }>
+    getVersion: () => Promise<string>
+    onAppReady: () => void
   }
 
   interface UpdaterAPI {
-    checkForUpdates: (force?: boolean) => Promise<UpdateInfo>;
-    getVersion: () => Promise<string>;
-    openReleasePage: (url?: string) => Promise<boolean>;
-    onUpdateAvailable: (
-      callback: (updateInfo: UpdateInfo) => void,
-    ) => () => void;
+    checkForUpdates: (force?: boolean) => Promise<UpdateInfo>
+    getVersion: () => Promise<string>
+    openReleasePage: (url?: string) => Promise<boolean>
+    onUpdateAvailable: (callback: (updateInfo: UpdateInfo) => void) => () => void
   }
 
   interface BackendAPI {
     checkAvailability: () => Promise<{
-      available: boolean;
-      status?: number;
-      error?: string;
-    }>;
+      available: boolean
+      status?: number
+      error?: string
+    }>
     checkReadiness: () => Promise<{
-      ready: boolean;
-      modelsLoaded: boolean;
-      error?: string;
-    }>;
+      ready: boolean
+      modelsLoaded: boolean
+      error?: string
+    }>
     getModels: () => Promise<
       Record<
         string,
         {
-          name: string;
-          type: string;
-          version: string;
-          loaded: boolean;
-          size?: number;
-          accuracy?: number;
+          name: string
+          type: string
+          version: string
+          loaded: boolean
+          size?: number
+          accuracy?: number
         }
       >
-    >;
+    >
     detectFaces: (
       imageBase64: string,
       options?: {
-        model_type?: string;
-        confidence_threshold?: number;
-        nms_threshold?: number;
+        model_type?: string
+        confidence_threshold?: number
+        nms_threshold?: number
       },
     ) => Promise<{
       faces: {
-        bbox: [number, number, number, number];
-        confidence: number;
-        landmarks_5?: number[][];
-      }[];
-      model_used: string;
-      session_id?: string;
-    }>;
+        bbox: [number, number, number, number]
+        confidence: number
+        landmarks_5?: number[][]
+      }[]
+      model_used: string
+      session_id?: string
+    }>
     recognizeFace: (
       imageData: string,
       bbox: number[],
       groupId: string,
       landmarks_5: number[][],
       enableLivenessDetection: boolean,
-    ) => Promise<FaceRecognitionResponse>;
+    ) => Promise<FaceRecognitionResponse>
     registerFace: (
       imageData: string,
       personId: string,
@@ -139,81 +131,76 @@ declare global {
       groupId: string,
       landmarks_5: number[][],
       enableLivenessDetection: boolean,
-    ) => Promise<FaceRegistrationResponse>;
-    getFaceStats: () => Promise<DatabaseStatsResponse>;
-    removePerson: (personId: string) => Promise<PersonRemovalResponse>;
-    updatePerson: (
-      oldPersonId: string,
-      newPersonId: string,
-    ) => Promise<PersonUpdateResponse>;
-    getAllPersons: () => Promise<PersonListResponse>;
-    setThreshold: (threshold: number) => Promise<SimilarityThresholdResponse>;
-    clearDatabase: () => Promise<DatabaseClearResponse>;
+    ) => Promise<FaceRegistrationResponse>
+    getFaceStats: () => Promise<DatabaseStatsResponse>
+    removePerson: (personId: string) => Promise<PersonRemovalResponse>
+    updatePerson: (oldPersonId: string, newPersonId: string) => Promise<PersonUpdateResponse>
+    getAllPersons: () => Promise<PersonListResponse>
+    setThreshold: (threshold: number) => Promise<SimilarityThresholdResponse>
+    clearDatabase: () => Promise<DatabaseClearResponse>
   }
 
   interface BackendReadyAPI {
-    isReady: () => Promise<boolean>;
+    isReady: () => Promise<boolean>
   }
 
   interface StoreAPI {
-    get: (key: string) => Promise<unknown>;
-    set: (key: string, value: unknown) => Promise<boolean>;
-    delete: (key: string) => Promise<boolean>;
-    getAll: () => Promise<Record<string, unknown>>;
-    reset: () => Promise<boolean>;
+    get: (key: string) => Promise<unknown>
+    set: (key: string, value: unknown) => Promise<boolean>
+    delete: (key: string) => Promise<boolean>
+    getAll: () => Promise<Record<string, unknown>>
+    reset: () => Promise<boolean>
   }
 
   interface AssetsAPI {
-    listRecognitionSounds: () => Promise<{ fileName: string; url: string }[]>;
+    listRecognitionSounds: () => Promise<{ fileName: string; url: string }[]>
   }
 
   interface SyncAPI {
     exportData: (password: string) => Promise<{
-      success: boolean;
-      canceled?: boolean;
-      filePath?: string;
-      error?: string;
-    }>;
+      success: boolean
+      canceled?: boolean
+      filePath?: string
+      error?: string
+    }>
     pickImportFile: () => Promise<{
-      canceled: boolean;
-      filePath?: string;
-      error?: string;
-    }>;
+      canceled: boolean
+      filePath?: string
+      error?: string
+    }>
     importData: (
       password: string,
       filePath: string,
       overwrite?: boolean,
     ) => Promise<{
-      success: boolean;
-      canceled?: boolean;
-      message?: string;
-      error?: string;
-    }>;
-    restartManager: () => Promise<boolean>;
-    triggerNow: () => Promise<boolean>;
+      success: boolean
+      canceled?: boolean
+      message?: string
+      error?: string
+    }>
+    restartManager: () => Promise<boolean>
+    triggerNow: () => Promise<boolean>
   }
 
   interface BackendServiceAPI {
-    saveFaceDatabase: (
-      databaseData: Record<string, number[]>,
-    ) => Promise<unknown>;
-    loadFaceDatabase: () => Promise<unknown>;
-    removeFacePerson: (personId: string) => Promise<unknown>;
-    getAllFacePersons: () => Promise<unknown>;
-    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
-    backend_ready: BackendReadyAPI;
-    backend: BackendAPI;
-    store: StoreAPI;
-    updater: UpdaterAPI;
-    assets: AssetsAPI;
-    sync: SyncAPI;
+    saveFaceDatabase: (databaseData: Record<string, number[]>) => Promise<unknown>
+    loadFaceDatabase: () => Promise<unknown>
+    removeFacePerson: (personId: string) => Promise<unknown>
+    getAllFacePersons: () => Promise<unknown>
+    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
+    backend_ready: BackendReadyAPI
+    backend: BackendAPI
+    store: StoreAPI
+    updater: UpdaterAPI
+    assets: AssetsAPI
+    sync: SyncAPI
   }
 
   interface Window {
-    suriWS?: SuriWSClientAPI;
-    suriVideo?: SuriVideoAPI;
-    suriElectron?: SuriElectronAPI;
-    electronAPI: BackendServiceAPI;
-    __suriOffFrame?: () => void;
+    suriWS?: SuriWSClientAPI
+    suriVideo?: SuriVideoAPI
+    suriElectron?: SuriElectronAPI
+    electronAPI: BackendServiceAPI
+    __suriOffFrame?: () => void
   }
 }

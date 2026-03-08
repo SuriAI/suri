@@ -1,55 +1,50 @@
-import { create } from "zustand";
-import type { AudioSettings, QuickSettings } from "@/components/settings";
-import type { GroupSection } from "@/components/group";
-import { persistentSettings } from "@/services/PersistentSettingsService";
+import { create } from "zustand"
+import type { AudioSettings, QuickSettings } from "@/components/settings"
+import type { GroupSection } from "@/components/group"
+import { persistentSettings } from "@/services/PersistentSettingsService"
 
 interface UIState {
   // Error state
-  error: string | null;
+  error: string | null
 
   // Success state
-  success: string | null;
+  success: string | null
 
   // Warning state (non-blocking)
-  warning: string | null;
+  warning: string | null
 
   // Settings UI
-  showSettings: boolean;
-  groupInitialSection: GroupSection | undefined;
-  settingsInitialSection: string | undefined;
-  hasSeenIntro: boolean;
-  isHydrated: boolean;
+  showSettings: boolean
+  groupInitialSection: GroupSection | undefined
+  settingsInitialSection: string | undefined
+  hasSeenIntro: boolean
+  isHydrated: boolean
 
   // Sidebar state
-  sidebarCollapsed: boolean;
-  sidebarWidth: number;
+  sidebarCollapsed: boolean
+  sidebarWidth: number
 
   // Quick settings
-  quickSettings: QuickSettings;
+  quickSettings: QuickSettings
 
   // Audio settings
-  audioSettings: AudioSettings;
+  audioSettings: AudioSettings
 
   // Actions
-  setError: (error: string | null) => void;
-  setSuccess: (success: string | null) => void;
-  setWarning: (warning: string | null) => void;
-  setShowSettings: (show: boolean) => void;
-  setGroupInitialSection: (section: GroupSection | undefined) => void;
-  setSettingsInitialSection: (section: string | undefined) => void;
-  setHasSeenIntro: (seen: boolean) => void;
-  setSidebarCollapsed: (collapsed: boolean) => void;
-  setSidebarWidth: (width: number) => void;
-  setQuickSettings: (
-    settings: QuickSettings | ((prev: QuickSettings) => QuickSettings),
-  ) => void;
+  setError: (error: string | null) => void
+  setSuccess: (success: string | null) => void
+  setWarning: (warning: string | null) => void
+  setShowSettings: (show: boolean) => void
+  setGroupInitialSection: (section: GroupSection | undefined) => void
+  setSettingsInitialSection: (section: string | undefined) => void
+  setHasSeenIntro: (seen: boolean) => void
+  setSidebarCollapsed: (collapsed: boolean) => void
+  setSidebarWidth: (width: number) => void
+  setQuickSettings: (settings: QuickSettings | ((prev: QuickSettings) => QuickSettings)) => void
   setAudioSettings: (
-    settings:
-      | AudioSettings
-      | ((prev: AudioSettings) => AudioSettings)
-      | Partial<AudioSettings>,
-  ) => void;
-  setIsHydrated: (isHydrated: boolean) => void;
+    settings: AudioSettings | ((prev: AudioSettings) => AudioSettings) | Partial<AudioSettings>,
+  ) => void
+  setIsHydrated: (isHydrated: boolean) => void
 }
 
 // Load initial QuickSettings from store
@@ -58,15 +53,15 @@ const loadInitialSettings = async () => {
     persistentSettings.getQuickSettings(),
     persistentSettings.getAudioSettings(),
     persistentSettings.getUIState(),
-  ]);
+  ])
   return {
     quickSettings,
     audioSettings,
     hasSeenIntro: uiState.hasSeenIntro,
     sidebarCollapsed: uiState.sidebarCollapsed,
     sidebarWidth: uiState.sidebarWidth,
-  };
-};
+  }
+}
 
 export const useUIStore = create<UIState>((set) => ({
   // Initial state
@@ -100,8 +95,7 @@ export const useUIStore = create<UIState>((set) => ({
   setWarning: (warning) => set({ warning }),
   setShowSettings: (show) => set({ showSettings: show }),
   setGroupInitialSection: (section) => set({ groupInitialSection: section }),
-  setSettingsInitialSection: (section) =>
-    set({ settingsInitialSection: section }),
+  setSettingsInitialSection: (section) => set({ settingsInitialSection: section }),
 
   setHasSeenIntro: (seen) => set({ hasSeenIntro: seen }),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
@@ -109,69 +103,50 @@ export const useUIStore = create<UIState>((set) => ({
 
   setQuickSettings: (settings) => {
     set((state) => ({
-      quickSettings:
-        typeof settings === "function"
-          ? settings(state.quickSettings)
-          : settings,
-    }));
+      quickSettings: typeof settings === "function" ? settings(state.quickSettings) : settings,
+    }))
   },
 
   setAudioSettings: (settings) => {
     set((state) => ({
       audioSettings:
-        typeof settings === "function"
-          ? settings(state.audioSettings)
-          : { ...state.audioSettings, ...(settings as Partial<AudioSettings>) },
-    }));
+        typeof settings === "function" ?
+          settings(state.audioSettings)
+        : { ...state.audioSettings, ...(settings as Partial<AudioSettings>) },
+    }))
   },
 
   setIsHydrated: (isHydrated: boolean) => set({ isHydrated }),
-}));
+}))
 
 useUIStore.subscribe((state, prevState) => {
-  if (!state.isHydrated) return;
+  if (!state.isHydrated) return
 
   if (state.hasSeenIntro !== prevState.hasSeenIntro) {
-    persistentSettings
-      .setUIState({ hasSeenIntro: state.hasSeenIntro })
-      .catch(console.error);
+    persistentSettings.setUIState({ hasSeenIntro: state.hasSeenIntro }).catch(console.error)
   }
 
   if (state.sidebarCollapsed !== prevState.sidebarCollapsed) {
-    persistentSettings
-      .setUIState({ sidebarCollapsed: state.sidebarCollapsed })
-      .catch(console.error);
+    persistentSettings.setUIState({ sidebarCollapsed: state.sidebarCollapsed }).catch(console.error)
   }
 
   if (state.sidebarWidth !== prevState.sidebarWidth) {
-    persistentSettings
-      .setUIState({ sidebarWidth: state.sidebarWidth })
-      .catch(console.error);
+    persistentSettings.setUIState({ sidebarWidth: state.sidebarWidth }).catch(console.error)
   }
 
   if (state.quickSettings !== prevState.quickSettings) {
-    persistentSettings
-      .setQuickSettings(state.quickSettings)
-      .catch(console.error);
+    persistentSettings.setQuickSettings(state.quickSettings).catch(console.error)
   }
 
   if (state.audioSettings !== prevState.audioSettings) {
-    persistentSettings
-      .setAudioSettings(state.audioSettings)
-      .catch(console.error);
+    persistentSettings.setAudioSettings(state.audioSettings).catch(console.error)
   }
-});
+})
 
 // Load Settings from store on initialization
 if (typeof window !== "undefined") {
   loadInitialSettings().then(
-    ({
-      quickSettings,
-      audioSettings,
-      hasSeenIntro,
-      sidebarCollapsed,
-      sidebarWidth,
-    }) => {
+    ({ quickSettings, audioSettings, hasSeenIntro, sidebarCollapsed, sidebarWidth }) => {
       useUIStore.setState({
         quickSettings,
         audioSettings,
@@ -179,7 +154,7 @@ if (typeof window !== "undefined") {
         sidebarCollapsed: sidebarCollapsed ?? false,
         sidebarWidth: sidebarWidth ?? 300,
         isHydrated: true,
-      });
+      })
     },
-  );
+  )
 }

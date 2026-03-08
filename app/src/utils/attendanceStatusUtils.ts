@@ -1,16 +1,12 @@
-import type { AttendanceSession } from "@/types/recognition";
+import type { AttendanceSession } from "@/types/recognition"
 
-export type AttendanceStatusDisplay =
-  | "present"
-  | "absent"
-  | "late"
-  | "no_records";
+export type AttendanceStatusDisplay = "present" | "absent" | "late" | "no_records"
 
 export interface StatusConfig {
-  label: string;
-  shortLabel?: string;
-  className: string;
-  color: string;
+  label: string
+  shortLabel?: string
+  className: string
+  color: string
 }
 
 export function getStatusConfig(
@@ -23,7 +19,7 @@ export function getStatusConfig(
       shortLabel: "No records",
       className: "bg-white/5 text-white/40 border border-white/10",
       color: "text-white/40",
-    };
+    }
   }
 
   if (statusOverride === "absent") {
@@ -32,7 +28,7 @@ export function getStatusConfig(
       shortLabel: "absent",
       className: "bg-red-500/15 text-red-200 border border-red-400/30",
       color: "text-red-200",
-    };
+    }
   }
 
   if (!session) {
@@ -41,7 +37,7 @@ export function getStatusConfig(
       shortLabel: "absent",
       className: "bg-red-500/15 text-red-200 border border-red-400/30",
       color: "text-red-200",
-    };
+    }
   }
 
   if (session.status === "present" && session.is_late) {
@@ -50,7 +46,7 @@ export function getStatusConfig(
       shortLabel: "late",
       className: "bg-amber-500/15 text-amber-200 border border-amber-400/30",
       color: "text-amber-200",
-    };
+    }
   }
 
   if (session.status === "present") {
@@ -59,7 +55,7 @@ export function getStatusConfig(
       shortLabel: "present",
       className: "bg-cyan-500/15 text-cyan-200 border border-cyan-400/30",
       color: "text-cyan-200",
-    };
+    }
   }
 
   return {
@@ -67,29 +63,21 @@ export function getStatusConfig(
     shortLabel: "absent",
     className: "bg-red-500/15 text-red-200 border border-red-400/30",
     color: "text-red-200",
-  };
+  }
 }
 
-export function getStatusLabel(
-  session: AttendanceSession | null | undefined,
-): string {
-  return getStatusConfig(session).label;
+export function getStatusLabel(session: AttendanceSession | null | undefined): string {
+  return getStatusConfig(session).label
 }
 
-export function getStatusShortLabel(
-  session: AttendanceSession | null | undefined,
-): string {
-  return getStatusConfig(session).shortLabel || getStatusLabel(session);
+export function getStatusShortLabel(session: AttendanceSession | null | undefined): string {
+  return getStatusConfig(session).shortLabel || getStatusLabel(session)
 }
 
-export function getStatusClassName(
-  session: AttendanceSession | null | undefined,
-): string {
-  return getStatusConfig(session).className;
+export function getStatusClassName(session: AttendanceSession | null | undefined): string {
+  return getStatusConfig(session).className
 }
 
-export function getStatusColor(
-  session: AttendanceSession | null | undefined,
-): string {
-  return getStatusConfig(session).color;
+export function getStatusColor(session: AttendanceSession | null | undefined): string {
+  return getStatusConfig(session).color
 }

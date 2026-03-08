@@ -1,20 +1,15 @@
-import { useMemo, memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
-import {
-  Members,
-  Overview,
-  Registration,
-  Reports,
-} from "@/components/group/sections";
-import { EmptyState } from "@/components/group/shared";
+import { useMemo, memo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
+import { Members, Overview, Registration, Reports } from "@/components/group/sections"
+import { EmptyState } from "@/components/group/shared"
 
 interface GroupContentProps {
-  onMembersChange: () => void;
-  deselectMemberTrigger?: number;
-  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
-  onDaysTrackedChange?: (daysTracked: number, loading: boolean) => void;
-  onExportHandlersReady?: (handlers: { exportCSV: () => void }) => void;
+  onMembersChange: () => void
+  deselectMemberTrigger?: number
+  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void
+  onDaysTrackedChange?: (daysTracked: number, loading: boolean) => void
+  onExportHandlersReady?: (handlers: { exportCSV: () => void }) => void
 }
 
 function GroupContentComponent({
@@ -24,30 +19,30 @@ function GroupContentComponent({
   onDaysTrackedChange,
   onExportHandlersReady,
 }: GroupContentProps) {
-  const selectedGroup = useGroupStore((state) => state.selectedGroup);
-  const groupsLength = useGroupStore((state) => state.groups.length);
-  const members = useGroupStore((state) => state.members);
-  const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails);
+  const selectedGroup = useGroupStore((state) => state.selectedGroup)
+  const groupsLength = useGroupStore((state) => state.groups.length)
+  const members = useGroupStore((state) => state.members)
+  const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails)
 
-  const activeSection = useGroupUIStore((state) => state.activeSection);
-  const openAddMember = useGroupUIStore((state) => state.openAddMember);
-  const openEditMember = useGroupUIStore((state) => state.openEditMember);
-  const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup);
+  const activeSection = useGroupUIStore((state) => state.activeSection)
+  const openAddMember = useGroupUIStore((state) => state.openAddMember)
+  const openEditMember = useGroupUIStore((state) => state.openEditMember)
+  const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup)
 
   const handleMembersChange = () => {
     if (selectedGroup) {
-      fetchGroupDetails(selectedGroup.id);
+      fetchGroupDetails(selectedGroup.id)
     }
-    onMembersChange();
-  };
+    onMembersChange()
+  }
 
-  const selectedGroupId = selectedGroup?.id;
+  const selectedGroupId = selectedGroup?.id
   const hasSelectedGroup = useMemo(() => {
-    if (!selectedGroup || !selectedGroupId) return false;
-    const currentGroups = useGroupStore.getState().groups;
-    return currentGroups.some((g) => g.id === selectedGroupId);
-  }, [selectedGroup, selectedGroupId]);
-  const hasGroups = groupsLength > 0;
+    if (!selectedGroup || !selectedGroupId) return false
+    const currentGroups = useGroupStore.getState().groups
+    return currentGroups.some((g) => g.id === selectedGroupId)
+  }, [selectedGroup, selectedGroupId])
+  const hasGroups = groupsLength > 0
 
   if (!hasSelectedGroup || !selectedGroup) {
     return (
@@ -61,7 +56,7 @@ function GroupContentComponent({
           className="h-full"
         />
       </div>
-    );
+    )
   }
 
   return (
@@ -73,14 +68,9 @@ function GroupContentComponent({
         exit={{ opacity: 0, scale: 0.995 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
         style={{ willChange: "opacity, transform" }}
-        className="flex-1 w-full min-h-0 flex flex-col"
-      >
+        className="flex min-h-0 w-full flex-1 flex-col">
         {activeSection === "overview" && (
-          <Overview
-            group={selectedGroup}
-            members={members}
-            onAddMember={openAddMember}
-          />
+          <Overview group={selectedGroup} members={members} onAddMember={openAddMember} />
         )}
 
         {activeSection === "reports" && (
@@ -113,7 +103,7 @@ function GroupContentComponent({
         )}
       </motion.div>
     </AnimatePresence>
-  );
+  )
 }
 
-export const GroupContent = memo(GroupContentComponent);
+export const GroupContent = memo(GroupContentComponent)

@@ -1,38 +1,32 @@
-import { useState, useEffect, useRef, forwardRef } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, forwardRef } from "react"
+import { createPortal } from "react-dom"
+import { motion, AnimatePresence } from "framer-motion"
 
 export interface DropdownOption<T = string> {
-  value: T;
-  label: string;
-  disabled?: boolean;
+  value: T
+  label: string
+  disabled?: boolean
 }
 
-interface DropdownProps<T = string> extends Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "onChange"
-> {
-  options: DropdownOption<T>[];
-  value: T | null | undefined;
-  onChange: (value: T | null) => void;
-  placeholder?: string;
-  emptyMessage?: string;
-  className?: string;
-  buttonClassName?: string;
-  optionClassName?: string;
-  iconClassName?: string;
-  disabled?: boolean;
-  maxHeight?: number; // in pixels
-  showPlaceholderOption?: boolean;
-  allowClear?: boolean; // Allow selecting placeholder to clear value
-  trigger?: React.ReactNode;
-  menuWidth?: number | string;
+interface DropdownProps<T = string> extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+  options: DropdownOption<T>[]
+  value: T | null | undefined
+  onChange: (value: T | null) => void
+  placeholder?: string
+  emptyMessage?: string
+  className?: string
+  buttonClassName?: string
+  optionClassName?: string
+  iconClassName?: string
+  disabled?: boolean
+  maxHeight?: number // in pixels
+  showPlaceholderOption?: boolean
+  allowClear?: boolean // Allow selecting placeholder to clear value
+  trigger?: React.ReactNode
+  menuWidth?: number | string
 }
 
-export const Dropdown = forwardRef<
-  HTMLDivElement,
-  DropdownProps<string | number>
->(
+export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number>>(
   (
     {
       options,
@@ -54,126 +48,103 @@ export const Dropdown = forwardRef<
     },
     ref,
   ) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false)
     const [menuPosition, setMenuPosition] = useState<{
-      top: number;
-      left: number;
-      width: number;
-      buttonRight: number;
-      buttonTop: number;
-    } | null>(null);
-    const internalRef = useRef<HTMLDivElement>(null);
-    const buttonRef = useRef<HTMLButtonElement>(null);
+      top: number
+      left: number
+      width: number
+      buttonRight: number
+      buttonTop: number
+    } | null>(null)
+    const internalRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
 
     // Combine refs
     useEffect(() => {
-      if (!ref) return;
+      if (!ref) return
       if (typeof ref === "function") {
-        ref(internalRef.current);
+        ref(internalRef.current)
       } else {
-        (ref as React.MutableRefObject<HTMLDivElement | null>).current =
-          internalRef.current;
+        ;(ref as React.MutableRefObject<HTMLDivElement | null>).current = internalRef.current
       }
-    }, [ref]);
+    }, [ref])
 
-    const selectedOption = options.find((opt) => opt.value === value);
-    const displayText = selectedOption?.label || placeholder;
+    const selectedOption = options.find((opt) => opt.value === value)
+    const displayText = selectedOption?.label || placeholder
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (
-          internalRef.current &&
-          !internalRef.current.contains(event.target as Node)
-        ) {
-          setIsOpen(false);
+        if (internalRef.current && !internalRef.current.contains(event.target as Node)) {
+          setIsOpen(false)
         }
-      };
+      }
 
       if (isOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside)
       }
 
       return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [isOpen]);
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [isOpen])
 
     useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape" && isOpen) {
-          setIsOpen(false);
+          setIsOpen(false)
         }
-      };
-      window.addEventListener("keydown", handleEscape);
-      return () => window.removeEventListener("keydown", handleEscape);
-    }, [isOpen]);
+      }
+      window.addEventListener("keydown", handleEscape)
+      return () => window.removeEventListener("keydown", handleEscape)
+    }, [isOpen])
 
     useEffect(() => {
       if (isOpen && buttonRef.current) {
-        const buttonRect = buttonRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - buttonRect.bottom;
-        const spaceAbove = buttonRect.top;
-        const estimatedHeight = Math.min(maxHeight, options.length * 36 + 20);
+        const buttonRect = buttonRef.current.getBoundingClientRect()
+        const spaceBelow = window.innerHeight - buttonRect.bottom
+        const spaceAbove = buttonRect.top
+        const estimatedHeight = Math.min(maxHeight, options.length * 36 + 20)
 
-        const shouldOpenUp =
-          spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
+        const shouldOpenUp = spaceBelow < estimatedHeight && spaceAbove > spaceBelow
 
         setMenuPosition({
-          top: shouldOpenUp
-            ? buttonRect.top - estimatedHeight - 4
-            : buttonRect.bottom + 4,
+          top: shouldOpenUp ? buttonRect.top - estimatedHeight - 4 : buttonRect.bottom + 4,
           left: buttonRect.left,
           width: buttonRect.width,
           buttonRight: buttonRect.right,
           buttonTop: buttonRect.top,
-        });
+        })
       } else {
-        setMenuPosition(null);
+        setMenuPosition(null)
       }
-    }, [isOpen, maxHeight, options.length]);
+    }, [isOpen, maxHeight, options.length])
 
     const handleSelect = (optionValue: string | number) => {
-      const option = options.find((opt) => opt.value === optionValue);
+      const option = options.find((opt) => opt.value === optionValue)
       if (!option?.disabled) {
-        onChange(optionValue);
-        setIsOpen(false);
+        onChange(optionValue)
+        setIsOpen(false)
       }
-    };
+    }
 
     return (
-      <div
-        className={`relative min-w-0 ${className}`}
-        ref={internalRef}
-        {...props}
-      >
+      <div className={`relative min-w-0 ${className}`} ref={internalRef} {...props}>
         <button
           type="button"
           ref={buttonRef}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
-          className={`
-          w-full bg-white/5 border border-white/10 rounded-lg py-2 text-sm text-white
-          focus:outline-none focus:border-white/20 transition-all cursor-pointer text-left
-          flex items-center justify-between hover:bg-white/8
-          disabled:opacity-50 disabled:cursor-not-allowed min-w-0
-          ${trigger ? "px-0 justify-center" : "ps-3 pe-2"}
-          ${buttonClassName}
-        `}
-        >
-          {trigger ? (
+          className={`flex w-full min-w-0 cursor-pointer items-center justify-between rounded-lg border border-white/10 bg-white/5 py-2 text-left text-sm text-white transition-all hover:bg-white/8 focus:border-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${trigger ? "justify-center px-0" : "ps-3 pe-2"} ${buttonClassName} `}>
+          {trigger ?
             trigger
-          ) : (
-            <>
-              <span className="truncate flex-1 min-w-0 text-left">
-                {displayText}
-              </span>
+          : <>
+              <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
               <i
-                className={`fa-solid fa-chevron-down text-white/50 text-xs shrink-0 ms-2 transition-transform duration-200 ${
+                className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/50 transition-transform duration-200 ${
                   isOpen ? "rotate-180" : ""
-                } ${iconClassName}`}
-              ></i>
+                } ${iconClassName}`}></i>
             </>
-          )}
+          }
         </button>
 
         {createPortal(
@@ -195,54 +166,45 @@ export const Dropdown = forwardRef<
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-9999 bg-[#080808] border border-white/10 rounded-lg overflow-hidden shadow-xl"
+                  className="fixed z-9999 overflow-hidden rounded-lg border border-white/10 bg-[#080808] shadow-xl"
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
                     top: `${menuPosition.top}px`,
                     left: menuWidth ? undefined : `${menuPosition.left}px`,
-                    right: menuWidth
-                      ? window.innerWidth - menuPosition.buttonRight
-                      : undefined,
-                    width: menuWidth
-                      ? typeof menuWidth === "number"
-                        ? `${menuWidth}px`
+                    right: menuWidth ? window.innerWidth - menuPosition.buttonRight : undefined,
+                    width:
+                      menuWidth ?
+                        typeof menuWidth === "number" ?
+                          `${menuWidth}px`
                         : menuWidth
                       : `${menuPosition.width}px`,
                     transformOrigin:
-                      menuPosition.top < menuPosition.buttonTop
-                        ? "bottom right"
-                        : "top right",
-                  }}
-                >
+                      menuPosition.top < menuPosition.buttonTop ? "bottom right" : "top right",
+                  }}>
                   <div
-                    className="overflow-y-auto custom-scroll"
-                    style={{ maxHeight: `${maxHeight}px` }}
-                  >
-                    {options.length === 0 ? (
-                      <div className="px-3 py-2 text-center text-white/40 text-[11px] font-medium">
+                    className="custom-scroll overflow-y-auto"
+                    style={{ maxHeight: `${maxHeight}px` }}>
+                    {options.length === 0 ?
+                      <div className="px-3 py-2 text-center text-[11px] font-medium text-white/40">
                         {emptyMessage}
                       </div>
-                    ) : (
-                      <>
+                    : <>
                         {showPlaceholderOption && allowClear && (
                           <>
                             <button
                               type="button"
                               onClick={() => {
-                                onChange(null);
-                                setIsOpen(false);
+                                onChange(null)
+                                setIsOpen(false)
                               }}
-                              className={`w-full text-left px-3 py-2 text-sm transition-colors rounded-none ${
-                                !value
-                                  ? "bg-white/10 text-white"
-                                  : "text-white/70 hover:bg-white/5 hover:text-white"
-                              } ${optionClassName}`}
-                            >
+                              className={`w-full rounded-none px-3 py-2 text-left text-sm transition-colors ${
+                                !value ? "bg-white/10 text-white" : (
+                                  "text-white/70 hover:bg-white/5 hover:text-white"
+                                )
+                              } ${optionClassName}`}>
                               {placeholder}
                             </button>
-                            {options.length > 0 && (
-                              <div className="h-px bg-white/10 mx-2"></div>
-                            )}
+                            {options.length > 0 && <div className="mx-2 h-px bg-white/10"></div>}
                           </>
                         )}
 
@@ -252,20 +214,17 @@ export const Dropdown = forwardRef<
                             type="button"
                             onClick={() => handleSelect(option.value)}
                             disabled={option.disabled}
-                            className={`w-full text-left px-3 py-2 text-sm transition-colors truncate rounded-none ${
-                              value === option.value
-                                ? "bg-white/10 text-white"
-                                : option.disabled
-                                  ? "text-white/30 cursor-not-allowed"
-                                  : "text-white/70 hover:bg-white/5 hover:text-white"
+                            className={`w-full truncate rounded-none px-3 py-2 text-left text-sm transition-colors ${
+                              value === option.value ? "bg-white/10 text-white"
+                              : option.disabled ? "cursor-not-allowed text-white/30"
+                              : "text-white/70 hover:bg-white/5 hover:text-white"
                             } ${optionClassName}`}
-                            title={option.label}
-                          >
+                            title={option.label}>
                             {option.label}
                           </button>
                         ))}
                       </>
-                    )}
+                    }
                   </div>
                 </motion.div>
               </>
@@ -274,8 +233,8 @@ export const Dropdown = forwardRef<
           document.body,
         )}
       </div>
-    );
+    )
   },
-);
+)
 
-Dropdown.displayName = "Dropdown";
+Dropdown.displayName = "Dropdown"

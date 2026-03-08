@@ -1,36 +1,27 @@
-import { Dropdown, Tooltip } from "@/components/shared";
+import { Dropdown, Tooltip } from "@/components/shared"
 
-import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
-import { useGroupModals } from "@/components/group/hooks";
-import { GroupHeader } from "@/components/group/components/GroupHeader";
-import { GroupNav } from "@/components/group/components/GroupNav";
+import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
+import { useGroupModals } from "@/components/group/hooks"
+import { GroupHeader } from "@/components/group/components/GroupHeader"
+import { GroupNav } from "@/components/group/components/GroupNav"
 
 interface GroupSidebarProps {
-  onBack: () => void;
+  onBack: () => void
 }
 
 export function GroupSidebar({ onBack }: GroupSidebarProps) {
-  const { selectedGroup, groups, setSelectedGroup } = useGroupStore();
-  const { activeSection, isSidebarCollapsed, setActiveSection, toggleSidebar } =
-    useGroupUIStore();
-  const { openCreateGroup } = useGroupModals();
+  const { selectedGroup, groups, setSelectedGroup } = useGroupStore()
+  const { activeSection, isSidebarCollapsed, setActiveSection, toggleSidebar } = useGroupUIStore()
+  const { openCreateGroup } = useGroupModals()
   return (
     <aside
-      className={`
-        flex flex-col border-r border-white/10 bg-white/5
-        transition-all duration-300 ease-in-out shrink-0
-        ${isSidebarCollapsed ? "w-16" : "w-64"} h-full
-      `}
-    >
-      <GroupHeader
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={toggleSidebar}
-      />
+      className={`flex shrink-0 flex-col border-r border-white/10 bg-white/5 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "w-16" : "w-64"} h-full`}>
+      <GroupHeader isCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebar} />
 
       {!isSidebarCollapsed && (
-        <div className="px-4 py-3 border-b border-white/10">
+        <div className="border-b border-white/10 px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <Dropdown
                 options={groups.map((group) => ({
                   value: group.id,
@@ -38,12 +29,12 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
                 }))}
                 value={selectedGroup?.id ?? null}
                 onChange={(value: string | number | null) => {
-                  const groupId = value as string | null;
+                  const groupId = value as string | null
                   if (groupId) {
-                    const group = groups.find((g) => g.id === groupId);
-                    setSelectedGroup(group ?? null);
+                    const group = groups.find((g) => g.id === groupId)
+                    setSelectedGroup(group ?? null)
                   } else {
-                    setSelectedGroup(null);
+                    setSelectedGroup(null)
                   }
                 }}
                 placeholder="Select group…"
@@ -56,9 +47,8 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
             <Tooltip content="New Group" position="top">
               <button
                 onClick={openCreateGroup}
-                className="w-10 h-10 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center shrink-0"
-                aria-label="New Group"
-              >
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/10"
+                aria-label="New Group">
                 <span className="text-lg">+</span>
               </button>
             </Tooltip>
@@ -74,22 +64,14 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
       />
 
       <div
-        className={`py-3 border-t border-white/10 mt-auto ${isSidebarCollapsed ? "px-2" : "px-4"}`}
-      >
+        className={`mt-auto border-t border-white/10 py-3 ${isSidebarCollapsed ? "px-2" : "px-4"}`}>
         <button
           onClick={onBack}
-          className={`w-full rounded-lg text-[11px] font-medium text-white/40 hover:bg-white/10 hover:text-white/80 border-none bg-transparent transition-all text-center ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
-          aria-label="Close"
-        >
-          {!isSidebarCollapsed ? (
+          className={`w-full rounded-lg border-none bg-transparent text-center text-[11px] font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80 ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
+          aria-label="Close">
+          {!isSidebarCollapsed ?
             <span className="text-sm">Close</span>
-          ) : (
-            <svg
-              className="w-5 h-5 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+          : <svg className="mx-auto h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -97,9 +79,9 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          )}
+          }
         </button>
       </div>
     </aside>
-  );
+  )
 }

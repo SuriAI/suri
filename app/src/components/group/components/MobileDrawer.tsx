@@ -1,79 +1,60 @@
-import { useEffect, useCallback } from "react";
-import { Dropdown } from "@/components/shared";
+import { useEffect, useCallback } from "react"
+import { Dropdown } from "@/components/shared"
 
-import { useGroupStore, useGroupUIStore } from "@/components/group/stores";
-import { useGroupModals } from "@/components/group/hooks";
-import { MobileNav } from "@/components/group/components/MobileNav";
+import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
+import { useGroupModals } from "@/components/group/hooks"
+import { MobileNav } from "@/components/group/components/MobileNav"
 
 export function MobileDrawer() {
-  const { selectedGroup, groups, setSelectedGroup } = useGroupStore();
-  const {
-    isMobileDrawerOpen,
-    activeSection,
-    setActiveSection,
-    setIsMobileDrawerOpen,
-  } = useGroupUIStore();
-  const { openCreateGroup } = useGroupModals();
+  const { selectedGroup, groups, setSelectedGroup } = useGroupStore()
+  const { isMobileDrawerOpen, activeSection, setActiveSection, setIsMobileDrawerOpen } =
+    useGroupUIStore()
+  const { openCreateGroup } = useGroupModals()
 
-  const onClose = useCallback(
-    () => setIsMobileDrawerOpen(false),
-    [setIsMobileDrawerOpen],
-  );
+  const onClose = useCallback(() => setIsMobileDrawerOpen(false), [setIsMobileDrawerOpen])
   // Lock body scroll when drawer is open
   useEffect(() => {
     if (isMobileDrawerOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = "";
+      document.body.style.overflow = ""
     }
     return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMobileDrawerOpen]);
+      document.body.style.overflow = ""
+    }
+  }, [isMobileDrawerOpen])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isMobileDrawerOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isMobileDrawerOpen, onClose]);
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [isMobileDrawerOpen, onClose])
 
-  if (!isMobileDrawerOpen) return null;
+  if (!isMobileDrawerOpen) return null
 
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/60 z-40 lg:hidden animate-in fade-in duration-200"
+        className="animate-in fade-in fixed inset-0 z-40 bg-black/60 duration-200 lg:hidden"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
-        className={`
-          fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white/5
-          border-r border-white/10 z-50 lg:hidden
-          transform transition-transform duration-300 ease-out
-          ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+        className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] transform border-r border-white/10 bg-white/5 transition-transform duration-300 ease-out lg:hidden ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"} `}
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation menu"
-      >
-        <div className="h-full flex flex-col pt-12 pb-5">
+        aria-label="Navigation menu">
+        <div className="flex h-full flex-col pt-12 pb-5">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg bg-transparent border-none p-0 text-white/70 hover:text-white hover:bg-white/10 transition-all shadow-none"
-            aria-label="Close menu"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/70 shadow-none transition-all hover:bg-white/10 hover:text-white"
+            aria-label="Close menu">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -83,20 +64,16 @@ export function MobileDrawer() {
             </svg>
           </button>
 
-          <div className="px-4 pt-1 pb-3 border-b border-white/10">
+          <div className="border-b border-white/10 px-4 pt-1 pb-3">
             <div className="flex items-center gap-2">
-              <img
-                src="./icons/suri_mark_logo_transparent.png"
-                alt="Suri"
-                className="w-9 h-9"
-              />
+              <img src="./icons/suri_mark_logo_transparent.png" alt="Suri" className="h-9 w-9" />
               <h1 className="text-lg font-semibold text-white">Menu</h1>
             </div>
           </div>
 
-          <div className="px-4 py-3 border-b border-white/10">
+          <div className="border-b border-white/10 px-4 py-3">
             <div className="flex items-center gap-2">
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <Dropdown
                   options={groups.map((group) => ({
                     value: group.id,
@@ -104,12 +81,12 @@ export function MobileDrawer() {
                   }))}
                   value={selectedGroup?.id ?? null}
                   onChange={(value: string | number | null) => {
-                    const groupId = value as string | null;
+                    const groupId = value as string | null
                     if (groupId) {
-                      const group = groups.find((g) => g.id === groupId);
-                      setSelectedGroup(group ?? null);
+                      const group = groups.find((g) => g.id === groupId)
+                      setSelectedGroup(group ?? null)
                     } else {
-                      setSelectedGroup(null);
+                      setSelectedGroup(null)
                     }
                   }}
                   placeholder="Select group…"
@@ -121,16 +98,15 @@ export function MobileDrawer() {
               </div>
               <button
                 onClick={openCreateGroup}
-                className="h-10 px-3 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors border border-white/10 shrink-0"
+                className="h-10 shrink-0 rounded-lg border border-white/10 px-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                 aria-label="New Group"
-                title="New Group"
-              >
+                title="New Group">
                 Add
               </button>
             </div>
           </div>
 
-          <div className="flex-1 min-h-0">
+          <div className="min-h-0 flex-1">
             <MobileNav
               activeSection={activeSection}
               onSectionChange={setActiveSection}
@@ -141,5 +117,5 @@ export function MobileDrawer() {
         </div>
       </div>
     </>
-  );
+  )
 }

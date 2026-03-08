@@ -1,18 +1,15 @@
-import { Fragment } from "react";
-import type {
-  RowData,
-  ColumnKey,
-} from "@/components/group/sections/reports/types";
-import { parseLocalDate } from "@/utils";
+import { Fragment } from "react"
+import type { RowData, ColumnKey } from "@/components/group/sections/reports/types"
+import { parseLocalDate } from "@/utils"
 
 interface ReportTableProps {
-  groupedRows: Record<string, RowData[]>;
-  visibleColumns: ColumnKey[];
-  allColumns: readonly { key: ColumnKey; label: string; align?: string }[];
-  search?: string;
-  statusFilter?: string;
-  onResetSearch?: () => void;
-  onResetFilter?: () => void;
+  groupedRows: Record<string, RowData[]>
+  visibleColumns: ColumnKey[]
+  allColumns: readonly { key: ColumnKey; label: string; align?: string }[]
+  search?: string
+  statusFilter?: string
+  onResetSearch?: () => void
+  onResetFilter?: () => void
 }
 
 export function ReportTable({
@@ -23,71 +20,69 @@ export function ReportTable({
   statusFilter,
   onResetFilter,
 }: ReportTableProps) {
-  const visibleColDefs = allColumns.filter((c) =>
-    visibleColumns.includes(c.key),
-  );
+  const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
   return (
-    <div className="flex-1 overflow-auto custom-scroll">
-      <table className="w-full text-left border-separate border-spacing-0">
-        <thead className="sticky top-0 bg-[#0f0f0f] z-10">
+    <div className="custom-scroll flex-1 overflow-auto">
+      <table className="w-full border-separate border-spacing-0 text-left">
+        <thead className="sticky top-0 z-10 bg-[#0f0f0f]">
           <tr>
             {visibleColDefs.map((c, i) => {
-              let alignClass = "text-left";
-              if (c.align === "center") alignClass = "text-center";
-              else if (c.align === "right") alignClass = "text-right";
+              let alignClass = "text-left"
+              if (c.align === "center") alignClass = "text-center"
+              else if (c.align === "right") alignClass = "text-right"
               return (
                 <th
                   key={c.key}
-                  className={`px-4 py-2.5 border-b border-white/5 text-[11px] font-medium text-white/40 bg-black ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}
-                >
+                  className={`border-b border-white/5 bg-black px-4 py-2.5 text-[11px] font-medium text-white/40 ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}>
                   {c.label}
                 </th>
-              );
+              )
             })}
           </tr>
         </thead>
-        <tbody className="text-sm divide-y divide-white/5">
-          {Object.keys(groupedRows).length === 0 ||
-          Object.values(groupedRows).every((rows) => rows.length === 0) ? (
+        <tbody className="divide-y divide-white/5 text-sm">
+          {(
+            Object.keys(groupedRows).length === 0 ||
+            Object.values(groupedRows).every((rows) => rows.length === 0)
+          ) ?
             <tr>
               <td colSpan={visibleColDefs.length} className="py-24">
-                <div className="flex flex-col items-center justify-center text-center px-6">
-                  <h3 className="text-base font-bold text-white/80 mb-2">
-                    {search
-                      ? `No matches for "${search}"`
-                      : statusFilter !== "all"
-                        ? `No results for "${statusFilter}"`
-                        : "No results found"}
+                <div className="flex flex-col items-center justify-center px-6 text-center">
+                  <h3 className="mb-2 text-base font-bold text-white/80">
+                    {search ?
+                      `No matches for "${search}"`
+                    : statusFilter !== "all" ?
+                      `No results for "${statusFilter}"`
+                    : "No results found"}
                   </h3>
 
-                  <p className="text-[11px] text-white/40 max-w-70 mb-8 leading-relaxed font-medium">
-                    {search
-                      ? "We couldn't find anything matching your search. Try a different keyword."
-                      : statusFilter !== "all"
-                        ? `None of the records currently match the "${statusFilter}" filter.`
-                        : "There are no attendance records for this period."}
+                  <p className="mb-8 max-w-70 text-[11px] leading-relaxed font-medium text-white/40">
+                    {search ?
+                      "We couldn't find anything matching your search. Try a different keyword."
+                    : statusFilter !== "all" ?
+                      `None of the records currently match the "${statusFilter}" filter.`
+                    : "There are no attendance records for this period."}
                   </p>
 
                   <div className="flex items-center gap-3">
                     {statusFilter !== "all" && (
                       <button
                         onClick={onResetFilter}
-                        className="px-4 py-2 rounded-lg bg-white/5 border border-white/5 text-white/40 hover:text-white/80 hover:bg-white/10 transition-all text-xs font-medium"
-                      >
+                        className="rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-xs font-medium text-white/40 transition-all hover:bg-white/10 hover:text-white/80">
                         Reset Filter
                       </button>
                     )}
                     {!search && statusFilter === "all" && (
                       <div className="flex flex-col items-center gap-2">
-                        <span className="text-[11px] text-white/40 font-semibold mb-2">
+                        <span className="mb-2 text-[11px] font-semibold text-white/40">
                           Suggestions
                         </span>
                         <div className="flex gap-2">
-                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
+                          <span className="rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-white/40">
                             Try Previous Week
                           </span>
-                          <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
+                          <span className="rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-white/40">
                             Expand Range
                           </span>
                         </div>
@@ -97,24 +92,21 @@ export function ReportTable({
                 </div>
               </td>
             </tr>
-          ) : (
-            Object.entries(groupedRows).map(([groupInfo, rows]) => {
-              if (rows.length === 0) return null;
+          : Object.entries(groupedRows).map(([groupInfo, rows]) => {
+              if (rows.length === 0) return null
               return (
                 <Fragment key={groupInfo}>
                   {groupInfo !== "__all__" && (
                     <tr>
                       <td
                         colSpan={visibleColDefs.length}
-                        className="px-4 py-3 bg-white/5 border-b border-white/5"
-                      >
+                        className="border-b border-white/5 bg-white/5 px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-cyan-100/90 tracking-wide">
+                          <span className="text-xs font-bold tracking-wide text-cyan-100/90">
                             {groupInfo}
                           </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg bg-white/5 border border-white/5 text-[11px] text-white/40 font-medium">
-                            {rows.length}{" "}
-                            {rows.length === 1 ? "record" : "records"}
+                          <span className="inline-flex items-center rounded-lg border border-white/5 bg-white/5 px-1.5 py-0.5 text-[11px] font-medium text-white/40">
+                            {rows.length} {rows.length === 1 ? "record" : "records"}
                           </span>
                         </div>
                       </td>
@@ -123,145 +115,128 @@ export function ReportTable({
                   {rows.map((row, rIdx) => (
                     <tr
                       key={rIdx}
-                      className="group hover:bg-cyan-500/3 transition-all duration-200 cursor-default"
-                    >
+                      className="group cursor-default transition-all duration-200 hover:bg-cyan-500/3">
                       {visibleColDefs.map((c, cIdx) => {
-                        const val = row[c.key];
-                        let content: React.ReactNode = val as string;
+                        const val = row[c.key]
+                        let content: React.ReactNode = val as string
 
                         if (c.key === "status") {
-                          const s = row.status;
-                          let textColor = "text-white/40";
-                          if (s === "present") textColor = "text-cyan-400";
-                          if (s === "absent") textColor = "text-red-400";
-                          if (s === "no_records") textColor = "text-white/30";
+                          const s = row.status
+                          let textColor = "text-white/40"
+                          if (s === "present") textColor = "text-cyan-400"
+                          if (s === "absent") textColor = "text-red-400"
+                          if (s === "no_records") textColor = "text-white/30"
 
                           content = (
                             <div
-                              className={`inline-flex items-center text-[11px] font-semibold ${textColor}`}
-                            >
+                              className={`inline-flex items-center text-[11px] font-semibold ${textColor}`}>
                               {s === "no_records" ? "N/A" : s}
                             </div>
-                          );
+                          )
                         } else if (c.key === "is_late") {
-                          content = row.is_late ? (
-                            <div className="flex items-center gap-1.5 text-amber-400/80 font-semibold text-[11px]">
-                              <i className="fa-solid fa-clock text-[9px]"></i>
-                              Late
-                            </div>
-                          ) : (
-                            <span className="text-white/10">-</span>
-                          );
+                          content =
+                            row.is_late ?
+                              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/80">
+                                <i className="fa-solid fa-clock text-[9px]"></i>
+                                Late
+                              </div>
+                            : <span className="text-white/10">-</span>
                         } else if (c.key === "check_in_time") {
                           if (row.check_in_time) {
                             content = (
                               <div className="flex flex-col">
-                                <span className="text-white/90 font-medium">
-                                  {new Date(
-                                    row.check_in_time,
-                                  ).toLocaleTimeString([], {
+                                <span className="font-medium text-white/90">
+                                  {new Date(row.check_in_time).toLocaleTimeString([], {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
                                 </span>
                                 {row.is_late && row.late_minutes > 0 && (
-                                  <span className="text-[11px] text-amber-500/60 font-semibold mt-0.5">
+                                  <span className="mt-0.5 text-[11px] font-semibold text-amber-500/60">
                                     +{row.late_minutes}m
                                   </span>
                                 )}
                               </div>
-                            );
+                            )
                           } else {
-                            content = <span className="text-white/10">-</span>;
+                            content = <span className="text-white/10">-</span>
                           }
                         } else if (c.key === "check_out_time") {
                           if (row.check_out_time) {
                             content = (
                               <div className="flex flex-col">
-                                <span className="text-white/90 font-medium">
-                                  {new Date(
-                                    row.check_out_time,
-                                  ).toLocaleTimeString([], {
+                                <span className="font-medium text-white/90">
+                                  {new Date(row.check_out_time).toLocaleTimeString([], {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
                                 </span>
                               </div>
-                            );
+                            )
                           } else {
-                            content = <span className="text-white/10">-</span>;
+                            content = <span className="text-white/10">-</span>
                           }
                         } else if (c.key === "total_hours") {
                           if (row.total_hours) {
-                            const hrs = Math.floor(row.total_hours);
-                            const mins = Math.round(
-                              (row.total_hours - hrs) * 60,
-                            );
+                            const hrs = Math.floor(row.total_hours)
+                            const mins = Math.round((row.total_hours - hrs) * 60)
 
                             content = (
-                              <span className="text-cyan-400/80 font-medium whitespace-nowrap">
+                              <span className="font-medium whitespace-nowrap text-cyan-400/80">
                                 {hrs > 0 ? `${hrs}h ` : ""}
                                 {mins > 0 || hrs === 0 ? `${mins}m` : ""}
                               </span>
-                            );
+                            )
                           } else {
-                            content = <span className="text-white/10">-</span>;
+                            content = <span className="text-white/10">-</span>
                           }
                         } else if (c.key === "late_minutes") {
                           content =
-                            row.late_minutes > 0 ? (
-                              <span className="text-amber-400/80 font-medium">
+                            row.late_minutes > 0 ?
+                              <span className="font-medium text-amber-400/80">
                                 {row.late_minutes}m
                               </span>
-                            ) : (
-                              <span className="text-white/10">-</span>
-                            );
+                            : <span className="text-white/10">-</span>
                         } else if (c.key === "date") {
                           content = (
-                            <span className="text-white/60 font-medium">
-                              {parseLocalDate(row.date).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
+                            <span className="font-medium text-white/60">
+                              {parseLocalDate(row.date).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
                             </span>
-                          );
+                          )
                         } else if (c.key === "name") {
                           content = (
-                            <span className="text-white font-semibold">
-                              {val as string}
-                            </span>
-                          );
+                            <span className="font-semibold text-white">{val as string}</span>
+                          )
                         }
 
                         // Cell alignment
-                        let alignClass = "text-left";
-                        if (c.align === "center") alignClass = "text-center";
-                        else if (c.align === "right") alignClass = "text-right";
+                        let alignClass = "text-left"
+                        if (c.align === "center") alignClass = "text-center"
+                        else if (c.align === "right") alignClass = "text-right"
 
                         return (
                           <td
                             key={c.key}
-                            className={`px-4 py-3.5 whitespace-nowrap border-b border-white/5 ${alignClass} ${cIdx === 0 ? "relative" : ""}`}
-                          >
+                            className={`border-b border-white/5 px-4 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
                             {cIdx === 0 && (
-                              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                             )}
                             {content}
                           </td>
-                        );
+                        )
                       })}
                     </tr>
                   ))}
                 </Fragment>
-              );
+              )
             })
-          )}
+          }
         </tbody>
       </table>
     </div>
-  );
+  )
 }

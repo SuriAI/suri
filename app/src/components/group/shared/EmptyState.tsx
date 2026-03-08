@@ -1,32 +1,27 @@
 interface EmptyStateProps {
-  title: string;
+  title: string
   action?: {
-    label: string;
-    onClick: () => void;
-  };
-  className?: string;
+    label: string
+    onClick: () => void
+  }
+  className?: string
 }
 
 export function EmptyState({ title, action, className = "" }: EmptyStateProps) {
   return (
-    <div
-      className={`flex flex-1 items-center justify-center min-h-0 h-full w-full ${className}`}
-    >
+    <div className={`flex h-full min-h-0 w-full flex-1 items-center justify-center ${className}`}>
       <div className="flex flex-col items-center justify-center space-y-3 text-center">
-        <div className="text-white/50 text-xs font-medium tracking-tight">
-          {title}
-        </div>
+        <div className="text-xs font-medium tracking-tight text-white/50">{title}</div>
 
         {action && (
           <button
             onClick={action.onClick}
-            className="px-4 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/80 hover:text-white transition-colors flex items-center gap-2 active:scale-95 shadow-sm"
-          >
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-white/80 shadow-sm transition-colors hover:bg-white/10 hover:text-white active:scale-95">
             <i className="fa-solid fa-user-plus text-[10px]"></i>
             <span className="font-semibold">{action.label}</span>
           </button>
         )}
       </div>
     </div>
-  );
+  )
 }

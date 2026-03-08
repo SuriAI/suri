@@ -1,66 +1,64 @@
-import { ipcMain } from "electron";
-import { backendService, type DetectionOptions } from "../backendService.js";
+import { ipcMain } from "electron"
+import { backendService, type DetectionOptions } from "../backendService.js"
 
 /** Build auth headers for all direct fetch calls to the local backend. */
-function authHeaders(
-  extra: Record<string, string> = {},
-): Record<string, string> {
-  const token = backendService.getToken();
-  return token ? { "X-Suri-Token": token, ...extra } : { ...extra };
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const token = backendService.getToken()
+  return token ? { "X-Suri-Token": token, ...extra } : { ...extra }
 }
 
 export function registerBackendHandlers() {
   ipcMain.handle("backend:get-token", () => {
-    return backendService.getToken();
-  });
+    return backendService.getToken()
+  })
 
   ipcMain.handle("backend:check-availability", async () => {
     try {
-      return await backendService.checkAvailability();
+      return await backendService.checkAvailability()
     } catch (error) {
       return {
         available: false,
         error: error instanceof Error ? error.message : String(error),
-      };
+      }
     }
-  });
+  })
 
   ipcMain.handle("backend:check-readiness", async () => {
     try {
-      return await backendService.checkReadiness();
+      return await backendService.checkReadiness()
     } catch (error) {
       return {
         ready: false,
         modelsLoaded: false,
         error: error instanceof Error ? error.message : String(error),
-      };
+      }
     }
-  });
+  })
 
   ipcMain.handle("backend:get-models", async () => {
     try {
-      return await backendService.getModels();
+      return await backendService.getModels()
     } catch (error) {
       throw new Error(
         `Failed to get models: ${error instanceof Error ? error.message : String(error)}`,
         { cause: error },
-      );
+      )
     }
-  });
+  })
 
   ipcMain.handle(
     "backend:detect-faces",
     async (_event, imageBase64: string, options: DetectionOptions = {}) => {
       try {
-        return await backendService.detectFaces(imageBase64, options);
+        return await backendService.detectFaces(imageBase64, options)
       } catch (error) {
         throw new Error(
           `Face detection failed: ${error instanceof Error ? error.message : String(error)}`,
           { cause: error },
-        );
+        )
       }
     },
-  );
+  )
 
   ipcMain.handle(
     "backend:recognize-face",
@@ -73,7 +71,7 @@ export function registerBackendHandlers() {
       enableLivenessDetection: boolean,
     ) => {
       try {
-        const url = `${backendService.getUrl()}/face/recognize`;
+        const url = `${backendService.getUrl()}/face/recognize`
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -85,16 +83,16 @@ export function registerBackendHandlers() {
             enable_liveness_detection: enableLivenessDetection,
           }),
           signal: AbortSignal.timeout(30000),
-        });
+        })
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        return await response.json()
       } catch (error) {
-        console.error("Face recognition failed:", error);
-        return { success: false, error: String(error) };
+        console.error("Face recognition failed:", error)
+        return { success: false, error: String(error) }
       }
     },
-  );
+  )
 
   ipcMain.handle(
     "backend:register-face",
@@ -108,7 +106,7 @@ export function registerBackendHandlers() {
       enableLivenessDetection: boolean,
     ) => {
       try {
-        const url = `${backendService.getUrl()}/face/register`;
+        const url = `${backendService.getUrl()}/face/register`
         const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -121,32 +119,32 @@ export function registerBackendHandlers() {
             enable_liveness_detection: enableLivenessDetection,
           }),
           signal: AbortSignal.timeout(30000),
-        });
+        })
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        return await response.json()
       } catch (error) {
-        console.error("Face registration failed:", error);
-        return { success: false, error: String(error) };
+        console.error("Face registration failed:", error)
+        return { success: false, error: String(error) }
       }
     },
-  );
+  )
 
   ipcMain.handle("backend:get-face-stats", async () => {
     const response = await fetch(`${backendService.getUrl()}/face/stats`, {
       headers: authHeaders(),
-    });
-    if (!response.ok) throw new Error("Failed to get stats");
-    return await response.json();
-  });
+    })
+    if (!response.ok) throw new Error("Failed to get stats")
+    return await response.json()
+  })
 
   ipcMain.handle("backend:remove-person", async (_event, personId: string) => {
     const response = await fetch(
       `${backendService.getUrl()}/face/person/${encodeURIComponent(personId)}`,
       { method: "DELETE", headers: authHeaders() },
-    );
-    return await response.json();
-  });
+    )
+    return await response.json()
+  })
 
   ipcMain.handle(
     "backend:update-person",
@@ -158,41 +156,41 @@ export function registerBackendHandlers() {
           old_person_id: oldPersonId,
           new_person_id: newPersonId,
         }),
-      });
-      return await response.json();
+      })
+      return await response.json()
     },
-  );
+  )
 
   ipcMain.handle("backend:get-all-persons", async () => {
     const response = await fetch(`${backendService.getUrl()}/face/persons`, {
       headers: authHeaders(),
-    });
-    return await response.json();
-  });
+    })
+    return await response.json()
+  })
 
   ipcMain.handle("backend:set-threshold", async (_event, threshold: number) => {
     const response = await fetch(`${backendService.getUrl()}/face/threshold`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ threshold }),
-    });
-    return await response.json();
-  });
+    })
+    return await response.json()
+  })
 
   ipcMain.handle("backend:clear-database", async () => {
     const response = await fetch(`${backendService.getUrl()}/face/database`, {
       method: "DELETE",
       headers: authHeaders(),
-    });
-    return await response.json();
-  });
+    })
+    return await response.json()
+  })
 
   ipcMain.handle("backend:is-ready", async () => {
     try {
-      const result = await backendService.checkReadiness();
-      return result.ready && result.modelsLoaded;
+      const result = await backendService.checkReadiness()
+      return result.ready && result.modelsLoaded
     } catch {
-      return false;
+      return false
     }
-  });
+  })
 }

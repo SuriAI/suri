@@ -1,46 +1,46 @@
 interface AudioCacheEntry {
-  audio: HTMLAudioElement;
+  audio: HTMLAudioElement
 }
 
-const audioCache = new Map<string, AudioCacheEntry>();
+const audioCache = new Map<string, AudioCacheEntry>()
 
 function getAudio(url: string): HTMLAudioElement {
-  const cached = audioCache.get(url);
-  if (cached) return cached.audio;
+  const cached = audioCache.get(url)
+  if (cached) return cached.audio
 
-  const audio = new Audio(url);
-  audio.preload = "auto";
+  const audio = new Audio(url)
+  audio.preload = "auto"
 
-  audioCache.set(url, { audio });
-  return audio;
+  audioCache.set(url, { audio })
+  return audio
 }
 
 export const soundEffects = {
   preload(url: string): void {
-    if (!url) return;
+    if (!url) return
 
     try {
-      const audio = getAudio(url);
-      audio.load();
+      const audio = getAudio(url)
+      audio.load()
     } catch {
       // Ignore preload failures
     }
   },
 
   async play(url: string): Promise<void> {
-    if (!url) return;
+    if (!url) return
 
     try {
-      const baseAudio = getAudio(url);
+      const baseAudio = getAudio(url)
       if (baseAudio.readyState < 2) {
-        baseAudio.load();
+        baseAudio.load()
       }
 
-      const audioClone = baseAudio.cloneNode(true) as HTMLAudioElement;
+      const audioClone = baseAudio.cloneNode(true) as HTMLAudioElement
 
-      await audioClone.play();
+      await audioClone.play()
     } catch (err) {
-      console.error("Audio playback error:", err);
+      console.error("Audio playback error:", err)
     }
   },
-};
+}

@@ -1,12 +1,7 @@
-import { useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Settings } from "@/components/settings";
-import {
-  attendanceManager,
-  BackendService,
-  backendService,
-  WebSocketService,
-} from "@/services";
+import { useEffect, useRef, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Settings } from "@/components/settings"
+import { attendanceManager, BackendService, backendService, WebSocketService } from "@/services"
 import {
   useStreamState,
   useAttendanceCooldown,
@@ -18,61 +13,61 @@ import {
   useAttendanceGroups,
   useBackendService,
   useCameraControl,
-} from "@/components/main/hooks";
+} from "@/components/main/hooks"
 import {
   cleanupStream,
   cleanupVideo,
   cleanupAnimationFrame,
   resetLastDetectionRef,
-} from "@/components/main/utils";
+} from "@/components/main/utils"
 import {
   useCameraStore,
   useDetectionStore,
   useAttendanceStore,
   useUIStore,
-} from "@/components/main/stores";
+} from "@/components/main/stores"
 
-import { ControlBar } from "@/components/main/components/ControlBar";
-import { VideoCanvas } from "@/components/main/components/VideoCanvas";
-import { Sidebar } from "@/components/main/components/Sidebar";
-import { GroupManagementModal } from "@/components/main/components/GroupManagementModal";
-import { DeleteConfirmationModal } from "@/components/main/components/DeleteConfirmationModal";
-import { CooldownOverlay } from "@/components/main/components/CooldownOverlay";
-import type { DetectionResult } from "@/components/main/types";
-import { soundEffects } from "@/services/SoundEffectsService";
+import { ControlBar } from "@/components/main/components/ControlBar"
+import { VideoCanvas } from "@/components/main/components/VideoCanvas"
+import { Sidebar } from "@/components/main/components/Sidebar"
+import { GroupManagementModal } from "@/components/main/components/GroupManagementModal"
+import { DeleteConfirmationModal } from "@/components/main/components/DeleteConfirmationModal"
+import { CooldownOverlay } from "@/components/main/components/CooldownOverlay"
+import type { DetectionResult } from "@/components/main/types"
+import { soundEffects } from "@/services/SoundEffectsService"
 
 export default function Main() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const animationFrameRef = useRef<number | undefined>(undefined);
-  const backendServiceRef = useRef<BackendService | null>(backendService);
-  const webSocketServiceRef = useRef<WebSocketService | null>(null);
-  const isProcessingRef = useRef<boolean>(false);
-  const isStreamingRef = useRef<boolean>(false);
-  const lastDetectionFrameRef = useRef<ArrayBuffer | null>(null);
-  const frameCounterRef = useRef(0);
-  const skipFramesRef = useRef(0);
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const animationFrameRef = useRef<number | undefined>(undefined)
+  const backendServiceRef = useRef<BackendService | null>(backendService)
+  const webSocketServiceRef = useRef<WebSocketService | null>(null)
+  const isProcessingRef = useRef<boolean>(false)
+  const isStreamingRef = useRef<boolean>(false)
+  const lastDetectionFrameRef = useRef<ArrayBuffer | null>(null)
+  const frameCounterRef = useRef(0)
+  const skipFramesRef = useRef(0)
 
-  const lastStartTimeRef = useRef<number>(0);
-  const lastStopTimeRef = useRef<number>(0);
-  const isStartingRef = useRef<boolean>(false);
-  const isStoppingRef = useRef<boolean>(false);
+  const lastStartTimeRef = useRef<number>(0)
+  const lastStopTimeRef = useRef<number>(0)
+  const isStartingRef = useRef<boolean>(false)
+  const isStoppingRef = useRef<boolean>(false)
 
-  const lastDetectionRef = useRef<DetectionResult | null>(null);
-  const lastFrameTimestampRef = useRef<number>(0);
-  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {});
+  const lastDetectionRef = useRef<DetectionResult | null>(null)
+  const lastFrameTimestampRef = useRef<number>(0)
+  const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {})
   const fpsTrackingRef = useRef({
     timestamps: [] as number[],
     maxSamples: 10,
     lastUpdateTime: 0,
-  });
+  })
 
-  const backendServiceReadyRef = useRef(false);
-  const isScanningRef = useRef(false);
-  const videoRectRef = useRef<DOMRect | null>(null);
-  const lastVideoRectUpdateRef = useRef<number>(0);
+  const backendServiceReadyRef = useRef(false)
+  const isScanningRef = useRef(false)
+  const videoRectRef = useRef<DOMRect | null>(null)
+  const lastVideoRectUpdateRef = useRef<number>(0)
 
   const {
     isStreaming,
@@ -83,7 +78,7 @@ export default function Main() {
     cameraDevices,
     selectedCamera,
     setSelectedCamera,
-  } = useCameraStore();
+  } = useCameraStore()
 
   const {
     currentDetections,
@@ -91,7 +86,7 @@ export default function Main() {
     setDetectionFps,
     trackedFaces,
     currentRecognitionResults: rawCurrentRecognitionResults,
-  } = useDetectionStore();
+  } = useDetectionStore()
 
   const {
     currentGroup,
@@ -112,7 +107,7 @@ export default function Main() {
     dataRetentionDays,
     setDataRetentionDays,
     persistentCooldowns,
-  } = useAttendanceStore();
+  } = useAttendanceStore()
 
   const {
     error,
@@ -132,47 +127,39 @@ export default function Main() {
     audioSettings,
     setAudioSettings,
     setSidebarCollapsed,
-  } = useUIStore();
+  } = useUIStore()
 
-  const recognitionEnabled = true;
+  const recognitionEnabled = true
 
   // Preload sound to minimize delay on first recognition
   useEffect(() => {
-    if (
-      audioSettings.recognitionSoundEnabled &&
-      audioSettings.recognitionSoundUrl
-    ) {
-      soundEffects.preload(audioSettings.recognitionSoundUrl);
+    if (audioSettings.recognitionSoundEnabled && audioSettings.recognitionSoundUrl) {
+      soundEffects.preload(audioSettings.recognitionSoundUrl)
     }
-  }, [
-    audioSettings.recognitionSoundEnabled,
-    audioSettings.recognitionSoundUrl,
-  ]);
+  }, [audioSettings.recognitionSoundEnabled, audioSettings.recognitionSoundUrl])
 
   // Auto-dismiss success alerts after 5 seconds
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
-        setSuccess(null);
-      }, 5000);
-      return () => clearTimeout(timer);
+        setSuccess(null)
+      }, 5000)
+      return () => clearTimeout(timer)
     }
-  }, [success, setSuccess]);
+  }, [success, setSuccess])
 
   // Auto-dismiss warning alerts after 8 seconds
   useEffect(() => {
     if (warning) {
       const timer = setTimeout(() => {
-        setWarning(null);
-      }, 8000);
-      return () => clearTimeout(timer);
+        setWarning(null)
+      }, 8000)
+      return () => clearTimeout(timer)
     }
-  }, [warning, setWarning]);
+  }, [warning, setWarning])
 
   const currentRecognitionResults =
-    rawCurrentRecognitionResults instanceof Map
-      ? rawCurrentRecognitionResults
-      : new Map();
+    rawCurrentRecognitionResults instanceof Map ? rawCurrentRecognitionResults : new Map()
 
   useStreamState({
     isProcessingRef,
@@ -183,11 +170,11 @@ export default function Main() {
     isStoppingRef,
     lastStartTimeRef,
     lastStopTimeRef,
-  });
+  })
 
-  const { persistentCooldownsRef } = useAttendanceCooldown();
+  const { persistentCooldownsRef } = useAttendanceCooldown()
 
-  const { calculateAngleConsistencyRef } = useFaceTracking();
+  const { calculateAngleConsistencyRef } = useFaceTracking()
 
   const {
     currentGroupRef,
@@ -197,7 +184,7 @@ export default function Main() {
     handleCreateGroup,
     confirmDeleteGroup,
     cancelDeleteGroup,
-  } = useAttendanceGroups();
+  } = useAttendanceGroups()
 
   const { captureFrame, getCameraDevices } = useVideoStream({
     videoRef,
@@ -207,7 +194,7 @@ export default function Main() {
     videoRectRef,
     lastVideoRectUpdateRef,
     isStartingRef,
-  });
+  })
 
   useFaceDetection({
     webSocketServiceRef,
@@ -221,7 +208,7 @@ export default function Main() {
     lastDetectionRef,
     processCurrentFrameRef,
     fpsTrackingRef,
-  });
+  })
 
   const { performFaceRecognition } = useFaceRecognition({
     backendServiceRef,
@@ -230,7 +217,7 @@ export default function Main() {
     calculateAngleConsistencyRef,
     persistentCooldownsRef,
     loadAttendanceDataRef,
-  });
+  })
 
   const { animate, resetOverlayRefs } = useOverlayRendering({
     videoRef,
@@ -238,9 +225,9 @@ export default function Main() {
     animationFrameRef,
     videoRectRef,
     lastVideoRectUpdateRef,
-  });
+  })
 
-  const stopCameraRef = useRef<((forceCleanup: boolean) => void) | null>(null);
+  const stopCameraRef = useRef<((forceCleanup: boolean) => void) | null>(null)
 
   const { initializeWebSocket } = useBackendService({
     webSocketServiceRef,
@@ -260,7 +247,7 @@ export default function Main() {
     videoRef,
     backendServiceReadyRef,
     loadAttendanceDataRef,
-  });
+  })
 
   const { startCamera, stopCamera } = useCameraControl({
     videoRef,
@@ -293,220 +280,206 @@ export default function Main() {
     cameraDevices,
     initializeWebSocket,
     getCameraDevices,
-  });
+  })
 
   const requestGroupSelection = useCallback(() => {
-    setSidebarCollapsed(false);
+    setSidebarCollapsed(false)
 
     if (attendanceGroups.length === 0) {
-      setError("Create a group to start tracking.");
-      setShowGroupManagement(true);
-      return;
+      setError("Create a group to start tracking.")
+      setShowGroupManagement(true)
+      return
     }
 
-    setError("Select a group from the sidebar to start tracking.");
-  }, [
-    attendanceGroups.length,
-    setError,
-    setShowGroupManagement,
-    setSidebarCollapsed,
-  ]);
+    setError("Select a group from the sidebar to start tracking.")
+  }, [attendanceGroups.length, setError, setShowGroupManagement, setSidebarCollapsed])
 
   const startCameraGuarded = useCallback(() => {
     if (!currentGroup) {
-      requestGroupSelection();
-      return;
+      requestGroupSelection()
+      return
     }
-    startCamera();
-  }, [currentGroup, requestGroupSelection, startCamera]);
+    startCamera()
+  }, [currentGroup, requestGroupSelection, startCamera])
 
   // Handle start time changes from inline chip
   const handleStartTimeChange = useCallback(
     async (newTime: string) => {
-      if (!currentGroup) return;
+      if (!currentGroup) return
 
       try {
         const updatedSettings = {
           ...currentGroup.settings,
           class_start_time: newTime,
-        };
+        }
         await attendanceManager.updateGroup(currentGroup.id, {
           settings: updatedSettings,
-        });
+        })
         setCurrentGroup({
           ...currentGroup,
           settings: updatedSettings,
-        });
+        })
       } catch (error) {
-        console.error("Failed to update start time:", error);
+        console.error("Failed to update start time:", error)
       }
     },
     [currentGroup, setCurrentGroup],
-  );
+  )
 
   // Set the ref after stopCamera is defined
   useEffect(() => {
-    stopCameraRef.current = stopCamera;
-  }, [stopCamera]);
+    stopCameraRef.current = stopCamera
+  }, [stopCamera])
 
   const cleanupOnUnload = useCallback(() => {
     try {
-      cleanupStream(streamRef);
-      cleanupVideo(videoRef, true);
-      cleanupAnimationFrame(animationFrameRef);
+      cleanupStream(streamRef)
+      cleanupVideo(videoRef, true)
+      cleanupAnimationFrame(animationFrameRef)
 
       if (webSocketServiceRef.current) {
         try {
-          const wsStatus = webSocketServiceRef.current.getWebSocketStatus();
+          const wsStatus = webSocketServiceRef.current.getWebSocketStatus()
           if (wsStatus === "connected" || wsStatus === "connecting") {
-            webSocketServiceRef.current.disconnect();
+            webSocketServiceRef.current.disconnect()
           }
         } catch {
           // Ignore disconnect errors
         }
       }
 
-      isStreamingRef.current = false;
-      isScanningRef.current = false;
-      isProcessingRef.current = false;
-      isStartingRef.current = false;
-      isStoppingRef.current = false;
-      backendServiceReadyRef.current = false;
+      isStreamingRef.current = false
+      isScanningRef.current = false
+      isProcessingRef.current = false
+      isStartingRef.current = false
+      isStoppingRef.current = false
+      backendServiceReadyRef.current = false
     } catch {
       // Ignore cleanup errors
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (isStreaming) {
-      animate();
+      animate()
     }
     return () => {
-      cleanupAnimationFrame(animationFrameRef);
-    };
-  }, [isStreaming, animate]);
+      cleanupAnimationFrame(animationFrameRef)
+    }
+  }, [isStreaming, animate])
 
   useEffect(() => {
-    resetLastDetectionRef(lastDetectionRef);
-    useDetectionStore.getState().resetDetectionState();
+    resetLastDetectionRef(lastDetectionRef)
+    useDetectionStore.getState().resetDetectionState()
 
     if (isStreamingRef.current) {
-      stopCamera(false);
+      stopCamera(false)
     }
-  }, [currentGroup, stopCamera, isStreamingRef, lastDetectionRef]);
+  }, [currentGroup, stopCamera, isStreamingRef, lastDetectionRef])
 
   useEffect(() => {
-    let cleanupExecuted = false;
+    let cleanupExecuted = false
 
     const performCleanup = () => {
-      if (cleanupExecuted) return;
-      cleanupExecuted = true;
-      cleanupOnUnload();
-    };
+      if (cleanupExecuted) return
+      cleanupExecuted = true
+      cleanupOnUnload()
+    }
 
     const handleBeforeUnload = () => {
-      performCleanup();
-    };
+      performCleanup()
+    }
 
     const handlePageHide = () => {
-      performCleanup();
-    };
+      performCleanup()
+    }
 
     window.addEventListener("beforeunload", handleBeforeUnload, {
       capture: true,
-    });
-    window.addEventListener("pagehide", handlePageHide, { capture: true });
+    })
+    window.addEventListener("pagehide", handlePageHide, { capture: true })
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload, {
         capture: true,
-      });
-      window.removeEventListener("pagehide", handlePageHide, { capture: true });
-    };
-  }, [cleanupOnUnload]);
+      })
+      window.removeEventListener("pagehide", handlePageHide, { capture: true })
+    }
+  }, [cleanupOnUnload])
 
   // Listen for openSettings event (e.g., from WindowFooter update notification)
   useEffect(() => {
     const handleOpenSettings = (event: CustomEvent<{ section?: string }>) => {
-      const section = event.detail?.section;
+      const section = event.detail?.section
       if (section) {
-        setSettingsInitialSection(section);
-        setGroupInitialSection(undefined);
+        setSettingsInitialSection(section)
+        setGroupInitialSection(undefined)
       }
-      setShowSettings(true);
-    };
+      setShowSettings(true)
+    }
 
-    window.addEventListener(
-      "openSettings",
-      handleOpenSettings as EventListener,
-    );
+    window.addEventListener("openSettings", handleOpenSettings as EventListener)
 
     return () => {
-      window.removeEventListener(
-        "openSettings",
-        handleOpenSettings as EventListener,
-      );
-    };
-  }, [setShowSettings, setGroupInitialSection, setSettingsInitialSection]);
+      window.removeEventListener("openSettings", handleOpenSettings as EventListener)
+    }
+  }, [setShowSettings, setGroupInitialSection, setSettingsInitialSection])
 
   // Listen for system clock warnings emitted by AttendanceManager
   useEffect(() => {
     const handleClockWarning = (event: CustomEvent<{ message?: string }>) => {
-      const message = event.detail?.message;
+      const message = event.detail?.message
       if (message) {
-        setWarning(message);
+        setWarning(message)
       }
-    };
+    }
 
-    window.addEventListener(
-      "suri:clock-warning",
-      handleClockWarning as unknown as EventListener,
-    );
+    window.addEventListener("suri:clock-warning", handleClockWarning as unknown as EventListener)
 
     return () => {
       window.removeEventListener(
         "suri:clock-warning",
         handleClockWarning as unknown as EventListener,
-      );
-    };
-  }, [setWarning]);
+      )
+    }
+  }, [setWarning])
 
   // Handle auto-pause on minimize
-  const wasStreamingBeforeMinimize = useRef(false);
+  const wasStreamingBeforeMinimize = useRef(false)
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const electron = (window as any).suriElectron;
-    if (!electron) return;
+    const electron = (window as any).suriElectron
+    if (!electron) return
 
     const cleanupMinimize = electron.onMinimize(() => {
       if (isStreamingRef.current) {
-        wasStreamingBeforeMinimize.current = true;
-        stopCamera(false); // Pause tracking
-        console.log("App minimized: Pausing tracking...");
+        wasStreamingBeforeMinimize.current = true
+        stopCamera(false) // Pause tracking
+        console.log("App minimized: Pausing tracking...")
       } else {
-        wasStreamingBeforeMinimize.current = false;
+        wasStreamingBeforeMinimize.current = false
       }
-    });
+    })
 
     const cleanupRestore = electron.onRestore(() => {
       if (wasStreamingBeforeMinimize.current) {
-        console.log("App restored: Resuming tracking...");
-        startCameraGuarded();
-        wasStreamingBeforeMinimize.current = false;
+        console.log("App restored: Resuming tracking...")
+        startCameraGuarded()
+        wasStreamingBeforeMinimize.current = false
       }
-    });
+    })
 
     return () => {
-      if (cleanupMinimize) cleanupMinimize();
-      if (cleanupRestore) cleanupRestore();
-    };
-  }, [stopCamera, startCameraGuarded]);
+      if (cleanupMinimize) cleanupMinimize()
+      if (cleanupRestore) cleanupRestore()
+    }
+  }, [stopCamera, startCameraGuarded])
 
   return (
-    <div className="h-full bg-black text-white flex flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-black text-white">
       {/* Floating Alert System */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-100 w-full max-w-xl px-4 pointer-events-none">
+      <div className="pointer-events-none absolute top-6 left-1/2 z-100 w-full max-w-xl -translate-x-1/2 px-4">
         <AnimatePresence>
           {success && (
             <motion.div
@@ -514,11 +487,10 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 bg-cyan-500/10  border border-cyan-500/20 p-4 rounded-xl text-cyan-100/90 shadow-2xl flex items-start gap-3"
-            >
+              className="pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-4 text-cyan-100/90 shadow-2xl">
               <i className="fa-solid fa-circle-check mt-0.5 text-cyan-500"></i>
               <div className="flex-1 text-sm leading-relaxed">
-                <span className="font-semibold text-cyan-500 mr-1.5 whitespace-nowrap">
+                <span className="mr-1.5 font-semibold whitespace-nowrap text-cyan-500">
                   Success:
                 </span>
                 {success}
@@ -526,9 +498,8 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setSuccess(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
-                aria-label="Dismiss success"
-              >
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-white/5 hover:text-white"
+                aria-label="Dismiss success">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
             </motion.div>
@@ -540,11 +511,10 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 bg-amber-500/10  border border-amber-500/20 p-4 rounded-xl text-amber-200/90 shadow-2xl flex items-start gap-3"
-            >
+              className="pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200/90 shadow-2xl">
               <i className="fa-solid fa-triangle-exclamation mt-0.5 text-amber-400"></i>
               <div className="flex-1 text-sm leading-relaxed">
-                <span className="font-semibold text-amber-400 mr-1.5 whitespace-nowrap">
+                <span className="mr-1.5 font-semibold whitespace-nowrap text-amber-400">
                   Warning:
                 </span>
                 {warning}
@@ -552,9 +522,8 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setWarning(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
-                aria-label="Dismiss warning"
-              >
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-white/5 hover:text-white"
+                aria-label="Dismiss warning">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
             </motion.div>
@@ -566,21 +535,17 @@ export default function Main() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto bg-red-500/10  border border-red-500/20 p-4 rounded-xl text-red-100/90 shadow-2xl flex items-start gap-3"
-            >
+              className="pointer-events-auto flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-red-100/90 shadow-2xl">
               <i className="fa-solid fa-circle-xmark mt-0.5 text-red-500"></i>
               <div className="flex-1 text-sm leading-relaxed">
-                <span className="font-semibold text-red-500 mr-1.5 whitespace-nowrap">
-                  Error:
-                </span>
+                <span className="mr-1.5 font-semibold whitespace-nowrap text-red-500">Error:</span>
                 {error}
               </div>
               <button
                 type="button"
                 onClick={() => setError(null)}
-                className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-transparent border-none p-0 hover:bg-white/5 text-white/30 hover:text-white transition-all shadow-none"
-                aria-label="Dismiss error"
-              >
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-white/5 hover:text-white"
+                aria-label="Dismiss error">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
             </motion.div>
@@ -588,9 +553,9 @@ export default function Main() {
         </AnimatePresence>
       </div>
 
-      <div className="flex-1 flex min-h-0">
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="relative flex flex-1 min-h-0 items-center justify-center p-4">
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
             <VideoCanvas
               videoRef={videoRef}
               canvasRef={canvasRef}
@@ -600,9 +565,7 @@ export default function Main() {
               isVideoLoading={isVideoLoading}
               isStreaming={isStreaming}
               hasSelectedGroup={Boolean(currentGroup)}
-              lateTrackingEnabled={
-                !!currentGroup?.settings?.late_threshold_enabled
-              }
+              lateTrackingEnabled={!!currentGroup?.settings?.late_threshold_enabled}
               classStartTime={currentGroup?.settings?.class_start_time}
             />
 
@@ -658,10 +621,10 @@ export default function Main() {
           <Settings
             key="settings-modal"
             onBack={() => {
-              setShowSettings(false);
-              setGroupInitialSection(undefined);
-              setSettingsInitialSection(undefined);
-              loadAttendanceDataRef.current();
+              setShowSettings(false)
+              setGroupInitialSection(undefined)
+              setSettingsInitialSection(undefined)
+              loadAttendanceDataRef.current()
             }}
             isModal={true}
             quickSettings={quickSettings}
@@ -669,12 +632,9 @@ export default function Main() {
             audioSettings={audioSettings}
             onAudioSettingsChange={setAudioSettings}
             attendanceSettings={{
-              lateThresholdEnabled:
-                currentGroup?.settings?.late_threshold_enabled ?? false,
-              lateThresholdMinutes:
-                currentGroup?.settings?.late_threshold_minutes ?? 15,
-              classStartTime:
-                currentGroup?.settings?.class_start_time ?? "08:00",
+              lateThresholdEnabled: currentGroup?.settings?.late_threshold_enabled ?? false,
+              lateThresholdMinutes: currentGroup?.settings?.late_threshold_minutes ?? 15,
+              classStartTime: currentGroup?.settings?.class_start_time ?? "08:00",
               attendanceCooldownSeconds: attendanceCooldownSeconds,
               reLogCooldownSeconds: reLogCooldownSeconds,
               enableSpoofDetection: enableSpoofDetection,
@@ -683,67 +643,57 @@ export default function Main() {
             }}
             onAttendanceSettingsChange={async (updates) => {
               if (updates.enableSpoofDetection !== undefined) {
-                setEnableSpoofDetection(updates.enableSpoofDetection);
+                setEnableSpoofDetection(updates.enableSpoofDetection)
               }
 
               if (updates.trackCheckout !== undefined && currentGroup) {
                 const updatedSettings = {
                   ...currentGroup.settings,
                   track_checkout: updates.trackCheckout,
-                };
+                }
                 try {
                   await attendanceManager.updateGroup(currentGroup.id, {
                     settings: updatedSettings,
-                  });
+                  })
                   setCurrentGroup({
                     ...currentGroup,
                     settings: updatedSettings,
-                  });
+                  })
                 } catch (error) {
-                  console.error(
-                    "Failed to update track checkout setting:",
-                    error,
-                  );
+                  console.error("Failed to update track checkout setting:", error)
                 }
               }
 
               if (updates.attendanceCooldownSeconds !== undefined) {
-                setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds);
+                setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds)
                 try {
                   await attendanceManager.updateSettings({
-                    attendance_cooldown_seconds:
-                      updates.attendanceCooldownSeconds,
-                  });
+                    attendance_cooldown_seconds: updates.attendanceCooldownSeconds,
+                  })
                 } catch (error) {
-                  console.error("Failed to update cooldown setting:", error);
+                  console.error("Failed to update cooldown setting:", error)
                 }
               }
 
               if (updates.reLogCooldownSeconds !== undefined) {
-                setReLogCooldownSeconds(updates.reLogCooldownSeconds);
+                setReLogCooldownSeconds(updates.reLogCooldownSeconds)
                 try {
                   await attendanceManager.updateSettings({
                     relog_cooldown_seconds: updates.reLogCooldownSeconds,
-                  });
+                  })
                 } catch (error) {
-                  console.error(
-                    "Failed to update re-log cooldown setting:",
-                    error,
-                  );
+                  console.error("Failed to update re-log cooldown setting:", error)
                 }
               }
 
               if (updates.dataRetentionDays !== undefined) {
-                setDataRetentionDays(updates.dataRetentionDays);
+                setDataRetentionDays(updates.dataRetentionDays)
                 try {
                   await attendanceManager.updateSettings({
                     data_retention_days: updates.dataRetentionDays,
-                  });
+                  })
                 } catch (error) {
-                  console.error(
-                    "Failed to update data retention setting:",
-                    error,
-                  );
+                  console.error("Failed to update data retention setting:", error)
                 }
               }
 
@@ -764,17 +714,17 @@ export default function Main() {
                   ...(updates.classStartTime !== undefined && {
                     class_start_time: updates.classStartTime,
                   }),
-                };
+                }
                 try {
                   await attendanceManager.updateGroup(currentGroup.id, {
                     settings: updatedSettings,
-                  });
+                  })
                   setCurrentGroup({
                     ...currentGroup,
                     settings: updatedSettings,
-                  });
+                  })
                 } catch (error) {
-                  console.error("Failed to update attendance settings:", error);
+                  console.error("Failed to update attendance settings:", error)
                 }
               }
             }}
@@ -800,5 +750,5 @@ export default function Main() {
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 }

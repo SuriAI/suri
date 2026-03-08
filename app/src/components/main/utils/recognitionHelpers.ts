@@ -1,24 +1,24 @@
-import type { FaceRecognitionResponse } from "@/types/recognition";
-import { TRACKING_HISTORY_LIMIT } from "@/components/main/constants";
+import type { FaceRecognitionResponse } from "@/types/recognition"
+import { TRACKING_HISTORY_LIMIT } from "@/components/main/constants"
 
 export interface ExtendedFaceRecognitionResponse extends FaceRecognitionResponse {
-  memberName?: string;
-  has_consent?: boolean;
+  memberName?: string
+  has_consent?: boolean
 }
 
 export const trimTrackingHistory = <T>(history: T[]): T[] => {
   if (history.length <= TRACKING_HISTORY_LIMIT) {
-    return history;
+    return history
   }
-  return history.slice(history.length - TRACKING_HISTORY_LIMIT);
-};
+  return history.slice(history.length - TRACKING_HISTORY_LIMIT)
+}
 
 export const isRecognitionResponseEqual = (
   a: ExtendedFaceRecognitionResponse | undefined,
   b: ExtendedFaceRecognitionResponse | undefined,
 ): boolean => {
-  if (a === b) return true;
-  if (!a || !b) return false;
+  if (a === b) return true
+  if (!a || !b) return false
 
   return (
     a.success === b.success &&
@@ -27,22 +27,22 @@ export const isRecognitionResponseEqual = (
     a.similarity === b.similarity &&
     a.error === b.error &&
     a.memberName === b.memberName
-  );
-};
+  )
+}
 
 export const areRecognitionMapsEqual = (
   prev: Map<number, ExtendedFaceRecognitionResponse>,
   next: Map<number, ExtendedFaceRecognitionResponse>,
 ): boolean => {
-  if (prev === next) return true;
-  if (prev.size !== next.size) return false;
+  if (prev === next) return true
+  if (prev.size !== next.size) return false
 
   for (const [key, nextValue] of next) {
-    const prevValue = prev.get(key);
+    const prevValue = prev.get(key)
     if (!isRecognitionResponseEqual(prevValue, nextValue)) {
-      return false;
+      return false
     }
   }
 
-  return true;
-};
+  return true
+}

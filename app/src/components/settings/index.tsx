@@ -1,155 +1,150 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useSettings } from "./hooks/useSettings";
-import { Sidebar } from "./Sidebar";
-import { ContentPanel } from "./ContentPanel";
-import type { QuickSettings, AttendanceSettings, AudioSettings } from "./types";
-import type { AttendanceGroup } from "@/types/recognition";
-import type { GroupSection } from "@/components/group";
+import React from "react"
+import { motion } from "framer-motion"
+import { useSettings } from "./hooks/useSettings"
+import { Sidebar } from "./Sidebar"
+import { ContentPanel } from "./ContentPanel"
+import type { QuickSettings, AttendanceSettings, AudioSettings } from "./types"
+import type { AttendanceGroup } from "@/types/recognition"
+import type { GroupSection } from "@/components/group"
 
-export type { QuickSettings, AttendanceSettings };
-export type { AudioSettings } from "./types";
+export type { QuickSettings, AttendanceSettings }
+export type { AudioSettings } from "./types"
 
 interface SettingsProps {
-  onBack: () => void;
-  isModal?: boolean;
-  quickSettings: QuickSettings;
-  onQuickSettingsChange: (settings: QuickSettings) => void;
-  audioSettings: AudioSettings;
-  onAudioSettingsChange: (settings: Partial<AudioSettings>) => void;
-  attendanceSettings: AttendanceSettings;
-  onAttendanceSettingsChange: (settings: Partial<AttendanceSettings>) => void;
-  initialGroupSection?: GroupSection;
-  currentGroup?: AttendanceGroup | null;
-  onGroupSelect?: (group: AttendanceGroup) => void;
-  onGroupsChanged?: () => void;
-  initialGroups?: AttendanceGroup[];
-  initialSection?: string;
+  onBack: () => void
+  isModal?: boolean
+  quickSettings: QuickSettings
+  onQuickSettingsChange: (settings: QuickSettings) => void
+  audioSettings: AudioSettings
+  onAudioSettingsChange: (settings: Partial<AudioSettings>) => void
+  attendanceSettings: AttendanceSettings
+  onAttendanceSettingsChange: (settings: Partial<AttendanceSettings>) => void
+  initialGroupSection?: GroupSection
+  currentGroup?: AttendanceGroup | null
+  onGroupSelect?: (group: AttendanceGroup) => void
+  onGroupsChanged?: () => void
+  initialGroups?: AttendanceGroup[]
+  initialSection?: string
 }
 
-export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>(
-  (props, ref) => {
-    const settings = useSettings({
-      ...props,
-      initialGroups: props.initialGroups || [],
-      currentGroup: props.currentGroup || null,
-    });
+export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, ref) => {
+  const settings = useSettings({
+    ...props,
+    initialGroups: props.initialGroups || [],
+    currentGroup: props.currentGroup || null,
+  })
 
-    const groupSections: {
-      id: GroupSection;
-      label: string;
-      icon: string;
-    }[] = [
-      { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
-      { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
-      { id: "members", label: "Members", icon: "fa-solid fa-users" },
-      {
-        id: "registration",
-        label: "Registration",
-        icon: "fa-solid fa-id-card",
-      },
-    ];
+  const groupSections: {
+    id: GroupSection
+    label: string
+    icon: string
+  }[] = [
+    { id: "overview", label: "Overview", icon: "fa-solid fa-chart-line" },
+    { id: "reports", label: "Reports", icon: "fa-solid fa-chart-bar" },
+    { id: "members", label: "Members", icon: "fa-solid fa-users" },
+    {
+      id: "registration",
+      label: "Registration",
+      icon: "fa-solid fa-id-card",
+    },
+  ]
 
-    const sections = [
-      { id: "attendance", label: "Attendance", icon: "fa-solid fa-user-check" },
-      { id: "display", label: "Display", icon: "fa-solid fa-desktop" },
-      { id: "notifications", label: "Notifications", icon: "fa-solid fa-bell" },
-      { id: "database", label: "Database", icon: "fa-solid fa-database" },
-      { id: "about", label: "About", icon: "fa-solid fa-circle-info" },
-    ];
+  const sections = [
+    { id: "attendance", label: "Attendance", icon: "fa-solid fa-user-check" },
+    { id: "display", label: "Display", icon: "fa-solid fa-desktop" },
+    { id: "notifications", label: "Notifications", icon: "fa-solid fa-bell" },
+    { id: "database", label: "Database", icon: "fa-solid fa-database" },
+    { id: "about", label: "About", icon: "fa-solid fa-circle-info" },
+  ]
 
-    const mainContent = (
-      <div className="h-full flex bg-[#0c0c0c] text-white">
-        <Sidebar
-          activeSection={settings.activeSection}
-          setActiveSection={settings.setActiveSection}
-          groupInitialSection={settings.groupInitialSection}
-          setGroupInitialSection={settings.setGroupInitialSection}
-          dropdownGroups={settings.dropdownGroups}
-          dropdownValue={settings.dropdownValue}
-          onGroupSelect={props.onGroupSelect}
-          setTriggerCreateGroup={settings.setTriggerCreateGroup}
-          setRegistrationState={settings.setRegistrationState}
-          sections={sections}
-          groupSections={groupSections}
-        />
+  const mainContent = (
+    <div className="flex h-full bg-[#0c0c0c] text-white">
+      <Sidebar
+        activeSection={settings.activeSection}
+        setActiveSection={settings.setActiveSection}
+        groupInitialSection={settings.groupInitialSection}
+        setGroupInitialSection={settings.setGroupInitialSection}
+        dropdownGroups={settings.dropdownGroups}
+        dropdownValue={settings.dropdownValue}
+        onGroupSelect={props.onGroupSelect}
+        setTriggerCreateGroup={settings.setTriggerCreateGroup}
+        setRegistrationState={settings.setRegistrationState}
+        sections={sections}
+        groupSections={groupSections}
+      />
 
-        <ContentPanel
-          activeSection={settings.activeSection}
-          groupInitialSection={settings.groupInitialSection}
-          setGroupInitialSection={settings.setGroupInitialSection}
-          validInitialGroup={props.currentGroup || null}
-          triggerCreateGroup={settings.triggerCreateGroup}
-          registrationSource={settings.registrationSource}
-          registrationMode={settings.registrationMode}
-          setRegistrationState={settings.setRegistrationState}
-          deselectMemberTrigger={settings.deselectMemberTrigger}
-          setDeselectMemberTrigger={settings.setDeselectMemberTrigger}
-          setHasSelectedMember={settings.setHasSelectedMember}
-          hasSelectedMember={settings.hasSelectedMember}
-          handleExportHandlersReady={settings.handleExportHandlersReady}
-          handleAddMemberHandlerReady={settings.handleAddMemberHandlerReady}
-          handleGroupsChanged={settings.handleGroupsChanged}
-          handleGroupBack={settings.handleGroupBack}
-          quickSettings={props.quickSettings}
-          toggleQuickSetting={settings.toggleQuickSetting}
-          audioSettings={props.audioSettings}
-          updateAudioSetting={settings.updateAudioSetting}
-          attendanceSettings={props.attendanceSettings}
-          updateAttendanceSetting={settings.updateAttendanceSetting}
-          dropdownValue={settings.dropdownValue}
-          systemData={settings.systemData}
-          groups={settings.groups}
-          isLoading={settings.isLoading}
-          handleClearDatabase={settings.handleClearDatabase}
-          loadSystemData={settings.loadSystemData}
-          onGroupsChanged={props.onGroupsChanged}
-          members={settings.members}
-          reportsExportHandlers={settings.reportsExportHandlers}
-          addMemberHandler={settings.addMemberHandler}
-          dropdownGroups={settings.dropdownGroups}
-          groupSections={groupSections}
-        />
-      </div>
-    );
+      <ContentPanel
+        activeSection={settings.activeSection}
+        groupInitialSection={settings.groupInitialSection}
+        setGroupInitialSection={settings.setGroupInitialSection}
+        validInitialGroup={props.currentGroup || null}
+        triggerCreateGroup={settings.triggerCreateGroup}
+        registrationSource={settings.registrationSource}
+        registrationMode={settings.registrationMode}
+        setRegistrationState={settings.setRegistrationState}
+        deselectMemberTrigger={settings.deselectMemberTrigger}
+        setDeselectMemberTrigger={settings.setDeselectMemberTrigger}
+        setHasSelectedMember={settings.setHasSelectedMember}
+        hasSelectedMember={settings.hasSelectedMember}
+        handleExportHandlersReady={settings.handleExportHandlersReady}
+        handleAddMemberHandlerReady={settings.handleAddMemberHandlerReady}
+        handleGroupsChanged={settings.handleGroupsChanged}
+        handleGroupBack={settings.handleGroupBack}
+        quickSettings={props.quickSettings}
+        toggleQuickSetting={settings.toggleQuickSetting}
+        audioSettings={props.audioSettings}
+        updateAudioSetting={settings.updateAudioSetting}
+        attendanceSettings={props.attendanceSettings}
+        updateAttendanceSetting={settings.updateAttendanceSetting}
+        dropdownValue={settings.dropdownValue}
+        systemData={settings.systemData}
+        groups={settings.groups}
+        isLoading={settings.isLoading}
+        handleClearDatabase={settings.handleClearDatabase}
+        loadSystemData={settings.loadSystemData}
+        onGroupsChanged={props.onGroupsChanged}
+        members={settings.members}
+        reportsExportHandlers={settings.reportsExportHandlers}
+        addMemberHandler={settings.addMemberHandler}
+        dropdownGroups={settings.dropdownGroups}
+        groupSections={groupSections}
+      />
+    </div>
+  )
 
-    if (props.isModal) {
-      return (
+  if (props.isModal) {
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 z-60 flex items-center justify-center bg-black/70">
         <motion.div
-          ref={ref}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
-          style={{ willChange: "opacity" }}
-          className="fixed inset-0 z-60 bg-black/70 flex items-center justify-center"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 8 }}
-            transition={{
-              duration: 0.2,
-              ease: [0.16, 1, 0.3, 1], // Custom "snappy" cubic-bezier
-            }}
-            style={{ willChange: "transform, opacity" }}
-            className="bg-[#0b0b0b] rounded-xl w-full max-w-full md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] border border-white/5 overflow-hidden mt-6 relative"
-          >
-            <button
-              onClick={props.onBack}
-              className="absolute top-2 right-2 z-50 text-white/20 hover:text-white transition-all duration-300 bg-transparent border-none p-1.5 shadow-none"
-              aria-label="Close Settings"
-            >
-              <i className="fa-solid fa-xmark text-lg"></i>
-            </button>
-            {mainContent}
-          </motion.div>
+          initial={{ opacity: 0, scale: 0.98, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.98, y: 8 }}
+          transition={{
+            duration: 0.2,
+            ease: [0.16, 1, 0.3, 1], // Custom "snappy" cubic-bezier
+          }}
+          style={{ willChange: "transform, opacity" }}
+          className="relative mt-6 w-full max-w-full overflow-hidden rounded-xl border border-white/5 bg-[#0b0b0b] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%]">
+          <button
+            onClick={props.onBack}
+            className="absolute top-2 right-2 z-50 border-none bg-transparent p-1.5 text-white/20 shadow-none transition-all duration-300 hover:text-white"
+            aria-label="Close Settings">
+            <i className="fa-solid fa-xmark text-lg"></i>
+          </button>
+          {mainContent}
         </motion.div>
-      );
-    }
+      </motion.div>
+    )
+  }
 
-    return mainContent;
-  },
-);
+  return mainContent
+})
 
-Settings.displayName = "Settings";
+Settings.displayName = "Settings"

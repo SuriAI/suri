@@ -24,10 +24,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": [
-    "src",
-    "src/types/**/*",
-    "src/components/**/*",
-    "src/services/**/*"
-  ]
+  "include": ["src", "src/types/**/*", "src/components/**/*", "src/services/**/*"]
 }

@@ -1,20 +1,20 @@
-import { Dropdown } from "@/components/shared";
-import type { CaptureSource } from "@/components/group/sections/registration/types";
+import { Dropdown } from "@/components/shared"
+import type { CaptureSource } from "@/components/group/sections/registration/types"
 
 interface CameraFeedProps {
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  isStreaming: boolean;
-  isVideoReady: boolean;
-  cameraError: string | null;
-  onCapture: () => void;
-  onStart: () => void;
-  onStop: () => void;
-  source: CaptureSource;
+  videoRef: React.RefObject<HTMLVideoElement | null>
+  isStreaming: boolean
+  isVideoReady: boolean
+  cameraError: string | null
+  onCapture: () => void
+  onStart: () => void
+  onStop: () => void
+  source: CaptureSource
 
-  isCameraSelected: boolean;
-  cameraDevices: MediaDeviceInfo[];
-  selectedCamera: string;
-  setSelectedCamera: (deviceId: string) => void;
+  isCameraSelected: boolean
+  cameraDevices: MediaDeviceInfo[]
+  selectedCamera: string
+  setSelectedCamera: (deviceId: string) => void
 }
 
 export function CameraFeed({
@@ -31,13 +31,13 @@ export function CameraFeed({
   selectedCamera,
   setSelectedCamera,
 }: CameraFeedProps) {
-  if (source !== "live") return null;
+  if (source !== "live") return null
 
   return (
-    <div className="h-full w-full relative group/feed">
+    <div className="group/feed relative h-full w-full">
       <video
         ref={videoRef}
-        className="w-full h-full object-contain scale-x-[-1]"
+        className="h-full w-full scale-x-[-1] object-contain"
         playsInline
         muted
       />
@@ -52,8 +52,8 @@ export function CameraFeed({
           value={selectedCamera}
           onChange={(deviceId) => {
             if (deviceId) {
-              setSelectedCamera(String(deviceId));
-              if (isStreaming) onStop();
+              setSelectedCamera(String(deviceId))
+              if (isStreaming) onStop()
             }
           }}
           placeholder="Select camera…"
@@ -68,21 +68,17 @@ export function CameraFeed({
 
       {!isStreaming && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-          <div className="text-center space-y-2">
-            {cameraError ? (
-              <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 max-w-[280px]">
-                <div className="text-[11px] text-red-200/60 font-medium">
-                  {cameraError}
-                </div>
+          <div className="space-y-2 text-center">
+            {cameraError ?
+              <div className="max-w-[280px] rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                <div className="text-[11px] font-medium text-red-200/60">{cameraError}</div>
               </div>
-            ) : (
-              <div className="relative opacity-20">
+            : <div className="relative opacity-20">
                 <svg
-                  className="w-10 h-10 text-white animate-pulse"
+                  className="h-10 w-10 animate-pulse text-white"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                  viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -91,44 +87,41 @@ export function CameraFeed({
                   />
                 </svg>
               </div>
-            )}
+            }
           </div>
         </div>
       )}
 
       {isStreaming && !isVideoReady && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <div className="h-10 w-10 rounded-full border-2 border-white/10 border-t-cyan-400 animate-spin" />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-cyan-400" />
         </div>
       )}
 
       {isStreaming && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
           <button
             onClick={() => onCapture()}
             disabled={!isVideoReady || !!cameraError}
-            className="px-8 py-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 text-cyan-400 font-medium text-sm hover:bg-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-          >
+            className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-8 py-2 text-sm font-medium text-cyan-400 transition-all hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-40">
             Capture Face
           </button>
         </div>
       )}
 
-      <div className="absolute bottom-6 right-6 z-20">
+      <div className="absolute right-6 bottom-6 z-20">
         <button
           onClick={isStreaming ? onStop : onStart}
           disabled={!isStreaming && !isCameraSelected}
-          className={`px-6 py-2 rounded-lg border text-sm font-medium transition-all min-w-[140px] ${
-            isStreaming
-              ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"
-              : isCameraSelected
-                ? "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
-                : "bg-black/20 border-white/5 text-white/20 cursor-not-allowed opacity-50"
-          }`}
-        >
+          className={`min-w-[140px] rounded-lg border px-6 py-2 text-sm font-medium transition-all ${
+            isStreaming ? "border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+            : isCameraSelected ?
+              "border-white/10 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+            : "cursor-not-allowed border-white/5 bg-black/20 text-white/20 opacity-50"
+          }`}>
           {isStreaming ? "Stop Camera" : "Start Camera"}
         </button>
       </div>
     </div>
-  );
+  )
 }

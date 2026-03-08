@@ -1,59 +1,56 @@
-import type {
-  AudioSettings,
-  QuickSettings,
-} from "../components/settings/types";
-import type { UpdateInfo } from "../types/global";
+import type { AudioSettings, QuickSettings } from "../components/settings/types"
+import type { UpdateInfo } from "../types/global"
 
 export interface PersistentSettingsSchema {
-  quickSettings: QuickSettings;
+  quickSettings: QuickSettings
 
-  audio: AudioSettings;
+  audio: AudioSettings
 
   attendance: {
-    enableSpoofDetection: boolean;
-    lateThresholdEnabled: boolean;
-    lateThresholdMinutes: number;
-    classStartTime: string;
-    attendanceCooldownSeconds: number;
-    reLogCooldownSeconds: number;
-  };
+    enableSpoofDetection: boolean
+    lateThresholdEnabled: boolean
+    lateThresholdMinutes: number
+    classStartTime: string
+    attendanceCooldownSeconds: number
+    reLogCooldownSeconds: number
+  }
 
   ui: {
-    sidebarCollapsed: boolean;
-    sidebarWidth: number;
-    selectedGroupId: string | null;
-    groupSidebarCollapsed: boolean;
-    selectedCamera: string;
-    selectedCameraLabel: string | null;
-    lastRegistrationSource: string | null;
-    lastRegistrationMode: string | null;
-    hasSeenIntro: boolean;
-    activeGroupSection: string | null;
-    closeToTrayNoticeDismissed: boolean;
-  };
+    sidebarCollapsed: boolean
+    sidebarWidth: number
+    selectedGroupId: string | null
+    groupSidebarCollapsed: boolean
+    selectedCamera: string
+    selectedCameraLabel: string | null
+    lastRegistrationSource: string | null
+    lastRegistrationMode: string | null
+    hasSeenIntro: boolean
+    activeGroupSection: string | null
+    closeToTrayNoticeDismissed: boolean
+  }
 
   reportScratchpad: Record<
     string,
     {
-      columns: string[];
-      groupBy: string;
-      statusFilter: string;
+      columns: string[]
+      groupBy: string
+      statusFilter: string
     }
-  >;
+  >
 
-  reportViews: Record<string, unknown>;
-  reportDefaultViewNames: Record<string, string>;
+  reportViews: Record<string, unknown>
+  reportDefaultViewNames: Record<string, string>
   updater: {
-    lastChecked: string | null;
-    cachedInfo: UpdateInfo | null;
-  };
+    lastChecked: string | null
+    cachedInfo: UpdateInfo | null
+  }
   sync: {
-    enabled: boolean;
-    syncUrl: string;
-    syncKey: string;
-    intervalMinutes: number;
-    lastSyncedAt: string | null;
-  };
+    enabled: boolean
+    syncUrl: string
+    syncKey: string
+    intervalMinutes: number
+    lastSyncedAt: string | null
+  }
 }
 
 export const defaultSettings: PersistentSettingsSchema = {
@@ -101,4 +98,4 @@ export const defaultSettings: PersistentSettingsSchema = {
     intervalMinutes: 30, // Default to every 30 minutes
     lastSyncedAt: null,
   },
-};
+}

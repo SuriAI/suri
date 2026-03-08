@@ -1,50 +1,46 @@
-import { useRef, useCallback, useEffect } from "react";
-import { startTransition } from "react";
-import { WebSocketService } from "@/services/WebSocketService";
+import { useRef, useCallback, useEffect } from "react"
+import { startTransition } from "react"
+import { WebSocketService } from "@/services/WebSocketService"
 import type {
   WebSocketDetectionResponse,
   WebSocketConnectionMessage,
   WebSocketErrorMessage,
   DetectionResult,
   WebSocketFaceData,
-} from "@/components/main/types";
-import {
-  cleanupStream,
-  cleanupVideo,
-  cleanupAnimationFrame,
-} from "@/components/main/utils";
+} from "@/components/main/types"
+import { cleanupStream, cleanupVideo, cleanupAnimationFrame } from "@/components/main/utils"
 import {
   useCameraStore,
   useDetectionStore,
   useAttendanceStore,
   useUIStore,
-} from "@/components/main/stores";
+} from "@/components/main/stores"
 
 interface UseBackendServiceOptions {
-  webSocketServiceRef: React.RefObject<WebSocketService | null>;
-  isStreamingRef: React.RefObject<boolean>;
-  isScanningRef: React.RefObject<boolean>;
-  isStartingRef: React.RefObject<boolean>;
+  webSocketServiceRef: React.RefObject<WebSocketService | null>
+  isStreamingRef: React.RefObject<boolean>
+  isScanningRef: React.RefObject<boolean>
+  isStartingRef: React.RefObject<boolean>
   performFaceRecognition: (
     detectionResult: DetectionResult,
     frameData: ArrayBuffer | null,
-  ) => Promise<void>;
-  lastDetectionFrameRef: React.RefObject<ArrayBuffer | null>;
-  lastFrameTimestampRef: React.RefObject<number>;
-  lastDetectionRef: React.RefObject<DetectionResult | null>;
+  ) => Promise<void>
+  lastDetectionFrameRef: React.RefObject<ArrayBuffer | null>
+  lastFrameTimestampRef: React.RefObject<number>
+  lastDetectionRef: React.RefObject<DetectionResult | null>
   fpsTrackingRef: React.RefObject<{
-    timestamps: number[];
-    maxSamples: number;
-    lastUpdateTime: number;
-  }>;
-  skipFramesRef: React.RefObject<number>;
-  processCurrentFrameRef: React.RefObject<() => Promise<void>>;
-  stopCamera: React.RefObject<((forceCleanup: boolean) => void) | null>;
-  animationFrameRef: React.RefObject<number | undefined>;
-  streamRef: React.RefObject<MediaStream | null>;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
-  backendServiceReadyRef: React.RefObject<boolean>;
-  loadAttendanceDataRef: React.RefObject<() => Promise<void>>;
+    timestamps: number[]
+    maxSamples: number
+    lastUpdateTime: number
+  }>
+  skipFramesRef: React.RefObject<number>
+  processCurrentFrameRef: React.RefObject<() => Promise<void>>
+  stopCamera: React.RefObject<((forceCleanup: boolean) => void) | null>
+  animationFrameRef: React.RefObject<number | undefined>
+  streamRef: React.RefObject<MediaStream | null>
+  videoRef: React.RefObject<HTMLVideoElement | null>
+  backendServiceReadyRef: React.RefObject<boolean>
+  loadAttendanceDataRef: React.RefObject<() => Promise<void>>
 }
 
 export function useBackendService(options: UseBackendServiceOptions) {
@@ -66,7 +62,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     videoRef,
     backendServiceReadyRef,
     loadAttendanceDataRef,
-  } = options;
+  } = options
 
   const {
     setIsStreaming,
@@ -74,84 +70,82 @@ export function useBackendService(options: UseBackendServiceOptions) {
     setCameraActive,
     websocketStatus,
     setWebsocketStatus,
-  } = useCameraStore();
-  const { setCurrentDetections, setDetectionFps } = useDetectionStore();
-  const { enableSpoofDetection } = useAttendanceStore();
-  const { setError } = useUIStore();
+  } = useCameraStore()
+  const { setCurrentDetections, setDetectionFps } = useDetectionStore()
+  const { enableSpoofDetection } = useAttendanceStore()
+  const { setError } = useUIStore()
 
-  const recognitionEnabled = true;
+  const recognitionEnabled = true
   const initializationRef = useRef<{
-    initialized: boolean;
-    isInitializing: boolean;
-    cleanupTimeout?: NodeJS.Timeout;
-  }>({ initialized: false, isInitializing: false });
+    initialized: boolean
+    isInitializing: boolean
+    cleanupTimeout?: NodeJS.Timeout
+  }>({ initialized: false, isInitializing: false })
 
   useEffect(() => {
     if (webSocketServiceRef.current) {
-      webSocketServiceRef.current.setLivenessDetection(enableSpoofDetection);
+      webSocketServiceRef.current.setLivenessDetection(enableSpoofDetection)
     }
-  }, [enableSpoofDetection, webSocketServiceRef]);
+  }, [enableSpoofDetection, webSocketServiceRef])
 
   const waitForBackendReady = useCallback(
     async (
       maxWaitTime = 60000,
       pollInterval = 100,
     ): Promise<{ ready: boolean; modelsLoaded: boolean; error?: string }> => {
-      const startTime = Date.now();
-      let lastError: string | undefined;
+      const startTime = Date.now()
+      let lastError: string | undefined
 
       // Check immediately first (no delay)
       try {
         if (window.electronAPI?.backend) {
-          const readinessCheck =
-            await window.electronAPI.backend.checkReadiness();
+          const readinessCheck = await window.electronAPI.backend.checkReadiness()
           if (readinessCheck?.ready && readinessCheck?.modelsLoaded) {
             return {
               ready: true,
               modelsLoaded: true,
-            };
+            }
           }
         }
       } catch (error) {
-        lastError = error instanceof Error ? error.message : "Unknown error";
+        lastError = error instanceof Error ? error.message : "Unknown error"
       }
 
       while (Date.now() - startTime < maxWaitTime) {
         try {
           if (!window.electronAPI?.backend) {
-            await new Promise((resolve) => setTimeout(resolve, pollInterval));
-            continue;
+            await new Promise((resolve) => setTimeout(resolve, pollInterval))
+            continue
           }
 
-          const readinessCheck =
-            await window.electronAPI.backend.checkReadiness();
+          const readinessCheck = await window.electronAPI.backend.checkReadiness()
 
           if (readinessCheck?.ready && readinessCheck?.modelsLoaded) {
             return {
               ready: true,
               modelsLoaded: true,
-            };
+            }
           }
 
           if (readinessCheck?.error) {
-            lastError = readinessCheck.error;
+            lastError = readinessCheck.error
           } else {
-            lastError = "Models still loading";
+            lastError = "Models still loading"
           }
 
           if (
             readinessCheck?.error?.includes("Backend service not started") ||
             readinessCheck?.error?.includes("Backend health check failed")
           ) {
-            await new Promise((resolve) => setTimeout(resolve, pollInterval));
-            continue;
+            await new Promise((resolve) => setTimeout(resolve, pollInterval))
+            continue
           }
 
-          const waitTime = Math.min(pollInterval * 2, 500);
-          await new Promise((resolve) => setTimeout(resolve, waitTime));
+          const waitTime = Math.min(pollInterval * 2, 500)
+          await new Promise((resolve) => setTimeout(resolve, waitTime))
         } catch (error) {
-          lastError = error instanceof Error ? error.message : "Unknown error";
-          await new Promise((resolve) => setTimeout(resolve, pollInterval));
+          lastError = error instanceof Error ? error.message : "Unknown error"
+          await new Promise((resolve) => setTimeout(resolve, pollInterval))
         }
       }
 
@@ -159,119 +153,110 @@ export function useBackendService(options: UseBackendServiceOptions) {
         ready: false,
         modelsLoaded: false,
         error: lastError ?? "Timeout waiting for backend to be ready",
-      };
+      }
     },
     [],
-  );
+  )
 
   const registerWebSocketHandlers = useCallback(() => {
-    if (!webSocketServiceRef.current) return;
+    if (!webSocketServiceRef.current) return
 
-    webSocketServiceRef.current.offMessage("detection_response");
-    webSocketServiceRef.current.offMessage("connection");
-    webSocketServiceRef.current.offMessage("error");
-    webSocketServiceRef.current.offMessage("attendance_event");
+    webSocketServiceRef.current.offMessage("detection_response")
+    webSocketServiceRef.current.offMessage("connection")
+    webSocketServiceRef.current.offMessage("error")
+    webSocketServiceRef.current.offMessage("attendance_event")
 
     webSocketServiceRef.current.onMessage(
       "attendance_event",
       (data: import("@/components/main/types").AttendanceEvent) => {
-        const { setSuccess } = useUIStore.getState();
-        const { currentGroup } = useAttendanceStore.getState();
+        const { setSuccess } = useUIStore.getState()
+        const { currentGroup } = useAttendanceStore.getState()
 
         if (currentGroup && data.group_id === currentGroup.id) {
           const member = useAttendanceStore
             .getState()
-            .groupMembers.find((m) => m.person_id === data.person_id);
-          const memberName = member ? member.name : "Member";
-          const eventLabel =
-            data.event_type === "check_in" ? "Timed In" : "Timed Out";
+            .groupMembers.find((m) => m.person_id === data.person_id)
+          const memberName = member ? member.name : "Member"
+          const eventLabel = data.event_type === "check_in" ? "Timed In" : "Timed Out"
 
-          setSuccess(`${memberName} ${eventLabel}`);
+          setSuccess(`${memberName} ${eventLabel}`)
 
           // Refresh attendance data to show in sidebar
-          loadAttendanceDataRef.current?.().catch(console.error);
+          loadAttendanceDataRef.current?.().catch(console.error)
         }
       },
-    );
+    )
 
     webSocketServiceRef.current.onMessage(
       "detection_response",
       (data: WebSocketDetectionResponse) => {
         if (!isStreamingRef.current || !isScanningRef.current) {
-          return;
+          return
         }
 
         if (data.frame_timestamp === undefined) {
-          return;
+          return
         }
 
-        const responseFrameTimestamp = data.frame_timestamp;
-        const lastFrameTimestamp = lastFrameTimestampRef.current ?? 0;
+        const responseFrameTimestamp = data.frame_timestamp
+        const lastFrameTimestamp = lastFrameTimestampRef.current ?? 0
 
         if (responseFrameTimestamp < lastFrameTimestamp) {
-          return;
+          return
         }
 
-        lastFrameTimestampRef.current = responseFrameTimestamp;
+        lastFrameTimestampRef.current = responseFrameTimestamp
 
-        const now = Date.now();
-        const fpsTracking = fpsTrackingRef.current;
-        if (!fpsTracking) return;
-        fpsTracking.timestamps.push(now);
+        const now = Date.now()
+        const fpsTracking = fpsTrackingRef.current
+        if (!fpsTracking) return
+        fpsTracking.timestamps.push(now)
 
         if (fpsTracking.timestamps.length > fpsTracking.maxSamples) {
-          fpsTracking.timestamps.shift();
+          fpsTracking.timestamps.shift()
         }
 
-        if (
-          now - fpsTracking.lastUpdateTime >= 100 &&
-          fpsTracking.timestamps.length >= 2
-        ) {
+        if (now - fpsTracking.lastUpdateTime >= 100 && fpsTracking.timestamps.length >= 2) {
           const timeSpan =
-            fpsTracking.timestamps[fpsTracking.timestamps.length - 1] -
-            fpsTracking.timestamps[0];
-          const frameCount = fpsTracking.timestamps.length - 1;
+            fpsTracking.timestamps[fpsTracking.timestamps.length - 1] - fpsTracking.timestamps[0]
+          const frameCount = fpsTracking.timestamps.length - 1
 
           if (timeSpan > 0) {
-            const accurateFps = (frameCount * 1000) / timeSpan;
-            setDetectionFps(Math.round(accurateFps * 10) / 10);
+            const accurateFps = (frameCount * 1000) / timeSpan
+            setDetectionFps(Math.round(accurateFps * 10) / 10)
           }
 
-          fpsTracking.lastUpdateTime = now;
+          fpsTracking.lastUpdateTime = now
         }
 
         if (data.faces && Array.isArray(data.faces)) {
           if (data.suggested_skip !== undefined) {
-            skipFramesRef.current = data.suggested_skip;
+            skipFramesRef.current = data.suggested_skip
           }
 
           if (!data.model_used) {
-            return;
+            return
           }
 
           const detectionResult: DetectionResult = {
             faces: data.faces
               .map((face: WebSocketFaceData) => {
-                if (
-                  !face.bbox ||
-                  !Array.isArray(face.bbox) ||
-                  face.bbox.length !== 4
-                ) {
-                  return null;
+                if (!face.bbox || !Array.isArray(face.bbox) || face.bbox.length !== 4) {
+                  return null
                 }
 
                 if (face.confidence === undefined) {
-                  return null;
+                  return null
                 }
 
-                const bbox = face.bbox;
+                const bbox = face.bbox
 
                 if (
                   !face.landmarks_5 ||
                   !Array.isArray(face.landmarks_5) ||
                   face.landmarks_5.length !== 5
                 ) {
-                  return null;
+                  return null
                 }
 
                 return {
@@ -286,13 +271,13 @@ export function useBackendService(options: UseBackendServiceOptions) {
                   landmarks_5: face.landmarks_5,
                   liveness: (() => {
                     if (!face.liveness) {
-                      return undefined;
+                      return undefined
                     }
                     if (face.liveness.status === undefined) {
-                      return undefined;
+                      return undefined
                     }
                     if (face.liveness.is_real === undefined) {
-                      return undefined;
+                      return undefined
                     }
                     return {
                       is_real: face.liveness.is_real,
@@ -303,16 +288,16 @@ export function useBackendService(options: UseBackendServiceOptions) {
                       status: face.liveness.status,
                       attack_type: face.liveness.attack_type,
                       message: face.liveness.message,
-                    };
+                    }
                   })(),
-                };
+                }
               })
               .filter((face) => face !== null) as DetectionResult["faces"],
             model_used: data.model_used,
-          };
+          }
 
-          setCurrentDetections(detectionResult);
-          lastDetectionRef.current = detectionResult;
+          setCurrentDetections(detectionResult)
+          lastDetectionRef.current = detectionResult
 
           if (
             recognitionEnabled &&
@@ -320,52 +305,43 @@ export function useBackendService(options: UseBackendServiceOptions) {
             detectionResult.faces.length > 0
           ) {
             startTransition(() => {
-              const frameDataForRecognition = lastDetectionFrameRef.current;
-              performFaceRecognition(
-                detectionResult,
-                frameDataForRecognition,
-              ).catch((error) => {
-                console.error("Face recognition failed:", error);
-              });
-            });
+              const frameDataForRecognition = lastDetectionFrameRef.current
+              performFaceRecognition(detectionResult, frameDataForRecognition).catch((error) => {
+                console.error("Face recognition failed:", error)
+              })
+            })
           }
         }
 
         if (isScanningRef.current && isStreamingRef.current) {
-          requestAnimationFrame(() => processCurrentFrameRef.current?.());
+          requestAnimationFrame(() => processCurrentFrameRef.current?.())
         }
       },
-    );
+    )
 
-    webSocketServiceRef.current.onMessage(
-      "connection",
-      (data: WebSocketConnectionMessage) => {
-        if (data.status === "connected") {
-          backendServiceReadyRef.current = true;
-          setWebsocketStatus("connected");
-        } else if (data.status === "disconnected") {
-          setWebsocketStatus("disconnected");
-        }
-      },
-    );
+    webSocketServiceRef.current.onMessage("connection", (data: WebSocketConnectionMessage) => {
+      if (data.status === "connected") {
+        backendServiceReadyRef.current = true
+        setWebsocketStatus("connected")
+      } else if (data.status === "disconnected") {
+        setWebsocketStatus("disconnected")
+      }
+    })
 
-    webSocketServiceRef.current.onMessage(
-      "error",
-      (data: WebSocketErrorMessage) => {
-        if (!isStreamingRef.current || !isScanningRef.current) {
-          return;
-        }
+    webSocketServiceRef.current.onMessage("error", (data: WebSocketErrorMessage) => {
+      if (!isStreamingRef.current || !isScanningRef.current) {
+        return
+      }
 
-        console.error("❌ WebSocket error message:", data);
-        if (data.message) {
-          setError(`Detection error: ${data.message}`);
-        } else {
-          setError("Detection error occurred");
-        }
+      console.error("❌ WebSocket error message:", data)
+      if (data.message) {
+        setError(`Detection error: ${data.message}`)
+      } else {
+        setError("Detection error occurred")
+      }
 
-        requestAnimationFrame(() => processCurrentFrameRef.current?.());
-      },
-    );
+      requestAnimationFrame(() => processCurrentFrameRef.current?.())
+    })
   }, [
     recognitionEnabled,
     performFaceRecognition,
@@ -384,162 +360,147 @@ export function useBackendService(options: UseBackendServiceOptions) {
     setWebsocketStatus,
     setError,
     loadAttendanceDataRef,
-  ]);
+  ])
 
   const initializeWebSocket = useCallback(async () => {
     try {
       if (!webSocketServiceRef.current) {
-        webSocketServiceRef.current = new WebSocketService();
+        webSocketServiceRef.current = new WebSocketService()
       }
 
-      const currentStatus = webSocketServiceRef.current.getWebSocketStatus();
+      const currentStatus = webSocketServiceRef.current.getWebSocketStatus()
       if (currentStatus === "connected") {
-        registerWebSocketHandlers();
-        return;
+        registerWebSocketHandlers()
+        return
       }
 
       if (currentStatus === "connecting") {
-        let attempts = 0;
+        let attempts = 0
         while (attempts < 50) {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          const status = webSocketServiceRef.current.getWebSocketStatus();
+          await new Promise((resolve) => setTimeout(resolve, 50))
+          const status = webSocketServiceRef.current.getWebSocketStatus()
           if (status === "connected") {
-            registerWebSocketHandlers();
-            return;
+            registerWebSocketHandlers()
+            return
           }
           if (status === "disconnected") {
-            break;
+            break
           }
-          attempts++;
+          attempts++
         }
       }
 
-      const readinessResult = await waitForBackendReady(60000, 500);
+      const readinessResult = await waitForBackendReady(60000, 500)
 
       if (!readinessResult.ready || !readinessResult.modelsLoaded) {
-        const errorMessage =
-          readinessResult.error ?? "Backend not ready: Models still loading";
-        throw new Error(errorMessage);
+        const errorMessage = readinessResult.error ?? "Backend not ready: Models still loading"
+        throw new Error(errorMessage)
       }
 
-      await webSocketServiceRef.current.connectWebSocket();
-      registerWebSocketHandlers();
+      await webSocketServiceRef.current.connectWebSocket()
+      registerWebSocketHandlers()
     } catch (error) {
-      console.error("❌ WebSocket initialization failed:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      console.error("❌ WebSocket initialization failed:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
 
       if (!isStartingRef.current) {
         if (errorMessage.includes("Models still loading")) {
-          setError(
-            "AI models are still loading. Please wait a moment and try again.",
-          );
+          setError("AI models are still loading. Please wait a moment and try again.")
         } else if (errorMessage.includes("Backend service not started")) {
-          setError(
-            "Backend service is not running. Please restart the application.",
-          );
+          setError("Backend service is not running. Please restart the application.")
         } else if (errorMessage.includes("Timeout")) {
           setError(
             "Backend took too long to load models. Please check if the backend service is running.",
-          );
+          )
         } else {
-          setError(`Failed to connect to detection service: ${errorMessage}`);
+          setError(`Failed to connect to detection service: ${errorMessage}`)
         }
       }
-      throw error;
+      throw error
     }
-  }, [
-    waitForBackendReady,
-    registerWebSocketHandlers,
-    webSocketServiceRef,
-    isStartingRef,
-    setError,
-  ]);
+  }, [waitForBackendReady, registerWebSocketHandlers, webSocketServiceRef, isStartingRef, setError])
 
   useEffect(() => {
-    isStreamingRef.current = false;
-    isScanningRef.current = false;
-    backendServiceReadyRef.current = false;
-    setError(null);
-    setIsStreaming(false);
-    setIsVideoLoading(false);
-    setCameraActive(false);
-    setWebsocketStatus("disconnected");
+    isStreamingRef.current = false
+    isScanningRef.current = false
+    backendServiceReadyRef.current = false
+    setError(null)
+    setIsStreaming(false)
+    setIsVideoLoading(false)
+    setCameraActive(false)
+    setWebsocketStatus("disconnected")
 
-    cleanupStream(streamRef);
-    cleanupVideo(videoRef, true);
-    cleanupAnimationFrame(animationFrameRef);
+    cleanupStream(streamRef)
+    cleanupVideo(videoRef, true)
+    cleanupAnimationFrame(animationFrameRef)
 
     if (initializationRef.current.cleanupTimeout) {
-      clearTimeout(initializationRef.current.cleanupTimeout);
-      initializationRef.current.cleanupTimeout = undefined;
+      clearTimeout(initializationRef.current.cleanupTimeout)
+      initializationRef.current.cleanupTimeout = undefined
     }
 
     if (webSocketServiceRef.current?.isWebSocketReady()) {
-      registerWebSocketHandlers();
-      initializationRef.current.initialized = true;
-      initializationRef.current.isInitializing = false;
-      return;
+      registerWebSocketHandlers()
+      initializationRef.current.initialized = true
+      initializationRef.current.isInitializing = false
+      return
     }
 
     if (initializationRef.current.isInitializing) {
-      return;
+      return
     }
 
-    if (
-      initializationRef.current.initialized &&
-      !webSocketServiceRef.current?.isWebSocketReady()
-    ) {
-      initializationRef.current.initialized = false;
+    if (initializationRef.current.initialized && !webSocketServiceRef.current?.isWebSocketReady()) {
+      initializationRef.current.initialized = false
     }
 
-    initializationRef.current.isInitializing = true;
+    initializationRef.current.isInitializing = true
 
     const initWebSocket = async () => {
       try {
-        await initializeWebSocket();
-        initializationRef.current.initialized = true;
+        await initializeWebSocket()
+        initializationRef.current.initialized = true
       } catch {
-        setWebsocketStatus("disconnected");
-        initializationRef.current.initialized = false;
+        setWebsocketStatus("disconnected")
+        initializationRef.current.initialized = false
       } finally {
-        initializationRef.current.isInitializing = false;
+        initializationRef.current.isInitializing = false
       }
-    };
+    }
 
-    initWebSocket();
+    initWebSocket()
 
-    const cleanupTimeout = initializationRef.current.cleanupTimeout;
-    const wasInitialized = initializationRef.current.initialized;
-    const wasInitializing = initializationRef.current.isInitializing;
-    const stopCameraFn = stopCamera.current;
+    const cleanupTimeout = initializationRef.current.cleanupTimeout
+    const wasInitialized = initializationRef.current.initialized
+    const wasInitializing = initializationRef.current.isInitializing
+    const stopCameraFn = stopCamera.current
     // Capture ref values at effect time to avoid linter warnings
-    const currentAnimationFrame = animationFrameRef.current;
-    const isCurrentlyStreaming = isStreamingRef.current;
+    const currentAnimationFrame = animationFrameRef.current
+    const isCurrentlyStreaming = isStreamingRef.current
 
     return () => {
       if (cleanupTimeout) {
-        clearTimeout(cleanupTimeout);
+        clearTimeout(cleanupTimeout)
       }
 
       if (wasInitialized || wasInitializing) {
         // Use captured values to avoid linter warnings about refs changing
         if (isCurrentlyStreaming) {
           if (stopCameraFn) {
-            stopCameraFn(false);
+            stopCameraFn(false)
           }
         } else if (currentAnimationFrame) {
-          cancelAnimationFrame(currentAnimationFrame);
-          animationFrameRef.current = undefined;
+          cancelAnimationFrame(currentAnimationFrame)
+          animationFrameRef.current = undefined
         }
 
-        const initRef = initializationRef;
+        const initRef = initializationRef
         setTimeout(() => {
-          initRef.current.initialized = false;
-          initRef.current.isInitializing = false;
-        }, 50);
+          initRef.current.initialized = false
+          initRef.current.isInitializing = false
+        }, 50)
       }
-    };
+    }
   }, [
     initializeWebSocket,
     registerWebSocketHandlers,
@@ -556,49 +517,39 @@ export function useBackendService(options: UseBackendServiceOptions) {
     setWebsocketStatus,
     streamRef,
     videoRef,
-  ]);
+  ])
 
   useEffect(() => {
-    if (!webSocketServiceRef.current) return;
+    if (!webSocketServiceRef.current) return
 
     const pollWebSocketStatus = () => {
       if (webSocketServiceRef.current) {
-        const actualStatus = webSocketServiceRef.current.getWebSocketStatus();
+        const actualStatus = webSocketServiceRef.current.getWebSocketStatus()
         if (actualStatus !== websocketStatus) {
-          setWebsocketStatus(actualStatus);
+          setWebsocketStatus(actualStatus)
         }
       }
-    };
+    }
 
-    const statusInterval = setInterval(pollWebSocketStatus, 200);
+    const statusInterval = setInterval(pollWebSocketStatus, 200)
 
     return () => {
-      clearInterval(statusInterval);
-    };
-  }, [websocketStatus, webSocketServiceRef, setWebsocketStatus]);
+      clearInterval(statusInterval)
+    }
+  }, [websocketStatus, webSocketServiceRef, setWebsocketStatus])
 
   useEffect(() => {
-    if (
-      websocketStatus === "connected" &&
-      isScanningRef.current &&
-      isStreamingRef.current
-    ) {
+    if (websocketStatus === "connected" && isScanningRef.current && isStreamingRef.current) {
       if (webSocketServiceRef.current?.isWebSocketReady()) {
-        processCurrentFrameRef.current?.();
+        processCurrentFrameRef.current?.()
       }
     }
-  }, [
-    websocketStatus,
-    isScanningRef,
-    isStreamingRef,
-    webSocketServiceRef,
-    processCurrentFrameRef,
-  ]);
+  }, [websocketStatus, isScanningRef, isStreamingRef, webSocketServiceRef, processCurrentFrameRef])
 
   return {
     backendServiceReadyRef,
     initializeWebSocket,
     registerWebSocketHandlers,
     waitForBackendReady,
-  };
+  }
 }

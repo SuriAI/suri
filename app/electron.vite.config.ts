@@ -1,22 +1,22 @@
-import { resolve } from "path";
-import { copyFileSync, existsSync, mkdirSync } from "fs";
-import { defineConfig } from "electron-vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
+import { resolve } from "path"
+import { copyFileSync, existsSync, mkdirSync } from "fs"
+import { defineConfig } from "electron-vite"
+import react from "@vitejs/plugin-react"
+import tailwindcss from "@tailwindcss/vite"
 
 function copyAssetsPlugin() {
   return {
     name: "copy-assets",
     writeBundle() {
-      if (!existsSync("out/main")) mkdirSync("out/main", { recursive: true });
-      copyFileSync("src/electron/splash.html", "out/main/splash.html");
-      copyFileSync("src/electron/splash.css", "out/main/splash.css");
+      if (!existsSync("out/main")) mkdirSync("out/main", { recursive: true })
+      copyFileSync("src/electron/splash.html", "out/main/splash.html")
+      copyFileSync("src/electron/splash.css", "out/main/splash.css")
       copyFileSync(
         "public/icons/suri_primary_emblem_transparent.png",
         "out/main/suri_primary_emblem_transparent.png",
-      );
+      )
     },
-  };
+  }
 }
 
 export default defineConfig({
@@ -65,9 +65,9 @@ export default defineConfig({
                 assetInfo.name.endsWith(".woff2") ||
                 assetInfo.name.endsWith(".woff"))
             ) {
-              return "fonts/[name][extname]";
+              return "fonts/[name][extname]"
             }
-            return "assets/[name]-[hash][extname]";
+            return "assets/[name]-[hash][extname]"
           },
         },
       },
@@ -84,4 +84,4 @@ export default defineConfig({
       global: "globalThis",
     },
   },
-});
+})

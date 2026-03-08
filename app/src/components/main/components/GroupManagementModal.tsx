@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react";
-import { FormInput, Modal } from "@/components/common";
+import { useEffect, useRef } from "react"
+import { FormInput, Modal } from "@/components/common"
 
 interface GroupManagementModalProps {
-  showGroupManagement: boolean;
-  setShowGroupManagement: (show: boolean) => void;
-  newGroupName: string;
-  setNewGroupName: (name: string) => void;
-  handleCreateGroup: () => void;
+  showGroupManagement: boolean
+  setShowGroupManagement: (show: boolean) => void
+  newGroupName: string
+  setNewGroupName: (name: string) => void
+  handleCreateGroup: () => void
 }
 
 export function GroupManagementModal({
@@ -16,41 +16,40 @@ export function GroupManagementModal({
   setNewGroupName,
   handleCreateGroup,
 }: GroupManagementModalProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (showGroupManagement && inputRef.current) {
       const focusInput = () => {
         if (inputRef.current) {
-          inputRef.current.focus();
-          inputRef.current.select();
-          inputRef.current.click();
+          inputRef.current.focus()
+          inputRef.current.select()
+          inputRef.current.click()
         }
-      };
+      }
 
       requestAnimationFrame(() => {
-        focusInput();
-        setTimeout(focusInput, 50);
-        setTimeout(focusInput, 150);
-      });
+        focusInput()
+        setTimeout(focusInput, 50)
+        setTimeout(focusInput, 150)
+      })
     }
-  }, [showGroupManagement]);
+  }, [showGroupManagement])
 
   // Handle Enter key for submission
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && newGroupName.trim()) {
-      handleCreateGroup();
+      handleCreateGroup()
     }
-  };
+  }
 
   return (
     <Modal
       isOpen={showGroupManagement}
       onClose={() => setShowGroupManagement(false)}
       title="Create Group"
-      maxWidth="sm"
-    >
-      <div className="space-y-3 mt-2">
+      maxWidth="sm">
+      <div className="mt-2 space-y-3">
         <div>
           <FormInput
             ref={inputRef}
@@ -61,22 +60,20 @@ export function GroupManagementModal({
             focusColor="border-cyan-500/60"
           />
         </div>
-        <div className="flex justify-end gap-3 mt-8">
+        <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={() => setShowGroupManagement(false)}
-            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
-          >
+            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white">
             Cancel
           </button>
           <button
             onClick={handleCreateGroup}
             disabled={!newGroupName.trim()}
-            className="px-6 py-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition-all text-sm font-medium disabled:opacity-50 min-w-[120px]"
-          >
+            className="min-w-[120px] rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-6 py-2 text-sm font-medium text-cyan-400 transition-all hover:bg-cyan-500/20 disabled:opacity-50">
             Create Group
           </button>
         </div>
       </div>
     </Modal>
-  );
+  )
 }

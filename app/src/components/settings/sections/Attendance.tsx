@@ -1,15 +1,15 @@
-import { motion, AnimatePresence } from "framer-motion";
-import type { AttendanceSettings } from "@/components/settings/types";
+import { motion, AnimatePresence } from "framer-motion"
+import type { AttendanceSettings } from "@/components/settings/types"
 
 interface AttendanceProps {
-  attendanceSettings: AttendanceSettings;
-  onLateThresholdChange: (minutes: number) => void;
-  onLateThresholdToggle: (enabled: boolean) => void;
-  onReLogCooldownChange: (seconds: number) => void;
-  onSpoofDetectionToggle: (enabled: boolean) => void;
-  onTrackCheckoutToggle: (enabled: boolean) => void;
-  onDataRetentionChange: (days: number) => void;
-  hasSelectedGroup?: boolean;
+  attendanceSettings: AttendanceSettings
+  onLateThresholdChange: (minutes: number) => void
+  onLateThresholdToggle: (enabled: boolean) => void
+  onReLogCooldownChange: (seconds: number) => void
+  onSpoofDetectionToggle: (enabled: boolean) => void
+  onTrackCheckoutToggle: (enabled: boolean) => void
+  onDataRetentionChange: (days: number) => void
+  hasSelectedGroup?: boolean
 }
 
 export function Attendance({
@@ -23,11 +23,11 @@ export function Attendance({
   hasSelectedGroup = false,
 }: AttendanceProps) {
   return (
-    <div className="space-y-6 max-w-auto pt-4 px-10 pb-10">
+    <div className="max-w-auto space-y-6 px-10 pt-4 pb-10">
       {/* 1. Core Logic & Rules */}
       <div className="overflow-hidden">
-        <div className="py-2 border-b border-white/5">
-          <h3 className="text-[11px] font-medium text-cyan-400/50 flex items-center gap-2">
+        <div className="border-b border-white/5 py-2">
+          <h3 className="flex items-center gap-2 text-[11px] font-medium text-cyan-400/50">
             <i className="fa-solid fa-clock-rotate-left text-[11px]"></i>
             Attendance Logic
           </h3>
@@ -36,14 +36,10 @@ export function Attendance({
         <div className="py-2">
           {/* Time In & Time Out */}
           <div className="flex flex-col">
-            <div
-              className={`flex items-center py-4 gap-4 ${hasSelectedGroup ? "" : ""}`}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-white/90">
-                  Time In & Time Out
-                </div>
-                <div className="min-h-4 relative">
+            <div className={`flex items-center gap-4 py-4 ${hasSelectedGroup ? "" : ""}`}>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-white/90">Time In & Time Out</div>
+                <div className="relative min-h-4">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={`${hasSelectedGroup}-${attendanceSettings.trackCheckout}`}
@@ -51,36 +47,27 @@ export function Attendance({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 2 }}
                       transition={{ duration: 0.15 }}
-                      className="text-xs text-white/40 font-normal"
-                    >
-                      {!hasSelectedGroup
-                        ? "Select a group to enable this feature"
-                        : attendanceSettings.trackCheckout
-                          ? "ON: Records both when people arrive and when they leave."
-                          : "OFF: Only records when people show up."}
+                      className="text-xs font-normal text-white/40">
+                      {!hasSelectedGroup ?
+                        "Select a group to enable this feature"
+                      : attendanceSettings.trackCheckout ?
+                        "ON: Records both when people arrive and when they leave."
+                      : "OFF: Only records when people show up."}
                     </motion.div>
                   </AnimatePresence>
                 </div>
               </div>
 
               <button
-                onClick={() =>
-                  onTrackCheckoutToggle(!attendanceSettings.trackCheckout)
-                }
+                onClick={() => onTrackCheckoutToggle(!attendanceSettings.trackCheckout)}
                 disabled={!hasSelectedGroup}
-                className={`relative w-10 h-5.5 rounded-full focus:outline-none transition-colors duration-200 shrink-0 flex items-center ml-auto ${
-                  attendanceSettings.trackCheckout
-                    ? "bg-cyan-500/30"
-                    : "bg-white/10"
-                } disabled:opacity-50 disabled:cursor-not-allowed group/toggle`}
-              >
+                className={`relative ml-auto flex h-5.5 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                  attendanceSettings.trackCheckout ? "bg-cyan-500/30" : "bg-white/10"
+                } group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
                 <div
-                  className={`absolute left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                    attendanceSettings.trackCheckout
-                      ? "translate-x-4.5"
-                      : "translate-x-0"
-                  }`}
-                ></div>
+                  className={`absolute left-0.5 h-4.5 w-4.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    attendanceSettings.trackCheckout ? "translate-x-4.5" : "translate-x-0"
+                  }`}></div>
               </button>
             </div>
 
@@ -91,53 +78,39 @@ export function Attendance({
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center pb-5 pt-1 gap-4 pl-4 relative">
-                    <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-xs"></div>
-                    <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-xs"></div>
+                  className="overflow-hidden">
+                  <div className="relative flex items-center gap-4 pt-1 pb-5 pl-4">
+                    <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
+                    <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs text-white/40 mt-0.5">
+                    <div className="min-w-0 flex-1">
+                      <div className="mt-0.5 text-xs text-white/40">
                         <AnimatePresence mode="wait">
                           <motion.div
-                            key={
-                              attendanceSettings.trackCheckout
-                                ? "session"
-                                : "prevention"
-                            }
+                            key={attendanceSettings.trackCheckout ? "session" : "prevention"}
                             initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 5 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {attendanceSettings.trackCheckout
-                              ? `Min Stay: Wait at least ${Math.floor(
-                                  (attendanceSettings.reLogCooldownSeconds ??
-                                    1800) / 60,
-                                )} minutes before scanning to leave.`
-                              : `Spam Filter: Ignore the same person if they scan again within ${Math.floor(
-                                  (attendanceSettings.reLogCooldownSeconds ??
-                                    1800) / 60,
-                                )} minutes.`}
+                            transition={{ duration: 0.15 }}>
+                            {attendanceSettings.trackCheckout ?
+                              `Min Stay: Wait at least ${Math.floor(
+                                (attendanceSettings.reLogCooldownSeconds ?? 1800) / 60,
+                              )} minutes before scanning to leave.`
+                            : `Spam Filter: Ignore the same person if they scan again within ${Math.floor(
+                                (attendanceSettings.reLogCooldownSeconds ?? 1800) / 60,
+                              )} minutes.`
+                            }
                           </motion.div>
                         </AnimatePresence>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 ml-auto">
+                    <div className="ml-auto flex shrink-0 items-center gap-3">
                       <span
-                        className={`text-[11px] font-medium min-w-10 text-right whitespace-nowrap transition-colors duration-150 ${
-                          attendanceSettings.trackCheckout
-                            ? "text-cyan-400/80"
-                            : "text-white/20"
-                        }`}
-                      >
-                        {Math.floor(
-                          (attendanceSettings.reLogCooldownSeconds ?? 1800) /
-                            60,
-                        )}{" "}
-                        min
+                        className={`min-w-10 text-right text-[11px] font-medium whitespace-nowrap transition-colors duration-150 ${
+                          attendanceSettings.trackCheckout ? "text-cyan-400/80" : "text-white/20"
+                        }`}>
+                        {Math.floor((attendanceSettings.reLogCooldownSeconds ?? 1800) / 60)} min
                       </span>
                       <input
                         type="range"
@@ -145,13 +118,9 @@ export function Attendance({
                         max="3600"
                         step="60"
                         value={attendanceSettings.reLogCooldownSeconds ?? 1800}
-                        onChange={(e) =>
-                          onReLogCooldownChange(parseInt(e.target.value))
-                        }
-                        className={`w-24 h-1 px-1 rounded-full cursor-pointer transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-white/5 ${
-                          attendanceSettings.trackCheckout
-                            ? "accent-cyan-500"
-                            : "accent-white/20"
+                        onChange={(e) => onReLogCooldownChange(parseInt(e.target.value))}
+                        className={`h-1 w-24 cursor-pointer appearance-none rounded-full bg-white/5 px-1 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                          attendanceSettings.trackCheckout ? "accent-cyan-500" : "accent-white/20"
                         }`}
                       />
                     </div>
@@ -161,16 +130,14 @@ export function Attendance({
             </AnimatePresence>
           </div>
 
-          <div className="h-px bg-white/5 w-full" />
+          <div className="h-px w-full bg-white/5" />
 
           {/* Late Tracking */}
           <div className="flex flex-col">
-            <div className={`flex items-center py-4 gap-4`}>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-white/90">
-                  Late Tracking
-                </div>
-                <div className="min-h-4 relative">
+            <div className={`flex items-center gap-4 py-4`}>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-white/90">Late Tracking</div>
+                <div className="relative min-h-4">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={`${hasSelectedGroup}-${attendanceSettings.lateThresholdEnabled}`}
@@ -178,38 +145,27 @@ export function Attendance({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 2 }}
                       transition={{ duration: 0.15 }}
-                      className="text-xs text-white/40 font-normal"
-                    >
-                      {!hasSelectedGroup
-                        ? "Select a group to enable late tracking"
-                        : attendanceSettings.lateThresholdEnabled
-                          ? "ON: Automatically checking for late members."
-                          : "OFF: Late tracking is disabled."}
+                      className="text-xs font-normal text-white/40">
+                      {!hasSelectedGroup ?
+                        "Select a group to enable late tracking"
+                      : attendanceSettings.lateThresholdEnabled ?
+                        "ON: Automatically checking for late members."
+                      : "OFF: Late tracking is disabled."}
                     </motion.div>
                   </AnimatePresence>
                 </div>
               </div>
 
               <button
-                onClick={() =>
-                  onLateThresholdToggle(
-                    !attendanceSettings.lateThresholdEnabled,
-                  )
-                }
+                onClick={() => onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)}
                 disabled={!hasSelectedGroup}
-                className={`relative w-10 h-5.5 rounded-full focus:outline-none transition-colors duration-200 shrink-0 flex items-center ml-auto ${
-                  attendanceSettings.lateThresholdEnabled
-                    ? "bg-cyan-500/30"
-                    : "bg-white/10"
-                } disabled:opacity-50 disabled:cursor-not-allowed group/toggle`}
-              >
+                className={`relative ml-auto flex h-5.5 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                  attendanceSettings.lateThresholdEnabled ? "bg-cyan-500/30" : "bg-white/10"
+                } group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
                 <div
-                  className={`absolute left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                    attendanceSettings.lateThresholdEnabled
-                      ? "translate-x-4.5"
-                      : "translate-x-0"
-                  }`}
-                ></div>
+                  className={`absolute left-0.5 h-4.5 w-4.5 rounded-full bg-white shadow-md transition-transform duration-200 ${
+                    attendanceSettings.lateThresholdEnabled ? "translate-x-4.5" : "translate-x-0"
+                  }`}></div>
               </button>
             </div>
 
@@ -220,20 +176,17 @@ export function Attendance({
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center pb-5 pt-1 gap-4 pl-4 relative">
-                    <div className="absolute left-0 top-0 bottom-1/2 w-px bg-white/10 rounded-bl-xs"></div>
-                    <div className="absolute left-0 top-1/2 w-3 h-px bg-white/10 -translate-y-1/2 rounded-bl-xs"></div>
+                  className="overflow-hidden">
+                  <div className="relative flex items-center gap-4 pt-1 pb-5 pl-4">
+                    <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
+                    <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs text-white/40 mt-0.5">
-                        Late threshold in minutes.
-                      </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mt-0.5 text-xs text-white/40">Late threshold in minutes.</div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 ml-auto">
-                      <span className="text-cyan-400/80 text-[11px] font-medium min-w-10 text-right whitespace-nowrap">
+                    <div className="ml-auto flex shrink-0 items-center gap-3">
+                      <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
                         {attendanceSettings.lateThresholdMinutes} min
                       </span>
                       <input
@@ -242,10 +195,8 @@ export function Attendance({
                         max="60"
                         step="5"
                         value={attendanceSettings.lateThresholdMinutes}
-                        onChange={(e) =>
-                          onLateThresholdChange(parseInt(e.target.value))
-                        }
-                        className="w-24 h-1 px-1 rounded-full cursor-pointer appearance-none bg-white/5 accent-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onChange={(e) => onLateThresholdChange(parseInt(e.target.value))}
+                        className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-white/5 px-1 accent-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -258,8 +209,8 @@ export function Attendance({
 
       {/* 2. Security & Compliance */}
       <div className="overflow-hidden">
-        <div className="py-2 border-b border-white/5">
-          <h3 className="text-[11px] font-medium text-cyan-400/50 flex items-center gap-2">
+        <div className="border-b border-white/5 py-2">
+          <h3 className="flex items-center gap-2 text-[11px] font-medium text-cyan-400/50">
             <i className="fa-solid fa-shield-halved text-[11px]"></i>
             Security & Compliance
           </h3>
@@ -267,12 +218,10 @@ export function Attendance({
 
         <div className="py-2">
           {/* Anti-Spoof Detection */}
-          <div className="flex items-center py-4 gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white/90">
-                Anti-Spoof Detection
-              </div>
-              <div className="min-h-4 relative">
+          <div className="flex items-center gap-4 py-4">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-white/90">Anti-Spoof Detection</div>
+              <div className="relative min-h-4">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={attendanceSettings.enableSpoofDetection ? "on" : "off"}
@@ -280,71 +229,53 @@ export function Attendance({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 2 }}
                     transition={{ duration: 0.15 }}
-                    className="text-xs text-white/40 font-normal"
-                  >
-                    {attendanceSettings.enableSpoofDetection
-                      ? "ON: Protects against spoofing."
-                      : "OFF: No protection against spoofing."}
+                    className="text-xs font-normal text-white/40">
+                    {attendanceSettings.enableSpoofDetection ?
+                      "ON: Protects against spoofing."
+                    : "OFF: No protection against spoofing."}
                   </motion.div>
                 </AnimatePresence>
               </div>
             </div>
 
             <button
-              onClick={() =>
-                onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)
-              }
-              className={`relative w-10 h-5.5 rounded-full focus:outline-none transition-colors duration-200 shrink-0 flex items-center ml-auto ${
-                attendanceSettings.enableSpoofDetection
-                  ? "bg-cyan-500/30"
-                  : "bg-white/10"
-              } disabled:opacity-50 disabled:cursor-not-allowed group/toggle`}
-            >
+              onClick={() => onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)}
+              className={`relative ml-auto flex h-5.5 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                attendanceSettings.enableSpoofDetection ? "bg-cyan-500/30" : "bg-white/10"
+              } group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
               <div
-                className={`absolute left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                  attendanceSettings.enableSpoofDetection
-                    ? "translate-x-4.5"
-                    : "translate-x-0"
-                }`}
-              ></div>
+                className={`absolute left-0.5 h-4.5 w-4.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                  attendanceSettings.enableSpoofDetection ? "translate-x-4.5" : "translate-x-0"
+                }`}></div>
             </button>
           </div>
 
-          <div className="h-px bg-white/5 w-full" />
+          <div className="h-px w-full bg-white/5" />
 
           {/* Data Retention */}
-          <div className="flex items-center py-4 gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-white/90">
-                Data Retention
-              </div>
-              <div className="text-xs text-white/40 mt-0.5">
-                {attendanceSettings.dataRetentionDays &&
-                attendanceSettings.dataRetentionDays > 0
-                  ? `Records older than ${attendanceSettings.dataRetentionDays} days are deleted automatically.`
-                  : "Records are kept forever."}
+          <div className="flex items-center gap-4 py-4">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-white/90">Data Retention</div>
+              <div className="mt-0.5 text-xs text-white/40">
+                {attendanceSettings.dataRetentionDays && attendanceSettings.dataRetentionDays > 0 ?
+                  `Records older than ${attendanceSettings.dataRetentionDays} days are deleted automatically.`
+                : "Records are kept forever."}
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0 ml-auto">
-              <span className="text-[11px] font-medium text-white/40">
-                days
-              </span>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <span className="text-[11px] font-medium text-white/40">days</span>
               <input
                 type="number"
                 min={0}
                 max={3650}
                 value={attendanceSettings.dataRetentionDays ?? 0}
-                onChange={(e) =>
-                  onDataRetentionChange(
-                    Math.max(0, parseInt(e.target.value) || 0),
-                  )
-                }
-                className="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-center text-white outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10 font-bold"
+                onChange={(e) => onDataRetentionChange(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-14 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-center text-xs font-bold text-white transition-all duration-300 outline-none focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/10"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

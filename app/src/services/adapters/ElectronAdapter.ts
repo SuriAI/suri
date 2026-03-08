@@ -6,7 +6,7 @@ import type {
   SimilarityThresholdResponse,
   DatabaseStatsResponse,
   PersonInfo,
-} from "../../types/recognition";
+} from "../../types/recognition"
 
 export class ElectronAdapter {
   async recognizeFace(
@@ -22,7 +22,7 @@ export class ElectronAdapter {
       groupId,
       landmarks_5,
       enableLivenessDetection,
-    );
+    )
   }
 
   async registerFace(
@@ -40,33 +40,30 @@ export class ElectronAdapter {
       groupId,
       landmarks_5,
       enableLivenessDetection,
-    );
+    )
   }
 
   async removePerson(personId: string): Promise<PersonRemovalResponse> {
-    return window.electronAPI.backend.removePerson(personId);
+    return window.electronAPI.backend.removePerson(personId)
   }
 
-  async updatePerson(
-    oldPersonId: string,
-    newPersonId: string,
-  ): Promise<PersonUpdateResponse> {
-    return window.electronAPI.backend.updatePerson(oldPersonId, newPersonId);
+  async updatePerson(oldPersonId: string, newPersonId: string): Promise<PersonUpdateResponse> {
+    return window.electronAPI.backend.updatePerson(oldPersonId, newPersonId)
   }
 
   async getAllPersons(): Promise<{ persons: PersonInfo[] }> {
-    return window.electronAPI.backend.getAllPersons();
+    return window.electronAPI.backend.getAllPersons()
   }
 
   async setThreshold(threshold: number): Promise<SimilarityThresholdResponse> {
-    return window.electronAPI.backend.setThreshold(threshold);
+    return window.electronAPI.backend.setThreshold(threshold)
   }
 
   async clearDatabase(): Promise<{ success: boolean; message: string }> {
-    return window.electronAPI.backend.clearDatabase();
+    return window.electronAPI.backend.clearDatabase()
   }
 
   async getFaceStats(): Promise<DatabaseStatsResponse> {
-    return window.electronAPI.backend.getFaceStats();
+    return window.electronAPI.backend.getFaceStats()
   }
 }

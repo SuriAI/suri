@@ -4,52 +4,52 @@
  * Designed to be non-blocking and offline-safe.
  */
 
-import { app, shell, BrowserWindow, net } from "electron";
+import { app, shell, BrowserWindow, net } from "electron"
 
-const GITHUB_OWNER = "suriAI";
-const GITHUB_REPO = "suri";
-const GITHUB_RELEASES_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
-const GITHUB_RELEASES_PAGE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
+const GITHUB_OWNER = "suriAI"
+const GITHUB_REPO = "suri"
+const GITHUB_RELEASES_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`
+const GITHUB_RELEASES_PAGE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`
 
-const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
-const NETWORK_TIMEOUT_MS = 8000; // 8 seconds - fail fast if no internet
-let lastCheckTime = 0;
-let cachedUpdateInfo: UpdateInfo | null = null;
+const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
+const NETWORK_TIMEOUT_MS = 8000 // 8 seconds - fail fast if no internet
+let lastCheckTime = 0
+let cachedUpdateInfo: UpdateInfo | null = null
 
 export interface UpdateInfo {
-  currentVersion: string;
-  latestVersion: string;
-  hasUpdate: boolean;
-  releaseUrl: string;
-  releaseNotes: string;
-  publishedAt: string;
-  downloadUrl: string | null;
-  error?: string;
-  isOffline?: boolean;
+  currentVersion: string
+  latestVersion: string
+  hasUpdate: boolean
+  releaseUrl: string
+  releaseNotes: string
+  publishedAt: string
+  downloadUrl: string | null
+  error?: string
+  isOffline?: boolean
 }
 
 export interface GitHubRelease {
-  tag_name: string;
-  name: string;
-  body: string;
-  html_url: string;
-  published_at: string;
+  tag_name: string
+  name: string
+  body: string
+  html_url: string
+  published_at: string
   assets: {
-    name: string;
-    browser_download_url: string;
-  }[];
+    name: string
+    browser_download_url: string
+  }[]
 }
 
 function extractSemverLikeVersion(input: string): string | null {
-  const trimmed = (input || "").trim();
-  if (!trimmed) return null;
+  const trimmed = (input || "").trim()
+  if (!trimmed) return null
 
   // Look for a semver-ish token anywhere in the string.
   // Examples matched: "2.0.0", "v2.0.0", "2.0.0-beta.1", "Release v2.0.0"
-  const match = /v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/.exec(trimmed);
-  if (!match) return null;
+  const match = /v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?/.exec(trimmed)
+  if (!match) return null
 
-  return match[0].replace(/^v/, "");
+  return match[0].replace(/^v/, "")
 }
 
 /**
@@ -57,16 +57,16 @@ function extractSemverLikeVersion(input: string): string | null {
  */
 
 function getVersionParts(version: string): {
-  numeric: number[];
-  pre: string | null;
+  numeric: number[]
+  pre: string | null
 } {
-  const [v, ...preParts] = version.split("-");
+  const [v, ...preParts] = version.split("-")
   const numeric = v
     .replace(/^v/, "")
     .split(".")
-    .map((part) => parseInt(part, 10) || 0);
-  const pre = preParts.length > 0 ? preParts.join("-") : null;
-  return { numeric, pre };
+    .map((part) => parseInt(part, 10) || 0)
+  const pre = preParts.length > 0 ? preParts.join("-") : null
+  return { numeric, pre }
 }
 
 /**
@@ -74,73 +74,73 @@ function getVersionParts(version: string): {
  * Returns: 1 if a > b, -1 if a < b, 0 if equal
  */
 function compareVersions(a: string, b: string): number {
-  const partsA = getVersionParts(a);
-  const partsB = getVersionParts(b);
+  const partsA = getVersionParts(a)
+  const partsB = getVersionParts(b)
 
-  const maxLength = Math.max(partsA.numeric.length, partsB.numeric.length);
+  const maxLength = Math.max(partsA.numeric.length, partsB.numeric.length)
   for (let i = 0; i < maxLength; i++) {
-    const numA = partsA.numeric[i] || 0;
-    const numB = partsB.numeric[i] || 0;
-    if (numA > numB) return 1;
-    if (numA < numB) return -1;
+    const numA = partsA.numeric[i] || 0
+    const numB = partsB.numeric[i] || 0
+    if (numA > numB) return 1
+    if (numA < numB) return -1
   }
 
-  if (!partsA.pre && partsB.pre) return 1;
-  if (partsA.pre && !partsB.pre) return -1;
+  if (!partsA.pre && partsB.pre) return 1
+  if (partsA.pre && !partsB.pre) return -1
 
   if (partsA.pre && partsB.pre) {
-    const segA = partsA.pre.split(".");
-    const segB = partsB.pre.split(".");
-    const maxLen = Math.max(segA.length, segB.length);
+    const segA = partsA.pre.split(".")
+    const segB = partsB.pre.split(".")
+    const maxLen = Math.max(segA.length, segB.length)
 
     for (let i = 0; i < maxLen; i++) {
-      const sA = segA[i];
-      const sB = segB[i];
+      const sA = segA[i]
+      const sB = segB[i]
 
-      if (sA === undefined) return -1;
-      if (sB === undefined) return 1;
+      if (sA === undefined) return -1
+      if (sB === undefined) return 1
 
-      const nA = parseInt(sA, 10);
-      const nB = parseInt(sB, 10);
-      const isNumA = !isNaN(nA) && /^\d+$/.test(sA);
-      const isNumB = !isNaN(nB) && /^\d+$/.test(sB);
+      const nA = parseInt(sA, 10)
+      const nB = parseInt(sB, 10)
+      const isNumA = !isNaN(nA) && /^\d+$/.test(sA)
+      const isNumB = !isNaN(nB) && /^\d+$/.test(sB)
 
       if (isNumA && isNumB) {
-        if (nA > nB) return 1;
-        if (nA < nB) return -1;
+        if (nA > nB) return 1
+        if (nA < nB) return -1
       } else if (isNumA || isNumB) {
-        return isNumA ? -1 : 1;
+        return isNumA ? -1 : 1
       } else {
-        if (sA > sB) return 1;
-        if (sA < sB) return -1;
+        if (sA > sB) return 1
+        if (sA < sB) return -1
       }
     }
   }
 
-  return 0;
+  return 0
 }
 
 /**
  * Get the appropriate download asset URL for current platform
  */
 function getDownloadUrl(assets: GitHubRelease["assets"]): string | null {
-  const platform = process.platform;
+  const platform = process.platform
   const patterns: Record<string, RegExp[]> = {
     win32: [/\.exe$/i, /\.msi$/i, /portable.*\.exe$/i],
     darwin: [/\.dmg$/i, /\.pkg$/i],
     linux: [/\.AppImage$/i, /\.deb$/i, /\.rpm$/i],
-  };
+  }
 
-  const platformPatterns = patterns[platform] || [];
+  const platformPatterns = patterns[platform] || []
 
   for (const pattern of platformPatterns) {
-    const asset = assets.find((a) => pattern.test(a.name));
+    const asset = assets.find((a) => pattern.test(a.name))
     if (asset) {
-      return asset.browser_download_url;
+      return asset.browser_download_url
     }
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -148,15 +148,15 @@ function getDownloadUrl(assets: GitHubRelease["assets"]): string | null {
  * Uses Electron's net module for accurate online status
  */
 function isOnline(): boolean {
-  return net.isOnline();
+  return net.isOnline()
 }
 
 async function fetchLatestRelease(): Promise<GitHubRelease | null> {
-  if (!isOnline()) return null;
+  if (!isOnline()) return null
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS);
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS)
 
     const response = await fetch(GITHUB_RELEASES_URL, {
       headers: {
@@ -164,44 +164,39 @@ async function fetchLatestRelease(): Promise<GitHubRelease | null> {
         "User-Agent": `Suri/${app.getVersion()}`,
       },
       signal: controller.signal,
-    });
+    })
 
-    clearTimeout(timeoutId);
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log("[Updater] No releases found");
-        return null;
+        console.log("[Updater] No releases found")
+        return null
       }
-      console.log(`[Updater] GitHub API returned ${response.status}`);
-      return null;
+      console.log(`[Updater] GitHub API returned ${response.status}`)
+      return null
     }
 
-    return (await response.json()) as GitHubRelease;
+    return (await response.json()) as GitHubRelease
   } catch (error) {
     // Silently handle all errors - this is expected when offline
     if (error instanceof Error) {
       if (error.name === "AbortError") {
-        console.log(
-          "[Updater] Request timed out - likely offline or slow connection",
-        );
+        console.log("[Updater] Request timed out - likely offline or slow connection")
       } else {
-        console.log(
-          "[Updater] Network error (expected if offline):",
-          error.message,
-        );
+        console.log("[Updater] Network error (expected if offline):", error.message)
       }
     }
-    return null;
+    return null
   }
 }
 
 export async function checkForUpdates(force = false): Promise<UpdateInfo> {
-  const currentVersion = app.getVersion();
-  const now = Date.now();
+  const currentVersion = app.getVersion()
+  const now = Date.now()
 
   if (!force && cachedUpdateInfo && now - lastCheckTime < CHECK_INTERVAL_MS) {
-    return cachedUpdateInfo;
+    return cachedUpdateInfo
   }
 
   if (!isOnline()) {
@@ -214,12 +209,12 @@ export async function checkForUpdates(force = false): Promise<UpdateInfo> {
       publishedAt: "",
       downloadUrl: null,
       isOffline: true,
-    };
+    }
   }
 
-  console.log(`[Updater] Checking for updates (current: v${currentVersion})`);
+  console.log(`[Updater] Checking for updates (current: v${currentVersion})`)
 
-  const release = await fetchLatestRelease();
+  const release = await fetchLatestRelease()
 
   if (!release) {
     // Network error or no releases - return gracefully
@@ -231,14 +226,14 @@ export async function checkForUpdates(force = false): Promise<UpdateInfo> {
       releaseNotes: "",
       publishedAt: "",
       downloadUrl: null,
-    };
+    }
     // Cache this result to avoid hammering the API
-    cachedUpdateInfo = noUpdateInfo;
-    lastCheckTime = now;
-    return noUpdateInfo;
+    cachedUpdateInfo = noUpdateInfo
+    lastCheckTime = now
+    return noUpdateInfo
   }
 
-  const latestVersion = extractSemverLikeVersion(release.tag_name);
+  const latestVersion = extractSemverLikeVersion(release.tag_name)
 
   if (!latestVersion) {
     const unknownVersionInfo: UpdateInfo = {
@@ -251,17 +246,15 @@ export async function checkForUpdates(force = false): Promise<UpdateInfo> {
       downloadUrl: getDownloadUrl(release.assets),
       error:
         "Latest release tag did not contain a semantic version (expected something like v2.0.0)",
-    };
+    }
 
-    cachedUpdateInfo = unknownVersionInfo;
-    lastCheckTime = now;
-    console.log(
-      `[Updater] Latest release tag has no semver (tag: ${release.tag_name})`,
-    );
-    return unknownVersionInfo;
+    cachedUpdateInfo = unknownVersionInfo
+    lastCheckTime = now
+    console.log(`[Updater] Latest release tag has no semver (tag: ${release.tag_name})`)
+    return unknownVersionInfo
   }
 
-  const hasUpdate = compareVersions(latestVersion, currentVersion) > 0;
+  const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
 
   const updateInfo: UpdateInfo = {
     currentVersion,
@@ -271,41 +264,38 @@ export async function checkForUpdates(force = false): Promise<UpdateInfo> {
     releaseNotes: release.body || "",
     publishedAt: release.published_at,
     downloadUrl: getDownloadUrl(release.assets),
-  };
+  }
 
-  cachedUpdateInfo = updateInfo;
-  lastCheckTime = now;
+  cachedUpdateInfo = updateInfo
+  lastCheckTime = now
 
   console.log(
     `[Updater] Latest: v${latestVersion}, Current: v${currentVersion}, Update available: ${hasUpdate}`,
-  );
+  )
 
-  return updateInfo;
+  return updateInfo
 }
 
 /**
  * Get current app version
  */
 export function getCurrentVersion(): string {
-  return app.getVersion();
+  return app.getVersion()
 }
 
 /**
  * Open the GitHub releases page in the default browser
  */
 export function openReleasePage(url?: string): void {
-  shell.openExternal(url || GITHUB_RELEASES_PAGE);
+  shell.openExternal(url || GITHUB_RELEASES_PAGE)
 }
 
 /**
  * Send update notification to renderer process
  */
-export function notifyRenderer(
-  mainWindow: BrowserWindow | null,
-  updateInfo: UpdateInfo,
-): void {
+export function notifyRenderer(mainWindow: BrowserWindow | null, updateInfo: UpdateInfo): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send("updater:update-available", updateInfo);
+    mainWindow.webContents.send("updater:update-available", updateInfo)
   }
 }
 
@@ -321,19 +311,19 @@ export async function startBackgroundUpdateCheck(
   setTimeout(async () => {
     // Only check if online
     if (!isOnline()) {
-      console.log("[Updater] Skipping background check - offline");
-      return;
+      console.log("[Updater] Skipping background check - offline")
+      return
     }
 
     try {
-      const updateInfo = await checkForUpdates();
+      const updateInfo = await checkForUpdates()
       if (updateInfo.hasUpdate && !updateInfo.isOffline) {
-        console.log(`[Updater] Update available: v${updateInfo.latestVersion}`);
-        notifyRenderer(mainWindow, updateInfo);
+        console.log(`[Updater] Update available: v${updateInfo.latestVersion}`)
+        notifyRenderer(mainWindow, updateInfo)
       }
     } catch (error) {
       // Silently ignore all errors - update checks should never affect app
-      console.log("[Updater] Background check failed (non-critical):", error);
+      console.log("[Updater] Background check failed (non-critical):", error)
     }
-  }, delayMs);
+  }, delayMs)
 }
