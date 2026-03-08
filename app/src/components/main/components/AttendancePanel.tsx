@@ -1,22 +1,18 @@
-import { useState, useMemo, useEffect, memo, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
-import { createDisplayNameMap } from "@/utils";
-import { Dropdown, Tooltip, MemberTooltip } from "@/components/shared";
-import type {
-  AttendanceGroup,
-  AttendanceRecord,
-  AttendanceMember,
-} from "@/components/main/types";
+import { useState, useMemo, useEffect, memo, useCallback } from "react"
+import { AnimatePresence } from "framer-motion"
+import { createDisplayNameMap } from "@/utils"
+import { Dropdown, Tooltip, MemberTooltip } from "@/components/shared"
+import type { AttendanceGroup, AttendanceRecord, AttendanceMember } from "@/components/main/types"
 
-import { useAttendanceStore, useUIStore } from "@/components/main/stores";
-import { ManualEntryModal } from "./ManualEntryModal";
+import { useAttendanceStore, useUIStore } from "@/components/main/stores"
+import { ManualEntryModal } from "./ManualEntryModal"
 
 interface AttendancePanelProps {
-  handleSelectGroup: (group: AttendanceGroup) => void;
+  handleSelectGroup: (group: AttendanceGroup) => void
 }
 
-type SortField = "time" | "name";
-type SortOrder = "asc" | "desc";
+type SortField = "time" | "name"
+type SortOrder = "asc" | "desc"
 
 const AttendanceRecordItem = memo(
   ({
@@ -29,21 +25,21 @@ const AttendanceRecordItem = memo(
     trackCheckoutEnabled,
     hasCheckedInEarlier,
   }: {
-    record: AttendanceRecord;
-    displayName: string;
-    member?: AttendanceMember | null;
-    classStartTime: string;
-    lateThresholdMinutes: number;
-    lateThresholdEnabled: boolean;
-    trackCheckoutEnabled: boolean;
-    hasCheckedInEarlier: boolean;
+    record: AttendanceRecord
+    displayName: string
+    member?: AttendanceMember | null
+    classStartTime: string
+    lateThresholdMinutes: number
+    lateThresholdEnabled: boolean
+    trackCheckoutEnabled: boolean
+    hasCheckedInEarlier: boolean
   }) => {
     const calculateTimeStatus = () => {
       try {
-        if (!classStartTime && !record.event_type) return null;
+        if (!classStartTime && !record.event_type) return null
 
         const effectiveEventType =
-          record.event_type || (hasCheckedInEarlier ? "check_out" : "check_in");
+          record.event_type || (hasCheckedInEarlier ? "check_out" : "check_in")
 
         if (trackCheckoutEnabled && effectiveEventType === "check_out") {
           return {
@@ -54,51 +50,43 @@ const AttendanceRecordItem = memo(
             pillColor: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
             borderColor: "border-l-cyan-500",
             avatarColor: "bg-cyan-500/10 text-cyan-400",
-          };
+          }
         }
 
-        const [startHours, startMinutes] = classStartTime
-          .split(":")
-          .map(Number);
+        const [startHours, startMinutes] = classStartTime.split(":").map(Number)
 
-        const startDate = new Date(record.timestamp);
-        startDate.setHours(startHours, startMinutes, 0, 0);
+        const startDate = new Date(record.timestamp)
+        startDate.setHours(startHours, startMinutes, 0, 0)
 
-        const diffMs = record.timestamp.getTime() - startDate.getTime();
-        const diffMinutes = Math.floor(diffMs / 60000);
+        const diffMs = record.timestamp.getTime() - startDate.getTime()
+        const diffMinutes = Math.floor(diffMs / 60000)
 
-        const severeLateThreshold = 30;
-        const earlyThreshold = -5;
+        const severeLateThreshold = 30
+        const earlyThreshold = -5
 
         if (lateThresholdEnabled) {
           if (diffMinutes > lateThresholdMinutes) {
-            const minutesLate = diffMinutes;
+            const minutesLate = diffMinutes
             return {
-              status:
-                minutesLate > severeLateThreshold ? "severe-late" : "late",
+              status: minutesLate > severeLateThreshold ? "severe-late" : "late",
               minutes: minutesLate,
               label: `${minutesLate}M LATE`,
-              color:
-                minutesLate > severeLateThreshold
-                  ? "text-red-400"
-                  : "text-amber-400",
+              color: minutesLate > severeLateThreshold ? "text-red-400" : "text-amber-400",
               pillColor:
-                minutesLate > severeLateThreshold
-                  ? "bg-red-500/15 text-red-400 border-red-500/30"
-                  : "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                minutesLate > severeLateThreshold ?
+                  "bg-red-500/15 text-red-400 border-red-500/30"
+                : "bg-amber-500/15 text-amber-400 border-amber-500/30",
               borderColor:
-                minutesLate > severeLateThreshold
-                  ? "border-l-red-500"
-                  : "border-l-amber-500",
+                minutesLate > severeLateThreshold ? "border-l-red-500" : "border-l-amber-500",
               avatarColor:
-                minutesLate > severeLateThreshold
-                  ? "bg-red-500/10 text-red-500/70"
-                  : "bg-amber-500/10 text-amber-500/70",
-            };
+                minutesLate > severeLateThreshold ?
+                  "bg-red-500/10 text-red-500/70"
+                : "bg-amber-500/10 text-amber-500/70",
+            }
           }
 
           if (diffMinutes < earlyThreshold) {
-            const minutesEarly = Math.abs(diffMinutes);
+            const minutesEarly = Math.abs(diffMinutes)
             return {
               status: "early",
               minutes: minutesEarly,
@@ -107,51 +95,46 @@ const AttendanceRecordItem = memo(
               pillColor: "bg-cyan-500/10 text-cyan-400/80 border-cyan-500/20",
               borderColor: "border-l-transparent",
               avatarColor: "bg-cyan-500/10 text-cyan-400",
-            };
+            }
           }
         }
 
         return {
           status: "on-time",
           minutes: 0,
-          label: trackCheckoutEnabled
-            ? "TIME IN"
-            : lateThresholdEnabled
-              ? "ON TIME"
-              : "",
+          label:
+            trackCheckoutEnabled ? "TIME IN"
+            : lateThresholdEnabled ? "ON TIME"
+            : "",
           color: "text-white/40",
           pillColor: "bg-white/5 text-white/40 border-white/10",
           borderColor: "border-l-transparent",
           avatarColor: "bg-white/5 text-white/40",
-        };
+        }
       } catch {
-        return null;
+        return null
       }
-    };
+    }
 
-    const timeStatus = calculateTimeStatus();
+    const timeStatus = calculateTimeStatus()
 
     return (
       <MemberTooltip
         member={member}
         position="right"
-        role={record.event_type === "check_out" ? "Exiting" : "Present"}
-      >
+        role={record.event_type === "check_out" ? "Exiting" : "Present"}>
         <div
-          className={`border-b border-white/5 px-3 py-2.5 relative group transition-colors hover:bg-white/5`}
-        >
+          className={`group relative border-b border-white/5 px-3 py-2.5 transition-colors hover:bg-white/5`}>
           <div className="flex items-center gap-2 py-0.5">
-            <span className="flex-1 min-w-0 text-[12px] font-medium text-white/90 truncate">
+            <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/90">
               {displayName}
             </span>
 
-            <div className="shrink-0 flex items-center gap-1.5">
-              <span
-                className={`text-[11px] font-bold ${timeStatus?.color || "text-white/50"}`}
-              >
+            <div className="flex shrink-0 items-center gap-1.5">
+              <span className={`text-[11px] font-bold ${timeStatus?.color || "text-white/50"}`}>
                 {timeStatus?.label}
               </span>
-              <span className="text-[11px] font-mono text-white/40 tabular-nums">
+              <span className="font-mono text-[11px] text-white/40 tabular-nums">
                 {record.timestamp.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -161,29 +144,24 @@ const AttendanceRecordItem = memo(
           </div>
         </div>
       </MemberTooltip>
-    );
+    )
   },
-);
+)
 
-AttendanceRecordItem.displayName = "AttendanceRecordItem";
+AttendanceRecordItem.displayName = "AttendanceRecordItem"
 
 export const AttendancePanel = memo(function AttendancePanel({
   handleSelectGroup,
 }: AttendancePanelProps) {
-  const {
-    attendanceGroups,
-    currentGroup,
-    recentAttendance,
-    groupMembers,
-    setShowGroupManagement,
-  } = useAttendanceStore();
+  const { attendanceGroups, currentGroup, recentAttendance, groupMembers, setShowGroupManagement } =
+    useAttendanceStore()
 
-  const { setShowSettings, setGroupInitialSection } = useUIStore();
-  const [showManualEntry, setShowManualEntry] = useState(false);
+  const { setShowSettings, setGroupInitialSection } = useUIStore()
+  const [showManualEntry, setShowManualEntry] = useState(false)
 
   const presentPersonIds = useMemo(() => {
-    return new Set(recentAttendance.map((r) => r.person_id));
-  }, [recentAttendance]);
+    return new Set(recentAttendance.map((r) => r.person_id))
+  }, [recentAttendance])
 
   const lateTrackingSettings = useMemo(() => {
     if (!currentGroup?.settings) {
@@ -195,12 +173,11 @@ export const AttendancePanel = memo(function AttendancePanel({
           minute: "2-digit",
           hour12: false,
         }),
-      };
+      }
     }
 
     return {
-      lateThresholdEnabled:
-        currentGroup.settings.late_threshold_enabled ?? false,
+      lateThresholdEnabled: currentGroup.settings.late_threshold_enabled ?? false,
       lateThresholdMinutes: currentGroup.settings.late_threshold_minutes ?? 5,
       classStartTime:
         currentGroup.settings.class_start_time ??
@@ -209,150 +186,140 @@ export const AttendancePanel = memo(function AttendancePanel({
           minute: "2-digit",
           hour12: false,
         }),
-    };
-  }, [currentGroup]);
+    }
+  }, [currentGroup])
 
   const handleOpenSettingsForRegistration = useCallback(() => {
-    setGroupInitialSection("members");
-    setShowSettings(true);
-  }, [setGroupInitialSection, setShowSettings]);
+    setGroupInitialSection("members")
+    setShowSettings(true)
+  }, [setGroupInitialSection, setShowSettings])
 
-  const attendanceEnabled = true;
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<SortField>("time");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [displayLimit, setDisplayLimit] = useState(20);
+  const attendanceEnabled = true
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortField, setSortField] = useState<SortField>("time")
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
+  const [displayLimit, setDisplayLimit] = useState(20)
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    [],
-  );
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }, [])
 
   const handleSortFieldChange = useCallback((field: SortField | null) => {
     if (field) {
-      setSortField(field);
+      setSortField(field)
       if (field === "time") {
-        setSortOrder("desc");
+        setSortOrder("desc")
       } else if (field === "name") {
-        setSortOrder("asc");
+        setSortOrder("asc")
       }
     }
-  }, []);
+  }, [])
 
   const handleLoadMore = useCallback(() => {
-    setDisplayLimit((prev) => prev + 20);
-  }, []);
+    setDisplayLimit((prev) => prev + 20)
+  }, [])
 
   const displayNameMap = useMemo(() => {
-    return createDisplayNameMap(groupMembers);
-  }, [groupMembers]);
+    return createDisplayNameMap(groupMembers)
+  }, [groupMembers])
 
   const memberMap = useMemo(() => {
-    const map = new Map<string, (typeof groupMembers)[0]>();
-    groupMembers.forEach((m) => map.set(m.person_id, m));
-    return map;
-  }, [groupMembers]);
+    const map = new Map<string, (typeof groupMembers)[0]>()
+    groupMembers.forEach((m) => map.set(m.person_id, m))
+    return map
+  }, [groupMembers])
 
   const processedRecords = useMemo(() => {
     if (!recentAttendance.length) {
-      return [];
+      return []
     }
 
-    let filtered = [...recentAttendance];
+    let filtered = [...recentAttendance]
 
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const hasSearchQuery = normalizedQuery.length > 0;
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+    const hasSearchQuery = normalizedQuery.length > 0
 
     if (hasSearchQuery) {
-      const filteredArray: typeof filtered = [];
+      const filteredArray: typeof filtered = []
       for (let i = 0; i < filtered.length; i++) {
-        const record = filtered[i];
-        const displayName = (
-          displayNameMap.get(record.person_id) || "Unknown"
-        ).toLowerCase();
+        const record = filtered[i]
+        const displayName = (displayNameMap.get(record.person_id) || "Unknown").toLowerCase()
         if (displayName.includes(normalizedQuery)) {
-          filteredArray.push(record);
+          filteredArray.push(record)
         }
       }
-      filtered = filteredArray;
+      filtered = filteredArray
     }
 
     if (sortField === "time") {
       filtered.sort((a, b) => {
-        const timeA = a.timestamp.getTime();
-        const timeB = b.timestamp.getTime();
-        return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
-      });
+        const timeA = a.timestamp.getTime()
+        const timeB = b.timestamp.getTime()
+        return sortOrder === "asc" ? timeA - timeB : timeB - timeA
+      })
     } else if (sortField === "name") {
-      const nameCache = new Map<string, string>();
+      const nameCache = new Map<string, string>()
       filtered.sort((a, b) => {
-        let nameA = nameCache.get(a.person_id);
+        let nameA = nameCache.get(a.person_id)
         if (!nameA) {
-          nameA = (displayNameMap.get(a.person_id) || "Unknown").toLowerCase();
-          nameCache.set(a.person_id, nameA);
+          nameA = (displayNameMap.get(a.person_id) || "Unknown").toLowerCase()
+          nameCache.set(a.person_id, nameA)
         }
-        let nameB = nameCache.get(b.person_id);
+        let nameB = nameCache.get(b.person_id)
         if (!nameB) {
-          nameB = (displayNameMap.get(b.person_id) || "Unknown").toLowerCase();
-          nameCache.set(b.person_id, nameB);
+          nameB = (displayNameMap.get(b.person_id) || "Unknown").toLowerCase()
+          nameCache.set(b.person_id, nameB)
         }
-        const comparison = nameA.localeCompare(nameB);
-        return sortOrder === "asc" ? comparison : -comparison;
-      });
+        const comparison = nameA.localeCompare(nameB)
+        return sortOrder === "asc" ? comparison : -comparison
+      })
     }
 
-    return filtered;
-  }, [recentAttendance, displayNameMap, searchQuery, sortField, sortOrder]);
+    return filtered
+  }, [recentAttendance, displayNameMap, searchQuery, sortField, sortOrder])
 
   const visibleRecords = useMemo(() => {
-    return processedRecords.slice(0, displayLimit);
-  }, [processedRecords, displayLimit]);
+    return processedRecords.slice(0, displayLimit)
+  }, [processedRecords, displayLimit])
 
-  const hasMore = processedRecords.length > displayLimit;
+  const hasMore = processedRecords.length > displayLimit
 
   useEffect(() => {
-    const timer = setTimeout(() => setDisplayLimit(20), 0);
-    return () => clearTimeout(timer);
-  }, [searchQuery, sortField, sortOrder]);
+    const timer = setTimeout(() => setDisplayLimit(20), 0)
+    return () => clearTimeout(timer)
+  }, [searchQuery, sortField, sortOrder])
 
   if (!attendanceEnabled) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <h3 className="text-lg font-light px-4 pt-4 shrink-0">Recent Logs</h3>
-        <div className="flex-1 px-4 pb-4 overflow-y-auto space-y-2 min-h-0">
-          <div className="text-white/50 text-sm text-center py-4">
-            No logs yet
-          </div>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <h3 className="shrink-0 px-4 pt-4 text-lg font-light">Recent Logs</h3>
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-4">
+          <div className="py-4 text-center text-sm text-white/50">No logs yet</div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {attendanceGroups.length > 0 ? (
-        <div className="px-3 py-2 pb-1.5 shrink-0">
+    <div className="flex flex-1 flex-col overflow-hidden">
+      {attendanceGroups.length > 0 ?
+        <div className="shrink-0 px-3 py-2 pb-1.5">
           <div className="flex items-center">
-            <div className="flex-1 min-w-30">
+            <div className="min-w-30 flex-1">
               <Dropdown
                 options={attendanceGroups.map((group) => ({
                   value: group.id,
                   label: group.name,
                 }))}
                 value={
-                  currentGroup &&
-                  attendanceGroups.some((g) => g.id === currentGroup.id)
-                    ? currentGroup.id
-                    : null
+                  currentGroup && attendanceGroups.some((g) => g.id === currentGroup.id) ?
+                    currentGroup.id
+                  : null
                 }
                 onChange={(groupId) => {
                   if (groupId) {
-                    const group = attendanceGroups.find(
-                      (g) => g.id === groupId,
-                    );
-                    if (group) handleSelectGroup(group);
+                    const group = attendanceGroups.find((g) => g.id === groupId)
+                    if (group) handleSelectGroup(group)
                   }
                 }}
                 placeholder="Select group…"
@@ -366,60 +333,51 @@ export const AttendancePanel = memo(function AttendancePanel({
             <Tooltip content="Create Group" position="top">
               <button
                 onClick={() => setShowGroupManagement(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-none bg-white/5 hover:bg-white/10 border border-r-0 border-white/10 transition-all text-white/50 hover:text-white focus:outline-none"
-                aria-label="Create Group"
-              >
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-r-0 border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white/10 hover:text-white focus:outline-none"
+                aria-label="Create Group">
                 <i className="fa-solid fa-plus text-sm"></i>
               </button>
             </Tooltip>
             <Tooltip content="Members" position="top">
               <button
                 onClick={() => setShowManualEntry(true)}
-                className="shrink-0 w-9 h-9 flex items-center justify-center rounded-l-none rounded-r-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/50 hover:text-white focus:outline-none"
-                aria-label="Members"
-              >
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-white/10 bg-white/5 text-white/50 transition-all hover:bg-white/10 hover:text-white focus:outline-none"
+                aria-label="Members">
                 <i className="fa-solid fa-users text-sm"></i>
               </button>
             </Tooltip>
           </div>
         </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center min-h-0">
+      : <div className="flex min-h-0 flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="text-white/40 text-xs text-center">
-              No groups created yet
-            </div>
+            <div className="text-center text-xs text-white/40">No groups created yet</div>
             <button
               onClick={() => setShowGroupManagement(true)}
-              className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
-            >
+              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-white">
               <i className="fa-solid fa-plus text-xs"></i>
               Create Group
             </button>
           </div>
         </div>
-      )}
+      }
 
       {recentAttendance.length > 0 && (
-        <div className="px-3 pb-3 shrink-0">
+        <div className="shrink-0 px-3 pb-3">
           <div className="flex items-center">
             {/* Joined Search and Sort Container */}
-            <div className="relative flex-1 group/search">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white/20 text-[10px] pointer-events-none group-focus-within/search:text-cyan-400/60 transition-colors" />
+            <div className="group/search relative flex-1">
+              <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[10px] text-white/20 transition-colors group-focus-within/search:text-cyan-400/60" />
               <input
                 type="text"
                 placeholder="Search name..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full h-9 bg-white/3 text-white text-xs border border-r-0 border-white/10 rounded-l-lg rounded-r-none pl-8 pr-3 placeholder:text-white/20 focus:border-white/20 focus:bg-white/6 focus:outline-none transition-all"
+                className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/10 bg-white/3 pr-3 pl-8 text-xs text-white transition-all placeholder:text-white/20 focus:border-white/20 focus:bg-white/6 focus:outline-none"
               />
             </div>
 
             <div className="shrink-0">
-              <Tooltip
-                content={`Sort: ${sortField === "time" ? "Newest" : "A-Z"}`}
-                position="top"
-              >
+              <Tooltip content={`Sort: ${sortField === "time" ? "Newest" : "A-Z"}`} position="top">
                 <Dropdown
                   className="w-11"
                   options={[
@@ -431,10 +389,8 @@ export const AttendancePanel = memo(function AttendancePanel({
                   trigger={
                     <i
                       className={`${
-                        sortField === "time"
-                          ? "fa-regular fa-clock"
-                          : "fa-solid fa-arrow-down-a-z"
-                      } text-xs text-white/30 hover:text-cyan-400! transition-colors pointer-events-auto`}
+                        sortField === "time" ? "fa-regular fa-clock" : "fa-solid fa-arrow-down-a-z"
+                      } pointer-events-auto text-xs text-white/30 transition-colors hover:text-cyan-400!`}
                     />
                   }
                   menuWidth={110}
@@ -449,48 +405,46 @@ export const AttendancePanel = memo(function AttendancePanel({
       )}
 
       {attendanceGroups.length > 0 && (
-        <div className="flex-1 overflow-y-auto min-h-0 hover-scrollbar flex flex-col">
-          {visibleRecords.length > 0 ? (
+        <div className="hover-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
+          {visibleRecords.length > 0 ?
             <>
               {(() => {
                 // Keep track of who has a valid \"Time In\" scan
-                const checkedInSet = new Set<string>();
+                const checkedInSet = new Set<string>()
 
                 // We iterate from oldest to newest to chronologically track check-ins
                 // But we still want to render them in the original sorted order (which might be newest first)
                 // First, determine check-in status chronologically
                 const chronologicalRecords = [...processedRecords].sort(
                   (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-                );
+                )
 
-                const recordCheckInStatus = new Map<string, boolean>();
+                const recordCheckInStatus = new Map<string, boolean>()
 
                 chronologicalRecords.forEach((record) => {
-                  const personId = record.person_id;
-                  const dateString = record.timestamp.toDateString();
-                  const key = `${personId}_${dateString}`;
+                  const personId = record.person_id
+                  const dateString = record.timestamp.toDateString()
+                  const key = `${personId}_${dateString}`
 
                   if (!checkedInSet.has(key)) {
                     // First scan of the day!
-                    checkedInSet.add(key);
-                    recordCheckInStatus.set(record.id, false); // false = "not checked in earlier"
+                    checkedInSet.add(key)
+                    recordCheckInStatus.set(record.id, false) // false = "not checked in earlier"
                   } else {
                     // Subsequent scan of the day!
                     // Add 60-second grace period protection here if needed,
                     // but simple existence in set is enough for "checked in earlier" flag
-                    recordCheckInStatus.set(record.id, true); // true = "has checked in earlier"
+                    recordCheckInStatus.set(record.id, true) // true = "has checked in earlier"
                   }
-                });
+                })
 
                 return visibleRecords.map((record) => {
-                  const displayName =
-                    displayNameMap.get(record.person_id) || "Unknown";
+                  const displayName = displayNameMap.get(record.person_id) || "Unknown"
 
                   // Default to false (Time In) if somehow missing from map
-                  const hasCheckedInEarlier =
-                    recordCheckInStatus.get(record.id) ?? false;
+                  const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false
 
-                  const member = memberMap.get(record.person_id);
+                  const member = memberMap.get(record.person_id)
 
                   return (
                     <AttendanceRecordItem
@@ -499,82 +453,67 @@ export const AttendancePanel = memo(function AttendancePanel({
                       displayName={displayName}
                       member={member}
                       classStartTime={lateTrackingSettings.classStartTime}
-                      lateThresholdMinutes={
-                        lateTrackingSettings.lateThresholdMinutes
-                      }
-                      lateThresholdEnabled={
-                        lateTrackingSettings.lateThresholdEnabled
-                      }
-                      trackCheckoutEnabled={
-                        currentGroup?.settings?.track_checkout ?? false
-                      }
+                      lateThresholdMinutes={lateTrackingSettings.lateThresholdMinutes}
+                      lateThresholdEnabled={lateTrackingSettings.lateThresholdEnabled}
+                      trackCheckoutEnabled={currentGroup?.settings?.track_checkout ?? false}
                       hasCheckedInEarlier={hasCheckedInEarlier}
                     />
-                  );
-                });
+                  )
+                })
               })()}
 
               {hasMore && (
                 <div className="px-2 py-2">
                   <button
                     onClick={handleLoadMore}
-                    className="w-full py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 transition-colors"
-                  >
-                    Load More ({processedRecords.length - displayLimit}{" "}
-                    remaining)
+                    className="w-full rounded-lg border border-white/10 bg-white/5 py-2 text-xs text-white/70 transition-colors hover:bg-white/10">
+                    Load More ({processedRecords.length - displayLimit} remaining)
                   </button>
                 </div>
               )}
             </>
-          ) : searchQuery ? (
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="text-white/50 text-sm text-center">
+          : searchQuery ?
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <div className="text-center text-sm text-white/50">
                 No results for &quot;{searchQuery}&quot;
               </div>
             </div>
-          ) : !currentGroup ? (
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="text-white/40 text-xs text-center">
+          : !currentGroup ?
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <div className="text-center text-xs text-white/40">
                 Choose a group to see today&apos;s attendance logs
               </div>
             </div>
-          ) : groupMembers.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center min-h-0">
+          : groupMembers.length === 0 ?
+            <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="flex flex-col items-center justify-center space-y-3">
-                <div className="text-white/40 text-xs text-center">
+                <div className="text-center text-xs text-white/40">
                   No members in this group yet
                 </div>
                 <button
                   onClick={handleOpenSettingsForRegistration}
-                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
-                >
+                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-white">
                   <i className="fa-solid fa-user-plus text-xs"></i>
                   Add Member
                 </button>
               </div>
             </div>
-          ) : !groupMembers.some((m) => m.has_face_data) ? (
-            <div className="flex-1 flex items-center justify-center min-h-0">
+          : !groupMembers.some((m) => m.has_face_data) ?
+            <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
-                <div className="text-white/40 text-xs">
-                  No face biometric data registered yet.
-                </div>
+                <div className="text-xs text-white/40">No face biometric data registered yet.</div>
                 <button
                   onClick={handleOpenSettingsForRegistration}
-                  className="px-4 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/50 hover:text-white transition-colors flex items-center gap-2"
-                >
+                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-white">
                   <i className="fa-solid fa-user-plus text-xs"></i>
                   Register Face
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <div className="text-white/40 text-xs text-center">
-                No attendance logs yet
-              </div>
+          : <div className="flex min-h-0 flex-1 items-center justify-center">
+              <div className="text-center text-xs text-white/40">No attendance logs yet</div>
             </div>
-          )}
+          }
         </div>
       )}
       <AnimatePresence>
@@ -593,5 +532,5 @@ export const AttendancePanel = memo(function AttendancePanel({
         )}
       </AnimatePresence>
     </div>
-  );
-});
+  )
+})

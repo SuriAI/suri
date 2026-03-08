@@ -1,25 +1,16 @@
-import type { AttendanceGroup } from "@/types/recognition";
+import type { AttendanceGroup } from "@/types/recognition"
 
-import { useGroupStore } from "@/components/group/stores";
-import { useGroupModals } from "@/components/group/hooks";
-import {
-  AddMember,
-  CreateGroup,
-  EditGroup,
-  EditMember,
-} from "@/components/group/modals";
+import { useGroupStore } from "@/components/group/stores"
+import { useGroupModals } from "@/components/group/hooks"
+import { AddMember, CreateGroup, EditGroup, EditMember } from "@/components/group/modals"
 
 interface GroupModalsProps {
-  onMemberSuccess: () => void;
-  onGroupSuccess: (group?: AttendanceGroup) => void;
+  onMemberSuccess: () => void
+  onGroupSuccess: (group?: AttendanceGroup) => void
 }
 
-export function GroupModals({
-  onMemberSuccess,
-  onGroupSuccess,
-}: GroupModalsProps) {
-  const { selectedGroup, fetchGroups, setSelectedGroup, members } =
-    useGroupStore();
+export function GroupModals({ onMemberSuccess, onGroupSuccess }: GroupModalsProps) {
+  const { selectedGroup, fetchGroups, setSelectedGroup, members } = useGroupStore()
   const {
     showAddMemberModal,
     showEditMemberModal,
@@ -30,7 +21,7 @@ export function GroupModals({
     closeEditMember,
     closeCreateGroup,
     closeEditGroup,
-  } = useGroupModals();
+  } = useGroupModals()
   return (
     <>
       {showAddMemberModal && selectedGroup && (
@@ -43,22 +34,18 @@ export function GroupModals({
       )}
 
       {showEditMemberModal && editingMember && (
-        <EditMember
-          member={editingMember}
-          onClose={closeEditMember}
-          onSuccess={onMemberSuccess}
-        />
+        <EditMember member={editingMember} onClose={closeEditMember} onSuccess={onMemberSuccess} />
       )}
 
       {showCreateGroupModal && (
         <CreateGroup
           onClose={closeCreateGroup}
           onSuccess={(newGroup) => {
-            fetchGroups();
+            fetchGroups()
             if (newGroup) {
-              setSelectedGroup(newGroup);
+              setSelectedGroup(newGroup)
             }
-            onGroupSuccess(newGroup);
+            onGroupSuccess(newGroup)
           }}
         />
       )}
@@ -68,11 +55,11 @@ export function GroupModals({
           group={selectedGroup}
           onClose={closeEditGroup}
           onSuccess={() => {
-            fetchGroups();
-            onGroupSuccess();
+            fetchGroups()
+            onGroupSuccess()
           }}
         />
       )}
     </>
-  );
+  )
 }

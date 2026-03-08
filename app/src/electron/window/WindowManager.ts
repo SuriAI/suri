@@ -1,12 +1,12 @@
-import { BrowserWindow, dialog, shell, app } from "electron";
-import path from "path";
-import { fileURLToPath } from "node:url";
-import isDev from "../util.js";
-import { state } from "../State.js";
-import { persistentStore } from "../persistentStore.js";
+import { BrowserWindow, dialog, shell, app } from "electron"
+import path from "path"
+import { fileURLToPath } from "node:url"
+import isDev from "../util.js"
+import { state } from "../State.js"
+import { persistentStore } from "../persistentStore.js"
 
-const window_filename = fileURLToPath(import.meta.url);
-const window_dirname = path.dirname(window_filename);
+const window_filename = fileURLToPath(import.meta.url)
+const window_dirname = path.dirname(window_filename)
 
 export class WindowManager {
   static createSplashWindow(): BrowserWindow {
@@ -24,21 +24,22 @@ export class WindowManager {
         nodeIntegration: false,
         contextIsolation: true,
       },
-    });
+    })
 
-    const splashPath = isDev()
-      ? path.join(app.getAppPath(), "out", "main", "splash.html")
-      : path.join(window_dirname, "splash.html");
-    splash.loadFile(splashPath);
+    const splashPath =
+      isDev() ?
+        path.join(app.getAppPath(), "out", "main", "splash.html")
+      : path.join(window_dirname, "splash.html")
+    splash.loadFile(splashPath)
 
-    state.splashWindow = splash;
-    return splash;
+    state.splashWindow = splash
+    return splash
   }
 
   static destroySplash(): void {
     if (state.splashWindow && !state.splashWindow.isDestroyed()) {
-      state.splashWindow.destroy();
-      state.splashWindow = null;
+      state.splashWindow.destroy()
+      state.splashWindow = null
     }
   }
 
@@ -62,54 +63,52 @@ export class WindowManager {
       titleBarStyle: "hidden",
       transparent: false,
       backgroundColor: "#000000",
-    });
+    })
 
-    state.mainWindow = mainWindow;
+    state.mainWindow = mainWindow
 
     // Load content
     if (isDev() && process.env.ELECTRON_RENDERER_URL) {
-      mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
+      mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
     } else {
-      mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"));
+      mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"))
     }
 
     mainWindow.once("ready-to-show", () => {
       // Intentionally left blank or can be removed if nothing else is inside
-    });
+    })
 
     mainWindow.on("maximize", () => {
-      mainWindow.webContents.send("window:maximized");
-      mainWindow.setResizable(false);
+      mainWindow.webContents.send("window:maximized")
+      mainWindow.setResizable(false)
       if (process.platform === "win32") {
         // No shape workaround needed
       }
-    });
+    })
 
     mainWindow.on("unmaximize", () => {
-      mainWindow.setResizable(true);
-      mainWindow.webContents.send("window:unmaximized");
-    });
+      mainWindow.setResizable(true)
+      mainWindow.webContents.send("window:unmaximized")
+    })
 
-    let isHandlingClose = false;
+    let isHandlingClose = false
     mainWindow.on("close", (event) => {
-      if (state.isQuitting) return;
+      if (state.isQuitting) return
       if (isHandlingClose) {
-        event.preventDefault();
-        return;
+        event.preventDefault()
+        return
       }
 
-      event.preventDefault();
+      event.preventDefault()
 
-      const dismissed = Boolean(
-        persistentStore.get("ui.closeToTrayNoticeDismissed"),
-      );
+      const dismissed = Boolean(persistentStore.get("ui.closeToTrayNoticeDismissed"))
       if (dismissed) {
-        mainWindow.minimize();
-        mainWindow.setSkipTaskbar(true);
-        return;
+        mainWindow.minimize()
+        mainWindow.setSkipTaskbar(true)
+        return
       }
 
-      isHandlingClose = true;
+      isHandlingClose = true
       void dialog
         .showMessageBox(mainWindow, {
           type: "info",
@@ -126,46 +125,46 @@ export class WindowManager {
         })
         .then(({ response, checkboxChecked }) => {
           if (checkboxChecked) {
-            persistentStore.set("ui.closeToTrayNoticeDismissed", true);
+            persistentStore.set("ui.closeToTrayNoticeDismissed", true)
           }
 
           if (response === 1) {
-            state.isQuitting = true;
-            app.quit();
-            return;
+            state.isQuitting = true
+            app.quit()
+            return
           }
 
-          mainWindow.minimize();
-          mainWindow.setSkipTaskbar(true);
+          mainWindow.minimize()
+          mainWindow.setSkipTaskbar(true)
         })
         .finally(() => {
-          isHandlingClose = false;
-        });
-    });
+          isHandlingClose = false
+        })
+    })
 
     mainWindow.on("closed", () => {
-      state.mainWindow = null;
-    });
+      state.mainWindow = null
+    })
 
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
       if (url.startsWith("http"))
         shell.openExternal(url).catch((err) => {
-          console.warn("Failed to open external URL:", err);
-        });
-      return { action: "deny" };
-    });
+          console.warn("Failed to open external URL:", err)
+        })
+      return { action: "deny" }
+    })
   }
 
   static showMainWindow(): void {
     if (state.mainWindow && !state.mainWindow.isDestroyed()) {
-      state.mainWindow.webContents.setZoomLevel(0);
-      state.mainWindow.show();
-      state.mainWindow.focus();
+      state.mainWindow.webContents.setZoomLevel(0)
+      state.mainWindow.show()
+      state.mainWindow.focus()
       if (process.platform === "win32") {
         try {
-          state.mainWindow.moveTop();
+          state.mainWindow.moveTop()
         } catch (error) {
-          console.warn("Could not move window to top:", error);
+          console.warn("Could not move window to top:", error)
         }
       }
     }

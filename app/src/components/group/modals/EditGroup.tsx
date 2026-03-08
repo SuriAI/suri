@@ -1,38 +1,38 @@
-import { useState } from "react";
-import { attendanceManager } from "@/services";
-import type { AttendanceGroup } from "@/types/recognition";
-import { ErrorMessage, FormInput, Modal } from "@/components/common";
+import { useState } from "react"
+import { attendanceManager } from "@/services"
+import type { AttendanceGroup } from "@/types/recognition"
+import { ErrorMessage, FormInput, Modal } from "@/components/common"
 
 interface EditGroupProps {
-  group: AttendanceGroup;
-  onClose: () => void;
-  onSuccess: () => void;
+  group: AttendanceGroup
+  onClose: () => void
+  onSuccess: () => void
 }
 
 export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
-  const [name, setName] = useState(group.name);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState(group.name)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSave = async () => {
     if (!name.trim()) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       await attendanceManager.updateGroup(group.id, {
         name: name.trim(),
-      });
-      onSuccess();
-      onClose();
+      })
+      onSuccess()
+      onClose()
     } catch (err) {
-      console.error("Error updating group:", err);
-      setError(err instanceof Error ? err.message : "Failed to update group");
+      console.error("Error updating group:", err)
+      setError(err instanceof Error ? err.message : "Failed to update group")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Modal
@@ -40,14 +40,11 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
       onClose={onClose}
       title={
         <div>
-          <h3 className="text-xl font-semibold mb-2">Edit Group</h3>
-          <p className="text-[11px] text-white/50 font-normal">
-            Update group information
-          </p>
+          <h3 className="mb-2 text-xl font-semibold">Edit Group</h3>
+          <p className="text-[11px] font-normal text-white/50">Update group information</p>
         </div>
       }
-      maxWidth="lg"
-    >
+      maxWidth="lg">
       <div className="mt-2">
         {error && <ErrorMessage message={error} />}
 
@@ -60,22 +57,20 @@ export function EditGroup({ group, onClose, onSuccess }: EditGroupProps) {
           />
         </div>
 
-        <div className="flex justify-end gap-3 mt-8">
+        <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white transition-colors text-[11px] font-medium"
-          >
+            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white">
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || loading}
-            className="px-6 py-2 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/30 transition-colors text-sm font-medium disabled:opacity-50 min-w-[120px]"
-          >
+            className="min-w-[120px] rounded-lg border border-cyan-400/40 bg-cyan-500/20 px-6 py-2 text-sm font-medium text-cyan-100 transition-colors hover:bg-cyan-500/30 disabled:opacity-50">
             {loading ? "Saving…" : "Update Group"}
           </button>
         </div>
       </div>
     </Modal>
-  );
+  )
 }

@@ -1,22 +1,18 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react"
 
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import type {
   DetectedFace,
   BulkRegistrationResult,
   BulkRegisterResponseItem,
-} from "@/components/group/sections/registration/types";
-import {
-  makeId,
-  readFileAsDataUrl,
-  toBase64Payload,
-} from "@/utils/imageHelpers";
+} from "@/components/group/sections/registration/types"
+import { makeId, readFileAsDataUrl, toBase64Payload } from "@/utils/imageHelpers"
 
-const API_BASE_URL = "http://127.0.0.1:8700";
+const API_BASE_URL = "http://127.0.0.1:8700"
 
 export interface PendingDuplicateFiles {
-  duplicates: File[];
-  newFiles: File[];
+  duplicates: File[]
+  newFiles: File[]
 }
 
 export function useBulkRegistration(
@@ -24,24 +20,21 @@ export function useBulkRegistration(
   members: AttendanceMember[],
   onRefresh?: () => Promise<void> | void,
 ) {
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [detectedFaces, setDetectedFaces] = useState<DetectedFace[]>([]);
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [registrationResults, setRegistrationResults] = useState<
-    BulkRegistrationResult[] | null
-  >(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [detectedFaces, setDetectedFaces] = useState<DetectedFace[]>([])
+  const [isDetecting, setIsDetecting] = useState(false)
+  const [isRegistering, setIsRegistering] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [registrationResults, setRegistrationResults] = useState<BulkRegistrationResult[] | null>(
+    null,
+  )
 
-  const [pendingDuplicates, setPendingDuplicates] =
-    useState<PendingDuplicateFiles | null>(null);
+  const [pendingDuplicates, setPendingDuplicates] = useState<PendingDuplicateFiles | null>(null)
 
   const availableMembers = useMemo(() => {
-    const assignedIds = new Set(
-      detectedFaces.map((f) => f.assignedPersonId).filter(Boolean),
-    );
-    return members.filter((m) => !assignedIds.has(m.person_id));
-  }, [members, detectedFaces]);
+    const assignedIds = new Set(detectedFaces.map((f) => f.assignedPersonId).filter(Boolean))
+    return members.filter((m) => !assignedIds.has(m.person_id))
+  }, [members, detectedFaces])
 
   const createFacePreview = useCallback(
     async (
@@ -51,78 +44,67 @@ export function useBulkRegistration(
         | [number, number, number, number],
     ): Promise<string> => {
       return new Promise((resolve) => {
-        const img = new Image();
+        const img = new Image()
         img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const [x, y, w, h] = Array.isArray(bbox)
-            ? bbox
-            : [bbox.x, bbox.y, bbox.width, bbox.height];
+          const canvas = document.createElement("canvas")
+          const [x, y, w, h] =
+            Array.isArray(bbox) ? bbox : [bbox.x, bbox.y, bbox.width, bbox.height]
 
-          const padding = 20;
-          const desiredX = x - padding;
-          const desiredY = y - padding;
-          const desiredW = w + padding * 2;
-          const desiredH = h + padding * 2;
+          const padding = 20
+          const desiredX = x - padding
+          const desiredY = y - padding
+          const desiredW = w + padding * 2
+          const desiredH = h + padding * 2
 
-          const cropX = Math.max(0, desiredX);
-          const cropY = Math.max(0, desiredY);
-          const cropX2 = Math.min(img.width, desiredX + desiredW);
-          const cropY2 = Math.min(img.height, desiredY + desiredH);
-          const cropW = cropX2 - cropX;
-          const cropH = cropY2 - cropY;
+          const cropX = Math.max(0, desiredX)
+          const cropY = Math.max(0, desiredY)
+          const cropX2 = Math.min(img.width, desiredX + desiredW)
+          const cropY2 = Math.min(img.height, desiredY + desiredH)
+          const cropW = cropX2 - cropX
+          const cropH = cropY2 - cropY
 
-          const offsetX = Math.max(0, -desiredX);
-          const offsetY = Math.max(0, -desiredY);
+          const offsetX = Math.max(0, -desiredX)
+          const offsetY = Math.max(0, -desiredY)
 
-          canvas.width = desiredW;
-          canvas.height = desiredH;
+          canvas.width = desiredW
+          canvas.height = desiredH
 
-          const ctx = canvas.getContext("2d");
+          const ctx = canvas.getContext("2d")
           if (ctx && cropW > 0 && cropH > 0) {
-            ctx.drawImage(
-              img,
-              cropX,
-              cropY,
-              cropW,
-              cropH,
-              offsetX,
-              offsetY,
-              cropW,
-              cropH,
-            );
-            resolve(canvas.toDataURL("image/jpeg", 0.9));
+            ctx.drawImage(img, cropX, cropY, cropW, cropH, offsetX, offsetY, cropW, cropH)
+            resolve(canvas.toDataURL("image/jpeg", 0.9))
           } else {
-            resolve(imageDataUrl);
+            resolve(imageDataUrl)
           }
-        };
-        img.src = imageDataUrl;
-      });
+        }
+        img.src = imageDataUrl
+      })
     },
     [],
-  );
+  )
 
   const handleDetectFaces = useCallback(
     async (filesToProcess?: File[], startIndex = 0) => {
-      const files = filesToProcess || uploadedFiles;
+      const files = filesToProcess || uploadedFiles
       if (files.length === 0) {
-        if (!filesToProcess) setError("Please upload images first");
-        return;
+        if (!filesToProcess) setError("Please upload images first")
+        return
       }
 
-      setIsDetecting(true);
-      setError(null);
+      setIsDetecting(true)
+      setError(null)
 
       try {
         const imagesData = await Promise.all(
           files.map(async (file, idx) => {
-            const dataUrl = await readFileAsDataUrl(file);
+            const dataUrl = await readFileAsDataUrl(file)
             return {
               id: `image_${startIndex + idx}`,
               image: toBase64Payload(dataUrl),
               fileName: file.name,
-            };
+            }
           }),
-        );
+        )
 
         const response = await fetch(
           `${API_BASE_URL}/attendance/groups/${group.id}/bulk-detect-faces`,
@@ -134,31 +116,27 @@ export function useBulkRegistration(
             },
             body: JSON.stringify({ images: imagesData }),
           },
-        );
+        )
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || "Face detection failed");
+          const errorData = await response.json()
+          throw new Error(errorData.detail || "Face detection failed")
         }
 
-        const result = await response.json();
-        const allDetectedFaces: DetectedFace[] = [];
+        const result = await response.json()
+        const allDetectedFaces: DetectedFace[] = []
 
         for (const imageResult of result.results) {
-          if (
-            !imageResult.success ||
-            !imageResult.faces ||
-            imageResult.faces.length === 0
-          ) {
-            continue;
+          if (!imageResult.success || !imageResult.faces || imageResult.faces.length === 0) {
+            continue
           }
 
-          const imageIdx = parseInt(imageResult.image_id.replace("image_", ""));
-          const file = files[imageIdx - startIndex];
-          const dataUrl = await readFileAsDataUrl(file);
+          const imageIdx = parseInt(imageResult.image_id.replace("image_", ""))
+          const file = files[imageIdx - startIndex]
+          const dataUrl = await readFileAsDataUrl(file)
 
           for (const face of imageResult.faces) {
-            const previewUrl = await createFacePreview(dataUrl, face.bbox);
+            const previewUrl = await createFacePreview(dataUrl, face.bbox)
 
             allDetectedFaces.push({
               faceId: makeId(),
@@ -171,151 +149,139 @@ export function useBulkRegistration(
               suggestions: face.suggestions || [],
               assignedPersonId: null,
               previewUrl,
-            });
+            })
           }
         }
 
         setDetectedFaces((prev) =>
           filesToProcess ? [...prev, ...allDetectedFaces] : allDetectedFaces,
-        );
+        )
 
         if (allDetectedFaces.length === 0) {
           setError(
-            filesToProcess
-              ? "No new faces detected"
-              : "No faces detected in uploaded images",
-          );
+            filesToProcess ? "No new faces detected" : "No faces detected in uploaded images",
+          )
         }
       } catch (err) {
-        console.error("Face detection error:", err);
-        setError(err instanceof Error ? err.message : "Failed to detect faces");
+        console.error("Face detection error:", err)
+        setError(err instanceof Error ? err.message : "Failed to detect faces")
       } finally {
-        setIsDetecting(false);
+        setIsDetecting(false)
       }
     },
     [uploadedFiles, group.id, createFacePreview],
-  );
+  )
 
   const isFileDuplicate = useCallback(
     (file: File): boolean => {
       return uploadedFiles.some(
-        (existing) =>
-          existing.name === file.name && existing.size === file.size,
-      );
+        (existing) => existing.name === file.name && existing.size === file.size,
+      )
     },
     [uploadedFiles],
-  );
+  )
 
   const processFiles = useCallback(
     async (filesToProcess: File[]) => {
-      if (filesToProcess.length === 0) return;
+      if (filesToProcess.length === 0) return
 
-      const startIndex = uploadedFiles.length;
-      setUploadedFiles((prev) => [...prev, ...filesToProcess]);
+      const startIndex = uploadedFiles.length
+      setUploadedFiles((prev) => [...prev, ...filesToProcess])
 
-      await handleDetectFaces(filesToProcess, startIndex);
+      await handleDetectFaces(filesToProcess, startIndex)
     },
     [handleDetectFaces, uploadedFiles.length],
-  );
+  )
 
   const handleFilesSelected = useCallback(
     async (files: FileList | null) => {
-      if (!files) return;
+      if (!files) return
 
-      const imageFiles = Array.from(files).filter((file) =>
-        file.type.startsWith("image/"),
-      );
+      const imageFiles = Array.from(files).filter((file) => file.type.startsWith("image/"))
 
-      if (imageFiles.length === 0) return;
+      if (imageFiles.length === 0) return
 
-      const duplicates: File[] = [];
-      const newFiles: File[] = [];
+      const duplicates: File[] = []
+      const newFiles: File[] = []
 
       for (const file of imageFiles) {
         if (isFileDuplicate(file)) {
-          duplicates.push(file);
+          duplicates.push(file)
         } else {
-          newFiles.push(file);
+          newFiles.push(file)
         }
       }
 
       if (duplicates.length > 0) {
-        setPendingDuplicates({ duplicates, newFiles });
-        return;
+        setPendingDuplicates({ duplicates, newFiles })
+        return
       }
 
-      await processFiles(newFiles);
+      await processFiles(newFiles)
     },
     [isFileDuplicate, processFiles],
-  );
+  )
 
   const handleConfirmDuplicates = useCallback(async () => {
-    if (!pendingDuplicates) return;
+    if (!pendingDuplicates) return
 
-    const allFiles = [
-      ...pendingDuplicates.newFiles,
-      ...pendingDuplicates.duplicates,
-    ];
-    setPendingDuplicates(null);
-    await processFiles(allFiles);
-  }, [pendingDuplicates, processFiles]);
+    const allFiles = [...pendingDuplicates.newFiles, ...pendingDuplicates.duplicates]
+    setPendingDuplicates(null)
+    await processFiles(allFiles)
+  }, [pendingDuplicates, processFiles])
 
   const handleCancelDuplicates = useCallback(async () => {
-    if (!pendingDuplicates) return;
+    if (!pendingDuplicates) return
 
-    const newFilesOnly = pendingDuplicates.newFiles;
-    setPendingDuplicates(null);
+    const newFilesOnly = pendingDuplicates.newFiles
+    setPendingDuplicates(null)
 
     if (newFilesOnly.length > 0) {
-      await processFiles(newFilesOnly);
+      await processFiles(newFilesOnly)
     }
-  }, [pendingDuplicates, processFiles]);
+  }, [pendingDuplicates, processFiles])
 
   const handleDismissDuplicates = useCallback(() => {
-    setPendingDuplicates(null);
-  }, []);
+    setPendingDuplicates(null)
+  }, [])
 
   const handleClearFiles = useCallback(() => {
-    setUploadedFiles([]);
-    setDetectedFaces([]);
-    setError(null);
-    setRegistrationResults(null);
-    setPendingDuplicates(null);
-  }, []);
+    setUploadedFiles([])
+    setDetectedFaces([])
+    setError(null)
+    setRegistrationResults(null)
+    setPendingDuplicates(null)
+  }, [])
 
   const handleAssignMember = useCallback((faceId: string, personId: string) => {
     setDetectedFaces((prev) =>
-      prev.map((face) =>
-        face.faceId === faceId ? { ...face, assignedPersonId: personId } : face,
-      ),
-    );
-  }, []);
+      prev.map((face) => (face.faceId === faceId ? { ...face, assignedPersonId: personId } : face)),
+    )
+  }, [])
 
   const handleUnassign = useCallback((faceId: string) => {
     setDetectedFaces((prev) =>
-      prev.map((face) =>
-        face.faceId === faceId ? { ...face, assignedPersonId: null } : face,
-      ),
-    );
-  }, []);
+      prev.map((face) => (face.faceId === faceId ? { ...face, assignedPersonId: null } : face)),
+    )
+  }, [])
 
   const handleBulkRegister = useCallback(async () => {
-    const assignedFaces = detectedFaces.filter((f) => f.assignedPersonId);
+    const assignedFaces = detectedFaces.filter((f) => f.assignedPersonId)
     if (assignedFaces.length === 0) {
-      setError("Please assign at least one face to a member");
-      return;
+      setError("Please assign at least one face to a member")
+      return
     }
 
-    setIsRegistering(true);
-    setError(null);
-    setRegistrationResults(null);
+    setIsRegistering(true)
+    setError(null)
+    setRegistrationResults(null)
 
     try {
       const registrations = await Promise.all(
         assignedFaces.map(async (face) => {
-          const imageIdx = parseInt(face.imageId.replace("image_", ""));
-          const file = uploadedFiles[imageIdx];
-          const dataUrl = await readFileAsDataUrl(file);
+          const imageIdx = parseInt(face.imageId.replace("image_", ""))
+          const file = uploadedFiles[imageIdx]
+          const dataUrl = await readFileAsDataUrl(file)
 
           return {
             person_id: face.assignedPersonId,
@@ -323,9 +289,9 @@ export function useBulkRegistration(
             bbox: face.bbox,
             landmarks_5: face.landmarks_5,
             skip_quality_check: false,
-          };
+          }
         }),
-      );
+      )
 
       const response = await fetch(
         `${API_BASE_URL}/attendance/groups/${group.id}/bulk-register-faces`,
@@ -334,14 +300,14 @@ export function useBulkRegistration(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ registrations }),
         },
-      );
+      )
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Bulk registration failed");
+        const errorData = await response.json()
+        throw new Error(errorData.detail || "Bulk registration failed")
       }
 
-      const result = await response.json();
+      const result = await response.json()
       const results: BulkRegistrationResult[] = result.results.map(
         (r: BulkRegisterResponseItem) => ({
           personId: r.person_id,
@@ -350,19 +316,19 @@ export function useBulkRegistration(
           error: r.error,
           qualityWarning: r.quality_warning,
         }),
-      );
+      )
 
-      setRegistrationResults(results);
+      setRegistrationResults(results)
       if (result.success_count > 0 && onRefresh) {
-        await onRefresh();
+        await onRefresh()
       }
     } catch (err) {
-      console.error("Bulk registration error:", err);
-      setError(err instanceof Error ? err.message : "Failed to register faces");
+      console.error("Bulk registration error:", err)
+      setError(err instanceof Error ? err.message : "Failed to register faces")
     } finally {
-      setIsRegistering(false);
+      setIsRegistering(false)
     }
-  }, [detectedFaces, uploadedFiles, group.id, onRefresh]);
+  }, [detectedFaces, uploadedFiles, group.id, onRefresh])
 
   return {
     uploadedFiles,
@@ -382,5 +348,5 @@ export function useBulkRegistration(
     handleUnassign,
     handleBulkRegister,
     handleClearFiles,
-  };
+  }
 }

@@ -1,25 +1,25 @@
-import { fetchWithRetry } from "../../utils/http";
+import { fetchWithRetry } from "../../utils/http"
 
 export class HttpClient {
-  private baseUrl: string;
-  private readinessPromise: Promise<void> | null = null;
+  private baseUrl: string
+  private readinessPromise: Promise<void> | null = null
   /** Cached per-session API token. `null` = not fetched yet, `""` = unavailable. */
-  private token: string | null = null;
+  private token: string | null = null
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
+    this.baseUrl = baseUrl
   }
 
   /** Lazy-fetch the session token from the Electron main process (once per session). */
   private async getApiToken(): Promise<string> {
-    if (this.token !== null) return this.token;
+    if (this.token !== null) return this.token
     try {
-      const t = await window.electronAPI?.backend?.getToken?.();
-      this.token = typeof t === "string" ? t : "";
+      const t = await window.electronAPI?.backend?.getToken?.()
+      this.token = typeof t === "string" ? t : ""
     } catch {
-      this.token = "";
+      this.token = ""
     }
-    return this.token;
+    return this.token
   }
 
   /**
@@ -28,121 +28,109 @@ export class HttpClient {
    */
   private async ensureBackendReady(): Promise<void> {
     if (this.readinessPromise) {
-      return this.readinessPromise;
+      return this.readinessPromise
     }
 
     this.readinessPromise = (async () => {
-      const maxWaitTime = 300000; // 5 minutes safety
-      const checkInterval = 250;
-      const startTime = Date.now();
+      const maxWaitTime = 300000 // 5 minutes safety
+      const checkInterval = 250
+      const startTime = Date.now()
 
       if (!window.electronAPI?.backend_ready) {
-        console.warn(
-          "[HttpClient] Electron API not found, skipping strict readiness check.",
-        );
-        return;
+        console.warn("[HttpClient] Electron API not found, skipping strict readiness check.")
+        return
       }
 
       while (Date.now() - startTime < maxWaitTime) {
         try {
-          const ready = await window.electronAPI.backend_ready.isReady();
+          const ready = await window.electronAPI.backend_ready.isReady()
           if (ready) {
-            return;
+            return
           }
         } catch {
           // Ignore IPC errors
         }
-        await new Promise((resolve) => setTimeout(resolve, checkInterval));
+        await new Promise((resolve) => setTimeout(resolve, checkInterval))
       }
 
-      console.error("[HttpClient] Backend readiness check timed out.");
-    })();
+      console.error("[HttpClient] Backend readiness check timed out.")
+    })()
 
-    return this.readinessPromise;
+    return this.readinessPromise
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    await this.ensureBackendReady();
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    await this.ensureBackendReady()
 
-    const url = `${this.baseUrl}${endpoint}`;
-    const method = (options.method || "GET").toUpperCase();
+    const url = `${this.baseUrl}${endpoint}`
+    const method = (options.method || "GET").toUpperCase()
     const headers: Record<string, string> = {
       ...(options.headers as Record<string, string>),
-    };
-
-    if (
-      (method === "POST" || method === "PUT" || method === "PATCH") &&
-      !headers["Content-Type"]
-    ) {
-      headers["Content-Type"] = "application/json";
     }
 
-    const token = await this.getApiToken();
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && !headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json"
+    }
+
+    const token = await this.getApiToken()
     if (token) {
-      headers["X-Suri-Token"] = token;
+      headers["X-Suri-Token"] = token
     }
 
-    const response = await fetchWithRetry(url, { ...options, headers });
+    const response = await fetchWithRetry(url, { ...options, headers })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const detail = (errorData as { detail?: unknown }).detail;
+      const errorData = await response.json().catch(() => ({}))
+      const detail = (errorData as { detail?: unknown }).detail
       const normalizedDetail =
-        typeof detail === "string"
-          ? detail
-          : detail
-            ? JSON.stringify(detail)
-            : undefined;
+        typeof detail === "string" ? detail
+        : detail ? JSON.stringify(detail)
+        : undefined
       throw new Error(
         normalizedDetail ||
           (errorData as { error?: string }).error ||
           `HTTP ${response.status}: ${response.statusText}`,
-      );
+      )
     }
 
-    return response.json();
+    return response.json()
   }
 
   async get<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
-    const url = params
-      ? `${endpoint}?${new URLSearchParams(params).toString()}`
-      : endpoint;
-    return this.request<T>(url);
+    const url = params ? `${endpoint}?${new URLSearchParams(params).toString()}` : endpoint
+    return this.request<T>(url)
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
-    });
+    })
   }
 
   async put<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
-    });
+    })
   }
 
   async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, {
       method: "DELETE",
-    });
+    })
   }
 
   async getText(endpoint: string): Promise<string> {
-    await this.ensureBackendReady();
-    const url = `${this.baseUrl}${endpoint}`;
-    const token = await this.getApiToken();
-    const headers: Record<string, string> = {};
-    if (token) headers["X-Suri-Token"] = token;
-    const response = await fetch(url, { headers });
+    await this.ensureBackendReady()
+    const url = `${this.baseUrl}${endpoint}`
+    const token = await this.getApiToken()
+    const headers: Record<string, string> = {}
+    if (token) headers["X-Suri-Token"] = token
+    const response = await fetch(url, { headers })
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    return response.text();
+    return response.text()
   }
 }

@@ -1,26 +1,26 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useGroupUIStore } from "@/components/group/stores";
-import { Modal } from "@/components/common";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
-import { useCamera } from "@/components/group/sections/registration/hooks/useCamera";
-import { useFaceCapture } from "@/components/group/sections/registration/hooks/useFaceCapture";
-import { useDialog } from "@/components/shared";
-import { CaptureControls } from "@/components/group/sections/registration/components/CaptureControls";
-import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed";
-import { UploadArea } from "@/components/group/sections/registration/components/UploadArea";
-import { MemberSidebar } from "@/components/group/sections/registration/components/MemberSidebar";
-import { ResultView } from "@/components/group/sections/registration/components/ResultView";
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { useGroupUIStore } from "@/components/group/stores"
+import { Modal } from "@/components/common"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
+import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
+import { useFaceCapture } from "@/components/group/sections/registration/hooks/useFaceCapture"
+import { useDialog } from "@/components/shared"
+import { CaptureControls } from "@/components/group/sections/registration/components/CaptureControls"
+import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed"
+import { UploadArea } from "@/components/group/sections/registration/components/UploadArea"
+import { MemberSidebar } from "@/components/group/sections/registration/components/MemberSidebar"
+import { ResultView } from "@/components/group/sections/registration/components/ResultView"
 
 interface FaceCaptureProps {
-  group: AttendanceGroup;
-  members: AttendanceMember[];
-  onRefresh: () => void;
-  initialSource?: "live" | "upload";
-  deselectMemberTrigger?: number;
-  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
+  group: AttendanceGroup
+  members: AttendanceMember[]
+  onRefresh: () => void
+  initialSource?: "live" | "upload"
+  deselectMemberTrigger?: number
+  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void
 }
 
-type CaptureSource = "live" | "upload";
+type CaptureSource = "live" | "upload"
 
 export function FaceCapture({
   group,
@@ -30,32 +30,30 @@ export function FaceCapture({
   deselectMemberTrigger,
   onHasSelectedMemberChange: onSelectedMemberChange,
 }: FaceCaptureProps) {
-  const dialog = useDialog();
+  const dialog = useDialog()
 
-  const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId);
+  const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId)
 
-  const [source, setSource] = useState<CaptureSource>(
-    initialSource ?? "upload",
-  );
-  const [selectedMemberId, setSelectedMemberId] = useState("");
-  const [memberSearch, setMemberSearch] = useState("");
+  const [source, setSource] = useState<CaptureSource>(initialSource ?? "upload")
+  const [selectedMemberId, setSelectedMemberId] = useState("")
+  const [memberSearch, setMemberSearch] = useState("")
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered"
-  >("all");
+  >("all")
 
   const memberStatus = useMemo(() => {
-    const status = new Map<string, boolean>();
+    const status = new Map<string, boolean>()
     for (const member of members) {
-      status.set(member.person_id, !!member.has_face_data);
+      status.set(member.person_id, !!member.has_face_data)
     }
-    return status;
-  }, [members]);
+    return status
+  }, [members])
 
   useEffect(() => {
     if (preSelectedId) {
-      setTimeout(() => setSelectedMemberId(preSelectedId), 0);
+      setTimeout(() => setSelectedMemberId(preSelectedId), 0)
     }
-  }, [preSelectedId]);
+  }, [preSelectedId])
 
   const {
     videoRef,
@@ -67,7 +65,7 @@ export function FaceCapture({
     setSelectedCamera,
     startCamera,
     stopCamera,
-  } = useCamera();
+  } = useCamera()
 
   const {
     frames,
@@ -80,94 +78,90 @@ export function FaceCapture({
     handleRegister,
     handleRemoveFaceData,
     resetFrames,
-  } = useFaceCapture(group, members, onRefresh, dialog);
+  } = useFaceCapture(group, members, onRefresh, dialog)
 
-  const framesReady = frames.length > 0;
+  const framesReady = frames.length > 0
 
   useEffect(() => {
     if (onSelectedMemberChange) {
-      onSelectedMemberChange(!!selectedMemberId);
+      onSelectedMemberChange(!!selectedMemberId)
     }
-  }, [selectedMemberId, onSelectedMemberChange]);
+  }, [selectedMemberId, onSelectedMemberChange])
 
   useEffect(() => {
     if (deselectMemberTrigger) {
-      setTimeout(() => setSelectedMemberId(""), 0);
+      setTimeout(() => setSelectedMemberId(""), 0)
     }
-  }, [deselectMemberTrigger]);
+  }, [deselectMemberTrigger])
 
   const handleCaptureFromCamera = useCallback(() => {
-    if (!videoRef.current || !selectedMemberId) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!videoRef.current || !selectedMemberId) return
+    const canvas = document.createElement("canvas")
+    canvas.width = videoRef.current.videoWidth
+    canvas.height = videoRef.current.videoHeight
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
 
     // Flip the capture to match the mirrored video preview
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
+    ctx.translate(canvas.width, 0)
+    ctx.scale(-1, 1)
 
-    ctx.drawImage(videoRef.current, 0, 0);
-    const url = canvas.toDataURL("image/jpeg", 0.95);
-    captureProcessedFrame("Front", url, canvas.width, canvas.height);
-  }, [videoRef, selectedMemberId, captureProcessedFrame]);
+    ctx.drawImage(videoRef.current, 0, 0)
+    const url = canvas.toDataURL("image/jpeg", 0.95)
+    captureProcessedFrame("Front", url, canvas.width, canvas.height)
+  }, [videoRef, selectedMemberId, captureProcessedFrame])
 
   const handleWrapperRegister = useCallback(async () => {
-    if (!selectedMemberId) return;
-    await handleRegister(selectedMemberId, async () => {}, memberStatus);
-  }, [selectedMemberId, handleRegister, memberStatus]);
+    if (!selectedMemberId) return
+    await handleRegister(selectedMemberId, async () => {}, memberStatus)
+  }, [selectedMemberId, handleRegister, memberStatus])
 
   const handleWrapperRemoveData = useCallback(
     async (member: AttendanceMember) => {
-      await handleRemoveFaceData(member, async () => {});
+      await handleRemoveFaceData(member, async () => {})
     },
     [handleRemoveFaceData],
-  );
+  )
 
   const resetWorkflow = useCallback(() => {
-    resetFrames();
+    resetFrames()
     if (source === "live") {
-      startCamera();
+      startCamera()
     }
-  }, [resetFrames, source, startCamera]);
+  }, [resetFrames, source, startCamera])
 
   const selectedMemberName = useMemo(() => {
-    const m = members.find((m) => m.person_id === selectedMemberId);
-    return m ? m.name || "Member" : "";
-  }, [members, selectedMemberId]);
+    const m = members.find((m) => m.person_id === selectedMemberId)
+    return m ? m.name || "Member" : ""
+  }, [members, selectedMemberId])
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
+    <div className="relative flex h-full flex-col overflow-hidden">
       <Modal
         isOpen={!!successMessage}
         onClose={() => {
-          setSuccessMessage(null);
-          setSelectedMemberId("");
-          resetFrames();
+          setSuccessMessage(null)
+          setSelectedMemberId("")
+          resetFrames()
           // No longer calling onClose() or setRegistrationState here to stay in the list
         }}
         title="Success"
         maxWidth="sm"
-        hideCloseButton={true}
-      >
+        hideCloseButton={true}>
         <div className="flex flex-col items-center gap-4 py-2">
-          <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20">
             <i className="fa-solid fa-check text-xl text-cyan-400"></i>
           </div>
-          <p className="text-sm text-cyan-200/60 font-medium text-center">
-            {successMessage}
-          </p>
+          <p className="text-center text-sm font-medium text-cyan-200/60">{successMessage}</p>
 
-          <div className="flex justify-end w-full mt-2">
+          <div className="mt-2 flex w-full justify-end">
             <button
               onClick={() => {
-                setSuccessMessage(null);
-                setSelectedMemberId("");
-                resetFrames();
+                setSuccessMessage(null)
+                setSelectedMemberId("")
+                resetFrames()
               }}
-              className="px-6 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-bold transition-all"
-            >
+              className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-6 py-2 text-xs font-bold text-cyan-400 transition-all hover:bg-cyan-500/30">
               Done
             </button>
           </div>
@@ -179,25 +173,21 @@ export function FaceCapture({
         onClose={() => setGlobalError(null)}
         title="Something went wrong"
         icon={<i className="fa-solid fa-triangle-exclamation text-red-400"></i>}
-        maxWidth="sm"
-      >
+        maxWidth="sm">
         <div className="flex flex-col items-center gap-4 py-2">
-          <p className="text-sm text-red-200/60 font-medium text-center">
-            {globalError}
-          </p>
+          <p className="text-center text-sm font-medium text-red-200/60">{globalError}</p>
 
-          <div className="flex justify-end w-full mt-2">
+          <div className="mt-2 flex w-full justify-end">
             <button
               onClick={() => setGlobalError(null)}
-              className="px-6 py-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 text-xs font-medium transition-all"
-            >
+              className="rounded-lg border border-white/10 bg-white/5 px-6 py-2 text-xs font-medium text-white/70 transition-all hover:bg-white/10 hover:text-white">
               Dismiss
             </button>
           </div>
         </div>
       </Modal>
 
-      <div className="flex-1 overflow-hidden min-h-0">
+      <div className="min-h-0 flex-1 overflow-hidden">
         {!selectedMemberId && (
           <MemberSidebar
             members={members}
@@ -213,8 +203,8 @@ export function FaceCapture({
         )}
 
         {selectedMemberId && (
-          <div className="flex flex-col h-full overflow-hidden p-6 space-y-6">
-            <div className="flex flex-col space-y-6 overflow-hidden max-w-4xl mx-auto w-full">
+          <div className="flex h-full flex-col space-y-6 overflow-hidden p-6">
+            <div className="mx-auto flex w-full max-w-4xl flex-col space-y-6 overflow-hidden">
               <CaptureControls
                 source={source}
                 setSource={setSource}
@@ -222,8 +212,8 @@ export function FaceCapture({
               />
 
               <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/6 bg-black/40 shadow-2xl">
-                {!framesReady ? (
-                  source === "live" ? (
+                {!framesReady ?
+                  source === "live" ?
                     <CameraFeed
                       videoRef={videoRef}
                       isStreaming={isStreaming}
@@ -238,16 +228,14 @@ export function FaceCapture({
                       selectedCamera={selectedCamera}
                       setSelectedCamera={setSelectedCamera}
                     />
-                  ) : (
-                    <UploadArea
+                  : <UploadArea
                       onFileProcessed={(url: string, w: number, h: number) =>
                         captureProcessedFrame("Front", url, w, h)
                       }
                       onError={setGlobalError}
                     />
-                  )
-                ) : (
-                  <ResultView
+
+                : <ResultView
                     frames={frames}
                     selectedMemberName={selectedMemberName}
                     onRetake={resetWorkflow}
@@ -255,12 +243,12 @@ export function FaceCapture({
                     isRegistering={isRegistering}
                     framesReady={!!framesReady}
                   />
-                )}
+                }
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

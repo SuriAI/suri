@@ -1,14 +1,14 @@
-import { forwardRef } from "react";
+import { forwardRef } from "react"
 
 interface FormInputProps {
-  type?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  focusColor?: string;
+  type?: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
+  focusColor?: string
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
@@ -25,11 +25,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref,
   ) => {
-    const focusStyles = focusColor.includes("amber")
-      ? "focus:border-amber-500/30 focus:ring-amber-500/10"
-      : focusColor.includes("red")
-        ? "focus:border-red-500/30 focus:ring-red-500/10"
-        : "focus:border-cyan-500/30 focus:ring-cyan-500/10";
+    const focusStyles =
+      focusColor.includes("amber") ? "focus:border-amber-500/30 focus:ring-amber-500/10"
+      : focusColor.includes("red") ? "focus:border-red-500/30 focus:ring-red-500/10"
+      : "focus:border-cyan-500/30 focus:ring-cyan-500/10"
 
     return (
       <input
@@ -40,10 +39,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-[11px] font-medium text-white placeholder:text-white/20 outline-none transition-all duration-300 focus:bg-white/10 focus:ring-4 ${focusStyles} ${className}`}
+        className={`w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/10 focus:ring-4 ${focusStyles} ${className}`}
       />
-    );
+    )
   },
-);
+)
 
-FormInput.displayName = "FormInput";
+FormInput.displayName = "FormInput"

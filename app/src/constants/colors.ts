@@ -73,7 +73,7 @@ export const colors = {
     // Alternative: use different cyan shades for recognized
     recognizedLight: "#67e8f9", // cyan-300 for subtle recognition
   },
-} as const;
+} as const
 
 export const colorClasses = {
   // Backgrounds
@@ -117,4 +117,4 @@ export const colorClasses = {
   error: "text-red-500",
   errorBg: "bg-red-500/20",
   errorBorder: "border-red-500/30",
-} as const;
+} as const

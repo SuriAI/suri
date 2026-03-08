@@ -1,17 +1,17 @@
-import { Dropdown, Tooltip } from "@/components/shared";
-import { StartTimeChip } from "@/components/main/components/StartTimeChip";
+import { Dropdown, Tooltip } from "@/components/shared"
+import { StartTimeChip } from "@/components/main/components/StartTimeChip"
 
 interface ControlBarProps {
-  cameraDevices: MediaDeviceInfo[];
-  selectedCamera: string;
-  setSelectedCamera: (deviceId: string) => void;
-  isStreaming: boolean;
-  startCamera: () => void;
-  stopCamera: () => void;
-  hasSelectedGroup: boolean;
-  lateTrackingEnabled?: boolean;
-  classStartTime?: string;
-  onStartTimeChange?: (newTime: string) => void;
+  cameraDevices: MediaDeviceInfo[]
+  selectedCamera: string
+  setSelectedCamera: (deviceId: string) => void
+  isStreaming: boolean
+  startCamera: () => void
+  stopCamera: () => void
+  hasSelectedGroup: boolean
+  lateTrackingEnabled?: boolean
+  classStartTime?: string
+  onStartTimeChange?: (newTime: string) => void
 }
 
 export function ControlBar({
@@ -26,25 +26,24 @@ export function ControlBar({
   classStartTime = "08:00",
   onStartTimeChange,
 }: ControlBarProps) {
-  const hasCameraDevices = cameraDevices.length > 0;
+  const hasCameraDevices = cameraDevices.length > 0
 
   const handlePrimaryAction = () => {
     if (isStreaming) {
-      stopCamera();
+      stopCamera()
     } else {
-      startCamera();
+      startCamera()
     }
-  };
+  }
 
   const getButtonState = () => {
     if (isStreaming) {
       return {
         label: "Stop Tracking",
-        className:
-          "bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20",
+        className: "bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20",
         tooltip: "Stop tracking attendance",
         enabled: true,
-      };
+      }
     }
 
     if (!hasSelectedGroup) {
@@ -54,29 +53,26 @@ export function ControlBar({
           "bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white",
         tooltip: "Create or select a group to start tracking",
         enabled: true,
-      };
+      }
     }
 
-    const cyanStyle =
-      "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20";
+    const cyanStyle = "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20"
 
-    const standardTooltip = hasCameraDevices
-      ? "Start tracking attendance"
-      : "No camera detected";
+    const standardTooltip = hasCameraDevices ? "Start tracking attendance" : "No camera detected"
 
     return {
       label: "Start Tracking",
       className: cyanStyle,
       tooltip: standardTooltip,
       enabled: hasCameraDevices,
-    };
-  };
+    }
+  }
 
-  const buttonState = getButtonState();
+  const buttonState = getButtonState()
 
   return (
     <div>
-      <div className="rounded-lg pt-0 p-4 flex items-center justify-between min-h-16 gap-4">
+      <div className="flex min-h-16 items-center justify-between gap-4 rounded-lg p-4 pt-0">
         <div className="flex items-center space-x-6">
           {cameraDevices.length > 0 && (
             <div className="flex flex-col items-start space-y-1">
@@ -88,7 +84,7 @@ export function ControlBar({
                   }))}
                   value={selectedCamera}
                   onChange={(deviceId) => {
-                    if (deviceId) setSelectedCamera(String(deviceId));
+                    if (deviceId) setSelectedCamera(String(deviceId))
                   }}
                   placeholder="Select camera…"
                   emptyMessage="No cameras available"
@@ -104,28 +100,24 @@ export function ControlBar({
         </div>
 
         <div className="flex items-center gap-3">
-          {lateTrackingEnabled &&
-            hasSelectedGroup &&
-            onStartTimeChange &&
-            !isStreaming && (
-              <StartTimeChip
-                startTime={classStartTime}
-                onTimeChange={onStartTimeChange}
-                disabled={isStreaming}
-              />
-            )}
+          {lateTrackingEnabled && hasSelectedGroup && onStartTimeChange && !isStreaming && (
+            <StartTimeChip
+              startTime={classStartTime}
+              onTimeChange={onStartTimeChange}
+              disabled={isStreaming}
+            />
+          )}
 
           <Tooltip content={buttonState.tooltip}>
             <button
               onClick={handlePrimaryAction}
               disabled={!buttonState.enabled}
-              className={`min-w-35 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${buttonState.className}`}
-            >
+              className={`flex min-w-35 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 ${buttonState.className}`}>
               {buttonState.label}
             </button>
           </Tooltip>
         </div>
       </div>
     </div>
-  );
+  )
 }

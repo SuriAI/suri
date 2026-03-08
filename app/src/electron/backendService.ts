@@ -2,28 +2,22 @@ import {
   BackendProcessManager,
   type BackendConfig,
   type BackendStatus,
-} from "./backend/BackendProcessManager.js";
+} from "./backend/BackendProcessManager.js"
 import {
   BackendClient,
   type ModelsResponse,
   type DetectionOptions,
   type DetectionResponse,
-} from "./backend/BackendClient.js";
-import type { FaceRecognitionResponse } from "../types/recognition.js";
+} from "./backend/BackendClient.js"
+import type { FaceRecognitionResponse } from "../types/recognition.js"
 
-export type {
-  BackendConfig,
-  BackendStatus,
-  ModelsResponse,
-  DetectionOptions,
-  DetectionResponse,
-};
+export type { BackendConfig, BackendStatus, ModelsResponse, DetectionOptions, DetectionResponse }
 
 export class BackendService {
-  private config: BackendConfig;
-  private status: BackendStatus;
-  private processManager: BackendProcessManager;
-  private client: BackendClient;
+  private config: BackendConfig
+  private status: BackendStatus
+  private processManager: BackendProcessManager
+  private client: BackendClient
 
   constructor(config: Partial<BackendConfig> = {}) {
     this.config = {
@@ -33,74 +27,74 @@ export class BackendService {
       maxRetries: 3,
       healthCheckInterval: 10000,
       ...config,
-    };
+    }
 
     this.status = {
       isRunning: false,
       port: this.config.port,
-    };
+    }
 
-    this.processManager = new BackendProcessManager(this.config, this.status);
+    this.processManager = new BackendProcessManager(this.config, this.status)
     this.client = new BackendClient(
       () => this.getUrl(),
       () => this.getToken(),
-    );
+    )
   }
 
   async start(): Promise<void> {
-    return this.processManager.start();
+    return this.processManager.start()
   }
 
   async stop(): Promise<void> {
-    return this.processManager.stop();
+    return this.processManager.stop()
   }
 
   async restart(): Promise<void> {
-    await this.stop();
+    await this.stop()
     // Small delay to ensure cleanup
-    await new Promise((r) => setTimeout(r, 100));
-    return this.start();
+    await new Promise((r) => setTimeout(r, 100))
+    return this.start()
   }
 
   killSync(): void {
-    this.processManager.killSync();
+    this.processManager.killSync()
   }
 
   getStatus(): BackendStatus {
-    return this.processManager.getStatus();
+    return this.processManager.getStatus()
   }
 
   getUrl(): string {
-    return this.processManager.getUrl();
+    return this.processManager.getUrl()
   }
 
   getToken(): string {
-    return this.processManager.getToken();
+    return this.processManager.getToken()
   }
 
   async isAvailable(): Promise<boolean> {
-    if (!this.status.isRunning) return false;
-    const health = await this.client.checkAvailability();
-    return health.available;
+    if (!this.status.isRunning) return false
+    const health = await this.client.checkAvailability()
+    return health.available
   }
 
   async checkAvailability() {
-    return this.client.checkAvailability();
+    return this.client.checkAvailability()
   }
 
   async checkReadiness() {
-    return this.client.checkReadiness(this.status.isRunning);
+    return this.client.checkReadiness(this.status.isRunning)
   }
 
   async getModels(): Promise<ModelsResponse> {
-    return this.client.getModels();
+    return this.client.getModels()
   }
 
   async detectFaces(
     imageBase64: string,
     options: DetectionOptions = {},
   ): Promise<DetectionResponse> {
-    return this.client.detectFaces(imageBase64, options);
+    return this.client.detectFaces(imageBase64, options)
   }
 
   async recognizeFace(
@@ -116,8 +110,8 @@ export class BackendService {
       groupId,
       landmarks_5,
       enableLivenessDetection,
-    );
+    )
   }
 }
 
-export const backendService = new BackendService();
+export const backendService = new BackendService()

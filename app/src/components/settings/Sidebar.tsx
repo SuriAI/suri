@@ -1,25 +1,25 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Dropdown, Tooltip } from "@/components/shared";
-import type { AttendanceGroup } from "@/types/recognition";
-import { useGroupStore } from "@/components/group/stores";
-import type { GroupSection } from "@/components/group/types";
+import React from "react"
+import { motion } from "framer-motion"
+import { Dropdown, Tooltip } from "@/components/shared"
+import type { AttendanceGroup } from "@/types/recognition"
+import { useGroupStore } from "@/components/group/stores"
+import type { GroupSection } from "@/components/group/types"
 
 interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
-  groupInitialSection: GroupSection | undefined;
-  setGroupInitialSection: (section: GroupSection) => void;
-  dropdownGroups: AttendanceGroup[];
-  dropdownValue: string | null;
-  onGroupSelect?: (group: AttendanceGroup) => void;
-  setTriggerCreateGroup: (trigger: number) => void;
+  activeSection: string
+  setActiveSection: (section: string) => void
+  groupInitialSection: GroupSection | undefined
+  setGroupInitialSection: (section: GroupSection) => void
+  dropdownGroups: AttendanceGroup[]
+  dropdownValue: string | null
+  onGroupSelect?: (group: AttendanceGroup) => void
+  setTriggerCreateGroup: (trigger: number) => void
   setRegistrationState: (
     source: "upload" | "camera" | null,
     mode: "single" | "bulk" | "queue" | null,
-  ) => void;
-  sections: { id: string; label: string; icon: string }[];
-  groupSections: { id: GroupSection; label: string; icon: string }[];
+  ) => void
+  sections: { id: string; label: string; icon: string }[]
+  groupSections: { id: GroupSection; label: string; icon: string }[]
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -35,25 +35,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sections,
   groupSections,
 }) => {
-  const storeGroups = useGroupStore((state) => state.groups);
+  const storeGroups = useGroupStore((state) => state.groups)
 
   return (
-    <div className="w-[200px] sm:w-[240px] lg:w-[280px] shrink-0 flex flex-col bg-[#080808] border-r border-white/5">
-      <div className="px-3 pt-8 pb-4 flex items-center justify-between">
+    <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[#080808] sm:w-[240px] lg:w-[280px]">
+      <div className="flex items-center justify-between px-3 pt-8 pb-4">
         <h1 className="text-[11px] font-medium text-white/30">Settings</h1>
       </div>
 
-      <div className="flex-1 pl-3 pr-1 space-y-10 overflow-y-auto hover-scrollbar settings-sidebar-scroll pb-6">
+      <div className="hover-scrollbar settings-sidebar-scroll flex-1 space-y-10 overflow-y-auto pr-1 pb-6 pl-3">
         <section>
-          <div className="px-3 mb-4 flex items-center justify-between">
-            <h2 className="text-[11px] font-medium text-white/30">
-              Group Management
-            </h2>
+          <div className="mb-4 flex items-center justify-between px-3">
+            <h2 className="text-[11px] font-medium text-white/30">Group Management</h2>
           </div>
 
           <div className="space-y-6">
             <div className="flex items-center px-1">
-              <div className="flex-1 min-w-0" key={storeGroups.length}>
+              <div className="min-w-0 flex-1" key={storeGroups.length}>
                 <Dropdown
                   options={dropdownGroups.map((group) => ({
                     value: group.id,
@@ -61,22 +59,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }))}
                   value={dropdownValue}
                   onChange={(groupId) => {
-                    const groupStore = useGroupStore.getState();
+                    const groupStore = useGroupStore.getState()
                     if (groupId) {
-                      const group = dropdownGroups.find(
-                        (g) => g.id === groupId,
-                      );
+                      const group = dropdownGroups.find((g) => g.id === groupId)
                       if (group) {
-                        groupStore.setSelectedGroup(group);
-                        if (onGroupSelect) onGroupSelect(group);
+                        groupStore.setSelectedGroup(group)
+                        if (onGroupSelect) onGroupSelect(group)
                       }
                     } else {
-                      groupStore.setSelectedGroup(null);
+                      groupStore.setSelectedGroup(null)
                       window.dispatchEvent(
                         new CustomEvent("selectGroup", {
                           detail: { group: null },
                         }),
-                      );
+                      )
                     }
                   }}
                   placeholder="Select group…"
@@ -89,94 +85,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Tooltip content="Create Group" position="top">
                 <button
                   onClick={() => {
-                    setActiveSection("group");
+                    setActiveSection("group")
                     if (activeSection !== "group") {
-                      setGroupInitialSection("overview");
+                      setGroupInitialSection("overview")
                     }
-                    setTriggerCreateGroup(Date.now());
+                    setTriggerCreateGroup(Date.now())
                   }}
-                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-l-none rounded-r-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-white/40 hover:text-cyan-400 group/btn focus:outline-none"
-                >
-                  <i className="fa-solid fa-plus text-xs group-hover/btn:scale-110 transition-transform"></i>
+                  className="group/btn flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-white/10 bg-white/5 text-white/40 transition-all hover:bg-white/10 hover:text-cyan-400 focus:outline-none">
+                  <i className="fa-solid fa-plus text-xs transition-transform group-hover/btn:scale-110"></i>
                 </button>
               </Tooltip>
             </div>
 
             <div
-              className={`space-y-0.5 ${!dropdownValue ? "opacity-40 pointer-events-none grayscale" : ""}`}
-            >
+              className={`space-y-0.5 ${!dropdownValue ? "pointer-events-none opacity-40 grayscale" : ""}`}>
               {groupSections.map((subsection) => {
-                const isActive =
-                  activeSection === "group" &&
-                  groupInitialSection === subsection.id;
+                const isActive = activeSection === "group" && groupInitialSection === subsection.id
                 return (
                   <button
                     key={subsection.id}
                     onClick={() => {
-                      setActiveSection("group");
-                      setGroupInitialSection(subsection.id);
-                      setTriggerCreateGroup(0);
+                      setActiveSection("group")
+                      setGroupInitialSection(subsection.id)
+                      setTriggerCreateGroup(0)
                       if (subsection.id === "registration") {
-                        setRegistrationState(null, null);
+                        setRegistrationState(null, null)
                       }
                     }}
-                    className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                      isActive
-                        ? "bg-white/6 text-white"
-                        : "text-white/60 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
+                    className={`group/item relative flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-[14px] font-medium transition-all ${
+                      isActive ? "bg-white/6 text-white" : (
+                        "text-white/60 hover:bg-white/5 hover:text-white"
+                      )
+                    }`}>
                     {isActive && (
                       <motion.div
                         layoutId="active-indicator-group"
-                        className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-500 rounded-r-full shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+                        className="absolute top-1/2 left-[-8px] h-6 w-1 -translate-y-1/2 rounded-r-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
                       />
                     )}
                     <i
-                      className={`${subsection.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-cyan-400" : "text-white/50"}`}
-                    ></i>
+                      className={`${subsection.icon} w-4 text-xs transition-transform group-hover/item:scale-105 ${isActive ? "text-cyan-400" : "text-white/50"}`}></i>
                     {subsection.label}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
         </section>
 
         <section>
-          <div className="px-3 mb-4">
+          <div className="mb-4 px-3">
             <h2 className="text-[11px] font-medium text-white/30">General</h2>
           </div>
 
           <div className="space-y-0.5">
             {sections.map((section) => {
-              const isActive = activeSection === section.id;
+              const isActive = activeSection === section.id
               return (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full relative group/item text-left px-4 py-2.5 rounded-lg text-[14px] font-medium transition-all flex items-center gap-3 ${
-                    isActive
-                      ? "bg-white/6 text-white"
-                      : "text-white/60 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
+                  className={`group/item relative flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-[14px] font-medium transition-all ${
+                    isActive ? "bg-white/6 text-white" : (
+                      "text-white/60 hover:bg-white/5 hover:text-white"
+                    )
+                  }`}>
                   {isActive && (
                     <motion.div
                       layoutId="active-indicator-general"
-                      className="absolute left-[-8px] top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                      className="absolute top-1/2 left-[-8px] h-6 w-1 -translate-y-1/2 rounded-r-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.2)]"
                     />
                   )}
                   <i
-                    className={`${section.icon} text-xs w-4 transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/70"}`}
-                  ></i>
+                    className={`${section.icon} w-4 text-xs transition-transform group-hover/item:scale-105 ${isActive ? "text-white" : "text-white/70"}`}></i>
                   {section.label}
                 </button>
-              );
+              )
             })}
           </div>
         </section>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
-import { attendanceManager } from "@/services";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
-import type { DialogAPI } from "@/components/shared";
-import type { CapturedFrame } from "@/components/group/sections/registration/types";
+import { useState, useCallback } from "react"
+import { attendanceManager } from "@/services"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
+import type { DialogAPI } from "@/components/shared"
+import type { CapturedFrame } from "@/components/group/sections/registration/types"
 import {
   makeId,
   toBase64Payload,
-} from "@/components/group/sections/registration/hooks/useImageProcessing";
+} from "@/components/group/sections/registration/hooks/useImageProcessing"
 
 export function useFaceCapture(
   group: AttendanceGroup | null,
@@ -14,30 +14,28 @@ export function useFaceCapture(
   onRefresh?: () => Promise<void> | void,
   dialog?: Pick<DialogAPI, "confirm">,
 ) {
-  const [frames, setFrames] = useState<CapturedFrame[]>([]);
-  const [globalError, setGlobalError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [frames, setFrames] = useState<CapturedFrame[]>([])
+  const [globalError, setGlobalError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [isRegistering, setIsRegistering] = useState(false)
 
   const resetFrames = useCallback(() => {
-    setFrames([]);
-  }, []);
+    setFrames([])
+  }, [])
 
   const updateFrame = useCallback(
     (frameId: string, updater: (frame: CapturedFrame) => CapturedFrame) => {
-      setFrames((prev) =>
-        prev.map((frame) => (frame.id === frameId ? updater(frame) : frame)),
-      );
+      setFrames((prev) => prev.map((frame) => (frame.id === frameId ? updater(frame) : frame)))
     },
     [],
-  );
+  )
 
   const captureProcessedFrame = useCallback(
     async (angle: string, dataUrl: string, width: number, height: number) => {
-      const id = makeId();
+      const id = makeId()
 
-      setGlobalError(null);
-      setSuccessMessage(null);
+      setGlobalError(null)
+      setSuccessMessage(null)
 
       // Replace any previous capture for this slot
       setFrames((prev) => [
@@ -51,34 +49,30 @@ export function useFaceCapture(
           height,
           status: "processing",
         },
-      ]);
+      ])
 
       try {
-        const detection = await window.electronAPI.backend.detectFaces(
-          toBase64Payload(dataUrl),
-          { model_type: "face_detector" },
-        );
+        const detection = await window.electronAPI.backend.detectFaces(toBase64Payload(dataUrl), {
+          model_type: "face_detector",
+        })
 
         if (!detection.faces || detection.faces.length === 0) {
-          throw new Error(
-            "No face detected. Make sure your face is visible and in the frame.",
-          );
+          throw new Error("No face detected. Make sure your face is visible and in the frame.")
         }
 
         const bestFace = detection.faces.reduce(
-          (best, current) =>
-            (current.confidence ?? 0) > (best.confidence ?? 0) ? current : best,
+          (best, current) => ((current.confidence ?? 0) > (best.confidence ?? 0) ? current : best),
           detection.faces[0],
-        );
+        )
 
         if (!bestFace.bbox) {
-          throw new Error("Face detected but bounding box missing.");
+          throw new Error("Face detected but bounding box missing.")
         }
 
         if (bestFace.landmarks_5?.length !== 5) {
           throw new Error(
             "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
-          );
+          )
         }
 
         updateFrame(id, (frame) => ({
@@ -88,23 +82,21 @@ export function useFaceCapture(
           bbox: bestFace.bbox,
           landmarks_5: bestFace.landmarks_5,
           error: undefined,
-        }));
+        }))
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Face analysis failed. Please try again.";
+          error instanceof Error ? error.message : "Face analysis failed. Please try again."
         updateFrame(id, (frame) => ({
           ...frame,
           status: "error",
           error: message,
           confidence: undefined,
           bbox: undefined,
-        }));
+        }))
       }
     },
     [updateFrame],
-  );
+  )
 
   const handleRegister = useCallback(
     async (
@@ -113,28 +105,26 @@ export function useFaceCapture(
       memberStatus: Map<string, boolean>,
     ) => {
       if (!group) {
-        setGlobalError("No group selected.");
-        return;
+        setGlobalError("No group selected.")
+        return
       }
 
-      const frame = frames.find((f) => f.angle === "Front");
+      const frame = frames.find((f) => f.angle === "Front")
 
       if (frame?.status !== "ready" || !frame.bbox) {
-        setGlobalError("Please capture a valid face image first.");
-        return;
+        setGlobalError("Please capture a valid face image first.")
+        return
       }
 
-      setIsRegistering(true);
-      setGlobalError(null);
-      setSuccessMessage(null);
+      setIsRegistering(true)
+      setGlobalError(null)
+      setSuccessMessage(null)
 
       try {
-        const payload = toBase64Payload(frame.dataUrl);
+        const payload = toBase64Payload(frame.dataUrl)
 
         if (frame.landmarks_5?.length !== 5) {
-          throw new Error(
-            "Cannot register: landmarks missing. Please re-capture the face.",
-          );
+          throw new Error("Cannot register: landmarks missing. Please re-capture the face.")
         }
 
         const result = await attendanceManager.registerFaceForGroupPerson(
@@ -143,50 +133,48 @@ export function useFaceCapture(
           payload,
           frame.bbox,
           frame.landmarks_5,
-        );
+        )
 
         if (!result.success) {
-          throw new Error(result.error || "Registration failed.");
+          throw new Error(result.error || "Registration failed.")
         }
 
         updateFrame(frame.id, (current) => ({
           ...current,
           status: "registered",
-        }));
+        }))
 
-        const isAlreadyRegistered = memberStatus.get(selectedMemberId) ?? false;
-        const member = members.find((m) => m.person_id === selectedMemberId);
-        const memberName = member?.name || "Member";
+        const isAlreadyRegistered = memberStatus.get(selectedMemberId) ?? false
+        const member = members.find((m) => m.person_id === selectedMemberId)
+        const memberName = member?.name || "Member"
 
         setSuccessMessage(
-          isAlreadyRegistered
-            ? `${memberName} Re-registered successfully!`
-            : `${memberName} Registered successfully!`,
-        );
+          isAlreadyRegistered ?
+            `${memberName} Re-registered successfully!`
+          : `${memberName} Registered successfully!`,
+        )
 
-        await loadMemberStatus();
-        if (onRefresh) await onRefresh();
+        await loadMemberStatus()
+        if (onRefresh) await onRefresh()
       } catch (error) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Registration failed. Please try again.";
-        setGlobalError(message);
+          error instanceof Error ? error.message : "Registration failed. Please try again."
+        setGlobalError(message)
       } finally {
-        setIsRegistering(false);
+        setIsRegistering(false)
       }
     },
     [group, frames, members, updateFrame, onRefresh],
-  );
+  )
 
   const handleRemoveFaceData = useCallback(
     async (
       member: AttendanceMember & { displayName?: string },
       loadMemberStatus: () => Promise<void>,
     ) => {
-      if (!group) return;
+      if (!group) return
 
-      const displayName = member.displayName || member.name;
+      const displayName = member.displayName || member.name
 
       if (dialog) {
         const ok = await dialog.confirm({
@@ -195,36 +183,31 @@ export function useFaceCapture(
           confirmText: "Remove",
           cancelText: "Cancel",
           confirmVariant: "danger",
-        });
-        if (!ok) return;
+        })
+        if (!ok) return
       } else {
-        const confirmation = window.confirm(
-          `Remove all face embeddings for ${displayName}?`,
-        );
-        if (!confirmation) return;
+        const confirmation = window.confirm(`Remove all face embeddings for ${displayName}?`)
+        if (!confirmation) return
       }
 
       try {
         const result = await attendanceManager.removeFaceDataForGroupPerson(
           group.id,
           member.person_id,
-        );
+        )
         if (!result.success) {
-          throw new Error(result.error || "Failed to remove embeddings");
+          throw new Error(result.error || "Failed to remove embeddings")
         }
-        await loadMemberStatus();
-        if (onRefresh) await onRefresh();
-        setSuccessMessage(`Embeddings purged for ${displayName}.`);
+        await loadMemberStatus()
+        if (onRefresh) await onRefresh()
+        setSuccessMessage(`Embeddings purged for ${displayName}.`)
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Failed to remove face data.";
-        setGlobalError(message);
+        const message = error instanceof Error ? error.message : "Failed to remove face data."
+        setGlobalError(message)
       }
     },
     [group, onRefresh, dialog],
-  );
+  )
 
   return {
     frames,
@@ -237,5 +220,5 @@ export function useFaceCapture(
     captureProcessedFrame,
     handleRegister,
     handleRemoveFaceData,
-  };
+  }
 }

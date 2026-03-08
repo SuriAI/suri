@@ -1,6 +1,6 @@
-import { useRef, useEffect } from "react";
-import { startTransition } from "react";
-import { useAttendanceStore } from "@/components/main/stores";
+import { useRef, useEffect } from "react"
+import { startTransition } from "react"
+import { useAttendanceStore } from "@/components/main/stores"
 
 export function useAttendanceCooldown() {
   const {
@@ -8,83 +8,83 @@ export function useAttendanceCooldown() {
     setPersistentCooldowns,
     attendanceCooldownSeconds,
     reLogCooldownSeconds,
-  } = useAttendanceStore();
+  } = useAttendanceStore()
   const persistentCooldownsRef = useRef<
     Map<string, import("@/components/main/types").CooldownInfo>
-  >(new Map());
+  >(new Map())
 
   useEffect(() => {
-    persistentCooldownsRef.current = persistentCooldowns;
-  }, [persistentCooldowns]);
+    persistentCooldownsRef.current = persistentCooldowns
+  }, [persistentCooldowns])
 
   useEffect(() => {
-    let lastUpdateTime = 0;
-    const updateInterval = 1000;
-    let rafId: number | null = null;
+    let lastUpdateTime = 0
+    const updateInterval = 1000
+    let rafId: number | null = null
 
     const updateCooldowns = () => {
-      const now = Date.now();
+      const now = Date.now()
       startTransition(() => {
         setPersistentCooldowns((prev) => {
-          if (prev.size === 0) return prev;
+          if (prev.size === 0) return prev
 
-          const newPersistent = new Map(prev);
-          let hasChanges = false;
+          const newPersistent = new Map(prev)
+          let hasChanges = false
 
           for (const [personId, cooldownInfo] of newPersistent) {
-            const timeSinceStart = now - cooldownInfo.startTime;
-            const reLogSeconds = reLogCooldownSeconds ?? 1800; // Default 30m
-            const reLogMs = reLogSeconds * 1000;
-            const expirationThreshold = reLogMs + 500;
+            const timeSinceStart = now - cooldownInfo.startTime
+            const reLogSeconds = reLogCooldownSeconds ?? 1800 // Default 30m
+            const reLogMs = reLogSeconds * 1000
+            const expirationThreshold = reLogMs + 500
 
             if (timeSinceStart >= expirationThreshold) {
-              newPersistent.delete(personId);
-              hasChanges = true;
+              newPersistent.delete(personId)
+              hasChanges = true
             }
           }
 
-          persistentCooldownsRef.current = hasChanges ? newPersistent : prev;
-          return hasChanges ? newPersistent : prev;
-        });
-      });
-    };
+          persistentCooldownsRef.current = hasChanges ? newPersistent : prev
+          return hasChanges ? newPersistent : prev
+        })
+      })
+    }
 
     const scheduleUpdate = () => {
-      const now = Date.now();
+      const now = Date.now()
       if (now - lastUpdateTime >= updateInterval) {
-        updateCooldowns();
-        lastUpdateTime = now;
+        updateCooldowns()
+        lastUpdateTime = now
 
         if (persistentCooldownsRef.current.size === 0) {
-          rafId = null;
-          return;
+          rafId = null
+          return
         }
       }
-      rafId = requestAnimationFrame(scheduleUpdate);
-    };
+      rafId = requestAnimationFrame(scheduleUpdate)
+    }
 
     const startUpdate = () => {
       if (rafId === null && persistentCooldownsRef.current.size > 0) {
-        rafId = requestAnimationFrame(scheduleUpdate);
+        rafId = requestAnimationFrame(scheduleUpdate)
       }
-    };
+    }
 
-    startUpdate();
+    startUpdate()
     const checkInterval = setInterval(() => {
       if (persistentCooldownsRef.current.size > 0 && rafId === null) {
-        startUpdate();
+        startUpdate()
       }
-    }, 1000);
+    }, 1000)
 
     return () => {
       if (rafId !== null) {
-        cancelAnimationFrame(rafId);
+        cancelAnimationFrame(rafId)
       }
-      clearInterval(checkInterval);
-    };
-  }, [attendanceCooldownSeconds, reLogCooldownSeconds, setPersistentCooldowns]);
+      clearInterval(checkInterval)
+    }
+  }, [attendanceCooldownSeconds, reLogCooldownSeconds, setPersistentCooldowns])
 
   return {
     persistentCooldownsRef,
-  };
+  }
 }

@@ -1,13 +1,13 @@
-import type { CapturedFrame } from "@/components/group/sections/registration/types";
-import { ImagePreviewWithBbox } from "@/components/group/sections/registration/components/ImagePreviewWithBbox";
+import type { CapturedFrame } from "@/components/group/sections/registration/types"
+import { ImagePreviewWithBbox } from "@/components/group/sections/registration/components/ImagePreviewWithBbox"
 
 interface ResultViewProps {
-  frames: CapturedFrame[];
-  selectedMemberName: string;
-  onRetake: () => void;
-  onRegister: () => void;
-  isRegistering: boolean;
-  framesReady: boolean;
+  frames: CapturedFrame[]
+  selectedMemberName: string
+  onRetake: () => void
+  onRegister: () => void
+  isRegistering: boolean
+  framesReady: boolean
 }
 
 export function ResultView({
@@ -18,44 +18,38 @@ export function ResultView({
   isRegistering,
   framesReady,
 }: ResultViewProps) {
-  const relevantFrames = frames.filter((f) => f.angle === "Front");
+  const relevantFrames = frames.filter((f) => f.angle === "Front")
 
   return (
-    <div className="h-full flex flex-col overflow-hidden relative">
+    <div className="relative flex h-full flex-col overflow-hidden">
       {relevantFrames.map((frame) => (
-        <div key={frame.id} className="flex-1 min-h-0 flex flex-col">
+        <div key={frame.id} className="flex min-h-0 flex-1 flex-col">
           <ImagePreviewWithBbox frame={frame} />
         </div>
       ))}
       <div className="absolute top-2 left-2 z-10">
-        <div className="text-md font-medium text-white/80 truncate">
-          {selectedMemberName}
-        </div>
+        <div className="text-md truncate font-medium text-white/80">{selectedMemberName}</div>
       </div>
 
-      <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1.5">
+      <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5">
         <button
           onClick={onRetake}
-          className="px-2 py-2 rounded-lg border border-white/10 bg-black/40 text-white/70 hover:text-white hover:bg-black/60 text-xs font-medium transition-all min-w-[100px]"
-        >
+          className="min-w-[100px] rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs font-medium text-white/70 transition-all hover:bg-black/60 hover:text-white">
           Retake
         </button>
 
         <button
           onClick={onRegister}
           disabled={!framesReady || isRegistering}
-          className="px-2 py-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 text-cyan-100 hover:bg-cyan-500/50 text-xs font-medium transition-all min-w-[100px] flex items-center justify-center gap-2 disabled:bg-black/40 disabled:border-white/10 disabled:text-white/30 disabled:cursor-not-allowed"
-        >
-          {isRegistering ? (
+          className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-black/40 disabled:text-white/30">
+          {isRegistering ?
             <>
-              <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
               <span>Saving...</span>
             </>
-          ) : (
-            "Register"
-          )}
+          : "Register"}
         </button>
       </div>
     </div>
-  );
+  )
 }

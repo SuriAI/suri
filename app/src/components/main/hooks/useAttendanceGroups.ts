@@ -1,7 +1,7 @@
-import { useRef, useCallback, useEffect } from "react";
-import { attendanceManager, persistentSettings } from "@/services";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
-import { useAttendanceStore, useUIStore } from "@/components/main/stores";
+import { useRef, useCallback, useEffect } from "react"
+import { attendanceManager, persistentSettings } from "@/services"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
+import { useAttendanceStore, useUIStore } from "@/components/main/stores"
 
 export function useAttendanceGroups() {
   const {
@@ -24,51 +24,45 @@ export function useAttendanceGroups() {
     setAttendanceCooldownSeconds,
     setReLogCooldownSeconds,
     setDataRetentionDays,
-  } = useAttendanceStore();
-  const { setError } = useUIStore();
+  } = useAttendanceStore()
+  const { setError } = useUIStore()
 
-  const currentGroupRef = useRef<AttendanceGroup | null>(null);
-  const memberCacheRef = useRef<Map<string, AttendanceMember | null>>(
-    new Map(),
-  );
-  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {});
+  const currentGroupRef = useRef<AttendanceGroup | null>(null)
+  const memberCacheRef = useRef<Map<string, AttendanceMember | null>>(new Map())
+  const loadAttendanceDataRef = useRef<() => Promise<void>>(async () => {})
 
   useEffect(() => {
-    currentGroupRef.current = currentGroup;
-  }, [currentGroup]);
+    currentGroupRef.current = currentGroup
+  }, [currentGroup])
 
   const setCurrentGroupWithCache = useCallback(
     (group: AttendanceGroup | null) => {
-      setCurrentGroup(group);
-      memberCacheRef.current.clear();
+      setCurrentGroup(group)
+      memberCacheRef.current.clear()
     },
     [setCurrentGroup],
-  );
+  )
 
   const loadSettings = useCallback(async () => {
     try {
-      const settings = await attendanceManager.getSettings();
-      setAttendanceCooldownSeconds(settings.attendance_cooldown_seconds ?? 10);
-      setReLogCooldownSeconds(settings.relog_cooldown_seconds ?? 1800);
-      setDataRetentionDays(settings.data_retention_days ?? 0);
+      const settings = await attendanceManager.getSettings()
+      setAttendanceCooldownSeconds(settings.attendance_cooldown_seconds ?? 10)
+      setReLogCooldownSeconds(settings.relog_cooldown_seconds ?? 1800)
+      setDataRetentionDays(settings.data_retention_days ?? 0)
     } catch (error) {
-      console.error("Failed to load settings:", error);
+      console.error("Failed to load settings:", error)
     }
-  }, [
-    setAttendanceCooldownSeconds,
-    setReLogCooldownSeconds,
-    setDataRetentionDays,
-  ]);
+  }, [setAttendanceCooldownSeconds, setReLogCooldownSeconds, setDataRetentionDays])
 
   const loadAttendanceData = useCallback(async () => {
     try {
-      const currentGroupValue = currentGroupRef.current;
-      const groups = await attendanceManager.getGroups();
-      setAttendanceGroups(groups);
+      const currentGroupValue = currentGroupRef.current
+      const groups = await attendanceManager.getGroups()
+      setAttendanceGroups(groups)
 
       if (!currentGroupValue) {
         if (groups.length > 0) {
-          setCurrentGroupWithCache(groups[0]);
+          setCurrentGroupWithCache(groups[0])
           const [members, , records] = await Promise.all([
             attendanceManager.getGroupMembers(groups[0].id),
             attendanceManager.getGroupStats(groups[0].id),
@@ -76,33 +70,29 @@ export function useAttendanceGroups() {
               group_id: groups[0].id,
               limit: 100,
             }),
-          ]);
-          setGroupMembers(members);
-          setRecentAttendance(records);
+          ])
+          setGroupMembers(members)
+          setRecentAttendance(records)
         } else {
-          setGroupMembers([]);
-          setRecentAttendance([]);
+          setGroupMembers([])
+          setRecentAttendance([])
         }
-        return;
+        return
       }
 
-      const groupStillExists = groups.some(
-        (group) => group.id === currentGroupValue.id,
-      );
+      const groupStillExists = groups.some((group) => group.id === currentGroupValue.id)
       if (!groupStillExists) {
         setTimeout(() => {
           attendanceManager.getGroups().then((latestGroups) => {
-            const stillMissing = !latestGroups.some(
-              (group) => group.id === currentGroupValue.id,
-            );
+            const stillMissing = !latestGroups.some((group) => group.id === currentGroupValue.id)
             if (stillMissing) {
-              setCurrentGroupWithCache(null);
-              setGroupMembers([]);
-              setRecentAttendance([]);
+              setCurrentGroupWithCache(null)
+              setGroupMembers([])
+              setRecentAttendance([])
             }
-          });
-        }, 100);
-        return;
+          })
+        }, 100)
+        return
       }
 
       const [members, , records] = await Promise.all([
@@ -112,27 +102,22 @@ export function useAttendanceGroups() {
           group_id: currentGroupValue.id,
           limit: 100,
         }),
-      ]);
+      ])
 
-      setGroupMembers(members);
-      setRecentAttendance(records);
+      setGroupMembers(members)
+      setRecentAttendance(records)
     } catch (error) {
-      console.error("❌ Failed to load attendance data:", error);
+      console.error("❌ Failed to load attendance data:", error)
     }
-  }, [
-    setGroupMembers,
-    setRecentAttendance,
-    setAttendanceGroups,
-    setCurrentGroupWithCache,
-  ]);
+  }, [setGroupMembers, setRecentAttendance, setAttendanceGroups, setCurrentGroupWithCache])
 
   useEffect(() => {
-    loadAttendanceDataRef.current = loadAttendanceData;
-  }, [loadAttendanceData]);
+    loadAttendanceDataRef.current = loadAttendanceData
+  }, [loadAttendanceData])
 
   const handleSelectGroup = useCallback(
     async (group: AttendanceGroup) => {
-      setCurrentGroupWithCache(group);
+      setCurrentGroupWithCache(group)
 
       try {
         const [members, , records] = await Promise.all([
@@ -142,31 +127,31 @@ export function useAttendanceGroups() {
             group_id: group.id,
             limit: 100,
           }),
-        ]);
+        ])
 
-        setGroupMembers(members);
-        setRecentAttendance(records);
+        setGroupMembers(members)
+        setRecentAttendance(records)
       } catch (error) {
-        console.error("❌ Failed to load data for selected group:", error);
+        console.error("❌ Failed to load data for selected group:", error)
       }
     },
     [setCurrentGroupWithCache, setGroupMembers, setRecentAttendance],
-  );
+  )
 
   const handleCreateGroup = useCallback(async () => {
-    if (!newGroupName.trim()) return;
+    if (!newGroupName.trim()) return
 
     try {
-      const group = await attendanceManager.createGroup(newGroupName.trim());
-      setNewGroupName("");
-      setShowGroupManagement(false);
-      await loadAttendanceData();
+      const group = await attendanceManager.createGroup(newGroupName.trim())
+      setNewGroupName("")
+      setShowGroupManagement(false)
+      await loadAttendanceData()
       if (group) {
-        await handleSelectGroup(group);
+        await handleSelectGroup(group)
       }
     } catch (error) {
-      console.error("❌ Failed to create group:", error);
-      setError("Failed to create group");
+      console.error("❌ Failed to create group:", error)
+      setError("Failed to create group")
     }
   }, [
     newGroupName,
@@ -175,38 +160,38 @@ export function useAttendanceGroups() {
     setError,
     setNewGroupName,
     setShowGroupManagement,
-  ]);
+  ])
 
   const handleDeleteGroup = useCallback(
     (group: AttendanceGroup) => {
-      setGroupToDelete(group);
-      setShowDeleteConfirmation(true);
+      setGroupToDelete(group)
+      setShowDeleteConfirmation(true)
     },
     [setGroupToDelete, setShowDeleteConfirmation],
-  );
+  )
 
   const confirmDeleteGroup = useCallback(async () => {
-    if (!groupToDelete) return;
+    if (!groupToDelete) return
 
     try {
-      const success = await attendanceManager.deleteGroup(groupToDelete.id);
+      const success = await attendanceManager.deleteGroup(groupToDelete.id)
       if (success) {
         if (currentGroup?.id === groupToDelete.id) {
-          setCurrentGroupWithCache(null);
-          setGroupMembers([]);
-          setRecentAttendance([]);
+          setCurrentGroupWithCache(null)
+          setGroupMembers([])
+          setRecentAttendance([])
         }
 
-        await loadAttendanceData();
+        await loadAttendanceData()
       } else {
-        throw new Error("Failed to delete group");
+        throw new Error("Failed to delete group")
       }
     } catch (error) {
-      console.error("❌ Failed to delete group:", error);
-      setError("Failed to delete group");
+      console.error("❌ Failed to delete group:", error)
+      setError("Failed to delete group")
     } finally {
-      setShowDeleteConfirmation(false);
-      setGroupToDelete(null);
+      setShowDeleteConfirmation(false)
+      setGroupToDelete(null)
     }
   }, [
     groupToDelete,
@@ -218,94 +203,85 @@ export function useAttendanceGroups() {
     setGroupToDelete,
     setRecentAttendance,
     setShowDeleteConfirmation,
-  ]);
+  ])
 
   const cancelDeleteGroup = useCallback(() => {
-    setShowDeleteConfirmation(false);
-    setGroupToDelete(null);
-  }, [setGroupToDelete, setShowDeleteConfirmation]);
+    setShowDeleteConfirmation(false)
+    setGroupToDelete(null)
+  }, [setGroupToDelete, setShowDeleteConfirmation])
 
   useEffect(() => {
     const handleSelectGroupEvent = (event: Event) => {
       const customEvent = event as CustomEvent<{
-        group: AttendanceGroup | null;
-      }>;
-      const { group } = customEvent.detail;
+        group: AttendanceGroup | null
+      }>
+      const { group } = customEvent.detail
       if (group === null) {
-        setCurrentGroupWithCache(null);
-        setGroupMembers([]);
-        setRecentAttendance([]);
+        setCurrentGroupWithCache(null)
+        setGroupMembers([])
+        setRecentAttendance([])
         // Refresh groups list to remove deleted group from dropdown immediately
         // Call getGroups directly (don't use loadAttendanceData as it returns early when currentGroup is null)
         attendanceManager
           .getGroups()
           .then((groups) => {
-            setAttendanceGroups(groups);
+            setAttendanceGroups(groups)
           })
           .catch((error) => {
-            console.error(
-              "[useAttendanceGroups] Error refreshing groups:",
-              error,
-            );
-          });
+            console.error("[useAttendanceGroups] Error refreshing groups:", error)
+          })
       } else {
-        handleSelectGroup(group);
+        handleSelectGroup(group)
       }
-    };
+    }
 
-    window.addEventListener(
-      "selectGroup",
-      handleSelectGroupEvent as EventListener,
-    );
+    window.addEventListener("selectGroup", handleSelectGroupEvent as EventListener)
     return () => {
-      window.removeEventListener(
-        "selectGroup",
-        handleSelectGroupEvent as EventListener,
-      );
-    };
+      window.removeEventListener("selectGroup", handleSelectGroupEvent as EventListener)
+    }
   }, [
     handleSelectGroup,
     setCurrentGroupWithCache,
     setGroupMembers,
     setRecentAttendance,
     setAttendanceGroups,
-  ]);
+  ])
 
   useEffect(() => {
     const initializeAttendance = async () => {
       try {
-        await loadSettings();
-        const groups = await attendanceManager.getGroups();
-        setAttendanceGroups(groups);
+        await loadSettings()
+        const groups = await attendanceManager.getGroups()
+        setAttendanceGroups(groups)
 
         if (groups.length === 0) {
-          setCurrentGroupWithCache(null);
+          setCurrentGroupWithCache(null)
         } else if (!currentGroupRef.current) {
-          const uiState = await persistentSettings.getUIState();
-          const savedGroupId = uiState.selectedGroupId;
-          let groupToSelect = null;
+          const uiState = await persistentSettings.getUIState()
+          const savedGroupId = uiState.selectedGroupId
+          let groupToSelect = null
 
           if (savedGroupId) {
-            groupToSelect = groups.find((group) => group.id === savedGroupId);
+            groupToSelect = groups.find((group) => group.id === savedGroupId)
           }
 
           if (!groupToSelect) {
-            groupToSelect = groups[0];
+            groupToSelect = groups[0]
           }
 
-          await handleSelectGroup(groupToSelect);
+          await handleSelectGroup(groupToSelect)
         }
       } catch (error) {
-        console.error("Failed to initialize attendance system:", error);
-        setError("Failed to initialize attendance system");
+        console.error("Failed to initialize attendance system:", error)
+        setError("Failed to initialize attendance system")
       }
-    };
+    }
 
     initializeAttendance().catch((error) => {
-      console.error("Error in initializeAttendance:", error);
-    });
+      console.error("Error in initializeAttendance:", error)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   return {
     currentGroup,
@@ -334,5 +310,5 @@ export function useAttendanceGroups() {
     handleDeleteGroup,
     confirmDeleteGroup,
     cancelDeleteGroup,
-  };
+  }
 }

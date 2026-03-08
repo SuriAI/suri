@@ -1,42 +1,30 @@
-import { Tooltip } from "@/components/shared";
+import { Tooltip } from "@/components/shared"
 
 interface GroupHeaderProps {
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
+  isCollapsed: boolean
+  onToggleCollapse: () => void
 }
 
-export function GroupHeader({
-  isCollapsed,
-  onToggleCollapse,
-}: GroupHeaderProps) {
+export function GroupHeader({ isCollapsed, onToggleCollapse }: GroupHeaderProps) {
   return (
-    <div className="px-4 py-4 border-b border-white/10 flex items-center justify-between">
+    <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
       {!isCollapsed && (
         <div className="flex items-center gap-2">
-          <img
-            src="./icons/suri_mark_logo_transparent.png"
-            alt="Suri"
-            className="w-9 h-9"
-          />
+          <img src="./icons/suri_mark_logo_transparent.png" alt="Suri" className="h-9 w-9" />
           <h1 className="text-lg font-semibold text-white">Group</h1>
         </div>
       )}
 
       {/* Collapse/Expand Button */}
-      <Tooltip
-        content={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        position="right"
-      >
+      <Tooltip content={isCollapsed ? "Expand sidebar" : "Collapse sidebar"} position="right">
         <button
           onClick={onToggleCollapse}
-          className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all group ${isCollapsed ? "mx-auto" : "ml-auto"}`}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
+          className={`group flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 transition-all hover:bg-white/10 ${isCollapsed ? "mx-auto" : "ml-auto"}`}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <i
-            className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/50 group-hover:text-white transition-all duration-200`}
-          ></i>
+            className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/50 transition-all duration-200 group-hover:text-white`}></i>
         </button>
       </Tooltip>
     </div>
-  );
+  )
 }

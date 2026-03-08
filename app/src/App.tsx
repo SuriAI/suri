@@ -1,20 +1,20 @@
-import { useEffect } from "react";
-import { WindowBar } from "@/components/window";
-import Main from "@/components/main";
-import { useUIStore } from "@/components/main/stores/uiStore";
-import { IntroModal } from "@/components/shared/IntroModal";
-import { DialogProvider } from "@/components/shared";
+import { useEffect } from "react"
+import { WindowBar } from "@/components/window"
+import Main from "@/components/main"
+import { useUIStore } from "@/components/main/stores/uiStore"
+import { IntroModal } from "@/components/shared/IntroModal"
+import { DialogProvider } from "@/components/shared"
 
-import { AppSkeleton } from "@/components/shared/AppSkeleton";
+import { AppSkeleton } from "@/components/shared/AppSkeleton"
 
 function App() {
-  const { hasSeenIntro, isHydrated } = useUIStore();
+  const { hasSeenIntro, isHydrated } = useUIStore()
 
   useEffect(() => {
     if (isHydrated) {
-      window.suriElectron?.onAppReady();
+      window.suriElectron?.onAppReady()
     }
-  }, [isHydrated]);
+  }, [isHydrated])
 
   if (!isHydrated) {
     return (
@@ -22,7 +22,7 @@ function App() {
         <WindowBar />
         <div className="flex-1" />
       </div>
-    );
+    )
   }
 
   return (
@@ -30,20 +30,19 @@ function App() {
       <div className="electron-window-container">
         <WindowBar />
         <div className="app-content-wrapper">
-          <div className="text-white h-full overflow-hidden">
-            {hasSeenIntro ? (
+          <div className="h-full overflow-hidden text-white">
+            {hasSeenIntro ?
               <Main />
-            ) : (
-              <>
+            : <>
                 <AppSkeleton />
                 <IntroModal />
               </>
-            )}
+            }
           </div>
         </div>
       </div>
     </DialogProvider>
-  );
+  )
 }
 
-export default App;
+export default App

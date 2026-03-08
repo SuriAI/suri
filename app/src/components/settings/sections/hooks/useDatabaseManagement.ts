@@ -1,47 +1,39 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { attendanceManager } from "@/services";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
-import { useAttendanceStore } from "@/components/main/stores";
-import type { DialogAPI } from "@/components/shared";
+import { useState, useEffect, useMemo, useCallback } from "react"
+import { attendanceManager } from "@/services"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
+import { useAttendanceStore } from "@/components/main/stores"
+import type { DialogAPI } from "@/components/shared"
 import type {
   GroupWithMembers,
   EditingMember,
   EditingGroup,
   MemberField,
   GroupField,
-} from "@/components/settings/sections/types";
+} from "@/components/settings/sections/types"
 
 export function useDatabaseManagement(
   groups: AttendanceGroup[],
   onGroupsChanged?: () => void,
   dialog?: DialogAPI,
 ) {
-  const {
-    setGroupToDelete,
-    setShowDeleteConfirmation,
-    showDeleteConfirmation,
-    groupToDelete,
-  } = useAttendanceStore();
-  const [groupsWithMembers, setGroupsWithMembers] = useState<
-    GroupWithMembers[]
-  >([]);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [editingMember, setEditingMember] = useState<EditingMember | null>(
-    null,
-  );
-  const [editingGroup, setEditingGroup] = useState<EditingGroup | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const [savingMember, setSavingMember] = useState<string | null>(null);
-  const [savingGroup, setSavingGroup] = useState<string | null>(null);
-  const [deletingGroup, setDeletingGroup] = useState<string | null>(null);
-  const [deletingMember, setDeletingMember] = useState<string | null>(null);
+  const { setGroupToDelete, setShowDeleteConfirmation, showDeleteConfirmation, groupToDelete } =
+    useAttendanceStore()
+  const [groupsWithMembers, setGroupsWithMembers] = useState<GroupWithMembers[]>([])
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState("")
+  const [editingMember, setEditingMember] = useState<EditingMember | null>(null)
+  const [editingGroup, setEditingGroup] = useState<EditingGroup | null>(null)
+  const [editValue, setEditValue] = useState("")
+  const [savingMember, setSavingMember] = useState<string | null>(null)
+  const [savingGroup, setSavingGroup] = useState<string | null>(null)
+  const [deletingGroup, setDeletingGroup] = useState<string | null>(null)
+  const [deletingMember, setDeletingMember] = useState<string | null>(null)
 
   useEffect(() => {
     if (!showDeleteConfirmation || !groupToDelete) {
-      setDeletingGroup(null);
+      setDeletingGroup(null)
     }
-  }, [showDeleteConfirmation, groupToDelete]);
+  }, [showDeleteConfirmation, groupToDelete])
 
   // Load members for all groups
   useEffect(() => {
@@ -49,38 +41,35 @@ export function useDatabaseManagement(
       const groupsData: GroupWithMembers[] = await Promise.all(
         groups.map(async (group) => {
           try {
-            const members = await attendanceManager.getGroupMembers(group.id);
-            return { ...group, members, isLoading: false };
+            const members = await attendanceManager.getGroupMembers(group.id)
+            return { ...group, members, isLoading: false }
           } catch (error) {
-            console.error(
-              `Error loading members for group ${group.id}:`,
-              error,
-            );
-            return { ...group, members: [], isLoading: false };
+            console.error(`Error loading members for group ${group.id}:`, error)
+            return { ...group, members: [], isLoading: false }
           }
         }),
-      );
-      setGroupsWithMembers(groupsData);
-    };
+      )
+      setGroupsWithMembers(groupsData)
+    }
 
     if (getGroupsLength(groups) > 0) {
-      loadMembers();
+      loadMembers()
     } else {
-      setGroupsWithMembers([]);
+      setGroupsWithMembers([])
     }
-  }, [groups]);
+  }, [groups])
 
   function getGroupsLength(g: AttendanceGroup[]) {
-    return g.length;
+    return g.length
   }
 
   // Filter groups and members based on search
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
-      return groupsWithMembers;
+      return groupsWithMembers
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase()
     return groupsWithMembers
       .map((group) => {
         const filteredMembers = group.members.filter(
@@ -88,48 +77,39 @@ export function useDatabaseManagement(
             member.name.toLowerCase().includes(query) ||
             member.role?.toLowerCase().includes(query) ||
             member.email?.toLowerCase().includes(query),
-        );
-        return { ...group, members: filteredMembers };
+        )
+        return { ...group, members: filteredMembers }
       })
-      .filter(
-        (group) =>
-          group.members.length > 0 || group.name.toLowerCase().includes(query),
-      );
-  }, [groupsWithMembers, searchQuery]);
+      .filter((group) => group.members.length > 0 || group.name.toLowerCase().includes(query))
+  }, [groupsWithMembers, searchQuery])
 
   const toggleGroup = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
-      const next = new Set(prev);
+      const next = new Set(prev)
       if (next.has(groupId)) {
-        next.delete(groupId);
+        next.delete(groupId)
       } else {
-        next.add(groupId);
+        next.add(groupId)
       }
-      return next;
-    });
-  }, []);
+      return next
+    })
+  }, [])
 
   const cancelEditing = useCallback(() => {
-    setEditingMember(null);
-    setEditingGroup(null);
-    setEditValue("");
-  }, []);
+    setEditingMember(null)
+    setEditingGroup(null)
+    setEditValue("")
+  }, [])
 
-  const startEditing = useCallback(
-    (member: AttendanceMember, field: MemberField) => {
-      setEditingMember({ personId: member.person_id, field });
-      setEditValue(member[field] || "");
-    },
-    [],
-  );
+  const startEditing = useCallback((member: AttendanceMember, field: MemberField) => {
+    setEditingMember({ personId: member.person_id, field })
+    setEditValue(member[field] || "")
+  }, [])
 
-  const startEditingGroup = useCallback(
-    (group: AttendanceGroup, field: GroupField) => {
-      setEditingGroup({ groupId: group.id, field });
-      setEditValue(group[field] || "");
-    },
-    [],
-  );
+  const startEditingGroup = useCallback((group: AttendanceGroup, field: GroupField) => {
+    setEditingGroup({ groupId: group.id, field })
+    setEditValue(group[field] || "")
+  }, [])
 
   const saveEdit = useCallback(
     async (personId: string, field: MemberField, value: string) => {
@@ -138,60 +118,58 @@ export function useDatabaseManagement(
           await dialog.alert({
             title: "Missing name",
             message: "Name cannot be empty.",
-          });
+          })
         } else {
-          alert("Name cannot be empty");
+          alert("Name cannot be empty")
         }
-        return;
+        return
       }
 
-      setSavingMember(personId);
+      setSavingMember(personId)
       try {
         const updates: Partial<AttendanceMember> = {
           [field]: value.trim() || undefined,
-        };
+        }
 
-        const success = await attendanceManager.updateMember(personId, updates);
+        const success = await attendanceManager.updateMember(personId, updates)
         if (success) {
           setGroupsWithMembers((prev) =>
             prev.map((group) => ({
               ...group,
               members: group.members.map((m) =>
-                m.person_id === personId
-                  ? { ...m, [field]: value.trim() || undefined }
-                  : m,
+                m.person_id === personId ? { ...m, [field]: value.trim() || undefined } : m,
               ),
             })),
-          );
-          cancelEditing();
+          )
+          cancelEditing()
         } else {
           if (dialog) {
             await dialog.alert({
               title: "Save failed",
               message: "Failed to save changes.",
               variant: "danger",
-            });
+            })
           } else {
-            alert("Failed to save changes");
+            alert("Failed to save changes")
           }
         }
       } catch (error) {
-        console.error("Error saving member:", error);
+        console.error("Error saving member:", error)
         if (dialog) {
           await dialog.alert({
             title: "Save failed",
             message: "Failed to save changes.",
             variant: "danger",
-          });
+          })
         } else {
-          alert("Failed to save changes");
+          alert("Failed to save changes")
         }
       } finally {
-        setSavingMember(null);
+        setSavingMember(null)
       }
     },
     [cancelEditing, dialog],
-  );
+  )
 
   const saveGroupEdit = useCallback(
     async (groupId: string, field: GroupField, value: string) => {
@@ -200,84 +178,82 @@ export function useDatabaseManagement(
           await dialog.alert({
             title: "Missing group name",
             message: "Group name cannot be empty.",
-          });
+          })
         } else {
-          alert("Group name cannot be empty");
+          alert("Group name cannot be empty")
         }
-        return;
+        return
       }
 
-      setSavingGroup(groupId);
+      setSavingGroup(groupId)
       try {
         const updates: Partial<AttendanceGroup> = {
           [field]: value.trim() || undefined,
-        };
+        }
 
-        const success = await attendanceManager.updateGroup(groupId, updates);
+        const success = await attendanceManager.updateGroup(groupId, updates)
         if (success) {
           setGroupsWithMembers((prev) =>
             prev.map((group) =>
-              group.id === groupId
-                ? { ...group, [field]: value.trim() || undefined }
-                : group,
+              group.id === groupId ? { ...group, [field]: value.trim() || undefined } : group,
             ),
-          );
-          cancelEditing();
+          )
+          cancelEditing()
         } else {
           if (dialog) {
             await dialog.alert({
               title: "Save failed",
               message: "Failed to save changes.",
               variant: "danger",
-            });
+            })
           } else {
-            alert("Failed to save changes");
+            alert("Failed to save changes")
           }
         }
       } catch (error) {
-        console.error("Error saving group:", error);
+        console.error("Error saving group:", error)
         if (dialog) {
           await dialog.alert({
             title: "Save failed",
             message: "Failed to save changes.",
             variant: "danger",
-          });
+          })
         } else {
-          alert("Failed to save changes");
+          alert("Failed to save changes")
         }
       } finally {
-        setSavingGroup(null);
+        setSavingGroup(null)
       }
     },
     [cancelEditing, dialog],
-  );
+  )
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
-      const targetGroup = groups.find((group) => group.id === groupId);
+      const targetGroup = groups.find((group) => group.id === groupId)
       if (!targetGroup) {
         if (dialog) {
           await dialog.alert({
             title: "Group not found",
             message: "Please refresh and try again.",
             variant: "danger",
-          });
+          })
         } else {
-          alert("Group not found. Please refresh and try again.");
+          alert("Group not found. Please refresh and try again.")
         }
-        return;
+        return
       }
 
-      setGroupToDelete(targetGroup);
-      setShowDeleteConfirmation(true);
-      setDeletingGroup(groupId);
+      setGroupToDelete(targetGroup)
+      setShowDeleteConfirmation(true)
+      setDeletingGroup(groupId)
     },
     [groups, setGroupToDelete, setShowDeleteConfirmation, dialog],
-  );
+  )
 
   const handleDeleteMember = useCallback(
     async (personId: string, memberName: string) => {
-      const confirmMessage = `Delete member "${memberName}"?\n\nThis cannot be undone.`;
+      const confirmMessage = `Delete member "${memberName}"?\n\nThis cannot be undone.`
 
       if (dialog) {
         const ok = await dialog.confirm({
@@ -286,54 +262,54 @@ export function useDatabaseManagement(
           confirmText: "Delete",
           cancelText: "Cancel",
           confirmVariant: "danger",
-        });
-        if (!ok) return;
+        })
+        if (!ok) return
       } else {
-        if (!window.confirm(confirmMessage)) return;
+        if (!window.confirm(confirmMessage)) return
       }
 
-      setDeletingMember(personId);
+      setDeletingMember(personId)
       try {
-        const success = await attendanceManager.removeMember(personId);
+        const success = await attendanceManager.removeMember(personId)
         if (success) {
           setGroupsWithMembers((prev) =>
             prev.map((group) => ({
               ...group,
               members: group.members.filter((m) => m.person_id !== personId),
             })),
-          );
+          )
         } else {
           if (dialog) {
             await dialog.alert({
               title: "Delete failed",
               message: "Failed to delete member.",
               variant: "danger",
-            });
+            })
           } else {
-            alert("Failed to delete member");
+            alert("Failed to delete member")
           }
         }
       } catch (error) {
-        console.error("Error deleting member:", error);
+        console.error("Error deleting member:", error)
         if (dialog) {
           await dialog.alert({
             title: "Delete failed",
             message: "Failed to delete member.",
             variant: "danger",
-          });
+          })
         } else {
-          alert("Failed to delete member");
+          alert("Failed to delete member")
         }
       } finally {
-        setDeletingMember(null);
+        setDeletingMember(null)
       }
     },
     [dialog],
-  );
+  )
 
   const handleClearAllGroups = useCallback(async () => {
-    const groupCount = groups.length;
-    const confirmMessage = `Delete ALL ${groupCount} groups?\n\nThis will delete all groups and all their members. This cannot be undone.`;
+    const groupCount = groups.length
+    const confirmMessage = `Delete ALL ${groupCount} groups?\n\nThis will delete all groups and all their members. This cannot be undone.`
 
     if (dialog) {
       const ok = await dialog.confirm({
@@ -342,51 +318,48 @@ export function useDatabaseManagement(
         confirmText: "Delete all",
         cancelText: "Cancel",
         confirmVariant: "danger",
-      });
-      if (!ok) return;
+      })
+      if (!ok) return
     } else {
-      if (!window.confirm(confirmMessage)) return;
+      if (!window.confirm(confirmMessage)) return
     }
 
-    setDeletingGroup("all");
+    setDeletingGroup("all")
     try {
-      const deletePromises = groups.map((group) =>
-        attendanceManager.deleteGroup(group.id),
-      );
-      await Promise.all(deletePromises);
-      setGroupsWithMembers([]);
+      const deletePromises = groups.map((group) => attendanceManager.deleteGroup(group.id))
+      await Promise.all(deletePromises)
+      setGroupsWithMembers([])
       if (onGroupsChanged) {
-        onGroupsChanged();
+        onGroupsChanged()
       }
       if (dialog) {
         await dialog.alert({
           title: "Groups deleted",
           message: `Successfully deleted ${groupCount} groups.`,
-        });
+        })
       } else {
-        alert(`✓ Successfully deleted ${groupCount} groups`);
+        alert(`✓ Successfully deleted ${groupCount} groups`)
       }
     } catch (error) {
-      console.error("Error deleting all groups:", error);
+      console.error("Error deleting all groups:", error)
       if (dialog) {
         await dialog.alert({
           title: "Delete failed",
           message: "Failed to delete some groups.",
           variant: "danger",
-        });
+        })
       } else {
-        alert("❌ Failed to delete some groups");
+        alert("❌ Failed to delete some groups")
       }
     } finally {
-      setDeletingGroup(null);
+      setDeletingGroup(null)
     }
-  }, [groups, onGroupsChanged, dialog]);
+  }, [groups, onGroupsChanged, dialog])
 
   const totalMembers = useMemo(
-    () =>
-      groupsWithMembers.reduce((sum, group) => sum + group.members.length, 0),
+    () => groupsWithMembers.reduce((sum, group) => sum + group.members.length, 0),
     [groupsWithMembers],
-  );
+  )
 
   return {
     groupsWithMembers,
@@ -412,5 +385,5 @@ export function useDatabaseManagement(
     handleDeleteMember,
     handleClearAllGroups,
     totalMembers,
-  };
+  }
 }

@@ -1,4 +1,4 @@
-import type { AttendanceSession } from "@/types/recognition";
+import type { AttendanceSession } from "@/types/recognition"
 
 export type ColumnKey =
   | "name"
@@ -9,35 +9,30 @@ export type ColumnKey =
   | "status"
   | "is_late"
   | "late_minutes"
-  | "notes";
+  | "notes"
 
-export type GroupByKey = "none" | "person" | "date";
+export type GroupByKey = "none" | "person" | "date"
 
-export type ReportStatusFilter =
-  | "all"
-  | "present"
-  | "late"
-  | "absent"
-  | "no_records";
+export type ReportStatusFilter = "all" | "present" | "late" | "absent" | "no_records"
 
 export interface SavedViewConfig {
-  name: string;
-  columns: ColumnKey[];
-  groupBy: GroupByKey;
-  statusFilter: ReportStatusFilter;
-  search: string;
+  name: string
+  columns: ColumnKey[]
+  groupBy: GroupByKey
+  statusFilter: ReportStatusFilter
+  search: string
 }
 
 export interface RowData {
-  person_id: string;
-  name: string;
-  date: string;
-  check_in_time?: Date;
-  check_out_time?: Date;
-  total_hours?: number;
-  status: ReportStatusFilter;
-  is_late: boolean;
-  late_minutes: number;
-  notes: string;
-  session: AttendanceSession | null;
+  person_id: string
+  name: string
+  date: string
+  check_in_time?: Date
+  check_out_time?: Date
+  total_hours?: number
+  status: ReportStatusFilter
+  is_late: boolean
+  late_minutes: number
+  notes: string
+  session: AttendanceSession | null
 }

@@ -1,25 +1,20 @@
-import { motion, AnimatePresence } from "framer-motion";
-import type { AudioSettings } from "@/components/settings/types";
+import { motion, AnimatePresence } from "framer-motion"
+import type { AudioSettings } from "@/components/settings/types"
 
 interface NotificationsProps {
-  audioSettings: AudioSettings;
-  onAudioSettingsChange: (updates: Partial<AudioSettings>) => void;
+  audioSettings: AudioSettings
+  onAudioSettingsChange: (updates: Partial<AudioSettings>) => void
 }
 
-export function Notifications({
-  audioSettings,
-  onAudioSettingsChange,
-}: NotificationsProps) {
+export function Notifications({ audioSettings, onAudioSettingsChange }: NotificationsProps) {
   return (
-    <div className="space-y-4 max-w-auto pt-4 px-10 pb-10">
+    <div className="max-w-auto space-y-4 px-10 pt-4 pb-10">
       <div className="space-y-4">
         {/* Recognition sound */}
-        <div className="flex items-center py-3 border-b border-white/5 gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-white/90">
-              Scan Confirmation Sound
-            </div>
-            <div className="min-h-4 relative">
+        <div className="flex items-center gap-4 border-b border-white/5 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-white/90">Scan Confirmation Sound</div>
+            <div className="relative min-h-4">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={audioSettings.recognitionSoundEnabled ? "on" : "off"}
@@ -27,11 +22,10 @@ export function Notifications({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 2 }}
                   transition={{ duration: 0.15 }}
-                  className="text-xs text-white/50"
-                >
-                  {audioSettings.recognitionSoundEnabled
-                    ? "ON: Play a notification sound when someone scans."
-                    : "OFF: Silent mode enabled."}
+                  className="text-xs text-white/50">
+                  {audioSettings.recognitionSoundEnabled ?
+                    "ON: Play a notification sound when someone scans."
+                  : "OFF: Silent mode enabled."}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -43,22 +37,16 @@ export function Notifications({
                 recognitionSoundEnabled: !audioSettings.recognitionSoundEnabled,
               })
             }
-            className={`relative w-10 h-5.5 rounded-full focus:outline-none transition-colors duration-200 shrink-0 flex items-center ml-auto ${
-              audioSettings.recognitionSoundEnabled
-                ? "bg-cyan-500/30"
-                : "bg-white/10"
-            }`}
-          >
+            className={`relative ml-auto flex h-5.5 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+              audioSettings.recognitionSoundEnabled ? "bg-cyan-500/30" : "bg-white/10"
+            }`}>
             <div
-              className={`absolute left-0.5 w-4.5 h-4.5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
-                audioSettings.recognitionSoundEnabled
-                  ? "translate-x-4.5"
-                  : "translate-x-0"
-              }`}
-            ></div>
+              className={`absolute left-0.5 h-4.5 w-4.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                audioSettings.recognitionSoundEnabled ? "translate-x-4.5" : "translate-x-0"
+              }`}></div>
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,18 +1,18 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { EmptyState } from "@/components/group/shared/EmptyState";
-import { CameraQueue } from "@/components/group/sections/registration/CameraQueue";
-import { BulkRegistration } from "@/components/group/sections/registration/BulkRegistration";
-import { FaceCapture } from "@/components/group/sections";
-import { useGroupUIStore } from "@/components/group/stores";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
+import { motion, AnimatePresence } from "framer-motion"
+import { EmptyState } from "@/components/group/shared/EmptyState"
+import { CameraQueue } from "@/components/group/sections/registration/CameraQueue"
+import { BulkRegistration } from "@/components/group/sections/registration/BulkRegistration"
+import { FaceCapture } from "@/components/group/sections"
+import { useGroupUIStore } from "@/components/group/stores"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface RegistrationProps {
-  group: AttendanceGroup;
-  members: AttendanceMember[];
-  onRefresh: () => void;
-  deselectMemberTrigger?: number;
-  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void;
-  onAddMember?: () => void;
+  group: AttendanceGroup
+  members: AttendanceMember[]
+  onRefresh: () => void
+  deselectMemberTrigger?: number
+  onHasSelectedMemberChange?: (hasSelectedMember: boolean) => void
+  onAddMember?: () => void
 }
 
 export function Registration({
@@ -23,13 +23,11 @@ export function Registration({
   onHasSelectedMemberChange,
   onAddMember,
 }: RegistrationProps) {
-  const source = useGroupUIStore((state) => state.lastRegistrationSource);
-  const mode = useGroupUIStore((state) => state.lastRegistrationMode);
-  const setRegistrationState = useGroupUIStore(
-    (state) => state.setRegistrationState,
-  );
-  const handleBack = useGroupUIStore((state) => state.handleRegistrationBack);
-  const resetRegistration = useGroupUIStore((state) => state.resetRegistration);
+  const source = useGroupUIStore((state) => state.lastRegistrationSource)
+  const mode = useGroupUIStore((state) => state.lastRegistrationMode)
+  const setRegistrationState = useGroupUIStore((state) => state.setRegistrationState)
+  const handleBack = useGroupUIStore((state) => state.handleRegistrationBack)
+  const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
 
   const animationProps = {
     initial: { opacity: 0, scale: 0.995 },
@@ -38,11 +36,11 @@ export function Registration({
     transition: { duration: 0.15, ease: "easeOut" as const },
     style: { willChange: "opacity, transform" },
     className: "h-full w-full",
-  };
+  }
 
   return (
     <AnimatePresence mode="wait">
-      {mode === "bulk" && source === "upload" ? (
+      {mode === "bulk" && source === "upload" ?
         <motion.div key="bulk-upload" {...animationProps}>
           <BulkRegistration
             group={group}
@@ -51,7 +49,7 @@ export function Registration({
             onClose={resetRegistration}
           />
         </motion.div>
-      ) : mode === "queue" && source === "camera" ? (
+      : mode === "queue" && source === "camera" ?
         <motion.div key="camera-queue" {...animationProps}>
           <CameraQueue
             group={group}
@@ -60,7 +58,7 @@ export function Registration({
             onClose={resetRegistration}
           />
         </motion.div>
-      ) : mode === "single" && source ? (
+      : mode === "single" && source ?
         <motion.div key="single-capture" {...animationProps}>
           <FaceCapture
             group={group}
@@ -71,30 +69,29 @@ export function Registration({
             onHasSelectedMemberChange={onHasSelectedMemberChange}
           />
         </motion.div>
-      ) : members.length === 0 ? (
+      : members.length === 0 ?
         <motion.div key="empty-state" {...animationProps}>
           <EmptyState
             title="No members in this group yet"
             action={
-              onAddMember
-                ? {
-                    label: "Add Member",
-                    onClick: onAddMember,
-                  }
-                : undefined
+              onAddMember ?
+                {
+                  label: "Add Member",
+                  onClick: onAddMember,
+                }
+              : undefined
             }
           />
         </motion.div>
-      ) : !source ? (
+      : !source ?
         <motion.div
           key="source-selection"
           {...animationProps}
-          className="h-full flex flex-col items-center justify-center px-6"
-        >
+          className="flex h-full flex-col items-center justify-center px-6">
           <div className="w-full max-w-lg">
-            <div className="flex justify-between items-start mb-12">
+            <div className="mb-12 flex items-start justify-between">
               <div className="space-y-1">
-                <h2 className="text-2xl text-center font-black text-white/90 tracking-tighter">
+                <h2 className="text-center text-2xl font-black tracking-tighter text-white/90">
                   How would you like to register members for{" "}
                   <span className="text-cyan-400/80">{group.name}</span>?
                 </h2>
@@ -103,9 +100,8 @@ export function Registration({
               {source && (
                 <button
                   onClick={handleBack}
-                  className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 text-white/50 hover:text-white transition-all duration-300"
-                >
-                  <i className="fa-solid fa-arrow-left text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+                  className="group flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white/50 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white">
+                  <i className="fa-solid fa-arrow-left text-xs transition-transform group-hover:-translate-x-0.5"></i>
                   <span className="text-[11px] font-medium">Back</span>
                 </button>
               )}
@@ -114,16 +110,15 @@ export function Registration({
             <div className="grid grid-cols-2 gap-6">
               <button
                 onClick={() => setRegistrationState("camera", null)}
-                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300"
-              >
-                <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
-                  <i className="fa-solid fa-camera-retro text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
+                className="group relative flex flex-col items-center gap-6 rounded-[2.5rem] border border-white/5 bg-white/5 p-10 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/3">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/5 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]">
+                  <i className="fa-solid fa-camera-retro text-4xl text-white/40 transition-colors group-hover:text-cyan-400"></i>
                 </div>
                 <div className="text-center">
-                  <span className="block text-lg font-medium text-white/80 group-hover:text-white transition-colors">
+                  <span className="block text-lg font-medium text-white/80 transition-colors group-hover:text-white">
                     Camera
                   </span>
-                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
+                  <span className="text-[11px] font-medium text-white/20 transition-colors group-hover:text-cyan-500/60">
                     Live Capture
                   </span>
                 </div>
@@ -131,16 +126,15 @@ export function Registration({
 
               <button
                 onClick={() => setRegistrationState("upload", null)}
-                className="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300"
-              >
-                <div className="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)] transition-all duration-500">
-                  <i className="fa-solid fa-cloud-arrow-up text-4xl text-white/40 group-hover:text-cyan-400 transition-colors"></i>
+                className="group relative flex flex-col items-center gap-6 rounded-[2.5rem] border border-white/5 bg-white/5 p-10 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/3">
+                <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/5 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]">
+                  <i className="fa-solid fa-cloud-arrow-up text-4xl text-white/40 transition-colors group-hover:text-cyan-400"></i>
                 </div>
                 <div className="text-center">
-                  <span className="block text-lg font-medium text-white/80 group-hover:text-white transition-colors">
+                  <span className="block text-lg font-medium text-white/80 transition-colors group-hover:text-white">
                     File
                   </span>
-                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
+                  <span className="text-[11px] font-medium text-white/20 transition-colors group-hover:text-cyan-500/60">
                     Local Photos
                   </span>
                 </div>
@@ -148,18 +142,16 @@ export function Registration({
             </div>
           </div>
         </motion.div>
-      ) : (
-        <motion.div
+      : <motion.div
           key="mode-selection"
           {...animationProps}
-          className="h-full flex flex-col items-center justify-center px-6"
-        >
+          className="flex h-full flex-col items-center justify-center px-6">
           <div className="w-full max-w-lg space-y-8">
-            <div className="text-center space-y-2 relative">
-              <h2 className="text-2xl font-black text-white/90 tracking-tight">
+            <div className="relative space-y-2 text-center">
+              <h2 className="text-2xl font-black tracking-tight text-white/90">
                 Registration Method
               </h2>
-              <p className="text-[10px] text-white/20 max-w-xs mx-auto font-medium leading-relaxed">
+              <p className="mx-auto max-w-xs text-[10px] leading-relaxed font-medium text-white/20">
                 Selected Source:{" "}
                 <span className="text-cyan-400/60">
                   {source === "camera" ? "Live Camera" : "Photo Upload"}
@@ -170,16 +162,15 @@ export function Registration({
             <div className="grid gap-4">
               <button
                 onClick={() => setRegistrationState(source, "single")}
-                className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
-              >
-                <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+                className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-white/5 p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-cyan-500/10">
                   <i className="fa-solid fa-user text-xl text-white/30 group-hover:text-cyan-400"></i>
                 </div>
                 <div className="text-left">
                   <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                     One person
                   </span>
-                  <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
+                  <span className="text-[11px] font-medium text-white/20 transition-colors group-hover:text-cyan-500/60">
                     One member at a time
                   </span>
                 </div>
@@ -188,16 +179,15 @@ export function Registration({
               {source === "upload" && (
                 <button
                   onClick={() => setRegistrationState(source, "bulk")}
-                  className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
-                >
-                  <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+                  className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-white/5 p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/3">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-cyan-500/10">
                     <i className="fa-solid fa-layer-group text-xl text-white/30 group-hover:text-cyan-400"></i>
                   </div>
                   <div className="text-left">
                     <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                       Multiple photos
                     </span>
-                    <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
+                    <span className="text-[11px] font-medium text-white/20 transition-colors group-hover:text-cyan-500/60">
                       Upload several portraits
                     </span>
                   </div>
@@ -207,16 +197,15 @@ export function Registration({
               {source === "camera" && (
                 <button
                   onClick={() => setRegistrationState(source, "queue")}
-                  className="group p-6 rounded-4xl border border-white/5 bg-white/5 hover:border-cyan-500/30 hover:bg-cyan-500/3 transition-all duration-300 flex items-center gap-6"
-                >
-                  <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-cyan-500/10 transition-colors">
+                  className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-white/5 p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/3">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-cyan-500/10">
                     <i className="fa-solid fa-users-viewfinder text-xl text-white/30 group-hover:text-cyan-400"></i>
                   </div>
                   <div className="text-left">
                     <span className="block text-lg font-medium text-white/80 group-hover:text-white">
                       Queue
                     </span>
-                    <span className="text-[11px] font-medium text-white/20 group-hover:text-cyan-500/60 transition-colors">
+                    <span className="text-[11px] font-medium text-white/20 transition-colors group-hover:text-cyan-500/60">
                       Multi-member capture
                     </span>
                   </div>
@@ -225,7 +214,7 @@ export function Registration({
             </div>
           </div>
         </motion.div>
-      )}
+      }
     </AnimatePresence>
-  );
+  )
 }

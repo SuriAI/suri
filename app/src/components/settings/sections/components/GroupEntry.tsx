@@ -4,33 +4,29 @@ import type {
   EditingGroup,
   MemberField,
   GroupField,
-} from "@/components/settings/sections/types";
-import { MemberEntry } from "@/components/settings/sections/components/MemberEntry";
-import type { AttendanceGroup, AttendanceMember } from "@/types/recognition";
+} from "@/components/settings/sections/types"
+import { MemberEntry } from "@/components/settings/sections/components/MemberEntry"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface GroupEntryProps {
-  group: GroupWithMembers;
-  isExpanded: boolean;
-  editingGroup: EditingGroup | null;
-  editingMember: EditingMember | null;
-  editValue: string;
-  savingGroup: string | null;
-  savingMember: string | null;
-  deletingGroup: string | null;
-  deletingMember: string | null;
-  onToggle: (groupId: string) => void;
-  onStartEditingGroup: (group: AttendanceGroup, field: GroupField) => void;
-  onStartEditingMember: (member: AttendanceMember, field: MemberField) => void;
-  onEditValueChange: (value: string) => void;
-  onSaveGroupEdit: (groupId: string, field: GroupField, value: string) => void;
-  onSaveMemberEdit: (
-    personId: string,
-    field: MemberField,
-    value: string,
-  ) => void;
-  onCancelEditing: () => void;
-  onDeleteGroup: (groupId: string) => void;
-  onDeleteMember: (personId: string, name: string) => void;
+  group: GroupWithMembers
+  isExpanded: boolean
+  editingGroup: EditingGroup | null
+  editingMember: EditingMember | null
+  editValue: string
+  savingGroup: string | null
+  savingMember: string | null
+  deletingGroup: string | null
+  deletingMember: string | null
+  onToggle: (groupId: string) => void
+  onStartEditingGroup: (group: AttendanceGroup, field: GroupField) => void
+  onStartEditingMember: (member: AttendanceMember, field: MemberField) => void
+  onEditValueChange: (value: string) => void
+  onSaveGroupEdit: (groupId: string, field: GroupField, value: string) => void
+  onSaveMemberEdit: (personId: string, field: MemberField, value: string) => void
+  onCancelEditing: () => void
+  onDeleteGroup: (groupId: string) => void
+  onDeleteMember: (personId: string, name: string) => void
 }
 
 export function GroupEntry({
@@ -53,33 +49,30 @@ export function GroupEntry({
   onDeleteGroup,
   onDeleteMember,
 }: GroupEntryProps) {
-  const memberCount = group.members.length;
-  const registeredCount = group.members.filter((m) => m.has_face_data).length;
+  const memberCount = group.members.length
+  const registeredCount = group.members.filter((m) => m.has_face_data).length
 
   const handleGroupKeyDown = (e: React.KeyboardEvent, field: GroupField) => {
     if (e.key === "Enter") {
-      onSaveGroupEdit(group.id, field, editValue);
+      onSaveGroupEdit(group.id, field, editValue)
     } else if (e.key === "Escape") {
-      onCancelEditing();
+      onCancelEditing()
     }
-  };
+  }
 
   return (
-    <div className="group/row rounded-lg border border-white/5 bg-white/1 hover:bg-white/5 transition-all overflow-hidden font-sans">
+    <div className="group/row overflow-hidden rounded-lg border border-white/5 bg-white/1 font-sans transition-all hover:bg-white/5">
       {/* Group Header */}
       <div
         onClick={() => onToggle(group.id)}
-        className="w-full px-3 py-2 flex items-center justify-between cursor-pointer transition-colors"
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        className="flex w-full cursor-pointer items-center justify-between px-3 py-2 transition-colors">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <i
-            className={`fa-solid fa-chevron-right text-[10px] text-white/40 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""} group-hover/row:text-white/70 w-3 text-center`}
-          ></i>
+            className={`fa-solid fa-chevron-right text-[10px] text-white/40 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""} w-3 text-center group-hover/row:text-white/70`}></i>
 
-          <div className="flex-1 min-w-0 flex items-baseline gap-3">
+          <div className="flex min-w-0 flex-1 items-baseline gap-3">
             {/* Group Name */}
-            {editingGroup?.groupId === group.id &&
-            editingGroup.field === "name" ? (
+            {editingGroup?.groupId === group.id && editingGroup.field === "name" ?
               <input
                 type="text"
                 value={editValue}
@@ -89,36 +82,30 @@ export function GroupEntry({
                 onClick={(e) => e.stopPropagation()}
                 autoFocus
                 disabled={savingGroup === group.id}
-                className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-xs font-bold text-white outline-none transition-all duration-300 focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10 h-6"
+                className="h-6 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-xs font-bold text-white transition-all duration-300 outline-none focus:border-cyan-500/30 focus:ring-2 focus:ring-cyan-500/10"
               />
-            ) : (
-              <div
+            : <div
                 onClick={(e) => {
-                  e.stopPropagation();
-                  onStartEditingGroup(group, "name");
+                  e.stopPropagation()
+                  onStartEditingGroup(group, "name")
                 }}
-                className="text-xs font-bold text-white hover:text-cyan-400 transition-colors truncate flex items-center gap-2"
-              >
+                className="flex items-center gap-2 truncate text-xs font-bold text-white transition-colors hover:text-cyan-400">
                 {group.name}
                 {savingGroup === group.id && (
                   <i className="fa-solid fa-spinner fa-spin text-[9px] text-cyan-400/50"></i>
                 )}
               </div>
-            )}
+            }
 
             {/* Combined Metadata */}
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[9px] font-medium text-white/5 shrink-0">
-                ·
-              </span>
-              <div className="text-[11px] font-bold text-white/35">
-                Group ID: {group.id}
-              </div>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 text-[9px] font-medium text-white/5">·</span>
+              <div className="text-[11px] font-bold text-white/35">Group ID: {group.id}</div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0 ml-4">
+        <div className="ml-4 flex shrink-0 items-center gap-4">
           <div className="flex items-center gap-2.5">
             <div className="text-[11px] font-bold text-white/35">
               {memberCount} {memberCount === 1 ? "Member" : "Members"}
@@ -132,16 +119,14 @@ export function GroupEntry({
 
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onDeleteGroup(group.id);
+              e.stopPropagation()
+              onDeleteGroup(group.id)
             }}
             disabled={deletingGroup === group.id || deletingGroup === "all"}
-            className="w-6 h-6 flex items-center justify-center rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover/row:opacity-100 disabled:opacity-50"
-            title="Delete group"
-          >
+            className="flex h-6 w-6 items-center justify-center rounded-lg text-white/30 opacity-0 transition-all group-hover/row:opacity-100 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+            title="Delete group">
             <i
-              className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}
-            ></i>
+              className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
           </button>
         </div>
       </div>
@@ -149,12 +134,11 @@ export function GroupEntry({
       {/* Members List */}
       {isExpanded && (
         <div className="border-t border-white/5 bg-white/5">
-          {group.members.length === 0 ? (
+          {group.members.length === 0 ?
             <div className="px-4 py-8 text-center text-sm text-white/40">
               No members in this group
             </div>
-          ) : (
-            <div className="p-2 space-y-1">
+          : <div className="space-y-1 p-2">
               {group.members.map((member) => (
                 <MemberEntry
                   key={member.person_id}
@@ -171,9 +155,9 @@ export function GroupEntry({
                 />
               ))}
             </div>
-          )}
+          }
         </div>
       )}
     </div>
-  );
+  )
 }

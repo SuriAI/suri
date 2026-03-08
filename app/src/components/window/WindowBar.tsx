@@ -1,96 +1,93 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 
 export default function WindowBar() {
-  const [isMaximized, setIsMaximized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false)
 
   useEffect(() => {
-    const handleMaximize = () => setIsMaximized(true);
-    const handleUnmaximize = () => setIsMaximized(false);
+    const handleMaximize = () => setIsMaximized(true)
+    const handleUnmaximize = () => setIsMaximized(false)
 
-    let cleanupMaximize: (() => void) | undefined;
-    let cleanupUnmaximize: (() => void) | undefined;
+    let cleanupMaximize: (() => void) | undefined
+    let cleanupUnmaximize: (() => void) | undefined
 
     if (window.suriElectron) {
-      cleanupMaximize = window.suriElectron.onMaximize(handleMaximize);
-      cleanupUnmaximize = window.suriElectron.onUnmaximize(handleUnmaximize);
+      cleanupMaximize = window.suriElectron.onMaximize(handleMaximize)
+      cleanupUnmaximize = window.suriElectron.onUnmaximize(handleUnmaximize)
     }
 
     return () => {
-      if (cleanupMaximize) cleanupMaximize();
-      if (cleanupUnmaximize) cleanupUnmaximize();
-    };
-  }, []);
+      if (cleanupMaximize) cleanupMaximize()
+      if (cleanupUnmaximize) cleanupUnmaximize()
+    }
+  }, [])
 
   const handleMinimize = () => {
     if (window.suriElectron) {
-      window.suriElectron.minimize();
+      window.suriElectron.minimize()
     }
-  };
+  }
 
   const handleMaximize = () => {
     if (window.suriElectron) {
-      window.suriElectron.maximize();
+      window.suriElectron.maximize()
     }
-  };
+  }
 
   const handleClose = () => {
     if (window.suriElectron) {
-      window.suriElectron.close();
+      window.suriElectron.close()
     }
-  };
+  }
 
   return (
     <div
-      className="w-full h-[32px] flex items-center justify-between select-none shrink-0 relative"
+      className="relative flex h-[32px] w-full shrink-0 items-center justify-between select-none"
       style={
         {
           WebkitAppRegion: isMaximized ? "no-drag" : "drag",
         } as React.CSSProperties
-      }
-    >
-      <div className="absolute inset-0 bg-black/90 border-b border-white/6 z-40 pointer-events-none"></div>
+      }>
+      <div className="pointer-events-none absolute inset-0 z-40 border-b border-white/6 bg-black/90"></div>
 
-      <div className="flex items-center ml-4 space-x-3 flex-1 relative z-40 pointer-events-none">
+      <div className="pointer-events-none relative z-40 ml-4 flex flex-1 items-center space-x-3">
         <img
           src="./icons/suri_mark_logo_transparent.png"
           alt="Suri"
-          className="w-6 h-6 object-contain opacity-90 -ml-3 mr-1"
+          className="mr-1 -ml-3 h-6 w-6 object-contain opacity-90"
         />
       </div>
 
       <div
-        className="flex items-center h-full relative z-70 [webkit-app-region:no-drag]"
+        className="relative z-70 flex h-full items-center [webkit-app-region:no-drag]"
         style={
           {
             WebkitAppRegion: "no-drag",
             fontFamily: '"Segoe MDL2 Assets", Arial, sans-serif',
           } as React.CSSProperties
-        }
-      >
+        }>
         <button
           onClick={handleMinimize}
           title="Minimize"
-          className="w-[46px] h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
-        >
+          className="flex h-full w-[46px] items-center justify-center rounded-none border-none bg-transparent p-0 text-[10px] text-white/70 transition-colors duration-150 hover:bg-white/10">
           &#xE921;
         </button>
 
         <button
           onClick={handleMaximize}
           title={isMaximized ? "Restore" : "Maximize"}
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-white/10 transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
-        >
-          {isMaximized ? <>&#xE923;</> : <>&#xE922;</>}
+          className="flex h-full w-[46px] items-center justify-center rounded-none border-none bg-transparent p-0 text-[10px] text-white/70 transition-colors duration-150 outline-none hover:bg-white/10">
+          {isMaximized ?
+            <>&#xE923;</>
+          : <>&#xE922;</>}
         </button>
 
         <button
           onClick={handleClose}
           title="Close"
-          className="w-[46px] outline-none h-full flex items-center justify-center text-white/70 hover:bg-[#e81123] hover:text-white transition-colors duration-150 border-none rounded-none bg-transparent p-0 text-[10px]"
-        >
+          className="flex h-full w-[46px] items-center justify-center rounded-none border-none bg-transparent p-0 text-[10px] text-white/70 transition-colors duration-150 outline-none hover:bg-[#e81123] hover:text-white">
           &#xE8BB;
         </button>
       </div>
     </div>
-  );
+  )
 }

@@ -1,11 +1,11 @@
 interface FormTextareaProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  focusColor?: string;
-  minHeight?: string;
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
+  focusColor?: string
+  minHeight?: string
 }
 
 export function FormTextarea({
@@ -23,7 +23,7 @@ export function FormTextarea({
       onChange={onChange}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:${focusColor} ${minHeight} ${className}`}
+      className={`w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 focus:outline-none focus:${focusColor} ${minHeight} ${className}`}
     />
-  );
+  )
 }

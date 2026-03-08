@@ -1,89 +1,89 @@
-import { execSync } from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { execSync } from "node:child_process"
+import fs from "node:fs"
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 async function beforePack(context) {
-  console.log("Running before-pack script...");
+  console.log("Running before-pack script...")
 
-  const platform = context.electronPlatformName;
-  const backendDir = path.join(__dirname, "..", "..", "server");
-  const distDir = path.join(backendDir, "dist");
+  const platform = context.electronPlatformName
+  const backendDir = path.join(__dirname, "..", "..", "server")
+  const distDir = path.join(backendDir, "dist")
 
-  console.log(`Building for platform: ${platform}`);
-  console.log(`Backend directory: ${backendDir}`);
+  console.log(`Building for platform: ${platform}`)
+  console.log(`Backend directory: ${backendDir}`)
 
   if (!fs.existsSync(backendDir)) {
-    throw new Error(`Backend directory not found: ${backendDir}`);
+    throw new Error(`Backend directory not found: ${backendDir}`)
   }
 
-  const executableName = platform === "win32" ? "server.exe" : "server";
-  const executablePath = path.join(distDir, executableName);
+  const executableName = platform === "win32" ? "server.exe" : "server"
+  const executablePath = path.join(distDir, executableName)
 
   if (fs.existsSync(executablePath)) {
-    console.log(`Backend executable already exists: ${executablePath}`);
-    return;
+    console.log(`Backend executable already exists: ${executablePath}`)
+    return
   }
 
-  console.log(`Building backend executable for ${platform}...`);
+  console.log(`Building backend executable for ${platform}...`)
 
   try {
     if (
       !fs.existsSync(path.join(backendDir, "node_modules")) &&
       fs.existsSync(path.join(backendDir, "package.json"))
     ) {
-      console.log("Installing backend dependencies...");
-      execSync("npm install", { stdio: "inherit", cwd: backendDir });
+      console.log("Installing backend dependencies...")
+      execSync("npm install", { stdio: "inherit", cwd: backendDir })
     }
 
-    console.log("Installing Python dependencies...");
+    console.log("Installing Python dependencies...")
     execSync("python -m pip install -r requirements.txt", {
       stdio: "inherit",
       cwd: backendDir,
-    });
+    })
 
     try {
       execSync('python -c "import PyInstaller"', {
         stdio: "pipe",
         cwd: backendDir,
-      });
-      console.log("PyInstaller is available");
+      })
+      console.log("PyInstaller is available")
     } catch {
-      console.log("Installing PyInstaller...");
+      console.log("Installing PyInstaller...")
       execSync("python -m pip install pyinstaller", {
         stdio: "inherit",
         cwd: backendDir,
-      });
+      })
     }
 
-    console.log("Building backend with PyInstaller...");
-    execSync("python build_backend.py", { stdio: "inherit", cwd: backendDir });
+    console.log("Building backend with PyInstaller...")
+    execSync("python build_backend.py", { stdio: "inherit", cwd: backendDir })
 
     if (!fs.existsSync(executablePath)) {
-      throw new Error(`Backend executable was not created: ${executablePath}`);
+      throw new Error(`Backend executable was not created: ${executablePath}`)
     }
 
-    console.log(`Backend executable created successfully: ${executablePath}`);
+    console.log(`Backend executable created successfully: ${executablePath}`)
 
     if (platform !== "win32") {
       try {
-        fs.chmodSync(executablePath, 0o755); // rwxr-xr-x
-        console.log(`Set execute permissions on ${executablePath}`);
+        fs.chmodSync(executablePath, 0o755) // rwxr-xr-x
+        console.log(`Set execute permissions on ${executablePath}`)
       } catch (err) {
-        console.warn(`Failed to set execute permissions: ${err.message}`);
+        console.warn(`Failed to set execute permissions: ${err.message}`)
       }
     }
 
-    const stats = fs.statSync(executablePath);
-    const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-    console.log(`Executable size: ${fileSizeMB} MB`);
+    const stats = fs.statSync(executablePath)
+    const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2)
+    console.log(`Executable size: ${fileSizeMB} MB`)
   } catch (error) {
-    console.error("Failed to build backend:", error.message);
-    throw error;
+    console.error("Failed to build backend:", error.message)
+    throw error
   }
 }
 
-export default beforePack;
+export default beforePack

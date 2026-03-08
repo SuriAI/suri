@@ -1,15 +1,15 @@
-import { useCallback, useEffect } from "react";
-import { useCameraStore } from "@/components/main/stores";
+import { useCallback, useEffect } from "react"
+import { useCameraStore } from "@/components/main/stores"
 
 interface UseStreamStateOptions {
-  isProcessingRef: React.MutableRefObject<boolean>;
-  animationFrameRef: React.MutableRefObject<number | undefined>;
-  isScanningRef: React.MutableRefObject<boolean>;
-  isStreamingRef: React.MutableRefObject<boolean>;
-  isStartingRef: React.MutableRefObject<boolean>;
-  isStoppingRef: React.MutableRefObject<boolean>;
-  lastStartTimeRef: React.MutableRefObject<number>;
-  lastStopTimeRef: React.MutableRefObject<number>;
+  isProcessingRef: React.MutableRefObject<boolean>
+  animationFrameRef: React.MutableRefObject<number | undefined>
+  isScanningRef: React.MutableRefObject<boolean>
+  isStreamingRef: React.MutableRefObject<boolean>
+  isStartingRef: React.MutableRefObject<boolean>
+  isStoppingRef: React.MutableRefObject<boolean>
+  lastStartTimeRef: React.MutableRefObject<number>
+  lastStopTimeRef: React.MutableRefObject<number>
 }
 
 export function useStreamState(options: UseStreamStateOptions) {
@@ -22,24 +22,24 @@ export function useStreamState(options: UseStreamStateOptions) {
     isStoppingRef,
     lastStartTimeRef,
     lastStopTimeRef,
-  } = options;
-  const { setIsStreaming } = useCameraStore();
+  } = options
+  const { setIsStreaming } = useCameraStore()
 
   const emergencyRecovery = useCallback(() => {
-    isStartingRef.current = false;
-    isStoppingRef.current = false;
-    isProcessingRef.current = false;
-    lastStartTimeRef.current = 0;
-    lastStopTimeRef.current = 0;
+    isStartingRef.current = false
+    isStoppingRef.current = false
+    isProcessingRef.current = false
+    lastStartTimeRef.current = 0
+    lastStopTimeRef.current = 0
     if (isStreamingRef.current) {
-      isStreamingRef.current = false;
-      isScanningRef.current = false;
-      setIsStreaming(false);
+      isStreamingRef.current = false
+      isScanningRef.current = false
+      setIsStreaming(false)
     }
 
     if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = undefined;
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = undefined
     }
   }, [
     setIsStreaming,
@@ -51,31 +51,31 @@ export function useStreamState(options: UseStreamStateOptions) {
     isStoppingRef,
     lastStartTimeRef,
     lastStopTimeRef,
-  ]);
+  ])
 
   useEffect(() => {
-    let startTimeout: NodeJS.Timeout | undefined;
-    let stopTimeout: NodeJS.Timeout | undefined;
+    let startTimeout: NodeJS.Timeout | undefined
+    let stopTimeout: NodeJS.Timeout | undefined
 
     if (isStartingRef.current) {
       startTimeout = setTimeout(() => {
         if (isStartingRef.current) {
-          emergencyRecovery();
+          emergencyRecovery()
         }
-      }, 10000);
+      }, 10000)
     }
 
     if (isStoppingRef.current) {
       stopTimeout = setTimeout(() => {
         if (isStoppingRef.current) {
-          emergencyRecovery();
+          emergencyRecovery()
         }
-      }, 5000);
+      }, 5000)
     }
 
     return () => {
-      if (startTimeout) clearTimeout(startTimeout);
-      if (stopTimeout) clearTimeout(stopTimeout);
-    };
-  }, [emergencyRecovery, isStartingRef, isStoppingRef]);
+      if (startTimeout) clearTimeout(startTimeout)
+      if (stopTimeout) clearTimeout(stopTimeout)
+    }
+  }, [emergencyRecovery, isStartingRef, isStoppingRef])
 }
