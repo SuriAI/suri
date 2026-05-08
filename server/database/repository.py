@@ -102,8 +102,7 @@ class AttendanceRepository:
 
     async def get_groups(self, active_only: bool = True) -> List[AttendanceGroup]:
         query = select(AttendanceGroup).where(AttendanceGroup.is_deleted.is_(False))
-        if self.organization_id:
-            query = query.where(AttendanceGroup.organization_id == self.organization_id)
+        query = self._apply_org_scope(query, AttendanceGroup)
 
         query = query.order_by(AttendanceGroup.name)
         if active_only:
@@ -304,10 +303,7 @@ class AttendanceRepository:
             AttendanceMember.is_active,
             AttendanceMember.is_deleted.is_(False),
         )
-        if self.organization_id:
-            query = query.where(
-                AttendanceMember.organization_id == self.organization_id
-            )
+        query = self._apply_org_scope(query, AttendanceMember)
 
         result = await self.session.execute(query)
         return result.scalars().first()
@@ -318,10 +314,7 @@ class AttendanceRepository:
             AttendanceMember.is_active,
             AttendanceMember.is_deleted.is_(False),
         )
-        if self.organization_id:
-            query = query.where(
-                AttendanceMember.organization_id == self.organization_id
-            )
+        query = self._apply_org_scope(query, AttendanceMember)
 
         query = query.order_by(AttendanceMember.name)
         result = await self.session.execute(query)
@@ -333,10 +326,7 @@ class AttendanceRepository:
             AttendanceMember.is_active,
             AttendanceMember.is_deleted.is_(False),
         )
-        if self.organization_id:
-            query = query.where(
-                AttendanceMember.organization_id == self.organization_id
-            )
+        query = self._apply_org_scope(query, AttendanceMember)
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -547,10 +537,7 @@ class AttendanceRepository:
         query = select(AttendanceSession).where(
             AttendanceSession.person_id == person_id, AttendanceSession.date == date
         )
-        if self.organization_id:
-            query = query.where(
-                AttendanceSession.organization_id == self.organization_id
-            )
+        query = self._apply_org_scope(query, AttendanceSession)
         result = await self.session.execute(query)
         return result.scalars().first()
 

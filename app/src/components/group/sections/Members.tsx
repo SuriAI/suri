@@ -203,107 +203,112 @@ export function Members({
       : <motion.div
           key="members-list"
           {...animationProps}
-          className="relative mx-auto flex w-full max-w-[900px] flex-col space-y-4 px-10 pt-4 pb-10">
-          <div className="flex shrink-0 items-center justify-between gap-4">
-            <div className="relative w-full max-w-[320px]">
-              <svg
-                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/30"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          className="relative mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden">
+          <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-4 pb-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="relative w-full max-w-[320px]">
+                <svg
+                  className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/30"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  type="search"
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="Search members..."
+                  className="w-full rounded-md border border-white/5 bg-white/5 py-2 pr-3 pl-10 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:border-cyan-500/30 focus:bg-white/[0.08]"
                 />
-              </svg>
-              <input
-                type="search"
-                value={memberSearch}
-                onChange={(e) => setMemberSearch(e.target.value)}
-                placeholder="Search members..."
-                className="w-full rounded-md border border-white/5 bg-white/5 py-2 pr-3 pl-10 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:border-cyan-500/30 focus:bg-white/[0.08]"
-              />
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <Dropdown
+                  options={[
+                    { value: "all", label: "Filter: All" },
+                    { value: "non-registered", label: "Not Registered" },
+                    { value: "registered", label: "Registered" },
+                    { value: "no-consent", label: "Needs Consent" },
+                  ]}
+                  value={registrationFilter}
+                  onChange={(val) => {
+                    if (val) {
+                      setRegistrationFilter(
+                        val as "all" | "registered" | "non-registered" | "no-consent",
+                      )
+                    }
+                  }}
+                  allowClear={false}
+                  buttonClassName="!bg-white/5 !border-white/5 py-1.5 px-3 min-w-[130px] rounded-lg text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
+                  optionClassName="text-[11px] font-bold tracking-wider"
+                  iconClassName="text-[10px]"
+                />
+
+                <Tooltip content="Multi-member camera queue">
+                  <button
+                    onClick={() => setRegistrationState("camera", "queue")}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
+                    <i className="fa-solid fa-users-viewfinder text-[11px]"></i>
+                  </button>
+                </Tooltip>
+                <Tooltip content="Batch upload photos">
+                  <button
+                    onClick={() => setRegistrationState("upload", "bulk")}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
+                    <i className="fa-solid fa-layer-group text-[11px]"></i>
+                  </button>
+                </Tooltip>
+              </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <Dropdown
-                options={[
-                  { value: "all", label: "Filter: All" },
-                  { value: "non-registered", label: "Not Registered" },
-                  { value: "registered", label: "Registered" },
-                  { value: "no-consent", label: "Needs Consent" },
-                ]}
-                value={registrationFilter}
-                onChange={(val) => {
-                  if (val) {
-                    setRegistrationFilter(
-                      val as "all" | "registered" | "non-registered" | "no-consent",
-                    )
-                  }
-                }}
-                allowClear={false}
-                buttonClassName="!bg-white/5 !border-white/5 py-1.5 px-3 min-w-[130px] rounded-lg text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
-                optionClassName="text-[11px] font-bold tracking-wider"
-                iconClassName="text-[10px]"
-              />
-
-              <Tooltip content="Multi-member camera queue">
-                <button
-                  onClick={() => setRegistrationState("camera", "queue")}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
-                  <i className="fa-solid fa-users-viewfinder text-[11px]"></i>
-                </button>
-              </Tooltip>
-              <Tooltip content="Batch upload photos">
-                <button
-                  onClick={() => setRegistrationState("upload", "bulk")}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
-                  <i className="fa-solid fa-layer-group text-[11px]"></i>
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-
-          {members.length > 0 && filteredMembers.length > 0 && (
-            <div className="px-2 py-1 text-xs text-white/30">
-              Showing {filteredMembers.length} of {members.length} member
-              {members.length !== 1 ? "s" : ""}
-            </div>
-          )}
-          <div className="flex flex-col gap-1">
-            {filteredMembers.length === 0 && (
-              <div className="w-full rounded-xl border border-white/5 bg-white/5 px-3 py-10 text-center">
-                <div className="text-xs font-medium tracking-wide text-white/40">
-                  {memberSearch.trim() ?
-                    `No results found for "${memberSearch}"`
-                  : registrationFilter === "registered" ?
-                    "No registered members found"
-                  : registrationFilter === "non-registered" ?
-                    "All members in this group are registered"
-                  : "No members found in this group"}
-                </div>
+            {members.length > 0 && filteredMembers.length > 0 && (
+              <div className="px-2 py-1 text-xs text-white/30">
+                Showing {filteredMembers.length} of {members.length} member
+                {members.length !== 1 ? "s" : ""}
               </div>
             )}
+          </div>
 
-            <AnimatePresence mode="popLayout">
-              {filteredMembers.map((member) => (
-                <MemberRow
-                  key={member.person_id}
-                  member={member}
-                  onEdit={onEdit}
-                  onDelete={setMemberToDelete}
-                  onResetFace={handleResetFace}
-                />
-              ))}
-            </AnimatePresence>
+          <div className="custom-scroll hover-scrollbar flex-1 overflow-y-auto px-10 pb-10">
+            <div className="flex flex-col gap-1">
+              {filteredMembers.length === 0 && (
+                <div className="w-full rounded-xl border border-white/5 bg-white/5 px-3 py-10 text-center">
+                  <div className="text-xs font-medium tracking-wide text-white/40">
+                    {memberSearch.trim() ?
+                      `No results found for "${memberSearch}"`
+                    : registrationFilter === "registered" ?
+                      "No registered members found"
+                    : registrationFilter === "non-registered" ?
+                      "All members in this group are registered"
+                    : "No members found in this group"}
+                  </div>
+                </div>
+              )}
+
+              <AnimatePresence mode="popLayout">
+                {filteredMembers.map((member) => (
+                  <MemberRow
+                    key={member.person_id}
+                    member={member}
+                    onEdit={onEdit}
+                    onDelete={setMemberToDelete}
+                    onResetFace={handleResetFace}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Consent banner */}
           {members.some((m) => !m.has_consent) && (
-            <div className="pointer-events-none sticky right-0 bottom-6 left-0 z-20 flex justify-center">
-              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319] px-4 py-2 text-[11px] font-medium text-white/60 shadow-xl duration-500">
+            <div className="pointer-events-none absolute right-0 bottom-6 left-0 z-40 flex justify-center">
+              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/60 shadow-xl backdrop-blur-sm duration-500">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-triangle-exclamation shrink-0 text-amber-500/80" />
                   <span className="leading-snug whitespace-nowrap">

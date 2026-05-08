@@ -130,7 +130,6 @@ def build_backend(debug=False, onefile=True, clean=True):
     start_time = time.time()
 
     try:
-
         result = subprocess.run(cmd, capture_output=True, text=True)
 
         if result.returncode == 0:
@@ -175,7 +174,6 @@ def test_executable():
     print("Testing executable...")
 
     try:
-
         result = subprocess.run(
             [str(exe_path), "--help"], capture_output=True, text=True, timeout=10
         )

@@ -24,7 +24,6 @@ if not logging.getLogger().handlers:
         logging_config = get_logging_config()
         logging.config.dictConfig(logging_config)
     except Exception as e:
-
         logging.basicConfig(level=logging.INFO)
         print(f"Failed to load logging config: {e}")
 

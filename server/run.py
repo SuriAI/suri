@@ -92,7 +92,6 @@ def main():
         server_config["host"] = args.host
 
     try:
-
         from main import app
 
         logger.info(
