@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import type { SettingsOverview, TimeHealthOverview } from "@/components/settings/types"
 import type { AttendanceGroup } from "@/types/recognition"
 import { useDatabaseManagement } from "@/components/settings/sections/hooks/useDatabaseManagement"
@@ -67,6 +68,17 @@ export function Database({
   const [importFilePath, setImportFilePath] = useState<string | null>(null)
   const [passwordInput, setPasswordInput] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+
+  const [isDangerZoneOpen, setIsDangerZoneOpen] = useState(false)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    type: "clear_groups" | "reset_faces" | null
+    inputValue: string
+  }>({
+    isOpen: false,
+    type: null,
+    inputValue: "",
+  })
 
   const handleExport = async (password: string) => {
     setStatus({ type: "loading", action: "export" })
@@ -414,41 +426,71 @@ export function Database({
       </section>
 
       {/* Danger Zone */}
-      <section className="space-y-6 pt-4">
-        <div className="pt-4 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-red-500/50 uppercase">
-            Danger Zone
-          </h3>
-        </div>
-
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="flex-1">
-            <p className="text-[13px] leading-relaxed text-white/45">
-              Deleting groups or members is permanent. Face data is the biometric information used
-              for recognition. Clearing it will require members to re-register.
-            </p>
+      <section className="relative overflow-hidden rounded-xl border-0 bg-red-500/[0.03] shadow-none outline-none">
+        <button
+          onClick={() => setIsDangerZoneOpen(!isDangerZoneOpen)}
+          className="flex w-full items-center justify-between px-6 py-4 transition-colors hover:bg-red-500/[0.04]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
+              <i className="fa-solid fa-triangle-exclamation text-sm" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-[12px] font-bold tracking-wider text-red-500/80 uppercase">
+                Danger Zone
+              </h3>
+              <p className="text-[11px] text-red-500/40">Destructive actions and data clearing</p>
+            </div>
           </div>
+          <motion.div animate={{ rotate: isDangerZoneOpen ? 180 : 0 }} className="text-red-500/30">
+            <i className="fa-solid fa-chevron-down text-xs" />
+          </motion.div>
+        </button>
 
-          <div className="flex shrink-0 gap-3">
-            <button
-              onClick={handleClearAllGroups}
-              disabled={isLoading || deletingGroup === "all" || groups.length === 0}
-              className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-[12px] font-bold text-red-400 transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-40">
-              {deletingGroup === "all" ?
-                <i className="fa-solid fa-spinner fa-spin"></i>
-              : <i className="fa-solid fa-trash-can text-[11px] opacity-60" />}
-              Clear Groups
-            </button>
+        <AnimatePresence>
+          {isDangerZoneOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}>
+              <div className="border-t border-red-500/10 px-6 py-6">
+                <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                  <div className="flex-1">
+                    <p className="text-[13px] leading-relaxed text-red-200/40">
+                      These actions are <span className="font-bold text-red-500/60">permanent</span>{" "}
+                      and cannot be undone. Biometric profiles, history, and group structures will
+                      be removed from this device.
+                    </p>
+                  </div>
 
-            <button
-              onClick={onClearDatabase}
-              disabled={isLoading}
-              className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-4 py-2 text-[12px] font-bold text-amber-500 transition-all hover:bg-amber-500/20 active:scale-95 disabled:opacity-40">
-              <i className="fa-solid fa-face-viewfinder text-[11px] opacity-60" />
-              Reset Face Data
-            </button>
-          </div>
-        </div>
+                  <div className="flex shrink-0 gap-3">
+                    <button
+                      onClick={() =>
+                        setConfirmModal({ isOpen: true, type: "clear_groups", inputValue: "" })
+                      }
+                      disabled={isLoading || deletingGroup === "all" || groups.length === 0}
+                      className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-transparent px-4 py-2 text-[12px] font-bold text-red-400 transition-all hover:bg-red-500/10 active:scale-95 disabled:opacity-20">
+                      {deletingGroup === "all" ?
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                      : <i className="fa-solid fa-trash-can text-[11px] opacity-60" />}
+                      Clear Groups
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setConfirmModal({ isOpen: true, type: "reset_faces", inputValue: "" })
+                      }
+                      disabled={isLoading}
+                      className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-transparent px-4 py-2 text-[12px] font-bold text-red-500 transition-all hover:bg-red-500/10 active:scale-95 disabled:opacity-20">
+                      <i className="fa-solid fa-user-slash text-[11px] opacity-60" />
+                      Reset Face Data
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* Password Prompt Modal */}
@@ -543,6 +585,60 @@ export function Database({
               }}
               className="min-w-25 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95 disabled:opacity-50">
               {passwordModal.action === "export" ? "Create" : "Restore"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Irreversible Action Confirmation */}
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
+        title="Confirm Destructive Action"
+        icon={<i className="fa-solid fa-triangle-exclamation text-red-500" />}>
+        <div className="space-y-6">
+          <div className="rounded-lg border border-red-500/10 bg-red-500/5 p-4">
+            <p className="text-[12px] leading-relaxed text-red-200/60">
+              {confirmModal.type === "clear_groups" ?
+                "You are about to delete all groups and members. This will permanently erase your local directory."
+              : "You are about to reset all biometric profiles. All enrolled members will need to re-register their faces."
+              }
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-medium text-white/30">
+              Type <span className="font-bold text-white/60">DELETE</span> to confirm
+            </label>
+            <input
+              type="text"
+              autoFocus
+              value={confirmModal.inputValue}
+              onChange={(e) => setConfirmModal({ ...confirmModal, inputValue: e.target.value })}
+              placeholder="Type DELETE..."
+              className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs text-white outline-none focus:border-red-500/30 focus:ring-1 focus:ring-red-500/5"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
+              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/40 transition-colors hover:text-white">
+              Cancel
+            </button>
+            <button
+              disabled={confirmModal.inputValue !== "DELETE"}
+              onClick={() => {
+                const type = confirmModal.type
+                setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })
+                if (type === "clear_groups") {
+                  handleClearAllGroups()
+                } else {
+                  onClearDatabase()
+                }
+              }}
+              className="rounded-lg bg-red-500 px-6 py-2 text-[11px] font-bold tracking-wider text-white transition-all hover:bg-red-600 active:scale-95 disabled:opacity-20 disabled:grayscale">
+              Proceed
             </button>
           </div>
         </div>
