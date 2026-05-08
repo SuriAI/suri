@@ -10,7 +10,6 @@ def serialize_faces(faces: list, endpoint_name: str = "") -> list:
     """Serialize face detection results for API response"""
     serialized_faces = []
     for face in faces:
-
         if "bbox" not in face or not isinstance(face["bbox"], dict):
             logger.warning(f"Face missing bbox in {endpoint_name}: {face}")
             continue

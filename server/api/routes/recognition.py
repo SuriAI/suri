@@ -67,10 +67,12 @@ async def recognize_face(
         if not detections:
             raise ValueError("No detectable face found in image")
 
-        should_block, error_msg, liveness_status = (
-            await process_liveness_for_face_operation(
-                img, bbox, enable_liveness_detection, "Recognition"
-            )
+        (
+            should_block,
+            error_msg,
+            liveness_status,
+        ) = await process_liveness_for_face_operation(
+            img, bbox, enable_liveness_detection, "Recognition"
         )
 
         if should_block:
@@ -138,7 +140,6 @@ async def remove_person(
     Remove a person from the face database
     """
     try:
-
         result = await face_recognizer.remove_person(person_id, repo.organization_id)
 
         if result["success"]:
@@ -175,7 +176,6 @@ async def update_person(
     Update a person's ID in the face database
     """
     try:
-
         if not request.old_person_id.strip() or not request.new_person_id.strip():
             raise HTTPException(
                 status_code=400, detail="Both old and new person IDs must be provided"
@@ -231,7 +231,6 @@ async def get_all_persons(
     Get list of all registered persons
     """
     try:
-
         persons = await face_recognizer.get_all_persons(repo.organization_id)
         stats = await face_recognizer.get_stats(repo.organization_id)
 
@@ -255,7 +254,6 @@ async def set_similarity_threshold(
     Set similarity threshold for face recognition
     """
     try:
-
         if not (0.0 <= request.threshold <= 1.0):
             raise HTTPException(
                 status_code=400, detail="Threshold must be between 0.0 and 1.0"
@@ -282,7 +280,6 @@ async def invalidate_face_cache(
     face_recognizer=Depends(get_face_recognizer),
 ):
     try:
-
         if hasattr(face_recognizer, "invalidate_cache"):
             face_recognizer.invalidate_cache(repo.organization_id)
 
@@ -306,7 +303,6 @@ async def clear_database(
     Clear all persons from the face database
     """
     try:
-
         result = await face_recognizer.clear_database(repo.organization_id)
 
         if result["success"]:
@@ -342,7 +338,6 @@ async def get_face_stats(
     Get face recognition statistics and configuration
     """
     try:
-
         stats = await face_recognizer.get_stats(repo.organization_id)
 
         # Return stats directly in the format expected by the Settings component

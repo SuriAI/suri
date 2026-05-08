@@ -337,7 +337,9 @@ export function Attendance({
                     exit={{ opacity: 0, y: 2 }}
                     transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                     className="text-xs font-normal text-white/45">
-                    {attendanceSettings.enableSpoofDetection ?
+                    {attendanceSettings.forceLiveness ?
+                      "Enforced by central administration."
+                    : attendanceSettings.enableSpoofDetection ?
                       "Verify faces are real before recognition."
                     : "Skip liveness verification."}
                   </motion.div>
@@ -346,11 +348,19 @@ export function Attendance({
             </div>
 
             <button
-              onClick={() => onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)}
+              onClick={() =>
+                !attendanceSettings.forceLiveness &&
+                onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)
+              }
+              disabled={attendanceSettings.forceLiveness}
               aria-label="Toggle anti-spoof detection"
-              className={`premium-switch ${attendanceSettings.enableSpoofDetection ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
+              className={`premium-switch ${attendanceSettings.enableSpoofDetection || attendanceSettings.forceLiveness ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed`}>
               <div
-                className={`premium-switch-thumb ${attendanceSettings.enableSpoofDetection ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
+                className={`premium-switch-thumb ${attendanceSettings.enableSpoofDetection || attendanceSettings.forceLiveness ? "premium-switch-thumb-on" : "premium-switch-thumb-off"} flex items-center justify-center`}>
+                {attendanceSettings.forceLiveness && (
+                  <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />
+                )}
+              </div>
             </button>
           </div>
         </div>

@@ -567,10 +567,12 @@ class AttendanceService:
         if not detections:
             raise ValueError("No detectable face found in image")
 
-        should_block, error_msg, liveness_status = (
-            await process_liveness_for_face_operation(
-                image, bbox, enable_liveness, "Registration"
-            )
+        (
+            should_block,
+            error_msg,
+            liveness_status,
+        ) = await process_liveness_for_face_operation(
+            image, bbox, enable_liveness, "Registration"
         )
         if should_block:
             raise ValueError(error_msg)

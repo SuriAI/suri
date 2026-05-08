@@ -242,13 +242,11 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         await websocket.send_text(json.dumps(attendance_message))
 
             except WebSocketDisconnect:
-
                 logger.info(
                     f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
                 )
                 break
             except Exception as e:
-
                 error_str = str(e).lower()
                 if "disconnect" in error_str or "close" in error_str:
                     logger.info(
@@ -270,7 +268,6 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         )
                     )
                 except (WebSocketDisconnect, RuntimeError) as send_error:
-
                     logger.info(
                         f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}"
                     )
@@ -337,7 +334,6 @@ async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
                     break
 
     except WebSocketDisconnect:
-
         pass
     except Exception as e:
         logger.error(f"WebSocket notification error: {e}")

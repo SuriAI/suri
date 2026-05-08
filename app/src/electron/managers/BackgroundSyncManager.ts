@@ -141,7 +141,9 @@ export class BackgroundSyncManager {
   private timer: NodeJS.Timeout | null = null
   private commandTimer: NodeJS.Timeout | null = null
   private catchUpTimer: NodeJS.Timeout | null = null
+  private eventSource: null = null
   private isSyncing = false
+  private reconnectAttempts = 0
 
   private getSyncConfig() {
     return {
@@ -228,6 +230,79 @@ export class BackgroundSyncManager {
 
     // Initial command poll
     void this.pollCommands()
+
+    // Real-time: Start listening for dashboard events
+    void this.startEventStream()
+  }
+
+  private async startEventStream() {
+    this.stopEventStream()
+
+    const { enabled, remoteBaseUrl, deviceId, deviceToken } = this.getSyncConfig()
+    if (!enabled || !remoteBaseUrl || !deviceId || !deviceToken) return
+
+    const url = `${remoteBaseUrl.replace(/\/+$/, "")}/api/sync/events?deviceId=${deviceId}`
+    console.log(`[Sync] Connecting to real-time event stream: ${url}`)
+
+    try {
+      // Using global fetch with ReadableStream for SSE in Electron Main
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${deviceToken}`,
+          Accept: "text/event-stream",
+        },
+      })
+
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to open event stream: ${response.statusText}`)
+      }
+
+      this.reconnectAttempts = 0
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split("\n")
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              console.log("[Sync] Real-time event received:", data.type)
+
+              if (data.type === "POLICY_UPDATE" || data.type === "SYNC_REQUEST") {
+                console.log("[Sync] Triggering immediate sync from real-time command.")
+                void this.performSync()
+              }
+            } catch {
+              // Ignore heartbeat or malformed JSON
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.warn("[Sync] Event stream error, reconnecting...", error)
+      this.reconnectEventStream()
+    }
+  }
+
+  private reconnectEventStream() {
+    this.stopEventStream()
+    const delay = Math.min(30000, Math.pow(2, this.reconnectAttempts) * 1000)
+    this.reconnectAttempts++
+
+    setTimeout(() => {
+      void this.startEventStream()
+    }, delay)
+  }
+
+  private stopEventStream() {
+    // Note: Aborting the fetch signal would be better, but for simplicity:
+    this.eventSource = null
   }
 
   stop() {
@@ -240,6 +315,7 @@ export class BackgroundSyncManager {
       clearInterval(this.commandTimer)
       this.commandTimer = null
     }
+    this.stopEventStream()
   }
 
   private async pollCommands() {
@@ -418,6 +494,14 @@ export class BackgroundSyncManager {
       }
 
       console.log("[Sync] Background sync successful.")
+
+      // Process Remote Policy from Dashboard
+      if (responsePayload?.policy && typeof responsePayload.policy === "object") {
+        const policy = responsePayload.policy as { forceLiveness?: boolean }
+        if (typeof policy.forceLiveness === "boolean") {
+          persistentStore.set("sync.policy.forceLiveness", policy.forceLiveness)
+        }
+      }
       const syncedAt = new Date().toISOString()
       this.setLastSyncState({
         lastSyncedAt: syncedAt,

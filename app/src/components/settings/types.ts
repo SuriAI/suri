@@ -23,6 +23,7 @@ export interface AttendanceSettings {
   maxRecognitionFacesPerFrame: number
   trackCheckout: boolean
   dataRetentionDays?: number
+  forceLiveness?: boolean
 }
 
 export interface SettingsOverview {

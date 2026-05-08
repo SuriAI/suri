@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { backendService, attendanceManager } from "@/services"
+import { backendService, attendanceManager, persistentSettings } from "@/services"
 import { useDialog } from "@/components/shared"
 import { useGroupUIStore } from "@/components/group/stores"
 import type { GroupSection } from "@/components/group"
@@ -54,6 +54,7 @@ export const useSettings = ({
     loading: false,
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [forceLiveness, setForceLiveness] = useState(false)
   const [triggerCreateGroup, setTriggerCreateGroup] = useState(0)
   const [deselectMemberTrigger, setDeselectMemberTrigger] = useState(0)
   const [hasSelectedMember, setHasSelectedMember] = useState(false)
@@ -109,6 +110,14 @@ export const useSettings = ({
     }, 250)
     return () => clearTimeout(timer)
   }, [loadSystemData])
+
+  useEffect(() => {
+    const loadPolicy = async () => {
+      const policy = await persistentSettings.get<boolean>("sync.policy.forceLiveness")
+      setForceLiveness(!!policy)
+    }
+    loadPolicy()
+  }, [])
 
   useEffect(() => {
     if (activeSection !== "group" || groupInitialSection !== "reports") {
@@ -223,6 +232,7 @@ export const useSettings = ({
     dropdownValue,
     validInitialGroup,
     loadSystemData,
+    forceLiveness,
     registrationSource,
     registrationMode,
     setRegistrationState,

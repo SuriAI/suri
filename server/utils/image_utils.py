@@ -30,7 +30,6 @@ def resize_image(
     target_w, target_h = target_size
 
     if maintain_aspect_ratio:
-
         scale = min(target_w / w, target_h / h)
         new_w = int(w * scale)
         new_h = int(h * scale)
