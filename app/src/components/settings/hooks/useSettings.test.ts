@@ -4,7 +4,13 @@ import { useSettings } from "@/components/settings/hooks/useSettings"
 import { useGroupUIStore } from "@/components/group/stores"
 import { createAttendanceGroup, createAttendanceMember } from "@/test/fixtures"
 
-const { mockBackendService, mockAttendanceManager, mockConfirm, mockAlert } = vi.hoisted(() => ({
+const {
+  mockBackendService,
+  mockAttendanceManager,
+  mockPersistentSettings,
+  mockConfirm,
+  mockAlert,
+} = vi.hoisted(() => ({
   mockBackendService: {
     getDatabaseStats: vi.fn(),
     clearDatabase: vi.fn(),
@@ -13,6 +19,9 @@ const { mockBackendService, mockAttendanceManager, mockConfirm, mockAlert } = vi
     getAttendanceStats: vi.fn(),
     getTimeHealth: vi.fn(),
   },
+  mockPersistentSettings: {
+    get: vi.fn(),
+  },
   mockConfirm: vi.fn(),
   mockAlert: vi.fn(),
 }))
@@ -20,6 +29,7 @@ const { mockBackendService, mockAttendanceManager, mockConfirm, mockAlert } = vi
 vi.mock("@/services", () => ({
   backendService: mockBackendService,
   attendanceManager: mockAttendanceManager,
+  persistentSettings: mockPersistentSettings,
 }))
 
 vi.mock("@/components/shared", () => ({
@@ -79,6 +89,7 @@ describe("useSettings", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     resetGroupUIStore()
+    mockPersistentSettings.get.mockReset().mockResolvedValue(false)
     mockBackendService.getDatabaseStats.mockReset().mockResolvedValue({ total_persons: 12 })
     mockBackendService.clearDatabase.mockReset().mockResolvedValue({
       success: true,
