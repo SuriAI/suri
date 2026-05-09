@@ -109,4 +109,35 @@ Operators are still responsible for:
 - vendor and processor management
 - incident response and breach handling
 
-If you deploy Facenox Management Dashboard, document that environment separately. This file should not be treated as the complete privacy position for a hosted service.
+## Google API Services Disclosure
+
+Facenox uses Google API Services to streamline authentication and account management for the Management Dashboard.
+
+### Data Accessed
+When you authenticate via Google, we access your:
+- Primary email address
+- Full name
+- Profile picture URL
+
+We use the standard `openid`, `email`, and `profile` scopes.
+
+### Data Usage
+This data is used exclusively to:
+- Create and identify your Facenox Dashboard account.
+- Personalize your profile.
+- Send transactional emails (e.g., password resets, organization invitations).
+
+We do not use this data for marketing, advertising, or any other purposes.
+
+### Data Sharing
+We do not share Google user data with any third-party applications, advertisers, or other services. Your data is kept strictly within the Facenox Cloud environment.
+
+### Data Storage & Protection
+Your Google account information is stored in our secure, encrypted database (AES-256) and transmitted via secure protocols (TLS/SSL).
+
+### Data Retention & Deletion
+We retain your Google user data for as long as your account remains active. You can request the deletion of your account and all associated Google user data at any time via your dashboard or by emailing privacy@facenox.com.
+
+---
+
+Facenox's use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
