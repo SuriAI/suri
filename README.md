@@ -25,7 +25,7 @@ Facenox is built on a simple idea: you should own your biometric data.
 
 This repository contains the open source Facenox desktop app and local backend. Facenox Management Dashboard is an optional separate hosted companion service and is not included in this repository.
 
-Ideal for teams, schools, and organizations that need reliable attendance without relying on cloud-based biometrics.
+Ideal for individuals and teams that need reliable attendance without relying on cloud-based biometrics.
 
 <div align="center">
   <img src="app/public/assets/banner.png" alt="Facenox application screenshot" width="100%">
