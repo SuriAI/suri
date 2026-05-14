@@ -144,8 +144,8 @@ class DummyLivenessDetector:
             enriched.append(current)
         return enriched
 
-    def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
-        return None
+    def update_face_identity(self, track_id: int, person_id: str | None, current_liveness: dict, namespace: str | None = None) -> dict:
+        return current_liveness
 
 
 class SuspiciousLivenessDetector:
@@ -161,8 +161,8 @@ class SuspiciousLivenessDetector:
             enriched.append(current)
         return enriched
 
-    def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
-        return None
+    def update_face_identity(self, track_id: int, person_id: str | None, current_liveness: dict, namespace: str | None = None) -> dict:
+        return current_liveness
 
 
 class PreserveGuidanceLivenessDetector:
