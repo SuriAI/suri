@@ -1,0 +1,163 @@
+name: Production Build & Sign
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - name: Install Dependencies
+        run: pnpm install
+        
+      - name: Lint
+        run: pnpm run lint
+        
+      - name: Test
+        run: pnpm run test
+
+  build-backend:
+    name: Build Backend (${{ matrix.os }})
+    needs: lint-and-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          
+      - name: Install Dependencies
+        run: |
+          cd server
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-build.txt
+          
+      - name: Build Executable
+        run: |
+          cd server
+          python build_backend.py --onefile
+          
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-${{ matrix.os }}
+          path: server/dist/server*
+
+  build-electron:
+    name: Build Electron (${{ matrix.os }})
+    needs: build-backend
+    runs-on: ${{ matrix.os }}
+    outputs:
+      artifact-id: ${{ steps.upload-unsigned-app.outputs.artifact-id }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-${{ matrix.os }}
+          path: server/dist/
+          
+      - name: Install Dependencies
+        run: pnpm install
+        
+      - name: Build App
+        run: pnpm run build
+        
+      - name: Package App
+        run: |
+          cd app
+          npx electron-builder --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Unsigned App
+        id: upload-unsigned-app
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-app-${{ matrix.os }}
+          path: |
+            app/dist/*.exe
+            app/dist/*.dmg
+            app/dist/*.AppImage
+
+  sign-and-release:
+    name: Sign & Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-electron
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Windows Signing
+      - name: Submit to SignPath (Windows)
+        uses: signpath/github-action-submit-signing-request@v2
+        id: sign-windows
+        continue-on-error: true
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-name: 'unsigned-app-windows-latest'
+          wait-for-completion: true
+          download-signed-artifact-path: 'signed/windows'
+
+      # Download all original artifacts for fallback
+      - name: Download Original Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: original-artifacts/
+
+      # Create GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            signed/windows/*.exe
+            original-artifacts/unsigned-app-windows-latest/*.exe
+            original-artifacts/unsigned-app-macos-latest/*.dmg
+            original-artifacts/unsigned-app-ubuntu-latest/*.AppImage
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
