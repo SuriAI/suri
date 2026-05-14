@@ -42,6 +42,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 ## Features
 
 - **Local Biometrics:** Face detection, recognition, subject tracking, and liveness checks via [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx).
+- **Cross-Platform:** Native support for Windows, macOS, and Linux.
 - **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
 - **Subject Management:** Full control over group and member directories.
 - **Attendance Tracking:** Automated session recording and CSV/JSON exports.
