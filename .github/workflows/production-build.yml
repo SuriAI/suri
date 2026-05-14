@@ -37,8 +37,7 @@ jobs:
       - name: Install Server Dependencies
         run: |
           cd server
-          pip install ruff black pytest
-          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
         
       - name: Lint App
         run: |
