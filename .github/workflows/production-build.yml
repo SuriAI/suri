@@ -24,14 +24,41 @@ jobs:
         with:
           version: 9
           
-      - name: Install Dependencies
-        run: pnpm install
+      - name: Install App Dependencies
+        run: |
+          cd app
+          pnpm install
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          pip install ruff black pytest
+          pip install -r requirements.txt
         
-      - name: Lint
-        run: pnpm run lint
-        
-      - name: Test
-        run: pnpm run test
+      - name: Lint App
+        run: |
+          cd app
+          pnpm run lint
+          
+      - name: Lint Server
+        run: |
+          cd server
+          npm run lint
+
+      - name: Test App
+        run: |
+          cd app
+          pnpm run test
+          
+      - name: Test Server
+        run: |
+          cd server
+          npm run test
 
   build-backend:
     name: Build Backend (${{ matrix.os }})
@@ -96,10 +123,14 @@ jobs:
           path: server/dist/
           
       - name: Install Dependencies
-        run: pnpm install
+        run: |
+          cd app
+          pnpm install
         
       - name: Build App
-        run: pnpm run build
+        run: |
+          cd app
+          npm run build
         
       - name: Package App
         run: |
