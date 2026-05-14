@@ -72,7 +72,7 @@ function normalizeAttendanceExportForRemote(
             (candidate as { settings?: unknown }).settings !== null
           ) ?
             (candidate as { settings: Record<string, unknown> }).settings
-            : {
+          : {
               late_threshold_enabled: false,
               track_checkout: false,
             },
@@ -114,7 +114,7 @@ function normalizeAttendanceExportForRemote(
     settings:
       typeof attendanceExport.settings === "object" && attendanceExport.settings !== null ?
         attendanceExport.settings
-        : {
+      : {
           late_threshold_minutes: 15,
           enable_location_tracking: false,
           confidence_threshold: 0.8,
@@ -452,7 +452,7 @@ export class BackgroundSyncManager {
       const exportedAt =
         typeof attendanceExport?.exported_at === "string" ?
           attendanceExport.exported_at
-          : new Date().toISOString()
+        : new Date().toISOString()
       const syncPayload: SyncPushPayload = {
         schema_version: 1 as const,
         snapshot_id: `${deviceId}:${exportedAt}`,
@@ -490,7 +490,7 @@ export class BackgroundSyncManager {
         const detail =
           typeof responsePayload?.error === "string" ?
             responsePayload.error
-            : responseText || `HTTP ${remoteResponse.status}`
+          : responseText || `HTTP ${remoteResponse.status}`
         throw new Error(`Remote sync failed: ${detail}`)
       }
 
@@ -510,7 +510,7 @@ export class BackgroundSyncManager {
         lastSyncMessage:
           typeof responsePayload?.status === "string" ?
             `Snapshot ${responsePayload.status}.`
-            : "Snapshot synced successfully.",
+          : "Snapshot synced successfully.",
       })
 
       return {
@@ -518,7 +518,7 @@ export class BackgroundSyncManager {
         message:
           typeof responsePayload?.status === "string" ?
             `Snapshot ${responsePayload.status}.`
-            : "Snapshot synced successfully.",
+          : "Snapshot synced successfully.",
         syncedAt,
       }
     } catch (error) {

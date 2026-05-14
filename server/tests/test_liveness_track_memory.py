@@ -20,7 +20,11 @@ def test_track_liveness_memory_requires_recent_real_evidence_before_passing():
         1, _liveness("real", True), frame_number=1, namespace="cam", current_time=now
     )
     second = memory.stabilize(
-        1, _liveness("real", True), frame_number=2, namespace="cam", current_time=now + 0.1
+        1,
+        _liveness("real", True),
+        frame_number=2,
+        namespace="cam",
+        current_time=now + 0.1,
     )
 
     assert first["status"] == "candidate_real"
@@ -34,12 +38,18 @@ def test_track_liveness_memory_keeps_locked_real_despite_spoof_until_gap_reset()
     now = 1000.0
 
     # Initial stabilization
-    stabilized = memory.stabilize(7, _liveness("real", True), frame_number=1, namespace="cam", current_time=now)
+    stabilized = memory.stabilize(
+        7, _liveness("real", True), frame_number=1, namespace="cam", current_time=now
+    )
     assert stabilized["status"] == "real"
 
     # Spoof frame shortly after (should stay real because of stabilization lock)
     spoof_frame = memory.stabilize(
-        7, _liveness("spoof", False), frame_number=2, namespace="cam", current_time=now + 0.2
+        7,
+        _liveness("spoof", False),
+        frame_number=2,
+        namespace="cam",
+        current_time=now + 0.2,
     )
 
     assert spoof_frame["status"] == "real"
@@ -47,7 +57,11 @@ def test_track_liveness_memory_keeps_locked_real_despite_spoof_until_gap_reset()
 
     # Gap of 0.6s (more than 0.5s reset)
     after_gap = memory.stabilize(
-        7, _liveness("spoof", False), frame_number=3, namespace="cam", current_time=now + 0.9
+        7,
+        _liveness("spoof", False),
+        frame_number=3,
+        namespace="cam",
+        current_time=now + 0.9,
     )
     assert after_gap["status"] == "spoof"
     assert after_gap["is_real"] is False
@@ -58,12 +72,24 @@ def test_track_liveness_memory_is_isolated_per_namespace():
     now = 1000.0
 
     # Cam A stabilizes
-    memory.stabilize(3, _liveness("real", True), frame_number=1, namespace="cam-a", current_time=now)
-    cam_a_result = memory.stabilize(3, _liveness("real", True), frame_number=2, namespace="cam-a", current_time=now + 0.1)
+    memory.stabilize(
+        3, _liveness("real", True), frame_number=1, namespace="cam-a", current_time=now
+    )
+    cam_a_result = memory.stabilize(
+        3,
+        _liveness("real", True),
+        frame_number=2,
+        namespace="cam-a",
+        current_time=now + 0.1,
+    )
 
     # Cam B starts fresh
     cam_b_first = memory.stabilize(
-        3, _liveness("real", True), frame_number=3, namespace="cam-b", current_time=now + 0.2
+        3,
+        _liveness("real", True),
+        frame_number=3,
+        namespace="cam-b",
+        current_time=now + 0.2,
     )
 
     assert cam_a_result["status"] == "real"
