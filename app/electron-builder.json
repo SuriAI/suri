@@ -2,7 +2,7 @@
   "publish": null,
   "files": ["out/**/*"],
   "appId": "com.facenox.app",
-  "productName": "Facenox AI Attendance Tracker",
+  "productName": "Facenox",
   "icon": "./public/icons/logo.png",
   "beforePack": "scripts/before-pack.mjs",
   "win": {
