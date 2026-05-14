@@ -1,4 +1,5 @@
 {
+  "publish": null,
   "files": ["out/**/*"],
   "appId": "com.facenox.app",
   "productName": "Facenox AI Attendance Tracker",
