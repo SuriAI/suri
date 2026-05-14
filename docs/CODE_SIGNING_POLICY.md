@@ -4,13 +4,11 @@ This page explains how to tell whether a Facenox desktop build is official, and 
 
 ## Current Status
 
-Facenox desktop releases are currently **unsigned** while we finish our code-signing setup.
+Facenox desktop releases are currently **unsigned** while we finish our code-signing setup. However, we ensure build integrity through the following:
 
-For now, treat a build as official only if:
-
-- it comes from the official repository: `https://github.com/facenox/facenox`
-- it is attached to an official GitHub release in that repository
-- its release notes match the tagged source code in this repository
+- **Automated Builds:** All official binaries are compiled and packaged using GitHub Actions in this repository.
+- **Security Auditing:** Every commit is automatically scanned by **GitHub CodeQL** for potential vulnerabilities.
+- **Provenance:** Treat a build as official only if it is attached to an official GitHub release in this repository.
 
 Once code signing is live, we will update this page with:
 
