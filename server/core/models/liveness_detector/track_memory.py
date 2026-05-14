@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Optional
 
 
 class TrackLivenessMemory:
@@ -36,15 +36,12 @@ class TrackLivenessMemory:
         frame_number: int,
         namespace: str | None = None,
         person_id: str | None = None,
+        current_time: Optional[float] = None,
     ) -> Dict:
-        if frame_number < 0:
-            frame_number = 0
-
         namespace_key = self._normalize_namespace(namespace)
         namespace_frame = self.namespace_frames[namespace_key]
         if frame_number < namespace_frame:
             frame_number = namespace_frame
-
         self.namespace_frames[namespace_key] = frame_number
 
         raw_status = liveness.get("status")
@@ -52,9 +49,10 @@ class TrackLivenessMemory:
             return liveness
 
         state = self.track_states[(namespace_key, track_id)]
-        import time
 
-        current_time = time.time()
+        if current_time is None:
+            import time
+            current_time = time.time()
         last_seen_time = state.get("last_time", 0.0)
 
         # Middle Ground: Identity-Bound Reset
