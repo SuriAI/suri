@@ -144,6 +144,9 @@ class DummyLivenessDetector:
             enriched.append(current)
         return enriched
 
+    def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
+        return None
+
 
 class SuspiciousLivenessDetector:
     def detect_faces(self, _image: np.ndarray, faces: list[dict]) -> list[dict]:
@@ -157,6 +160,9 @@ class SuspiciousLivenessDetector:
             }
             enriched.append(current)
         return enriched
+
+    def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
+        return None
 
 
 class PreserveGuidanceLivenessDetector:
@@ -176,6 +182,9 @@ class PreserveGuidanceLivenessDetector:
             }
             enriched.append(current)
         return enriched
+
+    def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
+        return None
 
 
 class CenterFaceDetector(DummyFaceDetector):
