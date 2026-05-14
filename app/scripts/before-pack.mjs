@@ -25,6 +25,10 @@ async function beforePack(context) {
 
   if (fs.existsSync(executablePath)) {
     console.log(`Backend executable already exists: ${executablePath}`)
+    if (platform !== "win32") {
+      fs.chmodSync(executablePath, 0o755)
+      console.log(`Ensured execute permissions on existing binary: ${executablePath}`)
+    }
     return
   }
 
