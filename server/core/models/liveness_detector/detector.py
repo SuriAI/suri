@@ -120,6 +120,7 @@ class LivenessDetector:
                 liveness,
                 self.frame_counter,
                 namespace=tracking_namespace,
+                person_id=detection.get("recognition", {}).get("person_id"),
             )
 
         self.track_memory.cleanup_stale_tracks(namespace=tracking_namespace)
@@ -128,3 +129,19 @@ class LivenessDetector:
 
     def clear_namespace(self, namespace: Optional[str]):
         self.track_memory.clear_namespace(namespace)
+
+    def update_face_identity(
+        self,
+        track_id: int,
+        person_id: str,
+        current_liveness: Dict,
+        namespace: Optional[str] = None,
+    ) -> Dict:
+        """Update the identity for a track and re-stabilize liveness if it changed."""
+        return self.track_memory.stabilize(
+            track_id,
+            current_liveness,
+            self.frame_counter,
+            namespace=namespace,
+            person_id=person_id,
+        )

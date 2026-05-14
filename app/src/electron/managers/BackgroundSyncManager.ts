@@ -53,8 +53,11 @@ function normalizeAttendanceExportForRemote(
   const records = Array.isArray(attendanceExport.records) ? attendanceExport.records : []
   const sessions = Array.isArray(attendanceExport.sessions) ? attendanceExport.sessions : []
 
+  const sanitizedAttendance: Record<string, unknown> = { ...attendanceExport }
+  delete sanitizedAttendance.biometrics
+
   return {
-    ...attendanceExport,
+    ...sanitizedAttendance,
     exported_at: toRemoteIsoDateTime(attendanceExport.exported_at) ?? new Date().toISOString(),
     groups: groups.map((group) => {
       const candidate = typeof group === "object" && group !== null ? group : {}
@@ -69,7 +72,7 @@ function normalizeAttendanceExportForRemote(
             (candidate as { settings?: unknown }).settings !== null
           ) ?
             (candidate as { settings: Record<string, unknown> }).settings
-          : {
+            : {
               late_threshold_enabled: false,
               track_checkout: false,
             },
@@ -111,7 +114,7 @@ function normalizeAttendanceExportForRemote(
     settings:
       typeof attendanceExport.settings === "object" && attendanceExport.settings !== null ?
         attendanceExport.settings
-      : {
+        : {
           late_threshold_minutes: 15,
           enable_location_tracking: false,
           confidence_threshold: 0.8,
@@ -141,7 +144,6 @@ export class BackgroundSyncManager {
   private timer: NodeJS.Timeout | null = null
   private commandTimer: NodeJS.Timeout | null = null
   private catchUpTimer: NodeJS.Timeout | null = null
-  private eventSource: null = null
   private isSyncing = false
   private reconnectAttempts = 0
 
@@ -301,8 +303,7 @@ export class BackgroundSyncManager {
   }
 
   private stopEventStream() {
-    // Note: Aborting the fetch signal would be better, but for simplicity:
-    this.eventSource = null
+    // Note: In a future iteration, we should use AbortController to signal the fetch loop to stop.
   }
 
   stop() {
@@ -451,7 +452,7 @@ export class BackgroundSyncManager {
       const exportedAt =
         typeof attendanceExport?.exported_at === "string" ?
           attendanceExport.exported_at
-        : new Date().toISOString()
+          : new Date().toISOString()
       const syncPayload: SyncPushPayload = {
         schema_version: 1 as const,
         snapshot_id: `${deviceId}:${exportedAt}`,
@@ -489,7 +490,7 @@ export class BackgroundSyncManager {
         const detail =
           typeof responsePayload?.error === "string" ?
             responsePayload.error
-          : responseText || `HTTP ${remoteResponse.status}`
+            : responseText || `HTTP ${remoteResponse.status}`
         throw new Error(`Remote sync failed: ${detail}`)
       }
 
@@ -509,7 +510,7 @@ export class BackgroundSyncManager {
         lastSyncMessage:
           typeof responsePayload?.status === "string" ?
             `Snapshot ${responsePayload.status}.`
-          : "Snapshot synced successfully.",
+            : "Snapshot synced successfully.",
       })
 
       return {
@@ -517,7 +518,7 @@ export class BackgroundSyncManager {
         message:
           typeof responsePayload?.status === "string" ?
             `Snapshot ${responsePayload.status}.`
-          : "Snapshot synced successfully.",
+            : "Snapshot synced successfully.",
         syncedAt,
       }
     } catch (error) {

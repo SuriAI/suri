@@ -19,6 +19,7 @@ from hooks import (
 from utils.websocket_manager import manager, notification_manager
 from services.live_stream_service import LiveStreamService
 from time_utils import local_now
+import core.lifespan as lifespan
 
 if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO)
@@ -208,7 +209,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
 
                     attendance_messages = (
                         await live_stream_service.process_live_recognition(
-                            image, faces, live_session_config
+                            image, faces, live_session_config, client_id
                         )
                     )
 
@@ -245,6 +246,10 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 logger.info(
                     f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
                 )
+                # Cleanup liveness memory to prevent leaks
+                if lifespan.liveness_detector:
+                    lifespan.liveness_detector.clear_namespace(client_id)
+                manager.remove_face_tracker(client_id)
                 break
             except Exception as e:
                 error_str = str(e).lower()

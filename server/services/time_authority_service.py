@@ -61,6 +61,13 @@ class TimeAuthorityService:
             or DEFAULT_REFERENCE_URLS
         )
 
+        self._last_known_time_utc: Optional[datetime] = None
+
+    def set_last_known_time(self, last_time: datetime) -> None:
+        """Set the last known valid time (usually from DB) to detect back-dating."""
+        if last_time:
+            self._last_known_time_utc = ensure_utc_aware(last_time)
+
     def current_time_utc(self) -> datetime:
         elapsed = time.monotonic() - self._boot_time_mono
         return self._boot_time_utc + timedelta(seconds=elapsed)
@@ -125,6 +132,16 @@ class TimeAuthorityService:
                 }
 
         warning_message = os_clock_warning
+
+        # Back-dating detection: current time cannot be before the last recorded attendance
+        if (
+            self._last_known_time_utc
+            and (current_utc + timedelta(seconds=1)) < self._last_known_time_utc
+        ):
+            warning_message = (
+                "Clock manipulation detected! System time is earlier than the last "
+                "recorded attendance. Please correct your clock to continue."
+            )
 
         if online_status == "drift_detected":
             warning_message = (

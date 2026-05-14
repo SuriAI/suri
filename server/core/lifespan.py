@@ -99,8 +99,15 @@ async def lifespan(app: FastAPI):
             from database.session import AsyncSessionLocal
             from database.models import AttendanceSettings
             from database.repository import AttendanceRepository
+            from services.time_authority_service import get_time_authority
 
             async with AsyncSessionLocal() as session:
+                # 1. Initialize Time Authority with last known valid time
+                repo = AttendanceRepository(session)
+                last_time = await repo.get_latest_record_timestamp()
+                get_time_authority().set_last_known_time(last_time)
+
+                # 2. Handle data retention
                 settings_result = await session.execute(select(AttendanceSettings))
                 settings_rows = list(settings_result.scalars().all())
 
