@@ -220,7 +220,7 @@ class AttendanceService:
                         "status": "absent",
                         "is_late": False,
                         "late_minutes": None,
-                        "notes": None,
+                        "notes": existing_session.notes if existing_session else None,
                     }
                 )
                 continue
@@ -267,7 +267,7 @@ class AttendanceService:
                     "status": "present",
                     "is_late": is_late,
                     "late_minutes": late_minutes,
-                    "notes": None,
+                    "notes": existing_session.notes if existing_session else None,
                 }
             )
 

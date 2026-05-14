@@ -61,18 +61,21 @@ class BackupImportRequest(BaseModel):
     exported_at: Optional[str] = None
     attendance: ImportDataRequest
     biometrics: List[BiometricEntry]
+    password: Optional[str] = None  # Added password for decryption
 
 
 # Routes
 
 
-@router.post("/export", response_model=BackupExportResponse)
+@router.post("/export")
 async def export_backup(
+    password: Optional[str] = None,
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """
     Export complete system state: attendance data + face embeddings.
-    Returns plain JSON. Encryption is handled by the Electron layer.
+    If a password is provided, returns an encrypted .facenox blob.
+    If not, returns plain JSON (WARNING: biometrics will be masked).
     """
     try:
         # Gather attendance data
@@ -171,12 +174,30 @@ async def export_backup(
                 f"[Backup] Could not export biometrics (non-fatal): {bio_err}"
             )
 
-        return BackupExportResponse(
+        response_obj = BackupExportResponse(
             version=1,
             exported_at=get_time_authority().current_time_utc().isoformat(),
             attendance=attendance_data,
             biometrics=biometrics,
         )
+
+        if password:
+            from core.cipher import encrypt_backup
+
+            plaintext = response_obj.model_dump_json().encode("utf-8")
+            encrypted_blob = encrypt_backup(plaintext, password)
+            return {
+                "success": True,
+                "encrypted": True,
+                "blob": base64.b64encode(encrypted_blob).decode("ascii"),
+                "filename": f"facenox_backup_{attendance_data.exported_at.strftime('%Y%m%d_%H%M')}.facenox",
+            }
+
+        # If no password, redact biometrics for security
+        for bio in response_obj.biometrics:
+            bio.embedding_b64 = "[REDACTED_FOR_SECURITY_USE_PASSWORD_TO_EXPORT]"
+
+        return response_obj
 
     except Exception as e:
         logger.error(f"[Backup] Export failed: {e}")
@@ -415,7 +436,12 @@ async def import_backup(
                 )
             )
             member = member_result.scalars().first()
-            if not member or not member.has_consent:
+            # Security check: skip redacted biometrics
+            if (
+                not member
+                or not member.has_consent
+                or "[REDACTED" in entry.embedding_b64
+            ):
                 skipped += 1
                 continue
 
@@ -480,3 +506,26 @@ async def import_backup(
             logger.warning(
                 f"[Backup] Failed to write audit log for import: {audit_err}"
             )
+
+
+@router.post("/import-encrypted", response_model=SuccessResponse)
+async def import_encrypted_backup(
+    password: str,
+    blob_b64: str,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Decrypt and import a .facenox backup file."""
+    try:
+        import json
+        from core.cipher import decrypt_backup
+
+        blob = base64.b64decode(blob_b64)
+        plaintext = decrypt_backup(blob, password)
+        payload_dict = json.loads(plaintext.decode("utf-8"))
+
+        payload = BackupImportRequest.model_validate(payload_dict)
+        return await import_backup(payload, repo)
+
+    except Exception as e:
+        logger.error(f"[Backup] Encrypted import failed: {e}")
+        raise HTTPException(status_code=400, detail=f"Decryption failed: {e}")

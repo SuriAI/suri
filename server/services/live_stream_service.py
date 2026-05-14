@@ -31,6 +31,7 @@ class LiveSessionConfig:
     enable_liveness_detection: bool = False
     active_group_id: Optional[str] = None
     max_recognition_faces_per_frame: int = 6
+    client_id: Optional[str] = None
     group_context: LiveGroupContext = field(default_factory=LiveGroupContext)
     attendance_cooldowns: Dict[str, float] = field(default_factory=dict)
 
@@ -182,6 +183,9 @@ class LiveStreamService:
                 "enable_liveness_detection", True
             )
 
+        if "client_id" in message:
+            config.client_id = message.get("client_id")
+
         if "group_id" in message:
             requested_group_id = message.get("group_id")
             normalized_group_id = (
@@ -260,6 +264,7 @@ class LiveStreamService:
         image: np.ndarray,
         faces: list[Dict[str, Any]],
         config: LiveSessionConfig,
+        client_id: Optional[str] = None,
     ) -> list[Dict[str, Any]]:
         if not faces:
             return []
@@ -282,7 +287,8 @@ class LiveStreamService:
                 if self._has_live_recognition_basics(face)
                 and (
                     not config.enable_liveness_detection
-                    or self._is_attendance_candidate(face)
+                    or face.get("liveness", {}).get("status")
+                    in ("real", "candidate_real")
                 )
             ),
             key=self._extract_face_area,
@@ -303,12 +309,28 @@ class LiveStreamService:
             organization_id=self.organization_id,
         )
 
+        from core.lifespan import liveness_detector
+
         attendance_messages: list[Dict[str, Any]] = []
         for face, result in zip(recognition_candidates, recognition_results):
             original_person_id = result.get("person_id")
             member_info = group_context.members_by_person_id.get(original_person_id)
             serialized_result = self._serialize_recognition_result(result, member_info)
             face["recognition"] = serialized_result
+
+            # Middle Ground: Update liveness stability with the recognized identity.
+            # If the identity changed for this track, liveness will be reset to candidate/spoof.
+            if (
+                original_person_id
+                and liveness_detector
+                and face.get("track_id") is not None
+            ):
+                face["liveness"] = liveness_detector.update_face_identity(
+                    track_id=face["track_id"],
+                    person_id=original_person_id,
+                    current_liveness=face.get("liveness", {}),
+                    namespace=client_id,
+                )
 
             if (
                 not original_person_id

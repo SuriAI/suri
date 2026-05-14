@@ -8,12 +8,12 @@ class TrackLivenessMemory:
         required_real_frames: int = 2,
         max_stale_frames: int = 30,
         cleanup_interval: int = 10,
-        reset_after_gap_frames: int = 5,
+        reset_after_gap_seconds: float = 0.5,
     ):
         self.required_real_frames = max(1, required_real_frames)
         self.max_stale_frames = max_stale_frames
         self.cleanup_interval = cleanup_interval
-        self.reset_after_gap_frames = max(1, reset_after_gap_frames)
+        self.reset_after_gap_seconds = max(0.1, reset_after_gap_seconds)
         self.namespace_frames = defaultdict(int)
         self.namespace_last_cleanup_frame = defaultdict(int)
         self.track_states = defaultdict(
@@ -21,6 +21,7 @@ class TrackLivenessMemory:
                 "consecutive_real_frames": 0,
                 "stable_real": False,
                 "last_frame": -1,
+                "last_time": 0.0,
             }
         )
 
@@ -34,6 +35,7 @@ class TrackLivenessMemory:
         liveness: Dict,
         frame_number: int,
         namespace: str | None = None,
+        person_id: str | None = None,
     ) -> Dict:
         if frame_number < 0:
             frame_number = 0
@@ -50,23 +52,41 @@ class TrackLivenessMemory:
             return liveness
 
         state = self.track_states[(namespace_key, track_id)]
-        last_seen_frame = state["last_frame"]
+        import time
+
+        current_time = time.time()
+        last_seen_time = state.get("last_time", 0.0)
+
+        # Middle Ground: Identity-Bound Reset
+        # If the person identity changes for this track, we must re-verify liveness
         if (
-            last_seen_frame >= 0
-            and (frame_number - last_seen_frame) > self.reset_after_gap_frames
+            person_id
+            and state.get("last_person_id")
+            and state["last_person_id"] != person_id
+        ):
+            state["consecutive_real_frames"] = 0
+            state["stable_real"] = False
+
+        if person_id:
+            state["last_person_id"] = person_id
+
+        if (
+            last_seen_time > 0
+            and (current_time - last_seen_time) > self.reset_after_gap_seconds
         ):
             state["consecutive_real_frames"] = 0
             state["stable_real"] = False
 
         state["last_frame"] = frame_number
+        state["last_time"] = current_time
 
         stabilized = dict(liveness)
 
         if raw_status == "spoof":
             state["consecutive_real_frames"] = 0
 
-            # Infinite lock: once a track is confirmed real, spoof frames are ignored
-            # until lifecycle reset (gap reset / stale cleanup / namespace clear).
+            # Identity-Bound Infinite lock:
+            # Only ignore spoof frames if we are stable AND the identity hasn't shifted.
             if state["stable_real"]:
                 stabilized["status"] = "real"
                 stabilized["is_real"] = True

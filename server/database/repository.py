@@ -470,6 +470,14 @@ class AttendanceRepository:
         result = await self.session.execute(query)
         return result.scalars().all()
 
+    async def get_latest_record_timestamp(self) -> Optional[datetime]:
+        """Get the timestamp of the absolute latest attendance record in the database."""
+        query = select(func.max(AttendanceRecord.timestamp))
+        # Note: We don't apply org scope here because we want the absolute
+        # machine-wide latest time to prevent any user from back-dating.
+        result = await self.session.execute(query)
+        return result.scalar()
+
     async def void_record(
         self,
         record_id: str,
@@ -508,7 +516,11 @@ class AttendanceRepository:
             session_obj.status = session_data["status"]
             session_obj.is_late = session_data.get("is_late", False)
             session_obj.late_minutes = session_data.get("late_minutes")
-            session_obj.notes = session_data.get("notes")
+
+            # Preserve existing notes if not explicitly provided in the update
+            new_notes = session_data.get("notes")
+            if new_notes is not None:
+                session_obj.notes = new_notes
         else:
             session_obj = AttendanceSession(
                 id=session_data["id"],
