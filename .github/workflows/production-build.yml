@@ -187,7 +187,7 @@ jobs:
             original-artifacts/unsigned-app-windows-latest/*.exe
             original-artifacts/unsigned-app-macos-latest/*.dmg
             original-artifacts/unsigned-app-ubuntu-latest/*.AppImage
-          generate_release_notes: true
+          generate_release_notes: false
           draft: false
           prerelease: false
           fail_on_unmatched_files: false
