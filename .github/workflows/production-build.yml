@@ -85,7 +85,7 @@ jobs:
       - name: Build Executable
         run: |
           cd server
-          python build_backend.py --onefile
+          python build_backend.py
           
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
