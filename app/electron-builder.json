@@ -7,7 +7,7 @@
   "beforePack": "scripts/before-pack.mjs",
   "win": {
     "target": "nsis",
-    "artifactName": "Facenox-Windows-v${version}.${ext}",
+    "artifactName": "Facenox-Windows-v${version}-${arch}.${ext}",
     "extraResources": [
       {
         "from": "../server/dist/server.exe",
@@ -28,11 +28,11 @@
     "createStartMenuShortcut": true,
     "deleteAppDataOnUninstall": false,
     "runAfterFinish": true,
-    "artifactName": "Facenox-Windows-v${version}.${ext}"
+    "artifactName": "Facenox-Windows-v${version}-${arch}.${ext}"
   },
   "linux": {
     "target": "AppImage",
-    "artifactName": "Facenox-Linux-v${version}.${ext}",
+    "artifactName": "Facenox-Linux-v${version}-${arch}.${ext}",
     "category": "utility",
     "extraResources": [
       {
@@ -48,7 +48,7 @@
   },
   "mac": {
     "target": "dmg",
-    "artifactName": "Facenox-macOS-v${version}.${ext}",
+    "artifactName": "Facenox-macOS-v${version}-${arch}.${ext}",
     "extraResources": [
       {
         "from": "../server/dist/server",
