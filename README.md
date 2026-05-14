@@ -16,6 +16,10 @@
   Built for privacy. It handles detection, matching, and liveness checks entirely on your local hardware so your biometric data never leaves your device.
 </p>
 
+<p align="center">
+  <img src="app/public/assets/facenox-ui.png" alt="Facenox Desktop UI" width="100%">
+</p>
+
 ---
 
 > [!CAUTION]  
