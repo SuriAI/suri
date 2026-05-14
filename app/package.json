@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0-beta.1",
   "description": "Real-time AI attendance tracker with face recognition.",
-  "author": "FACENOX",
+  "author": "FACENOX <support@facenox.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/facenox/facenox.git"
