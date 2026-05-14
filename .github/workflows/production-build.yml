@@ -60,12 +60,20 @@ jobs:
           npm run test
 
   build-backend:
-    name: Build Backend (${{ matrix.os }})
+    name: Build Backend (${{ matrix.os }} - ${{ matrix.arch }})
     needs: lint-and-test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            arch: x64
+          - os: macos-latest
+            arch: x64
+          - os: macos-14
+            arch: arm64
+          - os: ubuntu-latest
+            arch: x64
     steps:
       - uses: actions/checkout@v4
       
@@ -90,18 +98,24 @@ jobs:
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-${{ matrix.os }}
+          name: backend-${{ matrix.os }}-${{ matrix.arch }}
           path: server/dist/server*
 
   build-electron:
-    name: Build Electron (${{ matrix.os }})
+    name: Build Electron (${{ matrix.os }} - ${{ matrix.arch }})
     needs: build-backend
     runs-on: ${{ matrix.os }}
-    outputs:
-      artifact-id: ${{ steps.upload-unsigned-app.outputs.artifact-id }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            arch: x64
+          - os: macos-latest
+            arch: x64
+          - os: macos-14
+            arch: arm64
+          - os: ubuntu-latest
+            arch: x64
     steps:
       - uses: actions/checkout@v4
       
@@ -118,7 +132,7 @@ jobs:
       - name: Download Backend Artifact
         uses: actions/download-artifact@v4
         with:
-          name: backend-${{ matrix.os }}
+          name: backend-${{ matrix.os }}-${{ matrix.arch }}
           path: server/dist/
           
       - name: Install Dependencies
@@ -134,19 +148,28 @@ jobs:
       - name: Package App
         run: |
           cd app
-          npx electron-builder --publish never
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            npx electron-builder --linux deb AppImage --publish never
+          elif [ "${{ matrix.os }}" == "macos-14" ]; then
+            npx electron-builder --mac --arm64 --publish never
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            npx electron-builder --mac --x64 --publish never
+          else
+            npx electron-builder --win --x64 --publish never
+          fi
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Unsigned App
-        id: upload-unsigned-app
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-app-${{ matrix.os }}
+          name: unsigned-app-${{ matrix.os }}-${{ matrix.arch }}
           path: |
             app/dist/*.exe
             app/dist/*.dmg
             app/dist/*.AppImage
+            app/dist/*.deb
 
   sign-and-release:
     name: Sign & Release
@@ -158,7 +181,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Windows Signing
+      # Windows Signing (Placeholder/Optional)
       - name: Submit to SignPath (Windows)
         uses: signpath/github-action-submit-signing-request@v2
         id: sign-windows
@@ -168,7 +191,7 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
-          github-artifact-name: 'unsigned-app-windows-latest'
+          github-artifact-name: 'unsigned-app-windows-latest-x64'
           wait-for-completion: true
           download-signed-artifact-path: 'signed/windows'
 
@@ -184,10 +207,12 @@ jobs:
         with:
           files: |
             signed/windows/*.exe
-            original-artifacts/unsigned-app-windows-latest/*.exe
-            original-artifacts/unsigned-app-macos-latest/*.dmg
-            original-artifacts/unsigned-app-ubuntu-latest/*.AppImage
-          generate_release_notes: false
+            original-artifacts/unsigned-app-windows-latest-x64/*.exe
+            original-artifacts/unsigned-app-macos-latest-x64/*.dmg
+            original-artifacts/unsigned-app-macos-14-arm64/*.dmg
+            original-artifacts/unsigned-app-ubuntu-latest-x64/*.AppImage
+            original-artifacts/unsigned-app-ubuntu-latest-x64/*.deb
+          generate_release_notes: true
           draft: false
           prerelease: false
           fail_on_unmatched_files: false
