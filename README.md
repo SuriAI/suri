@@ -73,10 +73,13 @@ Facenox Desktop continues to work locally when internet access is unavailable:
 Everything is stored in a local SQLite database on your machine. Biometric templates are encrypted at rest.
 
 ### Does it need the internet?
-No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% offline. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
+No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% locally. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
 
 ### What hardware do I need?
 It's designed for standard CPUs and has been tested on hardware as old as 2nd-gen Intel i5 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops. No dedicated GPU or CUDA setup is required.
+
+### How do I protect my data?
+Since Facenox operates 100% locally, we cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive. We recommend regular backups to external storage or a secure organizational cloud.
 
 ## Roadmap
 
@@ -89,7 +92,7 @@ It's designed for standard CPUs and has been tested on hardware as old as 2nd-ge
 ---
 
 > [!IMPORTANT]  
-> **Management Dashboard:** The Facenox Dashboard is an optional separate service. This repository contains the source for the **desktop application only**.
+> **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 
 ## Download
 
