@@ -52,6 +52,7 @@ class TrackLivenessMemory:
 
         if current_time is None:
             import time
+
             current_time = time.time()
         last_seen_time = state.get("last_time", 0.0)
 
