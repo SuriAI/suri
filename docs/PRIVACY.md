@@ -1,6 +1,6 @@
 # Privacy and Data Handling
 
-This document covers the open source desktop application in this repository and the current Management Dashboard Beta data boundary.
+This document covers the open source desktop application in this repository and the data boundary for the **official Facenox Dashboard**.
 
 ## Scope
 
@@ -33,7 +33,10 @@ Facenox keeps biometric templates used for recognition. These templates are math
 
 ### How biometric data is handled
 
-Facenox is not designed as a raw face-image archive. Registration and recognition images are processed for enrollment and matching, while the long-term working record is the encrypted biometric template.
+Facenox is not designed as a raw face-image archive. 
+- **Enrollment/Matching:** Images are processed in-memory. Only the resulting encrypted biometric template is stored.
+- **Liveness Detection:** Anti-spoofing analysis happens entirely in **volatile memory (RAM)**. No photos or video frames used for liveness checks are ever written to disk.
+- **Storage:** Templates are encrypted at rest using **AES-256**.
 
 ## Consent Rules
 
@@ -58,18 +61,18 @@ The open source desktop app does not include analytics, ads, or hidden backgroun
 
 That does not automatically make every surrounding deployment private. If you add hosting, external logs, monitoring, or third-party infrastructure, those systems need their own review.
 
-## Management Dashboard Beta boundary
+## Official Facenox Dashboard boundary
 
 The desktop app can optionally pair with a separate Facenox Management Dashboard deployment.
 
-### Data not sent to Facenox Management Dashboard
+### Data NOT sent to the Facenox Dashboard
 
 - raw face images
 - biometric templates
 - embeddings
 - face matching and recognition decisions
 
-### Data that may be sent to Facenox Management Dashboard
+### Data that MAY be sent to the Facenox Dashboard
 
 - organization, site, and device identifiers
 - groups and member directory data needed for reports
@@ -91,7 +94,7 @@ If the internet is unavailable, Management Dashboard Beta stops updating until c
 
 ## Security Notes
 
-- Biometric templates are encrypted in local storage.
+- Biometric templates are encrypted in local storage using **AES-256**.
 - Backups are password-protected before they are written to disk.
 - Physical device security still matters. If the machine is compromised, software controls alone are not enough.
 - Full-disk encryption at the OS level is strongly recommended for real deployments.
