@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/license/facenox/facenox?style=flat-square&color=cyan" alt="License">
-  <img src="https://img.shields.io/github/v/release/facenox/facenox?style=flat-square&color=cyan" alt="Version">
-  <img src="https://img.shields.io/github/stars/facenox/facenox?style=flat-square&color=cyan" alt="Stars">
-  <img src="https://img.shields.io/github/issues/facenox/facenox?style=flat-square&color=cyan" alt="Issues">
+  <img src="https://img.shields.io/github/license/facenox/facenox?style=flat-square&color=22d3ee" alt="License">
+  <img src="https://img.shields.io/github/v/release/facenox/facenox?style=flat-square&color=22d3ee" alt="Version">
+  <img src="https://img.shields.io/github/stars/facenox/facenox?style=flat-square&color=22d3ee" alt="Stars">
+  <img src="https://img.shields.io/github/issues/facenox/facenox?style=flat-square&color=22d3ee" alt="Issues">
 </p>
 
 <p align="center">
