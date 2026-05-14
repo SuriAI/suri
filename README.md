@@ -1,212 +1,167 @@
 <a id="readme-top"></a>
 
-> [!CAUTION]
+<p align="center">
+  <img src="app/public/assets/header.png" alt="Facenox Banner" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/license/facenox/facenox?style=flat-square&color=cyan" alt="License">
+  <img src="https://img.shields.io/github/v/release/facenox/facenox?style=flat-square&color=cyan" alt="Version">
+  <img src="https://img.shields.io/github/stars/facenox/facenox?style=flat-square&color=cyan" alt="Stars">
+  <img src="https://img.shields.io/github/issues/facenox/facenox?style=flat-square&color=cyan" alt="Issues">
+</p>
+
+<p align="center">
+  <strong>Facenox is an offline-first face recognition system for attendance.</strong><br>
+  Built for privacy. It handles detection, matching, and liveness checks entirely on your local hardware so your biometric data never leaves your device.
+</p>
+
+---
+
+> [!CAUTION]  
 > This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
 
-<a href="https://github.com/facenox/facenox">
-  <img src="app/public/assets/header.png" alt="Facenox header" width="100%">
-</a>
-
-<div align="center">
-
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![AGPL License][license-shield]][license-url]
-
-</div>
-
-Facenox is an offline-first face recognition system that performs real-time face detection, ByteTrack-based face tracking over detector outputs, recognition, and liveness checks locally. No cloud required.
-
-Built for privacy-conscious teams, it keeps biometric matching local while optionally syncing attendance data to a management dashboard.
-
-Facenox is built on a simple idea: you should own your biometric data.
-
-This repository contains the open source Facenox desktop app and local backend. Facenox Management Dashboard is an optional separate hosted companion service and is not included in this repository.
-
-Ideal for individuals and teams that need reliable attendance without relying on cloud-based biometrics.
-
-<div align="center">
-  <img src="app/public/assets/banner.png" alt="Facenox application screenshot" width="100%">
-</div>
-
-## Key Highlights
-
-- Real-time face recognition, CPU-friendly, no GPU required
-- Fully local biometric matching by default
-- Works fully offline. No internet required for core workflows
-- Optional management dashboard for centralized reporting and sync
+> [!NOTE]  
+> **Privacy First:** Facenox is built on the principle that you should own your biometric data. Detection, tracking, and matching happen entirely on your local hardware.
 
 ## Why Facenox
 
-Most face recognition attendance systems rely on cloud-based biometrics. Facenox doesn't. Biometric matching stays local on the desktop.
+Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. Biometric matching stays local on the desktop.
 
-| Local-first                                     | Offline-ready                                            | Consent-aware                                      | Encrypted                                                                                                                  |
-| ----------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Recognition and attendance stay on the desktop. | Core attendance workflows keep working without internet. | Enrollment and matching respect biometric consent. | Biometric templates are encrypted locally, and moving them between devices requires encrypted backup and restore. |
+| Feature | Facenox | Cloud-Based Systems |
+| :--- | :---: | :---: |
+| **Data Residency** | 100% Local | Remote Cloud |
+| **Internet Dependency** | Optional | Mandatory |
+| **Latency** | Real-time | Network Dependent |
+| **Privacy Risk** | Minimized | High |
 
 ## Features
 
-- Local face detection, recognition, and anti-spoofing
-- Group and member management
-- Attendance records, sessions, and exports
-- Consent-aware biometric enrollment and deletion
-- Encrypted local biometric storage
-- Password-protected `.facenox` backup and restore
-- Optional Management Dashboard Beta pairing with manual and background sync
+- **Local Biometrics:** Face detection, recognition, subject tracking, and liveness checks via [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx).
+- **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
+- **Subject Management:** Full control over group and member directories.
+- **Attendance Tracking:** Automated session recording and CSV/JSON exports.
+- **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
+- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting without uploading raw biometric data.
 
 ## Performance
 
-- Real-time recognition on CPU (no GPU required)
-- Tested on low-spec hardware (e.g., older laptops)
-- Optimized for low-latency inference
-- Designed for real-world environments with varying lighting and hardware conditions
-
-## Management Dashboard Beta
-
-Facenox Management Dashboard is an optional companion service for:
-
-- centralized reporting
-- device pairing
-- sync monitoring
-- organization and site-level visibility
-
-Facenox Management Dashboard is separate from this open source desktop repository. The desktop app in this repo remains usable without the hosted dashboard service.
-
-The desktop app pushes attendance snapshots to the dashboard. Management Dashboard Beta does not upload raw face images or face embeddings, and biometric matching stays local. To move biometric profiles between devices, use encrypted backup and restore.
+- **No GPU Required:** Real-time matching on standard CPUs.
+- **Environment:** Optimized for controlled lighting and consistent setups.
+- **Hardware:** Verified on hardware as old as 2nd-gen Intel i5 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops.
 
 ## Offline-First Behavior
 
 Facenox Desktop continues to work locally when internet access is unavailable:
+- Recognition and liveness verification remain functional.
+- Attendance is recorded and stored in a local SQLite database.
+- Settings, backups, and member management remain accessible.
+- Remote Sync and Dashboard pairing resume automatically when connectivity returns.
+    (You can turn them off and never sync to the dashboard in settings.)
 
-- recognition still works
-- attendance is still recorded locally
-- local settings and backup operations still work
+> [!NOTE]  
+> **Privacy Assurance:** Remote Sync and Dashboard pairing only push attendance snapshots and metadata. Facenox **never uploads raw face images or face embeddings** to the cloud; matching always stays on your hardware.
 
-Dashboard pairing, Remote Sync, and management dashboard updates resume when connectivity returns.
+## How it works
+
+### Where is the data stored?
+Everything is stored in a local SQLite database on your machine. Biometric templates are encrypted at rest.
+
+### Does it need the internet?
+No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% offline. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
+
+### What hardware do I need?
+It's designed for standard CPUs and has been tested on hardware as old as 2nd-gen Intel i5 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops. No dedicated GPU or CUDA setup is required.
 
 ## Roadmap
 
-- [ ] Management dashboard for centralized reporting and analytics
-- [ ] macOS and Linux installer support
-- [ ] Code signing and notarization
-- [ ] Multi-device sync support
-- [ ] Mobile companion app
+- [x] Support for cross-platform native installers (Windows, macOS, Linux).
+- [ ] Organization-level code signing and notarization.
+- [ ] Multi-device biometric profile synchronization.
+- [ ] Mobile companion application for remote monitoring.
+- [ ] Attendance trends and site-level reporting in Facenox Dashboard.
+
+---
+
+> [!IMPORTANT]  
+> **Management Dashboard:** The Facenox Dashboard is an optional separate service. This repository contains the source for the **desktop application only**.
 
 ## Download
 
-[![Release](https://img.shields.io/github/v/release/facenox/facenox?label=Latest%20Release&color=4caf50&v=1)](https://github.com/facenox/facenox/releases/latest)
+Latest prebuilt binaries are available on the [GitHub Releases](https://github.com/facenox/facenox/releases/latest) page.
 
-Prebuilt binaries are currently published for Windows. If you are on macOS or Linux, build from source using [docs/INSTALLATION.md](docs/INSTALLATION.md).
+If you want to build from source, please follow the [Installation Guide](docs/INSTALLATION.md).
 
-Official release and trust rules are documented in [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md).
+## Installation Notes
 
-### Installation Notes
+Facenox is in active development. Until code-signing is finalized in a future release, you may encounter OS security prompts.
 
-Facenox is still early-stage software. Desktop installers may trigger OS trust prompts until code-signing and notarization are in place.
+> [!WARNING]  
+> **Windows SmartScreen:** If blocked, click **More info** then **Run anyway**.
+> 
+> <img src="app/public/assets/smartscreen_warning.png" alt="Windows SmartScreen warning" width="350">
 
-#### Windows SmartScreen
-
-If Windows shows the SmartScreen warning:
-
-1. Select **More info**.
-2. Select **Run anyway**.
-
-<img src="app/public/assets/smartscreen_warning.png" alt="Windows SmartScreen warning" width="400">
-
-#### macOS Gatekeeper
-
-If macOS blocks the app because the developer is unidentified:
-
-1. Right-click the downloaded app or disk image.
-2. Select **Open**.
-3. Confirm the prompt.
-
-<img src="app/public/assets/macos_gatekeeper_warning.png" alt="macOS Gatekeeper warning" width="400">
+> [!TIP]  
+> **macOS Gatekeeper:** If blocked, **Right-click** the app, select **Open**, then confirm the prompt.
+> 
+> <img src="app/public/assets/macos_gatekeeper_warning.png" alt="macOS Gatekeeper warning" width="350">
 
 ## Documentation
 
-- [docs/FEATURES.md](docs/FEATURES.md): features, Management Dashboard Beta scope, and out-of-scope items
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): desktop architecture and Remote Sync boundaries
-- [docs/INSTALLATION.md](docs/INSTALLATION.md): local development and desktop build setup
-- [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md): official release identity, trust rules, and current signing status
-- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md): common setup and runtime issues
-- [docs/PRIVACY.md](docs/PRIVACY.md): data handling, consent, backups, and Remote Sync boundaries
-- [SECURITY.md](SECURITY.md): supported version policy and vulnerability reporting
-- [app/TESTING.md](app/TESTING.md): frontend and Electron app testing conventions
+- [FEATURES.md](docs/FEATURES.md): Capabilities and out-of-scope items.
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): System design and sync boundaries.
+- [INSTALLATION.md](docs/INSTALLATION.md): Local development setup.
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md): Common setup and runtime issues.
+- [CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md): Release identity and trust rules.
+- [PRIVACY.md](docs/PRIVACY.md): Data handling and consent policy.
+- [SECURITY.md](SECURITY.md): Vulnerability reporting policy.
+- [TESTING.md](app/TESTING.md): Frontend and Electron app testing conventions.
 
 ## Tech Stack
 
-### Desktop
+### Local Backend
+- **Runtime:** Python 3.10+ (FastAPI)
+- **Inference:** ONNX Runtime, OpenCV
+- **Tracking:** ByteTrack (High-performance MOT)
+- **Anti-Spoofing:** [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx)
+- **Storage:** SQLite, SQLAlchemy, Alembic
 
-- Electron
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS
+### Desktop App
+- **Framework:** Electron, React 19
+- **Build Tooling:** Vite, TypeScript, Tailwind CSS
 
-### Local backend
-
-- Python 3.10+
-- FastAPI
-- ONNX Runtime
-- OpenCV
-- SQLAlchemy
-- Alembic
-- SQLite
-
-## Development
-
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) for the full setup flow.
-
-Quick start:
+## Development Quickstart
 
 ```bash
+# 1. Clone the repo
 git clone https://github.com/facenox/facenox.git
 cd facenox
-cd server
+
+# 2. Setup Local Backend
 python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+source venv/bin/activate  # or venv\Scripts\activate
+pip install -r server/requirements.txt
 
-# Optional: development tools
-# pip install -r requirements-dev.txt
-
-# Optional: backend packaging/build tools
-# pip install -r requirements-build.txt
-cd ..
-cd app
+# 3. Setup Desktop App
 pnpm install
-cd ..
-pnpm dev
+
+# 4. Run Development Workspace
+./dev-start.sh
 ```
 
 ## Contributing
 
-Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR, especially if you touch privacy, sync, biometrics, or storage behavior.
-
-## License
-
-Facenox is licensed under the GNU AGPL v3. See [LICENSE](LICENSE).
-
-Third-party notices live in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR, especially for changes affecting privacy or biometric data.
 
 ## Acknowledgments
 
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [ONNX Runtime](https://onnxruntime.ai/)
+- [OpenCV](https://opencv.org/)
 - [Electron](https://www.electronjs.org/)
 - [React](https://react.dev/)
-- [OpenCV](https://opencv.org/)
+- [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
-[contributors-shield]: https://img.shields.io/github/contributors/facenox/facenox.svg?style=for-the-badge&color=000000&v=1
-[contributors-url]: https://github.com/facenox/facenox/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/facenox/facenox.svg?style=for-the-badge&color=000000&v=1
-[forks-url]: https://github.com/facenox/facenox/network/members
-[stars-shield]: https://img.shields.io/github/stars/facenox/facenox.svg?style=for-the-badge&color=000000&v=1
-[stars-url]: https://github.com/facenox/facenox/stargazers
-[issues-shield]: https://img.shields.io/github/issues/facenox/facenox.svg?style=for-the-badge&color=000000&v=1
-[issues-url]: https://github.com/facenox/facenox/issues
-[license-shield]: https://img.shields.io/github/license/facenox/facenox.svg?style=for-the-badge&color=000000&v=1
-[license-url]: LICENSE
+## License
+
+Facenox is licensed under the **GNU AGPL v3**. See [LICENSE](LICENSE) for details.
