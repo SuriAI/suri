@@ -13,6 +13,7 @@ interface GroupUIState {
 
   // Modal states
   showAddMemberModal: boolean
+  addMemberInitialMode: "single" | "bulk"
   showEditMemberModal: boolean
   showCreateGroupModal: boolean
   showEditGroupModal: boolean
@@ -32,7 +33,7 @@ interface GroupUIState {
   setIsMobileDrawerOpen: (open: boolean) => void
 
   // Actions - Modals
-  openAddMember: () => void
+  openAddMember: (initialMode?: "single" | "bulk") => void
   closeAddMember: () => void
   openAddMemberWithNavigation: () => void // Navigate to members section and open modal
   openEditMember: (member: AttendanceMember) => void
@@ -57,6 +58,7 @@ const initialState = {
   isSidebarCollapsed: false, // Will be loaded from store
   isMobileDrawerOpen: false,
   showAddMemberModal: false,
+  addMemberInitialMode: "single" as "single" | "bulk",
   showEditMemberModal: false,
   showCreateGroupModal: false,
   showEditGroupModal: false,
@@ -96,10 +98,11 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
   setIsMobileDrawerOpen: (open) => set({ isMobileDrawerOpen: open }),
 
   // Modals
-  openAddMember: () => set({ showAddMemberModal: true }),
-  closeAddMember: () => set({ showAddMemberModal: false }),
+  openAddMember: (initialMode = "single") =>
+    set({ showAddMemberModal: true, addMemberInitialMode: initialMode }),
+  closeAddMember: () => set({ showAddMemberModal: false, addMemberInitialMode: "single" }),
   openAddMemberWithNavigation: () => {
-    set({ showAddMemberModal: true })
+    set({ showAddMemberModal: true, addMemberInitialMode: "single" })
   },
 
   openEditMember: (member) => set({ editingMember: member, showEditMemberModal: true }),

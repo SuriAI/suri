@@ -21,6 +21,10 @@
     /* Active state feedback */
   }
 
+  button:focus-visible {
+    outline: none;
+  }
+
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;

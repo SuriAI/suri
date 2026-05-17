@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { FormInput, Modal } from "@/components/common"
+import { useGroupUIStore } from "@/components/group/stores"
 
 interface AddMemberProps {
   isOpen: boolean
@@ -25,7 +26,14 @@ export function AddMember({
   onClose,
   onSuccess,
 }: AddMemberProps) {
-  const [isBulkMode, setIsBulkMode] = useState(false)
+  const initialMode = useGroupUIStore((state) => state.addMemberInitialMode)
+  const [isBulkMode, setIsBulkMode] = useState(initialMode === "bulk")
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsBulkMode(initialMode === "bulk")
+    }
+  }, [isOpen, initialMode])
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberRole, setNewMemberRole] = useState("")
   const [bulkMembersText, setBulkMembersText] = useState("")

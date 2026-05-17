@@ -215,55 +215,80 @@ export function FaceCapture({
         )}
 
         {selectedMemberId && (
-          <div className="flex h-full flex-col space-y-4 overflow-hidden p-6">
-            <div className="mx-auto flex w-full max-w-4xl flex-col overflow-hidden">
-              <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-white/6 bg-black/40 shadow-2xl">
-                {!framesReady ?
-                  source === "live" ?
-                    <CameraFeed
-                      videoRef={videoRef}
-                      isStreaming={isStreaming}
-                      isVideoReady={isVideoReady}
-                      cameraError={cameraError}
-                      onCapture={handleCaptureFromCamera}
-                      onStart={startCamera}
-                      onStop={stopCamera}
-                      source={source}
-                      cameraDevices={cameraDevices}
-                      selectedCamera={selectedCamera}
-                      setSelectedCamera={setSelectedCamera}
-                    />
-                  : <UploadArea
-                      onFileProcessed={(url: string, w: number, h: number) =>
-                        captureProcessedFrame("Front", url, w, h)
-                      }
-                      onError={setGlobalError}
-                    />
-
-                : <ResultView
-                    frames={frames}
-                    selectedMemberName={selectedMemberName}
-                    onRetake={resetWorkflow}
-                    onRegister={handleWrapperRegister}
-                    isRegistering={isRegistering}
-                    framesReady={!!framesReady}
-                  />
-                }
-
-                {!framesReady && (
-                  <div className="absolute bottom-6 left-6 z-30">
-                    <button
-                      onClick={() => setSource(source === "live" ? "upload" : "live")}
-                      className="group flex items-center justify-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-[11px] font-medium text-white/60 backdrop-blur-md transition-all hover:border-white/20 hover:bg-black/60 hover:text-white"
-                      title={source === "live" ? "Upload Photo Instead" : "Use Camera Instead"}>
-                      <i
-                        className={`fa-solid ${source === "live" ? "fa-file-image" : "fa-camera"} text-sm`}></i>
-                      <span>{source === "live" ? "Upload" : "Camera"}</span>
-                    </button>
-                  </div>
-                )}
+          <div className="flex h-full flex-col items-center justify-center gap-4 overflow-hidden p-6">
+            <div className="relative aspect-video min-h-0 w-full max-w-4xl shrink overflow-hidden rounded-xl border border-white/6 bg-black/40 shadow-2xl">
+              {/* Floating Header Overlay */}
+              <div className="pointer-events-none absolute top-0 right-0 left-0 z-20 flex flex-col items-start bg-gradient-to-b from-black/80 via-black/40 to-transparent px-8 pt-6 pb-12">
+                <span className="mb-0.5 text-[10px] font-bold tracking-[0.15em] text-cyan-400/80 uppercase">
+                  Member
+                </span>
+                <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                  {selectedMemberName}
+                </h2>
               </div>
+
+              {!framesReady ?
+                source === "live" ?
+                  <CameraFeed
+                    videoRef={videoRef}
+                    isStreaming={isStreaming}
+                    isVideoReady={isVideoReady}
+                    cameraError={cameraError}
+                    onStart={startCamera}
+                    onStop={stopCamera}
+                    source={source}
+                    cameraDevices={cameraDevices}
+                    selectedCamera={selectedCamera}
+                    setSelectedCamera={setSelectedCamera}
+                  />
+                : <UploadArea
+                    onFileProcessed={(url: string, w: number, h: number) =>
+                      captureProcessedFrame("Front", url, w, h)
+                    }
+                    onError={setGlobalError}
+                  />
+
+              : <ResultView
+                  frames={frames}
+                  selectedMemberName={selectedMemberName}
+                  onRetake={resetWorkflow}
+                  onRegister={handleWrapperRegister}
+                  isRegistering={isRegistering}
+                  framesReady={!!framesReady}
+                />
+              }
             </div>
+
+            {/* Bottom Control Bar */}
+            {!framesReady && (
+              <div className="flex w-full max-w-4xl items-center justify-between px-4">
+                <div className="w-32">
+                  <button
+                    onClick={() => setSource(source === "live" ? "upload" : "live")}
+                    className="group flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/60 backdrop-blur-md transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    title={source === "live" ? "Upload Photo Instead" : "Use Camera Instead"}>
+                    <i
+                      className={`fa-solid ${source === "live" ? "fa-file-image" : "fa-camera"} text-sm`}></i>
+                    <span>{source === "live" ? "Upload" : "Camera"}</span>
+                  </button>
+                </div>
+
+                <div className="flex flex-1 justify-center">
+                  {source === "live" && isStreaming && (
+                    <button
+                      onClick={handleCaptureFromCamera}
+                      disabled={!isVideoReady || !!cameraError}
+                      className="group flex h-16 w-16 items-center justify-center rounded-full bg-white/10 p-1 transition-all hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40"
+                      title="Capture Face">
+                      <div className="h-full w-full rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform group-active:scale-90" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Empty div for right side balance */}
+                <div className="w-32"></div>
+              </div>
+            )}
           </div>
         )}
       </div>
