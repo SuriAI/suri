@@ -131,21 +131,23 @@ export const useSettings = ({
     }
   }, [currentGroup])
 
-  const handleClearDatabase = async () => {
-    const ok = await dialog.confirm({
-      title: "Clear all face data",
-      message:
-        "Clear ALL face recognition data? This will delete all registered faces and embeddings. This cannot be undone.",
-      confirmText: "Clear data",
-      cancelText: "Cancel",
-      confirmVariant: "danger",
-      requireTypedConfirmation: {
-        label: 'Type "CLEAR FACE DATA" to continue',
-        placeholder: "CLEAR FACE DATA",
-        value: "CLEAR FACE DATA",
-      },
-    })
-    if (!ok) return
+  const handleClearDatabase = async (skipConfirmation = false) => {
+    if (!skipConfirmation) {
+      const ok = await dialog.confirm({
+        title: "Clear all face data",
+        message:
+          "Clear ALL face recognition data? This will delete all registered faces and embeddings. This cannot be undone.",
+        confirmText: "Clear data",
+        cancelText: "Cancel",
+        confirmVariant: "danger",
+        requireTypedConfirmation: {
+          label: 'Type "CLEAR FACE DATA" to continue',
+          placeholder: "CLEAR FACE DATA",
+          value: "CLEAR FACE DATA",
+        },
+      })
+      if (!ok) return
+    }
     setIsLoading(true)
     try {
       await backendService.clearDatabase()

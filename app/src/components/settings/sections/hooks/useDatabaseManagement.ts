@@ -309,59 +309,64 @@ export function useDatabaseManagement(
     [dialog],
   )
 
-  const handleClearAllGroups = useCallback(async () => {
-    const groupCount = groups.length
-    const confirmMessage = `Delete ALL ${groupCount} groups?\n\nThis will delete all groups and all their members. This cannot be undone.`
+  const handleClearAllGroups = useCallback(
+    async (skipConfirmation = false) => {
+      const groupCount = groups.length
+      const confirmMessage = `Delete ALL ${groupCount} groups?\n\nThis will delete all groups and all their members. This cannot be undone.`
 
-    if (dialog) {
-      const ok = await dialog.confirm({
-        title: "Delete all groups",
-        message: confirmMessage,
-        confirmText: "Delete all",
-        cancelText: "Cancel",
-        confirmVariant: "danger",
-        requireTypedConfirmation: {
-          label: 'Type "DELETE ALL GROUPS" to continue',
-          placeholder: "DELETE ALL GROUPS",
-          value: "DELETE ALL GROUPS",
-        },
-      })
-      if (!ok) return
-    } else {
-      if (!window.confirm(confirmMessage)) return
-    }
+      if (!skipConfirmation) {
+        if (dialog) {
+          const ok = await dialog.confirm({
+            title: "Delete all groups",
+            message: confirmMessage,
+            confirmText: "Delete all",
+            cancelText: "Cancel",
+            confirmVariant: "danger",
+            requireTypedConfirmation: {
+              label: 'Type "DELETE ALL GROUPS" to continue',
+              placeholder: "DELETE ALL GROUPS",
+              value: "DELETE ALL GROUPS",
+            },
+          })
+          if (!ok) return
+        } else {
+          if (!window.confirm(confirmMessage)) return
+        }
+      }
 
-    setDeletingGroup("all")
-    try {
-      const deletePromises = groups.map((group) => attendanceManager.deleteGroup(group.id))
-      await Promise.all(deletePromises)
-      setGroupsWithMembers([])
-      if (onGroupsChanged) {
-        onGroupsChanged()
+      setDeletingGroup("all")
+      try {
+        const deletePromises = groups.map((group) => attendanceManager.deleteGroup(group.id))
+        await Promise.all(deletePromises)
+        setGroupsWithMembers([])
+        if (onGroupsChanged) {
+          onGroupsChanged()
+        }
+        if (dialog) {
+          await dialog.alert({
+            title: "Groups deleted",
+            message: `Successfully deleted ${groupCount} groups.`,
+          })
+        } else {
+          alert(`✓ Successfully deleted ${groupCount} groups`)
+        }
+      } catch (error) {
+        console.error("Error deleting all groups:", error)
+        if (dialog) {
+          await dialog.alert({
+            title: "Delete failed",
+            message: "Failed to delete some groups.",
+            variant: "danger",
+          })
+        } else {
+          alert("Failed to delete some groups")
+        }
+      } finally {
+        setDeletingGroup(null)
       }
-      if (dialog) {
-        await dialog.alert({
-          title: "Groups deleted",
-          message: `Successfully deleted ${groupCount} groups.`,
-        })
-      } else {
-        alert(`✓ Successfully deleted ${groupCount} groups`)
-      }
-    } catch (error) {
-      console.error("Error deleting all groups:", error)
-      if (dialog) {
-        await dialog.alert({
-          title: "Delete failed",
-          message: "Failed to delete some groups.",
-          variant: "danger",
-        })
-      } else {
-        alert("Failed to delete some groups")
-      }
-    } finally {
-      setDeletingGroup(null)
-    }
-  }, [groups, onGroupsChanged, dialog])
+    },
+    [groups, onGroupsChanged, dialog],
+  )
 
   const totalMembers = useMemo(
     () => groupsWithMembers.reduce((sum, group) => sum + group.members.length, 0),

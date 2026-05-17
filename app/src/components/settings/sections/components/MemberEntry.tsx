@@ -41,32 +41,30 @@ export function MemberEntry({
   const showEmailField = isEditing("email") || Boolean(member.email)
 
   return (
-    <div className="group/member relative flex items-center justify-between rounded-md border border-white/[0.01] bg-white/[0.015] p-3 transition-colors hover:border-white/5 hover:bg-white/[0.03]">
+    <div className="group/member relative flex items-center justify-between rounded-lg bg-transparent px-3 py-3.5 transition-colors hover:bg-white/[0.01]">
       <div className="flex min-w-0 flex-1 items-center gap-4">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="shrink-0 font-sans">
-            {isEditing("name") ?
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => onEditValueChange(e.target.value)}
-                onBlur={() => onSaveEdit(member.person_id, "name", editValue)}
-                onKeyDown={(e) => handleKeyDown(e, "name")}
-                autoFocus
-                disabled={savingMember === member.person_id}
-                className="h-6 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[13px] font-medium text-white transition-all outline-none focus:ring-1 focus:ring-white/20"
-              />
-            : <div
-                onClick={() => onStartEditing(member, "name")}
-                className="cursor-pointer truncate text-[13px] font-medium text-white/90 transition-colors hover:text-white">
-                {member.name}
-              </div>
-            }
-          </div>
+        <div className="flex min-w-0 flex-1 flex-col text-left">
+          {/* Name */}
+          {isEditing("name") ?
+            <input
+              type="text"
+              value={editValue}
+              onChange={(e) => onEditValueChange(e.target.value)}
+              onBlur={() => onSaveEdit(member.person_id, "name", editValue)}
+              onKeyDown={(e) => handleKeyDown(e, "name")}
+              autoFocus
+              disabled={savingMember === member.person_id}
+              className="h-6 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[13px] font-medium text-white transition-all outline-none focus:ring-1 focus:ring-white/20"
+            />
+          : <div
+              onClick={() => onStartEditing(member, "name")}
+              className="cursor-pointer truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
+              {member.name}
+            </div>
+          }
 
-          <span className="shrink-0 text-[10px] font-medium text-white/10 select-none">/</span>
-
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          {/* Metadata Block: Role and Email */}
+          <div className="mt-0.5 flex items-center gap-2.5 text-[11px]">
             {isEditing("role") ?
               <input
                 type="text"
@@ -77,14 +75,14 @@ export function MemberEntry({
                 autoFocus
                 disabled={savingMember === member.person_id}
                 placeholder="Role"
-                className="h-6 w-24 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[12px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
+                className="h-5 w-24 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[11px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
               />
             : <div
                 onClick={() => onStartEditing(member, "role")}
-                className={`cursor-pointer truncate text-[12px] font-medium transition-colors ${
+                className={`cursor-pointer truncate transition-colors ${
                   member.role ?
-                    "text-white/40 hover:text-white/70"
-                  : "text-white/10 italic hover:text-white/30"
+                    "text-white/45 hover:text-white/70"
+                  : "text-white/20 italic hover:text-white/40"
                 }`}>
                 {member.role || "No role"}
               </div>
@@ -92,7 +90,7 @@ export function MemberEntry({
 
             {showEmailField && (
               <>
-                <span className="shrink-0 text-[10px] font-bold text-white/10 select-none">/</span>
+                <span className="h-2 w-[1px] bg-white/10 select-none" />
 
                 {isEditing("email") ?
                   <input
@@ -104,11 +102,11 @@ export function MemberEntry({
                     autoFocus
                     disabled={savingMember === member.person_id}
                     placeholder="Email"
-                    className="h-6 w-32 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[12px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
+                    className="h-5 w-32 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[11px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
                   />
                 : <div
                     onClick={() => onStartEditing(member, "email")}
-                    className="cursor-pointer truncate text-[12px] font-medium text-white/30 transition-colors hover:text-white/50">
+                    className="cursor-pointer truncate text-white/35 transition-colors hover:text-white/55">
                     {member.email}
                   </div>
                 }
@@ -118,13 +116,13 @@ export function MemberEntry({
         </div>
       </div>
 
-      <div className="ml-4 flex min-w-[120px] shrink-0 items-center justify-end gap-4">
+      <div className="ml-4 flex shrink-0 items-center justify-end gap-3">
         <div className="flex items-center gap-3">
           {member.has_face_data ?
-            <div className="rounded-md bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-400">
+            <div className="flex items-center gap-1.5 rounded-full border border-cyan-500/10 bg-cyan-500/[0.06] px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-cyan-400">
               Registered
             </div>
-          : <div className="rounded-md bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-500">
+          : <div className="flex items-center gap-1.5 rounded-full border border-amber-500/10 bg-amber-500/[0.06] px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-amber-400">
               Not Registered
             </div>
           }
@@ -133,9 +131,9 @@ export function MemberEntry({
             <button
               onClick={() => onDeleteMember(member.person_id, member.name)}
               disabled={deletingMember === member.person_id}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-all hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50">
+              className="flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent text-white/30 shadow-none transition-all duration-300 outline-none hover:bg-red-500/10 hover:text-red-400 focus:outline-none disabled:opacity-50">
               <i
-                className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can opacity-0 group-hover/member:opacity-100"} text-[13px]`}></i>
+                className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can opacity-40 group-hover/member:opacity-75 group-hover/member:hover:opacity-100"} text-[11px] transition-all`}></i>
             </button>
           </Tooltip>
         </div>
