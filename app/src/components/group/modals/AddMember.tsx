@@ -339,7 +339,7 @@ export function AddMember({
                   <textarea
                     value={bulkMembersText}
                     onChange={(event) => setBulkMembersText(event.target.value)}
-                    className="min-h-[132px] w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-3 font-mono text-sm transition-all duration-300 outline-none focus:border-cyan-500/32 focus:bg-[rgba(28,35,44,0.82)] focus:ring-1 focus:ring-cyan-500/5"
+                    className="min-h-[132px] w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-3 font-mono text-sm transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
                     placeholder="Enter one member per line"
                   />
                   <div className="mt-2 flex items-center justify-between">

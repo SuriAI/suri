@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { generateDateRange, createDisplayNameMap, parseLocalDate } from "@/utils"
+import { generateDateRange, createDisplayNameMap, parseLocalDate, formatDuration } from "@/utils"
 import type {
   AttendanceSession,
   AttendanceMember,
@@ -139,8 +139,88 @@ export function useReportTransform(
           day: "numeric",
           year: "numeric",
         })
+
+        let checkInFormatted = ""
+        if (r.check_in_time) {
+          try {
+            const d = new Date(r.check_in_time)
+            const t12_2dig = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+            const t12_num = d.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })
+            const t24_2dig = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            const t24_num = d.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: false,
+            })
+            checkInFormatted = `${t12_2dig} ${t12_num} ${t24_2dig} ${t24_num}`
+          } catch {
+            checkInFormatted = ""
+          }
+        }
+
+        let checkOutFormatted = ""
+        if (r.check_out_time) {
+          try {
+            const d = new Date(r.check_out_time)
+            const t12_2dig = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+            const t12_num = d.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            })
+            const t24_2dig = d.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            const t24_num = d.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: false,
+            })
+            checkOutFormatted = `${t12_2dig} ${t12_num} ${t24_2dig} ${t24_num}`
+          } catch {
+            checkOutFormatted = ""
+          }
+        }
+
+        let totalHoursFormatted = ""
+        if (r.total_hours !== undefined && r.total_hours !== null) {
+          try {
+            const totalMins = Math.round(r.total_hours * 60)
+            totalHoursFormatted = `${formatDuration(totalMins)} ${r.total_hours}h`
+          } catch {
+            totalHoursFormatted = ""
+          }
+        }
+
+        let lateFormatted = ""
+        if (r.late_minutes && r.late_minutes > 0) {
+          try {
+            lateFormatted = `+${formatDuration(r.late_minutes)} late`
+          } catch {
+            lateFormatted = ""
+          }
+        }
+
         const hay =
-          `${r.name} ${r.status} ${r.notes} ${r.date} ${formattedDate} ${r.check_in_time || ""} ${r.check_out_time || ""}`.toLowerCase()
+          `${r.name} ${r.status} ${r.notes} ${r.date} ${formattedDate} ${checkInFormatted} ${checkOutFormatted} ${totalHoursFormatted} ${lateFormatted}`.toLowerCase()
         if (!hay.includes(q)) return false
       }
       return true

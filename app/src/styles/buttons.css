@@ -182,7 +182,8 @@
   }
 
   button:focus-visible {
-    box-shadow: 0 0 0 2px var(--accent-subtle);
+    box-shadow: none;
+    outline: none;
   }
 
   input,
@@ -203,7 +204,8 @@
   textarea:focus,
   select:focus {
     border-color: var(--border-hover);
-    box-shadow: 0 0 0 2px var(--accent-subtle);
+    box-shadow: none;
+    outline: none;
   }
 
   input::placeholder,
