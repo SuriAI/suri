@@ -42,7 +42,7 @@ export function UploadArea({ onFileProcessed, onError }: UploadAreaProps) {
             <div className="mb-1 text-sm font-semibold text-white/80">
               Drop image or click to browse
             </div>
-            <div className="text-[10px] font-medium text-white/10">PNG, JPG up to 10MB</div>
+            <div className="text-[10px] font-medium text-white/55">PNG, JPG up to 10MB</div>
           </div>
         </div>
         <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />

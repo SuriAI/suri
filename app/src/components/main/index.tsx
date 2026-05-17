@@ -605,7 +605,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setSuccess(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
                 aria-label="Dismiss success">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
@@ -629,7 +629,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setWarning(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
                 aria-label="Dismiss warning">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
@@ -651,7 +651,7 @@ export default function Main() {
               <button
                 type="button"
                 onClick={() => setError(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/30 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
                 aria-label="Dismiss error">
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>

@@ -143,7 +143,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={addMemberHandler}
-              className="flex items-center gap-2 rounded-lg border border-transparent bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white">
+              className="flex items-center gap-2 rounded-lg border border-transparent bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
               <i className="fa-solid fa-user-plus text-[10px]"></i>
               ADD MEMBER
             </button>
@@ -153,7 +153,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         actions = (
           <button
             onClick={resetRegistration}
-            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white">
+            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
             <i className="fa-solid fa-arrow-left text-[10px]"></i>
             BACK TO MEMBERS
           </button>
@@ -162,7 +162,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         actions = (
           <button
             onClick={openEditGroup}
-            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white">
+            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
             <i className="fa-solid fa-pen-to-square text-[10px]"></i>
             EDIT GROUP
           </button>
@@ -192,7 +192,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         generalTitles[activeSection] ||
         activeSection.charAt(0).toUpperCase() + activeSection.slice(1),
       eyebrow: "General Settings",
-      eyebrowColor: "text-white/30",
+      eyebrowColor: "text-white/55",
       actions: null,
       isGroupSection: false,
     }

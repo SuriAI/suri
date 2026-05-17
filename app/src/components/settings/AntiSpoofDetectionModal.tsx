@@ -126,7 +126,7 @@ export function AntiSpoofDetectionModal({
                   <div className="mb-1.5 text-[15px] font-semibold text-white/92">
                     {currentSlide.title}
                   </div>
-                  <p className="max-w-[320px] text-[12px] leading-relaxed text-white/58">
+                  <p className="max-w-[320px] text-[12px] leading-relaxed text-white/65">
                     {currentSlide.description}
                   </p>
                 </div>
@@ -157,7 +157,7 @@ export function AntiSpoofDetectionModal({
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-0.5">
-          <label className="flex cursor-pointer items-center gap-2.5 text-[12px] text-white/68">
+          <label className="flex cursor-pointer items-center gap-2.5 text-[12px] text-white/70">
             <input
               type="checkbox"
               checked={dontShowAgain}
@@ -170,7 +170,7 @@ export function AntiSpoofDetectionModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handleClose}
-              className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-white/60 uppercase transition-colors hover:text-white/85">
+              className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-white/65 uppercase transition-colors hover:text-white/85">
               Cancel
             </button>
             <button

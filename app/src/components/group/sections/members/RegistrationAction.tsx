@@ -31,7 +31,7 @@ export function RegistrationAction({ memberId, isRegistered }: RegistrationActio
             <Tooltip content="Re-register face">
               <button
                 onClick={() => jumpToRegistration(memberId)}
-                className="flex h-7 w-7 items-center justify-center rounded border-none bg-transparent text-white/30 transition-all hover:bg-white/10 hover:text-white">
+                className="flex h-7 w-7 items-center justify-center rounded border-none bg-transparent text-white/55 transition-all hover:bg-white/10 hover:text-white">
                 <i className="fa-solid fa-rotate-right text-[10px]" />
               </button>
             </Tooltip>

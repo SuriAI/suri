@@ -15,13 +15,13 @@ export function MemberTooltip({ member, children, position = "right", role }: Me
   const content = (
     <div className="flex min-w-[120px] flex-col items-center gap-1.5 p-1 text-center">
       <div className="flex flex-col items-center">
-        <span className="text-[11px] font-medium text-white/40">{memberRole}</span>
+        <span className="text-[11px] font-medium text-white/55">{memberRole}</span>
       </div>
 
       <div className="flex items-center justify-center">
         <span
           className={`text-[11px] font-semibold ${
-            isRegistered ? "text-cyan-400" : "text-white/30"
+            isRegistered ? "text-cyan-400" : "text-white/55"
           }`}>
           {isRegistered ? "Registered" : "Not Registered"}
         </span>
@@ -29,8 +29,8 @@ export function MemberTooltip({ member, children, position = "right", role }: Me
 
       {member?.email && (
         <div className="mt-0.5 flex items-center justify-center gap-2">
-          <i className="fa-solid fa-envelope text-[10px] text-white/30"></i>
-          <span className="max-w-[140px] truncate text-[11px] text-white/60">{member.email}</span>
+          <i className="fa-solid fa-envelope text-[10px] text-white/55"></i>
+          <span className="max-w-[140px] truncate text-[11px] text-white/65">{member.email}</span>
         </div>
       )}
     </div>

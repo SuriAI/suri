@@ -68,7 +68,7 @@ export const VideoCanvas = memo(function VideoCanvas({
         <div
           className={`animate-in fade-in zoom-in-95 pointer-events-none absolute right-4 bottom-4 z-50 flex items-center gap-4 rounded-full border bg-[rgba(10,13,18,0.84)] px-4 py-2 shadow-lg duration-500 ${outdated ? "border-amber-500/50" : "border-white/20"}`}>
           <div className="flex flex-col items-start">
-            <span className="text-[9px] font-medium tracking-wider text-white/30 uppercase">
+            <span className="text-[9px] font-medium tracking-wider text-white/55 uppercase">
               Start Time
             </span>
             <span
@@ -108,7 +108,7 @@ export const VideoCanvas = memo(function VideoCanvas({
           <div className="flex flex-col items-center gap-3 px-6 text-center">
             <div className="relative">
               <svg
-                className="h-16 w-16 animate-pulse text-white/30"
+                className="h-16 w-16 animate-pulse text-white/55"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export const VideoCanvas = memo(function VideoCanvas({
                 />
               </svg>
             </div>
-            <div className="relative flex max-w-sm flex-col items-center gap-4 text-xs text-white/60">
+            <div className="relative flex max-w-sm flex-col items-center gap-4 text-xs text-white/65">
               <p>
                 {!isShellReady ?
                   "Loading groups and settings..."

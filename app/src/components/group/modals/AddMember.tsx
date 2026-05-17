@@ -213,7 +213,7 @@ export function AddMember({
       title={
         <div>
           <h3 className="mb-1 text-xl font-semibold tracking-tight">Add Members</h3>
-          <p className="text-[11px] font-normal text-white/50">
+          <p className="text-[11px] font-normal text-white/65">
             {modalSubtitle} <span className="font-medium text-cyan-400/80">{group.name}</span>
           </p>
         </div>
@@ -229,7 +229,7 @@ export function AddMember({
               setConfirmDuplicate(false)
             }}
             className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
-              !isBulkMode ? "text-cyan-400" : "text-white/40 hover:text-white/80"
+              !isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
             }`}>
             Single
             {!isBulkMode && (
@@ -248,7 +248,7 @@ export function AddMember({
               setConfirmDuplicate(false)
             }}
             className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
-              isBulkMode ? "text-cyan-400" : "text-white/40 hover:text-white/80"
+              isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
             }`}>
             Bulk Import
             {isBulkMode && (
@@ -278,7 +278,7 @@ export function AddMember({
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="grid gap-4">
                 <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="pl-1 text-[11px] font-medium text-white/50">Full Name</span>
+                  <span className="pl-1 text-[11px] font-medium text-white/65">Full Name</span>
                   <FormInput
                     ref={nameInputRef}
                     value={newMemberName}
@@ -300,7 +300,7 @@ export function AddMember({
                   )}
                 </label>
                 <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="pl-1 text-[11px] font-medium text-white/50">
+                  <span className="pl-1 text-[11px] font-medium text-white/65">
                     Role <span className="opacity-50">(Optional)</span>
                   </span>
                   <FormInput
@@ -343,8 +343,8 @@ export function AddMember({
                     placeholder="Enter one member per line"
                   />
                   <div className="mt-2 flex items-center justify-between">
-                    <div className="text-[11px] text-white/30">
-                      Format: <span className="font-mono text-white/50">Name, Role</span>
+                    <div className="text-[11px] text-white/55">
+                      Format: <span className="font-mono text-white/65">Name, Role</span>
                     </div>
                     <label className="group flex cursor-pointer items-center gap-1.5 text-[11px] font-medium text-cyan-400/80 transition-colors hover:text-cyan-400">
                       <i className="fa-solid fa-file-arrow-up transition-transform group-hover:-translate-y-0.5"></i>
@@ -418,7 +418,7 @@ export function AddMember({
               resetForm()
               onClose()
             }}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
             Cancel
           </button>
           <button

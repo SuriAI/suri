@@ -66,7 +66,7 @@ export function MemberSidebar({
       <div className="flex shrink-0 items-center gap-3">
         <div className="relative flex-1">
           <svg
-            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/30"
+            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/55"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">
@@ -82,18 +82,18 @@ export function MemberSidebar({
             value={memberSearch}
             onChange={(e) => setMemberSearch(e.target.value)}
             placeholder="Search members..."
-            className="w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] py-2.5 pr-3 pl-10 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-cyan-500/32 focus:bg-[rgba(28,35,44,0.82)] focus:ring-1 focus:ring-cyan-500/5"
+            className="w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] py-2.5 pr-3 pl-10 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/55 focus:border-cyan-500/32 focus:bg-[rgba(28,35,44,0.82)] focus:ring-1 focus:ring-cyan-500/5"
           />
         </div>
       </div>
 
       <div className="flex shrink-0 items-center justify-between gap-2">
         {members.length > 0 && filteredMembers.length > 0 && (
-          <div className="text-[11px] font-medium text-white/40">
+          <div className="text-[11px] font-medium text-white/55">
             Showing {filteredMembers.length} of {members.length} member
             {members.length !== 1 ? "s" : ""}
             {registrationFilter !== "all" && (
-              <span className="ml-1 text-white/30">
+              <span className="ml-1 text-white/55">
                 ({registrationFilter === "registered" ? "registered" : "needs registration"})
               </span>
             )}
@@ -105,7 +105,7 @@ export function MemberSidebar({
             className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
               registrationFilter === "all" ?
                 "border border-white/20 bg-[rgba(28,35,44,0.82)] text-white"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/40 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
             }`}>
             All
           </button>
@@ -114,7 +114,7 @@ export function MemberSidebar({
             className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
               registrationFilter === "non-registered" ?
                 "border border-amber-500/30 bg-amber-500/20 text-amber-200"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/40 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
             }`}>
             Not Registered
           </button>
@@ -123,7 +123,7 @@ export function MemberSidebar({
             className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
               registrationFilter === "registered" ?
                 "border border-cyan-500/30 bg-cyan-500/20 text-cyan-200"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/40 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
             }`}>
             Registered
           </button>
@@ -133,13 +133,13 @@ export function MemberSidebar({
       <div className="custom-scroll min-h-0 flex-1 space-y-1.5 overflow-x-hidden overflow-y-auto">
         {members.length === 0 && (
           <div className="w-full rounded-lg border border-dashed border-white/10 bg-[rgba(22,28,36,0.44)] px-3 py-12 text-center">
-            <div className="text-xs text-white/40">No members yet</div>
+            <div className="text-xs text-white/55">No members yet</div>
           </div>
         )}
 
         {members.length > 0 && filteredMembers.length === 0 && (
           <div className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-3 py-6 text-center">
-            <div className="mx-auto max-w-[200px] text-[11px] leading-relaxed font-medium text-white/40">
+            <div className="mx-auto max-w-[200px] text-[11px] leading-relaxed font-medium text-white/55">
               {memberSearch.trim() ?
                 `No results for "${memberSearch}"`
               : registrationFilter === "registered" ?
@@ -174,7 +174,7 @@ export function MemberSidebar({
                   {member.role ?
                     <div
                       className={`flex items-center gap-1.5 text-[11px] font-medium ${
-                        isSelected ? "text-cyan-300/60" : "text-white/40"
+                        isSelected ? "text-cyan-300/60" : "text-white/55"
                       }`}>
                       <i className="fa-solid fa-briefcase text-[10px]"></i>
                       {member.role}
@@ -198,7 +198,7 @@ export function MemberSidebar({
                   </button>
                 : <button
                     onClick={() => onSelectMember(member.person_id)}
-                    className="group/btn relative flex items-center gap-1.5 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-[11px] font-semibold text-white/40 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-400">
+                    className="group/btn relative flex items-center gap-1.5 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-[11px] font-semibold text-white/55 transition-all duration-300 hover:border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-400">
                     <i className="fa-solid fa-check text-[10px] transition-all duration-300 group-hover/btn:absolute group-hover/btn:scale-75 group-hover/btn:opacity-0"></i>
                     <i className="fa-solid fa-rotate-right absolute scale-75 text-[11px] opacity-0 transition-all duration-300 group-hover/btn:relative group-hover/btn:scale-100 group-hover/btn:opacity-100"></i>
                     <span className="transition-all duration-300 group-hover/btn:hidden">

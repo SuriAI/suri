@@ -63,7 +63,7 @@ export function GroupManagementModal({
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={() => setShowGroupManagement(false)}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
             Cancel
           </button>
           <button

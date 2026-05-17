@@ -81,8 +81,8 @@ export function MemberEntry({
                 onClick={() => onStartEditing(member, "role")}
                 className={`cursor-pointer truncate transition-colors ${
                   member.role ?
-                    "text-white/45 hover:text-white/70"
-                  : "text-white/20 italic hover:text-white/40"
+                    "text-white/65 hover:text-white/70"
+                  : "text-white/20 italic hover:text-white/55"
                 }`}>
                 {member.role || "No role"}
               </div>
@@ -106,7 +106,7 @@ export function MemberEntry({
                   />
                 : <div
                     onClick={() => onStartEditing(member, "email")}
-                    className="cursor-pointer truncate text-white/35 transition-colors hover:text-white/55">
+                    className="cursor-pointer truncate text-white/65 transition-colors hover:text-white/80">
                     {member.email}
                   </div>
                 }
@@ -131,14 +131,14 @@ export function MemberEntry({
             <button
               onClick={() => onDeleteMember(member.person_id, member.name)}
               disabled={deletingMember === member.person_id}
-              className="flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent text-white/30 shadow-none transition-all duration-300 outline-none hover:bg-red-500/10 hover:text-red-400 focus:outline-none disabled:opacity-50">
+              className="flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-red-500/10 hover:text-red-400 focus:outline-none disabled:opacity-50">
               <i
                 className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can opacity-40 group-hover/member:opacity-75 group-hover/member:hover:opacity-100"} text-[11px] transition-all`}></i>
             </button>
           </Tooltip>
         </div>
         {savingMember === member.person_id && (
-          <i className="fa-solid fa-spinner fa-spin absolute right-2 text-[10px] text-white/40"></i>
+          <i className="fa-solid fa-spinner fa-spin absolute right-2 text-[10px] text-white/55"></i>
         )}
       </div>
     </div>

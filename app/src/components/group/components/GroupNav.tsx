@@ -37,16 +37,10 @@ const SECTIONS: SectionConfig[] = [
     shortcut: "3",
   },
   {
-    id: "registration",
-    label: "Registration",
-    icon: "",
-    shortcut: "4",
-  },
-  {
     id: "settings",
     label: "Settings",
     icon: "",
-    shortcut: "5",
+    shortcut: "4",
   },
 ]
 
@@ -95,7 +89,7 @@ export function GroupNav({
                   className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                     isActive ? "bg-white/10 text-white"
                     : isDisabled ? "cursor-not-allowed text-white/20"
-                    : "text-white/50 hover:bg-white/8 hover:text-white"
+                    : "text-white/70 hover:bg-white/8 hover:text-white"
                   } `}
                   aria-label={section.label}
                   aria-current={isActive ? "page" : undefined}>

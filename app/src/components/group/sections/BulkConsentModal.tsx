@@ -51,7 +51,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
           </p>
         </div>
 
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-white/65">
           Check each member you have obtained explicit, informed consent from:
         </p>
 
@@ -77,14 +77,14 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold text-white/90">{member.name}</div>
                 {member.role && (
-                  <div className="text-[11px] font-medium text-white/40">{member.role}</div>
+                  <div className="text-[11px] font-medium text-white/55">{member.role}</div>
                 )}
               </div>
             </label>
           ))}
         </div>
 
-        <div className="flex items-center justify-between text-xs text-white/40">
+        <div className="flex items-center justify-between text-xs text-white/55">
           <span>
             {checkedIds.size} of {pendingMembers.length} confirmed
           </span>
@@ -92,7 +92,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
             <button
               type="button"
               onClick={() => setCheckedIds(new Set(pendingMembers.map((m) => m.person_id)))}
-              className="text-white/40 underline transition-colors hover:text-white/70">
+              className="text-white/55 underline transition-colors hover:text-white/70">
               Select all
             </button>
           )}
@@ -103,7 +103,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
         <button
           type="button"
           onClick={handleClose}
-          className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+          className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
           Cancel
         </button>
         <button

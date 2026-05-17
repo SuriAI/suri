@@ -16,7 +16,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
       title={
         <div>
           <h2 className="text-xl font-semibold text-white">Privacy & Data Handling</h2>
-          <p className="mt-1 text-sm font-normal text-white/50">
+          <p className="mt-1 text-sm font-normal text-white/65">
             How your information is stored and used
           </p>
         </div>
@@ -25,7 +25,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
       <div className="custom-scroll mt-2 -mr-2 max-h-[70vh] space-y-6 overflow-y-auto pr-2 pb-10">
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">Your data stays local</h3>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             Facenox stores biometric profiles, attendance records, and settings locally on your
             device by default. The desktop app performs face detection, recognition, and liveness
             checks locally and does not depend on a hosted biometric service.
@@ -34,7 +34,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
 
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">No data collection</h3>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             The current desktop app does not include analytics, ads, or hidden telemetry. Biometric
             processing is performed locally, and the app does not send routine usage data to a
             hosted monitoring service.
@@ -43,7 +43,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
 
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">Works offline</h3>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             Face detection, recognition, and attendance recording work without internet. This
             ensures privacy and allows use in environments with limited or no network access.
           </p>
@@ -51,7 +51,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
 
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">Remote Reporting Sync</h3>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             Facenox can pair with a separate Facenox Management Dashboard for reporting and device
             sync. Remote sync does not upload face embeddings or raw face images, and biometric
             matching stays local to the desktop app. To move biometric profiles between devices, use
@@ -61,7 +61,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
 
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">Regulatory compliance</h3>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             Facenox includes local storage, consent tracking, export, and deletion controls that can
             help support privacy-conscious deployments. Compliance still depends on your operational
             policies and legal notices.
@@ -69,14 +69,14 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <div className="mt-2 flex flex-wrap gap-1.5">
             <button
               onClick={() => updaterService.openReleasePage("https://gdpr-info.eu/")}
-              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/40 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
+              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/55 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
               GDPR (EU)
             </button>
             <button
               onClick={() =>
                 updaterService.openReleasePage("https://privacy.gov.ph/data-privacy-act/")
               }
-              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/40 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
+              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/55 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
               Data Privacy Act of 2012 (PH)
             </button>
           </div>
@@ -146,7 +146,7 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
           <button
             onClick={onCheck}
             disabled={isChecking}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-xs font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-1.5 text-xs font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
             Retry
           </button>
         </div>
@@ -163,8 +163,8 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
           disabled={isChecking}
           className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
             isChecking ?
-              "border-white/10 bg-[rgba(22,28,36,0.68)] text-white/30"
-            : "border-transparent bg-transparent text-white/50 hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+              "border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55"
+            : "border-transparent bg-transparent text-white/65 hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
           } disabled:opacity-50`}>
           {isChecking ?
             <div className="flex items-center gap-2">
@@ -285,7 +285,7 @@ export const About: React.FC = () => {
             </div>
             <h1 className="text-4xl font-black tracking-[-0.04em] text-white">Facenox</h1>
             <div className="flex min-h-7 items-center justify-center rounded-full border border-white/6 bg-[rgba(22,28,36,0.46)] px-2.5 py-0.5">
-              <span className="font-mono text-[10px] leading-none tracking-[0.02em] text-white/42">
+              <span className="font-mono text-[10px] leading-none tracking-[0.02em] text-white/55">
                 {version || "-"}
               </span>
             </div>
@@ -293,7 +293,7 @@ export const About: React.FC = () => {
 
           <div className="w-full space-y-1 text-left">
             <div className="flex items-center justify-between border-b border-white/5 py-3">
-              <span className="text-[11px] font-medium text-white/30">Updates</span>
+              <span className="text-[11px] font-medium text-white/55">Updates</span>
               <UpdateStatus
                 updateInfo={updateInfo}
                 isChecking={isChecking}
@@ -305,48 +305,48 @@ export const About: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between border-b border-white/5 py-3">
-              <span className="text-[11px] font-medium text-white/30">License</span>
+              <span className="text-[11px] font-medium text-white/55">License</span>
               <button
                 onClick={openLink("https://www.gnu.org/licenses/agpl-3.0.html")}
-                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white/90 active:scale-95">
+                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/55 transition-all hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white/90 active:scale-95">
                 View GNU AGPL v3
               </button>
             </div>
 
             <div className="flex items-center justify-between border-b border-white/5 py-3">
-              <span className="text-[11px] font-medium text-white/30">Source code</span>
+              <span className="text-[11px] font-medium text-white/55">Source code</span>
               <button
                 onClick={openLink("https://github.com/facenox/facenox")}
-                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/40 transition-all hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white/90 active:scale-95">
+                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/55 transition-all hover:border-white/10 hover:bg-[rgba(22,28,36,0.62)] hover:text-white/90 active:scale-95">
                 View Repository
               </button>
             </div>
 
             <div className="flex items-center justify-between border-b border-white/5 py-3">
-              <span className="text-[11px] font-medium text-white/30">Privacy & Data</span>
+              <span className="text-[11px] font-medium text-white/55">Privacy & Data</span>
               <button
                 onClick={() => setShowPrivacyModal(true)}
-                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/50 transition-all hover:border-cyan-500/10 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95">
+                className="rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/65 transition-all hover:border-cyan-500/10 hover:bg-cyan-500/10 hover:text-cyan-400 active:scale-95">
                 Read Policy
               </button>
             </div>
 
             <div className="flex items-center justify-between border-b border-white/5 py-3">
               <div className="flex flex-col text-left">
-                <span className="text-[11px] font-medium text-white/30">Diagnostics</span>
-                <span className="mt-0.5 text-[9px] text-white/15">System health & error logs</span>
+                <span className="text-[11px] font-medium text-white/55">Diagnostics</span>
+                <span className="mt-0.5 text-[9px] text-white/55">System health & error logs</span>
               </div>
               <button
                 disabled={isExporting}
                 onClick={handleExportHealth}
-                className="group flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/50 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-50">
+                className="group flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/65 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-50">
                 {isExporting ?
                   <>
                     <i className="fa-solid fa-spinner animate-spin text-[10px]" />
                     <span>Exporting...</span>
                   </>
                 : <>
-                    <i className="fa-solid fa-file-export text-[10px] text-white/30 group-hover:text-white/60" />
+                    <i className="fa-solid fa-file-export text-[10px] text-white/55 group-hover:text-white/65" />
                     <span>Export Health Data</span>
                   </>
                 }
@@ -359,21 +359,21 @@ export const About: React.FC = () => {
           <div className="mb-5 flex items-center justify-center gap-6">
             <button
               onClick={openLink("https://github.com/facenox/facenox/releases")}
-              className="text-[11px] font-semibold text-white/35 transition-colors hover:text-white/80">
+              className="text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90">
               Releases
             </button>
             <button
               onClick={openLink("https://github.com/facenox/facenox/issues")}
-              className="text-[11px] font-semibold text-white/35 transition-colors hover:text-white/80">
+              className="text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90">
               Support
             </button>
             <button
               onClick={openLink("https://github.com/facenox/facenox#readme")}
-              className="text-[11px] font-semibold text-white/35 transition-colors hover:text-white/80">
+              className="text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90">
               Docs
             </button>
           </div>
-          <p className="text-[11px] font-medium text-white/25">(c) 2026 Facenox</p>
+          <p className="text-[11px] font-medium text-white/55">(c) 2026 Facenox</p>
         </div>
       </div>
     </div>

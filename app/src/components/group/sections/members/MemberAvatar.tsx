@@ -6,7 +6,7 @@ interface MemberAvatarProps {
 }
 
 const COLORS = [
-  "bg-white/5 text-white/60 border-white/10",
+  "bg-white/5 text-white/65 border-white/10",
   "bg-white/10 text-white/70 border-white/10",
   "bg-zinc-800 text-zinc-400 border-white/5",
   "bg-slate-800 text-slate-400 border-white/5",

@@ -48,7 +48,7 @@ export function ControlBar({
       return {
         label: "Preparing...",
         className:
-          "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/60 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/60",
+          "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/65 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/65",
         tooltip: "Loading groups and settings",
         enabled: false,
       }

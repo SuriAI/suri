@@ -80,19 +80,19 @@ export function ReportToolbar({
           type="date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/60 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
             } as React.CSSProperties
           }
         />
-        <span className="px-1 text-[11px] font-bold text-white/35">To</span>
+        <span className="px-1 text-[11px] font-bold text-white/65">To</span>
         <input
           type="date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/60 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
@@ -111,7 +111,7 @@ export function ReportToolbar({
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full min-w-0 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] py-1 pr-3 pl-7 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/25 focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 sm:focus:max-w-[220px]"
+            className="w-full min-w-0 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] py-1 pr-3 pl-7 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/40 focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 sm:focus:max-w-[220px]"
           />
         </div>
 
@@ -129,7 +129,7 @@ export function ReportToolbar({
               className={`relative flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
                 showFilter || statusFilter !== "all" ?
                   "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
-                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/35 hover:text-white/60"
+                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/50 hover:text-white/65"
               }`}>
               <i className="fa-solid fa-filter text-[10px]" />
               {statusFilter !== "all" && (
@@ -150,7 +150,7 @@ export function ReportToolbar({
                   className={`w-full border-0 px-3 py-1.5 text-left text-[11px] font-medium transition-colors ${
                     statusFilter === st ?
                       "bg-cyan-500/10 text-cyan-400"
-                    : "text-white/50 hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+                    : "text-white/65 hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
                   }`}>
                   {label}
                 </button>
@@ -167,7 +167,7 @@ export function ReportToolbar({
               className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
                 showOptions ?
                   "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
-                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/35 hover:text-white/60"
+                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/50 hover:text-white/65"
               }`}>
               <i className="fa-solid fa-sliders text-[10px]" />
             </button>
@@ -179,7 +179,7 @@ export function ReportToolbar({
               style={{ maxHeight: "360px" }}>
               {/* Columns */}
               <div className="px-3 pt-3 pb-2">
-                <span className="text-[11px] font-bold text-white/35">Columns</span>
+                <span className="text-[11px] font-bold text-white/65">Columns</span>
                 <div
                   className="custom-scroll mt-1.5 overflow-y-auto"
                   style={{ maxHeight: "140px" }}>
@@ -203,7 +203,7 @@ export function ReportToolbar({
                         />
                         <i className="fa-solid fa-check pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-black opacity-0 peer-checked:opacity-100" />
                       </div>
-                      <span className="text-[11px] font-medium text-white/45">{c.label}</span>
+                      <span className="text-[11px] font-medium text-white/65">{c.label}</span>
                     </label>
                   ))}
                 </div>
@@ -213,7 +213,7 @@ export function ReportToolbar({
 
               {/* Group By */}
               <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-                <span className="shrink-0 text-[11px] font-bold text-white/35">Group by</span>
+                <span className="shrink-0 text-[11px] font-bold text-white/65">Group by</span>
                 <Dropdown
                   options={GROUP_OPTIONS.map((g) => ({
                     value: g.value,

@@ -34,7 +34,7 @@ export function ReportTable({
               return (
                 <th
                   key={c.key}
-                  className={`border-b border-white/6 bg-[rgba(11,15,20,0.98)] px-4 py-2.5 text-[11px] font-medium text-white/40 ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}>
+                  className={`border-b border-white/6 bg-[rgba(11,15,20,0.98)] px-4 py-2.5 text-[11px] font-medium text-white/55 ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}>
                   {c.label}
                 </th>
               )
@@ -57,7 +57,7 @@ export function ReportTable({
                     : "No results found"}
                   </h3>
 
-                  <p className="mb-8 max-w-70 text-[11px] leading-relaxed font-medium text-white/40">
+                  <p className="mb-8 max-w-70 text-[11px] leading-relaxed font-medium text-white/55">
                     {search ?
                       "We couldn't find anything matching your search. Try a different keyword."
                     : statusFilter !== "all" ?
@@ -69,20 +69,20 @@ export function ReportTable({
                     {statusFilter !== "all" && (
                       <button
                         onClick={onResetFilter}
-                        className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-4 py-2 text-xs font-medium text-white/40 transition-all hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80">
+                        className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-4 py-2 text-xs font-medium text-white/55 transition-all hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80">
                         Reset Filter
                       </button>
                     )}
                     {!search && statusFilter === "all" && (
                       <div className="flex flex-col items-center gap-2">
-                        <span className="mb-2 text-[11px] font-semibold text-white/40">
+                        <span className="mb-2 text-[11px] font-semibold text-white/55">
                           Suggestions
                         </span>
                         <div className="flex gap-2">
-                          <span className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-3 py-1.5 text-[11px] font-medium text-white/40">
+                          <span className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-3 py-1.5 text-[11px] font-medium text-white/55">
                             Try Previous Week
                           </span>
-                          <span className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-3 py-1.5 text-[11px] font-medium text-white/40">
+                          <span className="rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-3 py-1.5 text-[11px] font-medium text-white/55">
                             Expand Range
                           </span>
                         </div>
@@ -105,7 +105,7 @@ export function ReportTable({
                           <span className="text-xs font-bold tracking-wide text-cyan-100/90">
                             {groupInfo}
                           </span>
-                          <span className="inline-flex items-center rounded-lg border border-white/6 bg-[rgba(12,16,22,0.82)] px-1.5 py-0.5 text-[11px] font-medium text-white/40">
+                          <span className="inline-flex items-center rounded-lg border border-white/6 bg-[rgba(12,16,22,0.82)] px-1.5 py-0.5 text-[11px] font-medium text-white/55">
                             {rows.length} {rows.length === 1 ? "record" : "records"}
                           </span>
                         </div>
@@ -122,10 +122,10 @@ export function ReportTable({
 
                         if (c.key === "status") {
                           const s = row.status
-                          let textColor = "text-white/40"
+                          let textColor = "text-white/55"
                           if (s === "present") textColor = "text-cyan-400"
                           if (s === "absent") textColor = "text-red-400"
-                          if (s === "no_records") textColor = "text-white/30"
+                          if (s === "no_records") textColor = "text-white/55"
 
                           content = (
                             <div
@@ -196,7 +196,7 @@ export function ReportTable({
                             : <span className="text-white/10">-</span>
                         } else if (c.key === "date") {
                           content = (
-                            <span className="font-medium text-white/60">
+                            <span className="font-medium text-white/65">
                               {parseLocalDate(row.date).toLocaleDateString(undefined, {
                                 month: "short",
                                 day: "numeric",

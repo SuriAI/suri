@@ -391,7 +391,7 @@ export function CameraQueue({
                   {memberQueue.length > 0 && (
                     <button
                       onClick={() => setupQueue([])}
-                      className="text-xs text-white/40 transition hover:text-white/70">
+                      className="text-xs text-white/55 transition hover:text-white/70">
                       Clear
                     </button>
                   )}
@@ -409,7 +409,7 @@ export function CameraQueue({
                 <div className="flex flex-wrap gap-2">
                   <div className="relative min-w-55 flex-1">
                     <svg
-                      className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/30"
+                      className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/55"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24">
@@ -425,7 +425,7 @@ export function CameraQueue({
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                       placeholder="Search members..."
-                      className="w-full rounded-xl border border-white/5 bg-white/5 py-2.5 pr-3 pl-10 text-[11px] font-medium text-white shadow-inner transition-all duration-300 outline-none placeholder:text-white/30 focus:border-cyan-500/32 focus:bg-white/10 focus:ring-1 focus:ring-cyan-500/5"
+                      className="w-full rounded-xl border border-white/5 bg-white/5 py-2.5 pr-3 pl-10 text-[11px] font-medium text-white shadow-inner transition-all duration-300 outline-none placeholder:text-white/55 focus:border-cyan-500/32 focus:bg-white/10 focus:ring-1 focus:ring-cyan-500/5"
                     />
                   </div>
                   <Dropdown
@@ -452,13 +452,13 @@ export function CameraQueue({
                 <div className="custom-scroll max-h-64 space-y-1.5 overflow-y-auto">
                   {members.length === 0 && (
                     <div className="rounded-lg border border-dashed border-white/5 bg-white/5 px-3 py-8 text-center">
-                      <div className="text-xs text-white/40">No members yet</div>
+                      <div className="text-xs text-white/55">No members yet</div>
                     </div>
                   )}
 
                   {members.length > 0 && filteredMembers.length === 0 && (
                     <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center">
-                      <div className="text-xs text-white/40">
+                      <div className="text-xs text-white/55">
                         {memberSearch.trim() ?
                           `No results for "${memberSearch}"`
                         : registrationFilter === "registered" ?
@@ -516,7 +516,7 @@ export function CameraQueue({
                               {member.name}
                             </div>
                             {member.role && (
-                              <div className="truncate text-xs text-white/40">{member.role}</div>
+                              <div className="truncate text-xs text-white/55">{member.role}</div>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
@@ -536,7 +536,7 @@ export function CameraQueue({
             </div>
 
             {memberQueue.length === 0 && (
-              <div className="text-xs text-white/40">Select at least one member to start.</div>
+              <div className="text-xs text-white/55">Select at least one member to start.</div>
             )}
 
             {/* Start Button */}
@@ -562,9 +562,9 @@ export function CameraQueue({
                   <div className="absolute inset-0 flex items-center justify-center bg-black/95">
                     <div className="max-w-xs space-y-4 text-center">
                       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/5 bg-white/5">
-                        <i className="fa-solid fa-video text-2xl text-white/30"></i>
+                        <i className="fa-solid fa-video text-2xl text-white/55"></i>
                       </div>
-                      <div className="text-sm text-white/60">Select a camera to start</div>
+                      <div className="text-sm text-white/65">Select a camera to start</div>
 
                       {cameraDevices.length > 0 && (
                         <Dropdown
@@ -586,7 +586,7 @@ export function CameraQueue({
                         />
                       )}
                       {cameraDevices.length === 0 && (
-                        <div className="text-xs text-white/40">No cameras detected</div>
+                        <div className="text-xs text-white/55">No cameras detected</div>
                       )}
 
                       <button
@@ -604,7 +604,7 @@ export function CameraQueue({
                   <div className="absolute inset-0 flex items-center justify-center bg-black/90">
                     <div className="space-y-3 text-center">
                       <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-cyan-400" />
-                      <div className="text-xs text-white/50">Starting camera...</div>
+                      <div className="text-xs text-white/65">Starting camera...</div>
                     </div>
                   </div>
                 )}
@@ -618,7 +618,7 @@ export function CameraQueue({
                       <div className="max-w-xs text-xs text-red-300">{cameraError}</div>
                       <button
                         onClick={() => void startCamera()}
-                        className="rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-[11px] font-bold tracking-wider text-white/50 transition-all hover:bg-white/10 hover:text-white">
+                        className="rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-[11px] font-bold tracking-wider text-white/65 transition-all hover:bg-white/10 hover:text-white">
                         Try Again
                       </button>
                     </div>
@@ -657,7 +657,7 @@ export function CameraQueue({
                       {currentMember.name}
                     </div>
                     {currentMember.role && (
-                      <div className="text-xs text-white/40">{currentMember.role}</div>
+                      <div className="text-xs text-white/55">{currentMember.role}</div>
                     )}
                     {(() => {
                       const mRec = members.find((m) => m.person_id === currentMember.personId)
@@ -686,7 +686,7 @@ export function CameraQueue({
                 )}
 
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  <span className="text-xs text-white/50">
+                  <span className="text-xs text-white/65">
                     {currentIndex + 1}/{totalMembers}
                   </span>
                   {isStreaming && (
@@ -699,7 +699,7 @@ export function CameraQueue({
                   )}
                   <button
                     onClick={() => setQueueStarted(false)}
-                    className="rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs font-medium text-white/30 transition-all hover:bg-white/10 hover:text-white">
+                    className="rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white">
                     <i className="fa-solid fa-list-ul mr-1"></i>
                     Queue
                   </button>
@@ -714,7 +714,7 @@ export function CameraQueue({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className="rounded-full border border-white/5 bg-white/5 p-2 text-white/60 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                    className="rounded-full border border-white/5 bg-white/5 p-2 text-white/65 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
                     <i className="fa-solid fa-chevron-left text-sm"></i>
                   </button>
                 </div>
@@ -727,7 +727,7 @@ export function CameraQueue({
                       }
                     }}
                     disabled={currentIndex >= memberQueue.length - 1}
-                    className="rounded-full border border-white/5 bg-white/5 p-2 text-white/60 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
+                    className="rounded-full border border-white/5 bg-white/5 p-2 text-white/65 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30">
                     <i className="fa-solid fa-chevron-right text-sm"></i>
                   </button>
                 </div>
@@ -747,7 +747,7 @@ export function CameraQueue({
                       }
                     }}
                     disabled={!currentMember}
-                    className="rounded-lg border border-white/5 bg-white/5 px-3 py-2 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white disabled:opacity-40">
+                    className="rounded-lg border border-white/5 bg-white/5 px-3 py-2 text-[11px] font-medium text-white/65 transition-all hover:bg-white/10 hover:text-white disabled:opacity-40">
                     Skip
                   </button>
 
@@ -765,7 +765,7 @@ export function CameraQueue({
                       if (currentMember && !mRec?.has_consent) {
                         return "cursor-not-allowed border-white/5 bg-white/5 text-white/20"
                       }
-                      return "border-cyan-500/30 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/30"
+                      return "border-cyan-500/30 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20 disabled:border-white/10 disabled:bg-white/5 disabled:text-white/55"
                     })()}`}>
                     {isProcessing ?
                       <span className="flex items-center justify-center gap-2 text-xs font-medium">
@@ -826,7 +826,7 @@ export function CameraQueue({
                           <div
                             className={`mb-1 text-2xl ${
                               currentMember.status === "completed" ? "text-cyan-400"
-                              : currentMember.status === "skipped" ? "text-white/60"
+                              : currentMember.status === "skipped" ? "text-white/65"
                               : "text-red-400"
                             }`}>
                             {currentMember.status === "completed" && (
@@ -856,22 +856,22 @@ export function CameraQueue({
               </div>
 
               {/* Keyboard shortcuts - Compact */}
-              <div className="mt-2 flex items-center justify-center gap-4 text-[10px] text-white/40">
+              <div className="mt-2 flex items-center justify-center gap-4 text-[10px] text-white/55">
                 <span>
-                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/60">Space</kbd>
+                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">Space</kbd>
                   Capture
                 </span>
                 <span>
-                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/60">←</kbd>
-                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/60">→</kbd>
+                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">←</kbd>
+                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">→</kbd>
                   Navigate
                 </span>
                 <span>
-                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/60">S</kbd>
+                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">S</kbd>
                   Skip
                 </span>
                 <span>
-                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/60">R</kbd>
+                  <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">R</kbd>
                   Retry
                 </span>
               </div>
@@ -881,7 +881,7 @@ export function CameraQueue({
             <div className="flex w-64 shrink-0 flex-col overflow-hidden rounded-xl border border-white/5 bg-white/[0.02]">
               <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                 <span className="text-xs font-semibold text-white/70">Queue</span>
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-white/55">
                   {completedMembers}/{totalMembers}
                 </span>
               </div>
@@ -911,11 +911,11 @@ export function CameraQueue({
                       <div
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] ${
                           member.status === "completed" ? "bg-cyan-500/20 text-cyan-400"
-                          : member.status === "skipped" ? "bg-white/10 text-white/40"
+                          : member.status === "skipped" ? "bg-white/10 text-white/55"
                           : member.status === "error" ? "bg-red-500/20 text-red-400"
                           : member.status === "processing" ? "bg-amber-500/20 text-amber-400"
-                          : isCurrent ? "bg-white/5 text-white/60"
-                          : "bg-white/5 text-white/30"
+                          : isCurrent ? "bg-white/5 text-white/65"
+                          : "bg-white/5 text-white/55"
                         }`}>
                         {statusIcon ?
                           <i className={`fa-solid ${statusIcon}`}></i>

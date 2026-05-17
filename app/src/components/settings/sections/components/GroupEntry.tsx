@@ -66,7 +66,7 @@ export function GroupEntry({
       {/* Group Header */}
       <div className="flex w-full items-center justify-between px-2 py-3.5 transition-colors">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center text-white/30 transition-colors group-hover/row:text-white/50">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center text-white/55 transition-colors group-hover/row:text-white/65">
             <i className="fa-solid fa-users text-[13px]"></i>
           </div>
 
@@ -92,18 +92,18 @@ export function GroupEntry({
                 className="flex cursor-pointer items-center gap-2 truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
                 {group.name}
                 {savingGroup === group.id && (
-                  <i className="fa-solid fa-spinner fa-spin text-[10px] text-white/40"></i>
+                  <i className="fa-solid fa-spinner fa-spin text-[10px] text-white/55"></i>
                 )}
               </div>
             }
-            <div className="mt-0.5 hidden truncate font-mono text-[10px] tracking-tight text-white/25 sm:block">
+            <div className="mt-0.5 hidden truncate font-mono text-[10px] tracking-tight text-white/55 sm:block">
               ID: {group.id}
             </div>
           </div>
         </div>
 
         <div className="ml-4 flex shrink-0 items-center gap-3">
-          <span className="text-[11px] font-medium text-white/40">
+          <span className="text-[11px] font-medium text-white/55">
             {memberCount} {memberCount === 1 ? "member" : "members"}
           </span>
           {registeredCount > 0 && (
@@ -115,7 +115,7 @@ export function GroupEntry({
           <button
             onClick={() => onToggle(group.id)}
             title="Manage Group"
-            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/40 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95">
+            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95">
             <i className="fa-solid fa-sliders text-[12px] opacity-70" />
           </button>
         </div>
@@ -143,7 +143,7 @@ export function GroupEntry({
         maxWidth="max-w-3xl">
         <div className="p-1">
           {group.members.length === 0 ?
-            <div className="px-4 py-8 text-center text-[12px] text-white/30">
+            <div className="px-4 py-8 text-center text-[12px] text-white/55">
               No members in this group
             </div>
           : <div className="max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">

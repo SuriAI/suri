@@ -22,7 +22,7 @@ export function GroupHeader({ isCollapsed, onToggleCollapse }: GroupHeaderProps)
           className={`group flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] transition-all hover:bg-[rgba(28,35,44,0.82)] ${isCollapsed ? "mx-auto" : "ml-auto"}`}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <i
-            className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/50 transition-all duration-200 group-hover:text-white`}></i>
+            className={`fa-solid text-sm ${isCollapsed ? "fa-chevron-right" : "fa-chevron-left"} text-white/65 transition-all duration-200 group-hover:text-white`}></i>
         </button>
       </Tooltip>
     </div>

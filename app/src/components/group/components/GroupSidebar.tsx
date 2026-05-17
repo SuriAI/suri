@@ -67,7 +67,7 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
         className={`mt-auto border-t border-white/10 py-3 ${isSidebarCollapsed ? "px-2" : "px-4"}`}>
         <button
           onClick={onBack}
-          className={`w-full rounded-lg border-none bg-transparent text-center text-[11px] font-medium text-white/40 transition-all hover:bg-[rgba(24,30,38,0.85)] hover:text-white/80 ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
+          className={`w-full rounded-lg border-none bg-transparent text-center text-[11px] font-medium text-white/55 transition-all hover:bg-[rgba(24,30,38,0.85)] hover:text-white/80 ${isSidebarCollapsed ? "px-2 py-2" : "px-3 py-2"}`}
           aria-label="Close">
           {!isSidebarCollapsed ?
             <span className="text-sm">Close</span>

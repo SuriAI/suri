@@ -188,25 +188,25 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
     }
   }
 
-  const badgeTone = config.connected ? "bg-cyan-500/10 text-cyan-400" : "bg-white/5 text-white/40"
+  const badgeTone = config.connected ? "bg-cyan-500/10 text-cyan-400" : "bg-white/5 text-white/55"
 
   const syncTone =
     config.lastSyncStatus === "success" ? "text-cyan-400"
     : config.lastSyncStatus === "error" ? "text-red-400"
-    : "text-white/50"
+    : "text-white/65"
 
   return (
-    <div className="mx-auto w-full max-w-[900px] space-y-10 px-10 pt-8 pb-16">
+    <div className="mx-auto w-full max-w-[900px] space-y-10 px-10 pt-4 pb-16">
       <div className="space-y-8">
         <section className="space-y-6">
           <div className="pt-2 pb-2">
-            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
               Status
             </h3>
           </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[13px] text-white/45">
+              <p className="text-[13px] text-white/65">
                 {config.connected ?
                   `Linked to: ${config.organizationName || "Unknown org"} – ${config.siteName || "Default Site"}`
                 : "Operating strictly on-premise. Remote reporting is currently inactive."}
@@ -218,7 +218,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
           </div>
 
           {config.connected && (
-            <div className="flex flex-col gap-1 rounded-md border border-white/[0.05] bg-white/[0.02] p-4 font-mono text-[12px] text-white/50">
+            <div className="flex flex-col gap-1 rounded-md border border-white/[0.05] bg-white/[0.02] p-4 font-mono text-[12px] text-white/65">
               <span>Device: {config.deviceName || "Unnamed desktop"}</span>
               <span>Device ID: {config.deviceId}</span>
             </div>
@@ -227,7 +227,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
 
         <section className="space-y-6">
           <div className="flex items-center gap-2 pt-2 pb-2">
-            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
               Remote Sync
             </h3>
             <InfoPopover
@@ -250,7 +250,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
             />
           </div>
 
-          <p className="text-[13px] leading-relaxed text-white/45">
+          <p className="text-[13px] leading-relaxed text-white/65">
             Link this device to synchronize groups and attendance logs with your dashboard.
           </p>
 
@@ -263,7 +263,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
                       {step.label.toUpperCase()}
                     </div>
                     <div className="text-[13px] font-medium text-white">{step.title}</div>
-                    <div className="text-[12px] font-medium text-white/45">{step.body}</div>
+                    <div className="text-[12px] font-medium text-white/65">{step.body}</div>
                   </div>
                 ))}
               </div>
@@ -272,7 +272,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
             {!config.connected ?
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <label className="text-[11px] font-medium text-white/30 uppercase">
+                  <label className="text-[11px] font-medium text-white/55 uppercase">
                     Pairing Code
                   </label>
                   <input
@@ -328,7 +328,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
             <div>
               <button
                 onClick={() => setShowAdvanced((value) => !value)}
-                className="group flex items-center gap-1.5 text-[12px] font-medium text-white/30 transition hover:text-white/50">
+                className="group flex items-center gap-1.5 text-[12px] font-medium text-white/55 transition hover:text-white/65">
                 {showAdvanced ? "Hide Advanced Settings" : "Show Advanced Settings"}
                 <i
                   className={`fa-solid ${showAdvanced ? "fa-chevron-up" : "fa-chevron-down"} text-[10px]`}
@@ -346,7 +346,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
                     <div className="mt-4 space-y-6 rounded-md border border-white/[0.05] p-5">
                       <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/30 uppercase">
+                          <label className="text-[11px] font-medium text-white/55 uppercase">
                             Custom Server URL
                           </label>
                           <input
@@ -359,7 +359,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/30 uppercase">
+                          <label className="text-[11px] font-medium text-white/55 uppercase">
                             Device Name Override
                           </label>
                           <input
@@ -375,7 +375,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
 
                       <div className="grid gap-6 md:grid-cols-[1fr_auto]">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/30 uppercase">
+                          <label className="text-[11px] font-medium text-white/55 uppercase">
                             Auto-Sync Interval (Mins)
                           </label>
                           <input
@@ -436,15 +436,15 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
       {/* Scope Disclaimer */}
       <section className="space-y-4">
         <div className="pt-2 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
             Data Scope
           </h3>
         </div>
         <div className="space-y-4">
-          <p className="text-[13px] text-white/45">
+          <p className="text-[13px] text-white/65">
             Understand what is shared when the remote connection is active.
           </p>
-          <ul className="list-disc space-y-1.5 pl-4 text-[13px] text-white/50 marker:text-white/20">
+          <ul className="list-disc space-y-1.5 pl-4 text-[13px] text-white/65 marker:text-white/20">
             <li>Groups, members, and real-time attendance logs are synced.</li>
             <li>Hardware IDs and sync timestamps are stored for admin auditing.</li>
             <li className="text-amber-500/70">

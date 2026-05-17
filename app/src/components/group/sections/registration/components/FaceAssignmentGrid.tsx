@@ -29,14 +29,14 @@ export function FaceAssignmentGrid({
         <div className="flex h-7 items-center rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 shadow-[0_0_15px_rgba(34,211,238,0.05)]">
           <span className="text-[10px] font-bold tracking-tight text-white/90">
             {assignedCount}
-            <span className="mx-1 text-white/30">/</span>
+            <span className="mx-1 text-white/55">/</span>
             {detectedFaces.length}
-            <span className="ml-1.5 font-medium tracking-wider text-white/40">Assigned</span>
+            <span className="ml-1.5 font-medium tracking-wider text-white/55">Assigned</span>
           </span>
         </div>
 
         <div className="flex h-7 items-center rounded-full border border-white/10 bg-[rgba(22,28,36,0.62)] px-3">
-          <span className="text-[10px] font-medium text-white/40">
+          <span className="text-[10px] font-medium text-white/55">
             {availableMembers.length} {availableMembers.length === 1 ? "member" : "members"}{" "}
             available
           </span>
@@ -101,7 +101,7 @@ export function FaceAssignmentGrid({
                     </div>
                     <button
                       onClick={() => onUnassign(face.faceId)}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[rgba(22,28,36,0.62)] text-white/50 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[rgba(22,28,36,0.62)] text-white/65 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
                       <i className="fa-solid fa-xmark text-[10px]"></i>
                     </button>
                   </div>

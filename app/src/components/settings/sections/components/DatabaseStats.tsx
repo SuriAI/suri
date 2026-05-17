@@ -16,7 +16,7 @@ export function DatabaseStats({ groupsCount, totalMembers, totalPersons }: Datab
   return (
     <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-3">
       <div className="flex flex-col items-center gap-1.5">
-        <p className="text-[12px] font-medium tracking-wider text-white/50 uppercase">
+        <p className="text-[12px] font-medium tracking-wider text-white/65 uppercase">
           Total Groups
         </p>
         <div className="flex items-baseline">
@@ -25,14 +25,14 @@ export function DatabaseStats({ groupsCount, totalMembers, totalPersons }: Datab
       </div>
 
       <div className="flex flex-col items-center gap-1.5">
-        <p className="text-[12px] font-medium tracking-wider text-white/50 uppercase">
+        <p className="text-[12px] font-medium tracking-wider text-white/65 uppercase">
           Total Members
         </p>
         <div className="flex min-h-10 items-baseline">{renderStatValue(totalMembers)}</div>
       </div>
 
       <div className="flex flex-col items-center gap-1.5">
-        <p className="text-[12px] font-medium tracking-wider text-white/50 uppercase">
+        <p className="text-[12px] font-medium tracking-wider text-white/65 uppercase">
           Registered Faces
         </p>
         <div className="flex min-h-10 items-baseline">{renderStatValue(totalPersons)}</div>
