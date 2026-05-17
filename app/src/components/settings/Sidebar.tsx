@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }`}>
                     {isActive && (
                       <motion.div
-                        layoutId="active-pill"
+                        layoutId="active-settings-sidebar-pill"
                         className="absolute left-0 h-4 w-1 rounded-r-full bg-cyan-400"
                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                       />
@@ -147,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }`}>
                   {isActive && (
                     <motion.div
-                      layoutId="active-pill-general"
+                      layoutId="active-settings-sidebar-pill"
                       className="absolute left-0 h-4 w-1 rounded-r-full bg-cyan-400"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
