@@ -252,7 +252,7 @@ export function Members({
             </div>
 
             {members.length > 0 && filteredMembers.length > 0 && (
-              <div className="flex w-full items-center justify-between px-10 py-1">
+              <div className="flex w-full items-center justify-between py-1">
                 <div className="text-xs text-white/55">
                   {selectedStats.total > 0 ?
                     <div className="flex items-center gap-3">

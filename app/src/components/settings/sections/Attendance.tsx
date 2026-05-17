@@ -393,7 +393,7 @@ export function Attendance({
                     <div
                       key="tip"
                       data-hide-chevron
-                      className="rounded-md bg-white/5 p-2 text-[10px] text-white/65">
+                      className="rounded-md bg-white/5 p-2 text-[11px] text-white/65">
                       <span className="font-medium text-white/65">Tip:</span> Shorter retention
                       periods keep the app faster and comply better with modern privacy laws.
                     </div>,

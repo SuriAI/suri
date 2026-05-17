@@ -31,7 +31,7 @@ export function BulkUploadArea({
                 : `${uploadedCount} ${uploadedCount === 1 ? "image" : "images"} uploaded`}
               </div>
               {isDetecting && (
-                <div className="text-[10px] font-medium tracking-wide text-white/55 uppercase">
+                <div className="text-[11px] font-medium tracking-wide text-white/55 uppercase">
                   Processing faces...
                 </div>
               )}

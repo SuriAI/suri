@@ -139,7 +139,7 @@ export function AntiSpoofDetectionModal({
                       onClick={() => navigateToStep(step - 1)}
                       disabled={!canNavigate || isFirstStep}
                       className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/70 transition-all hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-35">
-                      <i className="fa-solid fa-arrow-left text-[11px]" />
+                      <i className="fa-solid fa-arrow-left text-xs" />
                     </button>
                     <button
                       type="button"
@@ -147,7 +147,7 @@ export function AntiSpoofDetectionModal({
                       onClick={() => navigateToStep(step + 1)}
                       disabled={!canNavigate || isLastStep}
                       className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-400/15 bg-cyan-500/[0.08] text-cyan-300 transition-all hover:border-cyan-300/30 hover:bg-cyan-400/[0.12] hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-35">
-                      <i className="fa-solid fa-arrow-right text-[11px]" />
+                      <i className="fa-solid fa-arrow-right text-xs" />
                     </button>
                   </div>
                 </div>

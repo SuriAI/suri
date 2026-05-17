@@ -139,7 +139,7 @@ export function MemberSidebar({
 
         {members.length > 0 && filteredMembers.length === 0 && (
           <div className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-3 py-6 text-center">
-            <div className="mx-auto max-w-[200px] text-[11px] leading-relaxed font-medium text-white/55">
+            <div className="mx-auto max-w-[200px] text-xs leading-relaxed font-medium text-white/55">
               {memberSearch.trim() ?
                 `No results for "${memberSearch}"`
               : registrationFilter === "registered" ?
@@ -217,7 +217,7 @@ export function MemberSidebar({
                     e.stopPropagation()
                     onRemoveFaceData(member)
                   }}
-                  className="absolute right-0 bottom-0 left-0 z-20 cursor-pointer bg-red-500/10 py-1.5 text-center text-[10px] font-bold text-red-300/80 transition-all hover:bg-red-500/20">
+                  className="absolute right-0 bottom-0 left-0 z-20 cursor-pointer bg-red-500/10 py-1.5 text-center text-[11px] font-bold text-red-300/80 transition-all hover:bg-red-500/20">
                   Remove Face Data
                 </div>
               )}

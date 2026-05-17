@@ -218,7 +218,7 @@ export const ManualEntryModal = ({
 
         {noFaceCount > 0 && (
           <div className="rounded-xl border border-white/10 bg-[rgba(15,19,25,0.98)] px-4 py-3 shadow-inner">
-            <p className="flex items-start gap-3 text-[11px] leading-relaxed font-bold text-white/65">
+            <p className="flex items-start gap-3 text-xs leading-relaxed font-bold text-white/65">
               <i className="fa-solid fa-circle-info mt-1 shrink-0 text-[12px] text-amber-500/60"></i>
               <span className="tracking-tight">
                 Members marked <span className="text-amber-500/80">&quot;No face data&quot;</span>{" "}

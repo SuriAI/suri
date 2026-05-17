@@ -50,7 +50,7 @@ export function DeleteConfirmationModal({
               </div>
             )}
             <div className="mt-4 space-y-1.5">
-              <label className="text-[11px] font-medium text-white/65">
+              <label className="text-xs font-medium text-white/65">
                 Type <span className="font-mono text-white/70">{groupToDelete.name}</span> to
                 continue
               </label>

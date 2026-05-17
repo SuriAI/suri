@@ -123,7 +123,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
           {active?.type === "confirm" && active.options.requireTypedConfirmation && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-white/50">
+              <label className="text-xs font-medium text-white/50">
                 {active.options.requireTypedConfirmation.label ||
                   `Type "${active.options.requireTypedConfirmation.value}" to continue`}
               </label>

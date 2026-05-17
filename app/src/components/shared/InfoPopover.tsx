@@ -181,7 +181,7 @@ export function InfoPopover({
                     </span>
                   </div>
 
-                  <p className="text-[11px] leading-relaxed text-white/70">{description}</p>
+                  <p className="text-xs leading-relaxed text-white/70">{description}</p>
 
                   {(details && details.length > 0) || (detailsNode && detailsNode.length > 0) ?
                     <ul className="space-y-1 border-t border-white/8 pt-2">

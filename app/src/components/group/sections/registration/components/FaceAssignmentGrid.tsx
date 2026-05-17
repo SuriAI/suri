@@ -27,7 +27,7 @@ export function FaceAssignmentGrid({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex h-7 items-center rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 shadow-[0_0_15px_rgba(34,211,238,0.05)]">
-          <span className="text-[10px] font-bold tracking-tight text-white/90">
+          <span className="text-[11px] font-bold tracking-tight text-white/90">
             {assignedCount}
             <span className="mx-1 text-white/55">/</span>
             {detectedFaces.length}
@@ -36,7 +36,7 @@ export function FaceAssignmentGrid({
         </div>
 
         <div className="flex h-7 items-center rounded-full border border-white/10 bg-[rgba(22,28,36,0.62)] px-3">
-          <span className="text-[10px] font-medium text-white/55">
+          <span className="text-[11px] font-medium text-white/55">
             {availableMembers.length} {availableMembers.length === 1 ? "member" : "members"}{" "}
             available
           </span>

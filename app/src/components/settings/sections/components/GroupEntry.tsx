@@ -96,7 +96,7 @@ export function GroupEntry({
                 )}
               </div>
             }
-            <div className="mt-0.5 hidden truncate font-mono text-[10px] tracking-tight text-white/55 sm:block">
+            <div className="mt-0.5 hidden truncate font-mono text-[11px] tracking-tight text-white/55 sm:block">
               ID: {group.id}
             </div>
           </div>
@@ -116,7 +116,7 @@ export function GroupEntry({
             onClick={() => onToggle(group.id)}
             title="Manage Group"
             className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95">
-            <i className="fa-solid fa-sliders text-[12px] opacity-70" />
+            <i className="fa-solid fa-sliders text-xs opacity-70" />
           </button>
         </div>
       </div>

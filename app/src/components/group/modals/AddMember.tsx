@@ -213,7 +213,7 @@ export function AddMember({
       title={
         <div>
           <h3 className="mb-1 text-xl font-semibold tracking-tight">Add Members</h3>
-          <p className="text-[11px] font-normal text-white/65">
+          <p className="text-xs font-normal text-white/65">
             {modalSubtitle} <span className="font-medium text-cyan-400/80">{group.name}</span>
           </p>
         </div>
@@ -316,7 +316,7 @@ export function AddMember({
 
                 {/* Implicit Certification Notice */}
                 <div className="mt-2 rounded-lg border border-cyan-500/10 bg-cyan-500/5 px-3.5 py-2.5">
-                  <p className="flex items-start text-[10px] leading-relaxed text-cyan-200/60">
+                  <p className="flex items-start text-xs leading-relaxed text-cyan-200/60">
                     <i className="fa-solid fa-circle-check mt-0.5 mr-2 shrink-0 text-cyan-400/50"></i>
                     <span>
                       By adding this member, you certify that you have obtained their{" "}
@@ -346,7 +346,7 @@ export function AddMember({
                     <div className="text-[11px] text-white/55">
                       Format: <span className="font-mono text-white/65">Name, Role</span>
                     </div>
-                    <label className="group flex cursor-pointer items-center gap-1.5 text-[11px] font-medium text-cyan-400/80 transition-colors hover:text-cyan-400">
+                    <label className="group flex cursor-pointer items-center gap-1.5 text-xs font-medium text-cyan-400/80 transition-colors hover:text-cyan-400">
                       <i className="fa-solid fa-file-arrow-up transition-transform group-hover:-translate-y-0.5"></i>
                       Import .CSV or .TXT
                       <input
@@ -365,7 +365,7 @@ export function AddMember({
 
                 {/* Implicit Certification Notice for Bulk */}
                 <div className="mt-2 rounded-lg border border-cyan-500/10 bg-cyan-500/5 px-3.5 py-2.5">
-                  <p className="flex items-start text-[10px] leading-relaxed text-cyan-200/60">
+                  <p className="flex items-start text-xs leading-relaxed text-cyan-200/60">
                     <i className="fa-solid fa-circle-check mt-0.5 mr-2 shrink-0 text-cyan-400/50"></i>
                     <span>
                       By importing these members, you certify that you have obtained{" "}

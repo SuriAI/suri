@@ -285,7 +285,7 @@ export const About: React.FC = () => {
             </div>
             <h1 className="text-4xl font-black tracking-[-0.04em] text-white">Facenox</h1>
             <div className="flex min-h-7 items-center justify-center rounded-full border border-white/6 bg-[rgba(22,28,36,0.46)] px-2.5 py-0.5">
-              <span className="font-mono text-[10px] leading-none tracking-[0.02em] text-white/55">
+              <span className="font-mono text-[11px] leading-none tracking-[0.02em] text-white/55">
                 {version || "-"}
               </span>
             </div>

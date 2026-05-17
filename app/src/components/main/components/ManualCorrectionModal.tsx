@@ -75,10 +75,10 @@ export function ManualCorrectionModal({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[11px] font-bold tracking-wide text-white/65 uppercase">
+          <label className="text-xs font-bold tracking-wide text-white/65 uppercase">
             Reason Required
           </label>
-          <p className="text-[11px] leading-relaxed text-white/55">
+          <p className="text-xs leading-relaxed text-white/55">
             Add a short note explaining why this attendance entry should be removed.
           </p>
           <textarea

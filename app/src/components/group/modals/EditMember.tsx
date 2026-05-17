@@ -108,7 +108,7 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
 
           {/* Implicit Certification Notice */}
           <div className="mt-2 rounded-lg border border-cyan-500/10 bg-cyan-500/5 px-3.5 py-2.5">
-            <p className="flex items-start text-[10px] leading-relaxed text-cyan-200/60">
+            <p className="flex items-start text-xs leading-relaxed text-cyan-200/60">
               <i className="fa-solid fa-circle-check mt-0.5 mr-2 shrink-0 text-cyan-400/50"></i>
               <span>
                 By updating this member, you certify that you have obtained their{" "}

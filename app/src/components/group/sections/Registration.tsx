@@ -151,7 +151,7 @@ export function Registration({
               <h2 className="text-2xl font-black tracking-tight text-white/90">
                 Registration Method
               </h2>
-              <p className="mx-auto max-w-xs text-[10px] leading-relaxed font-medium text-white/20">
+              <p className="mx-auto max-w-xs text-xs leading-relaxed font-medium text-white/20">
                 Selected Source:{" "}
                 <span className="text-cyan-400/60">
                   {source === "camera" ? "Live Camera" : "Photo Upload"}

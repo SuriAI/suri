@@ -79,12 +79,12 @@ export function IntroModal() {
               href="https://github.com/facenox/facenox/blob/main/docs/PRIVACY.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-white/55 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/65">
+              className="text-[11px] text-white/55 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/65">
               View Full Privacy Manual
             </a>
           </div>
 
-          <p className="pt-1 text-center text-[10px] text-white/55 italic">
+          <p className="pt-1 text-center text-[11px] text-white/55 italic">
             By clicking &quot;Finish&quot;, you agree that you understand how your data is handled
             locally.
           </p>

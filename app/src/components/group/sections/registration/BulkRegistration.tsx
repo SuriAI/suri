@@ -68,7 +68,7 @@ export function BulkRegistration({ group, members, onRefresh, onClose }: BulkReg
                 ))}
               </div>
               {pendingDuplicates.newFiles.length > 0 && (
-                <p className="mt-2 text-[10px] text-white/55">
+                <p className="mt-2 text-[11px] text-white/55">
                   {pendingDuplicates.newFiles.length} new file(s) will be added regardless.
                 </p>
               )}
