@@ -1,5 +1,4 @@
 import { useMemo, memo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
 import { Members, Overview, Reports } from "@/components/group/sections"
 import { EmptyState } from "@/components/group/shared"
@@ -61,41 +60,32 @@ function GroupContentComponent({
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={activeSection}
-        initial={{ opacity: 0, scale: 0.995 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.995 }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
-        style={{ willChange: "opacity, transform" }}
-        className="flex min-h-0 w-full flex-1 flex-col">
-        {activeSection === "overview" && (
-          <Overview group={selectedGroup} members={members} onAddMember={openAddMember} />
-        )}
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      {activeSection === "overview" && (
+        <Overview group={selectedGroup} members={members} onAddMember={openAddMember} />
+      )}
 
-        {activeSection === "reports" && (
-          <Reports
-            group={selectedGroup}
-            onDaysTrackedChange={onDaysTrackedChange}
-            onExportHandlersReady={onExportHandlersReady}
-            onAddMember={openAddMember}
-          />
-        )}
+      {activeSection === "reports" && (
+        <Reports
+          group={selectedGroup}
+          onDaysTrackedChange={onDaysTrackedChange}
+          onExportHandlersReady={onExportHandlersReady}
+          onAddMember={openAddMember}
+        />
+      )}
 
-        {activeSection === "members" && (
-          <Members
-            group={selectedGroup}
-            members={members}
-            onMembersChange={handleMembersChange}
-            onEdit={openEditMember}
-            onAdd={openAddMember}
-            deselectMemberTrigger={deselectMemberTrigger}
-            onHasSelectedMemberChange={onHasSelectedMemberChange}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+      {activeSection === "members" && (
+        <Members
+          group={selectedGroup}
+          members={members}
+          onMembersChange={handleMembersChange}
+          onEdit={openEditMember}
+          onAdd={openAddMember}
+          deselectMemberTrigger={deselectMemberTrigger}
+          onHasSelectedMemberChange={onHasSelectedMemberChange}
+        />
+      )}
+    </div>
   )
 }
 

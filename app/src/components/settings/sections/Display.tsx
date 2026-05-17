@@ -20,10 +20,10 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
     },
     {
       key: "showRecognitionNames" as keyof QuickSettings,
-      label: "Identity Labels",
+      label: "Show Names",
       descriptions: {
-        on: "Show names on the camera feed.",
-        off: "Hide names on camera feed.",
+        on: "Show recognized names on the camera view.",
+        off: "Hide names, showing only face tracking boxes.",
       },
     },
   ]

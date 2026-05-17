@@ -21,8 +21,6 @@ import type {
 } from "@/components/settings/types"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
-const SETTINGS_SECTION_TRANSITION_DURATION = 0.18
-
 interface ContentPanelProps {
   activeSection: string
   groupInitialSection: GroupSection | undefined
@@ -232,24 +230,27 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     setIsAntiSpoofModalOpen(false)
   }
 
+  const motionProps = {
+    initial: { opacity: 0, scale: 0.995 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.995 },
+    transition: { duration: 0.18, ease: "easeOut" as const },
+    style: { willChange: "opacity, transform" } as React.CSSProperties,
+  }
+
   return (
     <>
       <div className="flex flex-1 flex-col overflow-hidden bg-[var(--bg-secondary)]">
         <SectionHeader {...headerProps} />
 
         {/* Section Content */}
-        <div
-          className={`relative flex flex-1 flex-col ${isGroupSection ? "min-h-0 overflow-hidden" : "custom-scroll overflow-x-hidden overflow-y-auto"}`}>
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              initial={{ opacity: 0, scale: 0.995 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.995 }}
-              transition={{ duration: SETTINGS_SECTION_TRANSITION_DURATION, ease: "easeOut" }}
-              style={{ willChange: "opacity, transform" }}
-              className="relative flex min-h-0 w-full flex-1 flex-col">
-              {activeSection === "group" && (
+            {activeSection === "group" && (
+              <motion.div
+                key="group"
+                {...motionProps}
+                className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
                 <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
                   <GroupPanel
                     onBack={handleGroupBack}
@@ -267,17 +268,35 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                     isEmbedded={true}
                   />
                 </div>
-              )}
-              {activeSection === "display" && (
+              </motion.div>
+            )}
+
+            {activeSection === "display" && (
+              <motion.div
+                key="display"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Display quickSettings={quickSettings} toggleQuickSetting={toggleQuickSetting} />
-              )}
-              {activeSection === "notifications" && (
+              </motion.div>
+            )}
+
+            {activeSection === "notifications" && (
+              <motion.div
+                key="notifications"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Notifications
                   audioSettings={audioSettings}
                   onAudioSettingsChange={updateAudioSetting}
                 />
-              )}
-              {activeSection === "attendance" && (
+              </motion.div>
+            )}
+
+            {activeSection === "attendance" && (
+              <motion.div
+                key="attendance"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Attendance
                   attendanceSettings={attendanceSettings}
                   onLateThresholdChange={(minutes) =>
@@ -301,8 +320,14 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                   }
                   hasSelectedGroup={!!dropdownValue}
                 />
-              )}
-              {activeSection === "database" && (
+              </motion.div>
+            )}
+
+            {activeSection === "database" && (
+              <motion.div
+                key="database"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Database
                   systemData={systemData}
                   timeHealthState={timeHealthState}
@@ -315,12 +340,26 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                     if (onGroupsChanged) onGroupsChanged()
                   }}
                 />
-              )}
-              {activeSection === "remote-sync" && (
+              </motion.div>
+            )}
+
+            {activeSection === "remote-sync" && (
+              <motion.div
+                key="remote-sync"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
                 <Sync onNavigateToDB={() => setActiveSection("database")} />
-              )}
-              {activeSection === "about" && <About />}
-            </motion.div>
+              </motion.div>
+            )}
+
+            {activeSection === "about" && (
+              <motion.div
+                key="about"
+                {...motionProps}
+                className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
+                <About />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
