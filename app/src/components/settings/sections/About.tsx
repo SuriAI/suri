@@ -273,7 +273,7 @@ export const About: React.FC = () => {
     <div className="custom-scroll relative h-full overflow-y-auto">
       <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
 
-      <div className="mx-auto flex h-full max-w-lg flex-col items-center px-10 pt-4 pb-10 text-center">
+      <div className="mx-auto flex h-full max-w-lg flex-col items-center px-10 pt-8 pb-10 text-center">
         <div className="w-full flex-1 space-y-9">
           <div className="flex flex-col items-center gap-3">
             <div className="flex h-22 w-22 items-center justify-center">

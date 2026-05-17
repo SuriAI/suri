@@ -195,7 +195,7 @@ export function Members({
       : <motion.div
           key="members-list"
           className="relative flex h-full w-full flex-col overflow-hidden">
-          <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-4 pb-4">
+          <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
             <div className="flex items-center justify-between gap-4">
               <div
                 className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${

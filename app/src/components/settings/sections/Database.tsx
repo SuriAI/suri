@@ -221,7 +221,7 @@ export function Database({
     : "Could not read the current time authority status."
 
   return (
-    <div className="mx-auto flex w-full max-w-[900px] flex-col space-y-16 px-10 pt-10 pb-20">
+    <div className="mx-auto flex w-full max-w-[900px] flex-col space-y-16 px-10 pt-8 pb-20">
       {/* Statistics Overview */}
       <section>
         <DatabaseStats

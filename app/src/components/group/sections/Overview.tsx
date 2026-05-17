@@ -171,7 +171,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }
 
   return (
-    <section className="flex h-full w-full flex-col px-10 pt-4">
+    <section className="flex h-full w-full flex-col px-10 pt-8">
       {/* Activity Overview */}
       <section className="shrink-0">
         <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2">
