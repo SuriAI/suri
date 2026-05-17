@@ -25,6 +25,8 @@ interface DropdownProps<T = string> extends Omit<React.HTMLAttributes<HTMLDivEle
   allowClear?: boolean // Allow selecting placeholder to clear value
   trigger?: React.ReactNode
   menuWidth?: number | string
+  align?: "left" | "right"
+  onOpenChange?: (isOpen: boolean) => void
 }
 
 export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number>>(
@@ -45,11 +47,22 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       allowClear = true,
       trigger,
       menuWidth,
+      align,
+      onOpenChange,
       ...props
     },
     ref,
   ) => {
     const [isOpen, setIsOpen] = useState(false)
+
+    // Notify parent safely of open state changes in an effect to avoid render-phase state updates!
+    const lastOpenRef = useRef(isOpen)
+    useEffect(() => {
+      if (lastOpenRef.current !== isOpen) {
+        lastOpenRef.current = isOpen
+        onOpenChange?.(isOpen)
+      }
+    }, [isOpen, onOpenChange])
     const [menuPosition, setMenuPosition] = useState<{
       top: number
       left: number
@@ -154,12 +167,21 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       }
     }
 
+    const handleToggle = () => {
+      if (disabled) return
+      if (!isOpen) {
+        updateMenuPosition()
+      }
+      setIsOpen(!isOpen)
+    }
+
     return (
       <div className={`relative min-w-0 ${className}`} ref={internalRef} {...props}>
         <button
           type="button"
           ref={buttonRef}
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleToggle}
           disabled={disabled}
           className={`flex w-full min-w-0 cursor-pointer items-center justify-between rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] py-2 text-left text-sm text-white transition-all hover:bg-[rgba(28,35,44,0.82)] focus:border-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${trigger ? "justify-center px-0" : "ps-3 pe-2"} ${buttonClassName} `}>
           {trigger ?
@@ -201,12 +223,14 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                   style={{
                     top: menuPosition ? `${menuPosition.top}px` : "-9999px",
                     left:
-                      menuWidth ? undefined
-                      : menuPosition ? `${menuPosition.left}px`
-                      : "0px",
+                      align === "left" || (!align && !menuWidth) ?
+                        menuPosition ? `${menuPosition.left}px`
+                        : "0px"
+                      : undefined,
                     right:
-                      menuWidth && menuPosition ?
-                        window.innerWidth - menuPosition.buttonRight
+                      align === "right" || (!align && menuWidth) ?
+                        menuPosition ? `${window.innerWidth - menuPosition.buttonRight}px`
+                        : "0px"
                       : undefined,
                     width:
                       menuWidth ?
