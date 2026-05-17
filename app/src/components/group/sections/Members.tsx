@@ -194,6 +194,21 @@ export function Members({
     }
   }
 
+  const isSearchExpanded = memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
+  const dropdownWidthClass =
+    registrationFilter === "all" ? "w-[68px]"
+    : registrationFilter === "registered" ? "w-[112px]"
+    : "w-[138px]"
+
+  const searchBarMaxWidthClass =
+    isSearchExpanded ?
+      registrationFilter === "all" ? "max-w-[420px]"
+      : registrationFilter === "registered" ? "max-w-[464px]"
+      : "max-w-[490px]"
+    : registrationFilter === "all" ? "max-w-[260px]"
+    : registrationFilter === "registered" ? "max-w-[304px]"
+    : "max-w-[330px]"
+
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden">
       {/* BACKGROUND CONTENT: Always render the list or empty state */}
@@ -218,11 +233,7 @@ export function Members({
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
             <div className="flex items-center justify-between gap-4">
               <div
-                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${
-                  memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded ?
-                    "max-w-[420px]"
-                  : "max-w-[260px]"
-                }`}>
+                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
                 <div className="relative flex-1">
                   <svg
                     className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/55"
@@ -266,7 +277,7 @@ export function Members({
                     menuWidth={160}
                     align="right"
                     onOpenChange={handleDropdownOpenChange}
-                    buttonClassName="h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 w-[138px] text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
+                    buttonClassName={`h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 ${dropdownWidthClass} text-[11px] font-bold tracking-wider text-white hover:!bg-white/10 transition-all duration-300`}
                     optionClassName="text-[11px] font-bold tracking-wider"
                     iconClassName="text-[10px]"
                   />
