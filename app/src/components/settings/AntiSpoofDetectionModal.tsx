@@ -22,21 +22,21 @@ export function AntiSpoofDetectionModal({
       title: "Use balanced lighting",
       description:
         "Use even front lighting before enabling anti-spoof. Avoid dim rooms and strong backlight that can make a real face fail liveness.",
-      imageSrc: "/assets/anti-spoof/check-lighting.png",
+      imageSrc: "./assets/anti-spoof/check-lighting.png",
       imageAlt: "Admin setup slide showing balanced face lighting for anti-spoof setup.",
     },
     {
       title: "Frame the face properly",
       description:
         "Make sure the face is large enough and centered in the camera view, so users are less likely to get stuck on move-closer or centering prompts.",
-      imageSrc: "/assets/anti-spoof/check-framing.png",
+      imageSrc: "./assets/anti-spoof/check-framing.png",
       imageAlt: "Admin setup slide showing proper face framing and camera distance.",
     },
     {
       title: "Keep the camera clear",
       description:
         "Make sure the camera looks sharp and not blurry. If the image seems soft or hazy, wipe the lens first so the face stays clear during verification.",
-      imageSrc: "/assets/anti-spoof/check-camera-clarity.png",
+      imageSrc: "./assets/anti-spoof/check-camera-clarity.png",
       imageAlt:
         "Admin setup slide showing a clear camera lens and sharp face preview for anti-spoof setup.",
     },
