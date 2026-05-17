@@ -156,7 +156,7 @@ function GroupPanelComponent({
             </button>
           </Tooltip>
           <div className="min-w-0 flex-1 text-right">
-            <div className="truncate text-xs text-white/50">
+            <div className="truncate text-xs text-white/65">
               {selectedGroup ? selectedGroup.name : "No group selected"}
             </div>
           </div>

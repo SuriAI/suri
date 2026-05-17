@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setRegistrationState(null, null)
                 setTriggerCreateGroup(Date.now())
               }}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-white/50 transition-colors hover:bg-white/10 hover:text-white">
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-white/65 transition-colors hover:bg-white/10 hover:text-white">
               <i className="fa-solid fa-plus text-[11px]"></i>
             </button>
           </Tooltip>
@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="hover-scrollbar settings-sidebar-scroll flex-1 space-y-6 overflow-y-auto pt-4 pr-3 pb-6 pl-3">
         <section>
           <div className="mb-3 px-3">
-            <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/30 uppercase">
+            <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/55 uppercase">
               Group Management
             </h2>
           </div>
@@ -107,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`group/item relative flex w-full items-center gap-3 rounded-md border-0 bg-transparent px-3 py-2 text-left text-[13px] font-medium transition-all ${
                       isActive ?
                         "bg-cyan-500/10 text-white"
-                      : "text-white/50 hover:bg-white/5 hover:text-white"
+                      : "text-white/70 hover:bg-white/5 hover:text-white"
                     }`}>
                     {isActive && (
                       <motion.div
@@ -117,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       />
                     )}
                     <i
-                      className={`${subsection.icon} w-5 text-sm transition-colors ${isActive ? "text-cyan-400" : "text-white/30 group-hover/item:text-white/70"}`}></i>
+                      className={`${subsection.icon} w-5 text-sm transition-colors ${isActive ? "text-cyan-400" : "text-white/55 group-hover/item:text-white/70"}`}></i>
                     {subsection.label}
                   </button>
                 )
@@ -128,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <section>
           <div className="mb-3 px-3">
-            <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/30 uppercase">
+            <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/55 uppercase">
               General
             </h2>
           </div>
@@ -143,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`group/item relative flex w-full items-center gap-3 rounded-md border-0 bg-transparent px-3 py-2 text-left text-[13px] font-medium transition-all ${
                     isActive ?
                       "bg-cyan-500/10 text-white"
-                    : "text-white/50 hover:bg-white/5 hover:text-white"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                   }`}>
                   {isActive && (
                     <motion.div
@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     />
                   )}
                   <i
-                    className={`${section.icon} w-5 text-sm transition-colors ${isActive ? "text-cyan-400" : "text-white/30 group-hover/item:text-white/70"}`}></i>
+                    className={`${section.icon} w-5 text-sm transition-colors ${isActive ? "text-cyan-400" : "text-white/55 group-hover/item:text-white/70"}`}></i>
                   {section.label}
                 </button>
               )

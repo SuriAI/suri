@@ -84,7 +84,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`group relative flex flex-col items-center gap-1 overflow-hidden rounded-lg border border-transparent bg-transparent px-3 py-1.5 transition-all duration-300 ${
-            disabled ? "cursor-not-allowed text-white/30"
+            disabled ? "cursor-not-allowed text-white/55"
             : isOpen ? "border-cyan-500/50 shadow-[0_0_15px_-3px_rgba(6,182,212,0.3)]"
             : outdated ? "text-amber-200 hover:text-amber-300"
             : "text-white/90 hover:border-white/10"
@@ -102,7 +102,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
               </span>
               <span
                 className={`text-[9px] font-medium ${
-                  outdated ? "text-amber-400/60" : "text-white/30"
+                  outdated ? "text-amber-400/60" : "text-white/55"
                 }`}>
                 {period}
               </span>
@@ -123,7 +123,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
         <div className="animate-in fade-in zoom-in-95 slide-in-from-bottom-2 absolute bottom-full left-1/2 z-50 mb-2 min-w-[160px] origin-bottom -translate-x-1/2 rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] p-2 shadow-xl duration-150">
           <div className="mb-2 flex items-center justify-between px-1">
             <Tooltip content="Attendance is tracked relative to this scheduled time" position="top">
-              <span className="block cursor-help py-1 text-[9px] font-medium text-white/30">
+              <span className="block cursor-help py-1 text-[9px] font-medium text-white/55">
                 Start Time
               </span>
             </Tooltip>
@@ -133,7 +133,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
                 onClick={handleSetNow}
                 className="group/now flex h-6 w-6 items-center justify-center rounded border-none bg-transparent p-0 transition-colors hover:bg-[rgba(22,28,36,0.62)] focus:outline-none"
                 aria-label="Set to Current Time">
-                <i className="fa-solid fa-arrows-rotate text-[10px] text-white/30 transition-all duration-300 group-hover/now:rotate-180 hover:text-cyan-400"></i>
+                <i className="fa-solid fa-arrows-rotate text-[10px] text-white/55 transition-all duration-300 group-hover/now:rotate-180 hover:text-cyan-400"></i>
               </button>
             </Tooltip>
           </div>
@@ -149,7 +149,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
             <div className="pointer-events-none px-3 py-2.5 text-center">
               <div className="flex items-baseline justify-center gap-1 font-mono text-xl tracking-widest text-white">
                 <span>{formatTimeDisplay(startTime).time}</span>
-                <span className="text-[10px] font-medium tracking-tight text-white/30">
+                <span className="text-[10px] font-medium tracking-tight text-white/55">
                   {formatTimeDisplay(startTime).period}
                 </span>
               </div>

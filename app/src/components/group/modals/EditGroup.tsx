@@ -49,7 +49,7 @@ export function EditGroup({ isOpen, group, onClose, onSuccess }: EditGroupProps)
       title={
         <div>
           <h3 className="mb-2 text-xl font-semibold">Edit Group</h3>
-          <p className="text-[11px] font-normal text-white/50">Update group information</p>
+          <p className="text-[11px] font-normal text-white/65">Update group information</p>
         </div>
       }
       maxWidth="md">
@@ -68,7 +68,7 @@ export function EditGroup({ isOpen, group, onClose, onSuccess }: EditGroupProps)
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={handleClose}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
             Cancel
           </button>
           <button

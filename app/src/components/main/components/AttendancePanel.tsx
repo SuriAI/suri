@@ -23,10 +23,10 @@ interface AttendancePanelProps {
 }
 
 const sidebarActionButtonClassName =
-  "flex h-9 w-9 shrink-0 items-center justify-center border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/45 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
+  "flex h-9 w-9 shrink-0 items-center justify-center border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/65 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
 
 const sidebarDropdownIconButtonClassName =
-  "h-9 w-full border border-white/10 bg-[rgba(22,28,36,0.68)] px-0 text-white/45 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
+  "h-9 w-full border border-white/10 bg-[rgba(22,28,36,0.68)] px-0 text-white/65 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
 
 const sidebarActionIconClassName =
   "pointer-events-none text-sm text-current transition-colors duration-200"
@@ -187,10 +187,10 @@ const AttendanceRecordItem = memo(
             trackCheckoutEnabled ? "TIME IN"
             : lateThresholdEnabled ? "ON TIME"
             : "",
-          color: "text-white/40",
-          pillColor: "bg-[rgba(22,28,36,0.62)] text-white/40 border-white/10",
+          color: "text-white/55",
+          pillColor: "bg-[rgba(22,28,36,0.62)] text-white/55 border-white/10",
           borderColor: "border-l-transparent",
-          avatarColor: "bg-[rgba(22,28,36,0.62)] text-white/40",
+          avatarColor: "bg-[rgba(22,28,36,0.62)] text-white/55",
         }
       } catch {
         return null
@@ -250,7 +250,7 @@ const AttendanceRecordItem = memo(
                 )}
               </div>
 
-              <span className="block w-[54px] text-right font-mono text-[11px] text-white/40 tabular-nums">
+              <span className="block w-[54px] text-right font-mono text-[11px] text-white/55 tabular-nums">
                 {record.timestamp.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -451,10 +451,10 @@ export const AttendancePanel = memo(function AttendancePanel({
         </div>
       : <div className="flex min-h-0 flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="text-center text-xs text-white/40">No groups created yet</div>
+            <div className="text-center text-xs text-white/55">No groups created yet</div>
             <button
               onClick={() => setShowGroupManagement(true)}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+              className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
               <i className="fa-solid fa-plus text-xs"></i>
               Create Group
             </button>
@@ -590,31 +590,31 @@ export const AttendancePanel = memo(function AttendancePanel({
               </>
             : searchQuery ?
               <ScrollCenteredEmptyState>
-                <div className="text-center text-sm text-white/50">
+                <div className="text-center text-sm text-white/65">
                   No results for &quot;{searchQuery}&quot;
                 </div>
               </ScrollCenteredEmptyState>
             : !currentGroup ?
               <ScrollCenteredEmptyState>
-                <div className="text-center text-xs text-white/40">
+                <div className="text-center text-xs text-white/55">
                   Choose a group to see today&apos;s attendance logs
                 </div>
               </ScrollCenteredEmptyState>
             : effectiveRecordScope === "today" ?
               <ScrollCenteredEmptyState>
-                <div className="text-center text-xs text-white/40">
+                <div className="text-center text-xs text-white/55">
                   No attendance logs for today
                 </div>
               </ScrollCenteredEmptyState>
             : groupMembers.length === 0 ?
               <ScrollCenteredEmptyState>
                 <div className="flex flex-col items-center justify-center space-y-3">
-                  <div className="text-center text-xs text-white/40">
+                  <div className="text-center text-xs text-white/55">
                     No members in this group yet
                   </div>
                   <button
                     onClick={handleOpenSettingsForRegistration}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
                     Add Member
                   </button>
@@ -623,19 +623,19 @@ export const AttendancePanel = memo(function AttendancePanel({
             : !groupMembers.some((m) => m.has_face_data) ?
               <ScrollCenteredEmptyState>
                 <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
-                  <div className="text-xs text-white/40">
+                  <div className="text-xs text-white/55">
                     No face biometric data registered yet.
                   </div>
                   <button
                     onClick={handleOpenSettingsForRegistration}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
                     Register Face
                   </button>
                 </div>
               </ScrollCenteredEmptyState>
             : <ScrollCenteredEmptyState>
-                <div className="text-center text-xs text-white/40">No attendance logs yet</div>
+                <div className="text-center text-xs text-white/55">No attendance logs yet</div>
               </ScrollCenteredEmptyState>
             }
           </div>)}

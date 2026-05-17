@@ -70,7 +70,7 @@ const DetectionCard = memo(
                   </span>
                 </div>
 
-            : <span className="text-[13px] font-medium text-white/40">Searching...</span>}
+            : <span className="text-[13px] font-medium text-white/55">Searching...</span>}
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
@@ -160,7 +160,7 @@ export function DetectionPanel({
                     )}
 
                     <svg
-                      className={`h-full w-full p-4 transition-all duration-500 ${isStreaming ? "text-cyan-400/40" : "animate-pulse text-white/30"}`}
+                      className={`h-full w-full p-4 transition-all duration-500 ${isStreaming ? "text-cyan-400/40" : "animate-pulse text-white/55"}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24">
@@ -193,9 +193,9 @@ export function DetectionPanel({
 
             <div
               className={`text-[11px] font-bold transition-opacity duration-500 ${
-                !isShellReady ? "text-white/45"
+                !isShellReady ? "text-white/65"
                 : isStreaming ? "animate-pulse text-cyan-400/60"
-                : "text-white/35"
+                : "text-white/65"
               }`}>
               {!isShellReady ?
                 "Loading"

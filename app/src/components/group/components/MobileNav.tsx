@@ -61,12 +61,12 @@ export function MobileNav({
                 className={`relative flex w-full items-center gap-4 rounded-lg px-4 py-3 transition-all duration-200 ${
                   isActive ? "bg-white/10 text-white"
                   : isDisabled ? "cursor-not-allowed text-white/20"
-                  : "text-white/50 hover:bg-white/8 hover:text-white active:bg-white/10"
+                  : "text-white/65 hover:bg-white/8 hover:text-white active:bg-white/10"
                 } `}>
                 {/* Content */}
                 <div className="flex-1 text-left">
                   <div className="text-base font-medium">{section.label}</div>
-                  <div className="mt-1 text-[11px] font-medium text-white/40">
+                  <div className="mt-1 text-[11px] font-medium text-white/55">
                     {section.description}
                   </div>
                 </div>
@@ -84,7 +84,7 @@ export function MobileNav({
       {/* Footer Hint */}
       {selectedGroup && (
         <div className="mt-6 rounded-lg border border-white/10 bg-[rgba(17,22,29,0.96)] px-4 py-3">
-          <div className="text-xs text-white/60">
+          <div className="text-xs text-white/65">
             <div className="mb-1 font-semibold">Quick Tip</div>
             <div>Swipe from left edge to open this menu</div>
           </div>

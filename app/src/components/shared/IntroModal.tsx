@@ -15,7 +15,7 @@ export function IntroModal() {
             Facenox is a <strong>real-time</strong> attendance system built for privacy. Everything
             is processed on this device to keep your data secure and under your control.
           </p>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-white/65">
             Here is a quick overview of how we protect your information.
           </p>
         </div>
@@ -31,7 +31,7 @@ export function IntroModal() {
               secure piece of data called a face template.
             </p>
           </div>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             This data is encrypted and cannot be turned back into a photo, keeping everyone&apos;s
             identity private.
           </p>
@@ -47,7 +47,7 @@ export function IntroModal() {
               All face recognition and data storage happen <strong>only on this machine</strong>.
             </p>
           </div>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             No data is sent to the internet or any remote services unless you explicitly choose to
             sync it with your dashboard later.
           </p>
@@ -62,7 +62,7 @@ export function IntroModal() {
             Facenox is built to follow privacy standards like the{" "}
             <strong>Philippine Data Privacy Act</strong> and <strong>GDPR</strong>.
           </p>
-          <p className="text-xs leading-relaxed text-white/50">
+          <p className="text-xs leading-relaxed text-white/65">
             As an{" "}
             <a
               href="https://github.com/facenox/facenox"
@@ -79,12 +79,12 @@ export function IntroModal() {
               href="https://github.com/facenox/facenox/blob/main/docs/PRIVACY.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-white/30 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/60">
+              className="text-[10px] text-white/55 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/65">
               View Full Privacy Manual
             </a>
           </div>
 
-          <p className="pt-1 text-center text-[10px] text-white/30 italic">
+          <p className="pt-1 text-center text-[10px] text-white/55 italic">
             By clicking &quot;Finish&quot;, you agree that you understand how your data is handled
             locally.
           </p>
@@ -133,7 +133,7 @@ export function IntroModal() {
               onClick={handleBack}
               disabled={step === 0}
               className={`border-none! bg-transparent! px-8 pr-5 text-[11px] font-medium shadow-none! transition-all ${
-                step === 0 ? "pointer-events-none opacity-0" : "text-white/40 hover:text-white"
+                step === 0 ? "pointer-events-none opacity-0" : "text-white/55 hover:text-white"
               }`}>
               Back
             </button>

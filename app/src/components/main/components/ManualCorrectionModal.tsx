@@ -75,10 +75,10 @@ export function ManualCorrectionModal({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[11px] font-bold tracking-wide text-white/45 uppercase">
+          <label className="text-[11px] font-bold tracking-wide text-white/65 uppercase">
             Reason Required
           </label>
-          <p className="text-[11px] leading-relaxed text-white/38">
+          <p className="text-[11px] leading-relaxed text-white/55">
             Add a short note explaining why this attendance entry should be removed.
           </p>
           <textarea
@@ -92,7 +92,7 @@ export function ManualCorrectionModal({
             placeholder="Example: Wrong member selected"
             rows={4}
             disabled={isSubmitting}
-            className="custom-scroll min-h-24 w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs leading-relaxed text-white transition-all outline-none placeholder:text-white/25 focus:border-amber-500/30 focus:bg-[rgba(28,35,44,0.82)]"
+            className="custom-scroll min-h-24 w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs leading-relaxed text-white transition-all outline-none placeholder:text-white/40 focus:border-amber-500/30 focus:bg-[rgba(28,35,44,0.82)]"
           />
         </div>
 

@@ -197,7 +197,7 @@ export function Database({
   const timeHealthTone =
     timeHealthStatus === "verified" ? "text-cyan-400/80"
     : timeHealthStatus === "drift_detected" ? "text-amber-400/90"
-    : "text-white/50"
+    : "text-white/65"
   const formattedLocalTime =
     timeHealth?.current_time_local ?
       new Date(timeHealth.current_time_local).toLocaleString([], {
@@ -234,7 +234,7 @@ export function Database({
       {/* Device Time */}
       <section className="space-y-6">
         <div className="pt-2 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
             Device Time & Status
           </h3>
         </div>
@@ -244,8 +244,8 @@ export function Database({
             <h4 className={`text-[15px] font-semibold tracking-tight ${timeHealthTone}`}>
               {timeHealthSummary}
             </h4>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">{timeHealthDetails}</p>
-            <div className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-tight text-white/20">
+            <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{timeHealthDetails}</p>
+            <div className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-tight text-white/55">
               <i className="fa-solid fa-microchip opacity-50" />
               <span>
                 {timeHealthState.loading ?
@@ -284,7 +284,7 @@ export function Database({
       {/* Data Management */}
       <section className="space-y-8">
         <div className="pt-2 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
             Data Management
           </h3>
         </div>
@@ -294,7 +294,7 @@ export function Database({
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 flex-1">
               <h4 className="text-[15px] font-semibold text-white/90">Create Backup</h4>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                 Save an encrypted{" "}
                 <code className="rounded-sm bg-white/5 px-1.5 py-0.5 font-mono text-[11px] text-cyan-400/60">
                   .facenox
@@ -317,7 +317,7 @@ export function Database({
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 flex-1">
               <h4 className="text-[15px] font-semibold text-white/90">Restore Backup</h4>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                 Restore your database from a backup file using its original encryption password.
               </p>
             </div>
@@ -336,7 +336,7 @@ export function Database({
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 flex-1">
               <h4 className="text-[15px] font-semibold text-white/90">Export Audit Log</h4>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                 Download a CSV of admin actions, including consent changes, deletions, and backup
                 activity.
               </p>
@@ -344,7 +344,7 @@ export function Database({
             <button
               onClick={handleExportAuditLog}
               disabled={isExportingAuditLog}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-transparent px-5 py-2 text-[12px] font-bold text-white/60 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-40">
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-transparent px-5 py-2 text-[12px] font-bold text-white/65 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-40">
               {isExportingAuditLog ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-download text-[11px] opacity-40" />}
@@ -358,7 +358,7 @@ export function Database({
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="pt-2 pb-2">
-            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/30 uppercase">
+            <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
               Stored Groups
             </h3>
           </div>
@@ -391,7 +391,7 @@ export function Database({
                 <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
                 <div className="text-[12px] font-medium tracking-wide">No results found</div>
                 {groups.length === 0 && (
-                  <div className="mt-1 text-[11px] text-white/10">
+                  <div className="mt-1 text-[11px] text-white/40">
                     Create a group to begin managing members.
                   </div>
                 )}
@@ -440,7 +440,7 @@ export function Database({
             className="fa-solid fa-chevron-down text-[9px] opacity-50"
           />
         </button>
-        <p className="mt-1 text-center text-[11px] font-medium tracking-wide text-white/25 select-none">
+        <p className="mt-1 text-center text-[11px] font-medium tracking-wide text-white/40 select-none">
           Destructive actions and local data clearing
         </p>
 
@@ -459,7 +459,7 @@ export function Database({
                     <h4 className="text-[15px] font-semibold text-red-400/80">
                       Clear Group Directory
                     </h4>
-                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                       Permanently deletes all groups and member profiles. This wipes out your entire
                       local directory structure.
                     </p>
@@ -483,7 +483,7 @@ export function Database({
                     <h4 className="text-[15px] font-semibold text-red-400/80">
                       Reset Biometric Data
                     </h4>
-                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                       Wipes all face recognition signatures. Registered members will need to
                       re-register their biometric profiles.
                     </p>
@@ -521,7 +521,7 @@ export function Database({
           />
         }>
         <div className="space-y-4">
-          <p className="text-[11px] leading-relaxed text-white/45">
+          <p className="text-[11px] leading-relaxed text-white/65">
             {passwordModal.action === "export" ?
               "Choose a strong password to encrypt your backup. You will need this password to restore your data later."
             : `Enter the password for ${
@@ -530,7 +530,7 @@ export function Database({
             }
           </p>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-white/30">Backup Password</label>
+            <label className="text-[11px] font-medium text-white/55">Backup Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -556,7 +556,7 @@ export function Database({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 border-none bg-transparent p-0 text-white/30 shadow-none transition-colors hover:text-white/60 focus:outline-none"
+                className="absolute top-1/2 right-3 -translate-y-1/2 border-none bg-transparent p-0 text-white/55 shadow-none transition-colors hover:text-white/65 focus:outline-none"
                 tabIndex={-1}>
                 <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-[12px]`} />
               </button>
@@ -578,7 +578,7 @@ export function Database({
                 setPasswordInput("")
                 setShowPassword(false)
               }}
-              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/45 shadow-none transition-colors hover:text-white active:scale-95">
+              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/65 shadow-none transition-colors hover:text-white active:scale-95">
               Cancel
             </button>
             <button
@@ -618,8 +618,8 @@ export function Database({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-white/30">
-              Type <span className="font-bold text-white/60">DELETE</span> to confirm
+            <label className="text-[11px] font-medium text-white/55">
+              Type <span className="font-bold text-white/65">DELETE</span> to confirm
             </label>
             <input
               type="text"
@@ -634,7 +634,7 @@ export function Database({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
-              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/45 shadow-none transition-colors hover:text-white active:scale-95">
+              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/65 shadow-none transition-colors hover:text-white active:scale-95">
               Cancel
             </button>
             <button

@@ -56,19 +56,19 @@ export function BulkRegistration({ group, members, onRefresh, onClose }: BulkReg
             </div>
 
             <div className="mb-5">
-              <p className="mb-2 text-xs text-white/60">
+              <p className="mb-2 text-xs text-white/65">
                 The following files appear to be duplicates:
               </p>
               <div className="custom-scroll max-h-28 space-y-1 overflow-y-auto rounded-lg border border-white/5 bg-white/5 p-2.5">
                 {pendingDuplicates.duplicates.map((file, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs text-white/50">
-                    <i className="fa-solid fa-file-image text-[10px] text-white/30"></i>
+                  <div key={idx} className="flex items-center gap-2 text-xs text-white/65">
+                    <i className="fa-solid fa-file-image text-[10px] text-white/55"></i>
                     <span className="truncate">{file.name}</span>
                   </div>
                 ))}
               </div>
               {pendingDuplicates.newFiles.length > 0 && (
-                <p className="mt-2 text-[10px] text-white/40">
+                <p className="mt-2 text-[10px] text-white/55">
                   {pendingDuplicates.newFiles.length} new file(s) will be added regardless.
                 </p>
               )}
@@ -77,7 +77,7 @@ export function BulkRegistration({ group, members, onRefresh, onClose }: BulkReg
             <div className="flex gap-2">
               <button
                 onClick={() => void handleDismissDuplicates()}
-                className="flex-1 rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/50 transition-all hover:bg-white/10 hover:text-white">
+                className="flex-1 rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/65 transition-all hover:bg-white/10 hover:text-white">
                 Cancel
               </button>
               {pendingDuplicates.newFiles.length > 0 && (

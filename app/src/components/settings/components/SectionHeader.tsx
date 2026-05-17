@@ -6,7 +6,6 @@ interface SectionHeaderProps {
   eyebrow?: string
   eyebrowColor?: string
   actions?: React.ReactNode
-  isGroupSection?: boolean
 }
 
 export function SectionHeader({
@@ -14,12 +13,10 @@ export function SectionHeader({
   eyebrow,
   eyebrowColor = "text-white/20",
   actions,
-  isGroupSection = false,
 }: SectionHeaderProps) {
   return (
     <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-[rgba(15,19,25,0.8)] pt-6 pr-14 pb-4 pl-10 backdrop-blur-md">
-      <div
-        className={`flex w-full items-center justify-between ${isGroupSection ? "" : "mx-auto max-w-[900px]"}`}>
+      <div className="flex w-full items-center justify-between">
         <div className="flex flex-col">
           <AnimatePresence mode="wait">
             {eyebrow && (

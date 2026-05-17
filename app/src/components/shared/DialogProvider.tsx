@@ -123,7 +123,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
           {active?.type === "confirm" && active.options.requireTypedConfirmation && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-white/35">
+              <label className="text-[11px] font-medium text-white/50">
                 {active.options.requireTypedConfirmation.label ||
                   `Type "${active.options.requireTypedConfirmation.value}" to continue`}
               </label>
@@ -141,7 +141,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
             {active?.type === "confirm" && (
               <button
                 type="button"
-                className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white"
+                className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white"
                 onClick={() => {
                   active.resolve(false)
                   close()

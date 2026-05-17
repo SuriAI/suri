@@ -229,7 +229,7 @@ export function Members({
                   {/* Subtle vertical divider */}
                   <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
                   <svg
-                    className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/30"
+                    className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/55"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -253,7 +253,7 @@ export function Members({
 
             {members.length > 0 && filteredMembers.length > 0 && (
               <div className="flex w-full items-center justify-between px-10 py-1">
-                <div className="text-xs text-white/30">
+                <div className="text-xs text-white/55">
                   {selectedStats.total > 0 ?
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-white/80">
@@ -267,7 +267,7 @@ export function Members({
                           </span>
                         )}
                         {selectedStats.registered > 0 && (
-                          <span className="text-white/40">
+                          <span className="text-white/55">
                             {selectedStats.registered} registered
                           </span>
                         )}
@@ -315,7 +315,7 @@ export function Members({
                         }
                         className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
                           selectedStats.registered > 0 ?
-                            "border border-white/10 bg-transparent text-white/50 hover:bg-white/5 hover:text-white"
+                            "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
                           : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
                         }`}>
                         {selectedStats.registered > 0 ? "RE-REGISTER (1)" : "REGISTER (1)"}
@@ -349,7 +349,7 @@ export function Members({
                               <button
                                 className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
                                   selectedStats.registered > 0 && selectedStats.ready === 0 ?
-                                    "border border-white/10 bg-transparent text-white/50 hover:bg-white/5 hover:text-white"
+                                    "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
                                   : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
                                 }`}>
                                 {selectedStats.registered > 0 && selectedStats.ready === 0 ?
@@ -370,7 +370,7 @@ export function Members({
                   {selectedIds.size > 0 && (
                     <button
                       onClick={() => setSelectedIds(new Set())}
-                      className="flex items-center gap-2 text-[11px] font-bold text-white/40 transition-all hover:text-white">
+                      className="flex items-center gap-2 text-[11px] font-bold text-white/55 transition-all hover:text-white">
                       Clear
                     </button>
                   )}
@@ -394,7 +394,7 @@ export function Members({
           <div className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10">
             {filteredMembers.length === 0 ?
               <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
-                <div className="text-[11px] font-medium tracking-wide text-white/30">
+                <div className="text-[11px] font-medium tracking-wide text-white/55">
                   {memberSearch.trim() ?
                     `No results found for "${memberSearch}"`
                   : registrationFilter === "registered" ?
@@ -428,7 +428,7 @@ export function Members({
           {/* Consent banner */}
           {members.some((m) => !m.has_consent) && (
             <div className="pointer-events-none absolute right-0 bottom-6 left-0 z-40 flex justify-center">
-              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/60 shadow-xl backdrop-blur-sm duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl backdrop-blur-sm duration-500">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-triangle-exclamation shrink-0 text-amber-500/80" />
                   <span className="leading-snug whitespace-nowrap">
@@ -440,7 +440,7 @@ export function Members({
                     setBulkConsentScope("all")
                     setIsBulkConsentModalOpen(true)
                   }}
-                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold tracking-wider text-white/50 transition-all hover:bg-white/10 active:scale-95">
+                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold tracking-wider text-white/65 transition-all hover:bg-white/10 active:scale-95">
                   Grant all
                 </button>
               </div>

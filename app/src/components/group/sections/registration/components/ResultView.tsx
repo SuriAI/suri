@@ -41,7 +41,7 @@ export function ResultView({
         <button
           onClick={onRegister}
           disabled={!framesReady || isRegistering}
-          className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(10,13,18,0.78)] disabled:text-white/30">
+          className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(10,13,18,0.78)] disabled:text-white/55">
           {isRegistering ?
             <>
               <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />

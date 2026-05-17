@@ -254,7 +254,7 @@ export const Sidebar = memo(function Sidebar({
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="text-white/50 transition-colors group-hover:text-white"
+                  className="text-white/65 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },

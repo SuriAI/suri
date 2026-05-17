@@ -74,8 +74,8 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
       title={
         <div>
           <h3 className="mb-1 text-xl font-bold tracking-tight text-white">Edit Member</h3>
-          <p className="text-[11px] font-bold tracking-wider text-white/40">
-            Update details for <span className="text-white/60">{member.name}</span>
+          <p className="text-[11px] font-bold tracking-wider text-white/55">
+            Update details for <span className="text-white/65">{member.name}</span>
           </p>
         </div>
       }
@@ -121,7 +121,7 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={handleClose}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
             Cancel
           </button>
           <button

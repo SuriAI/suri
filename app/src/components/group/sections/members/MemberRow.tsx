@@ -64,7 +64,7 @@ export function MemberRow({
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-medium text-white/40">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-white/55">
             {member.role || "Member"}
             {member.email && (
               <div className="flex items-center gap-2">

@@ -164,7 +164,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   if (!stats) {
     return (
       <section className="flex items-center justify-center py-12">
-        <div className="text-sm text-white/40">Loading overview...</div>
+        <div className="text-sm text-white/55">Loading overview...</div>
       </section>
     )
   }
@@ -183,14 +183,14 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
               tooltipText={
                 <span>
                   Members who have checked in at least once today.{" "}
-                  <span className="text-white/50">Resets at midnight.</span>
+                  <span className="text-white/65">Resets at midnight.</span>
                 </span>
               }
             />
             {(() => {
               const absent = Math.max(0, (stats.total_members ?? 0) - (stats.present_today ?? 0))
               return absent > 0 ?
-                  <p className="mt-1.5 text-[11px] text-white/30">{absent} absent</p>
+                  <p className="mt-1.5 text-[11px] text-white/55">{absent} absent</p>
                 : null
             })()}
           </div>
@@ -218,7 +218,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
         <div className="mb-6 flex shrink-0 items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-[14px] font-bold tracking-tight text-white">Activity Log</h2>
-            <p className="mt-0.5 text-[12px] font-medium text-white/50">
+            <p className="mt-0.5 text-[12px] font-medium text-white/65">
               {DATE_FILTER_LABELS[dateFilter]}&apos;s records
             </p>
           </div>
@@ -226,7 +226,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           <div className="flex shrink-0 items-center gap-2">
             {/* Search */}
             <div className="group/search relative">
-              <div className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-white/30 transition-colors group-focus-within/search:text-white/50">
+              <div className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-white/55 transition-colors group-focus-within/search:text-white/65">
                 <i className="fa-solid fa-magnifying-glass text-[11px]"></i>
               </div>
               <input
@@ -239,7 +239,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
               {activitySearch && (
                 <button
                   onClick={() => setActivitySearch("")}
-                  className="absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-white/30 hover:text-white">
+                  className="absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-white/55 hover:text-white">
                   <i className="fa-solid fa-xmark text-[9px]"></i>
                 </button>
               )}
@@ -249,11 +249,11 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             <div className="relative" ref={filterDropdownRef}>
               <button
                 onClick={() => setFilterDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-white/65 transition-colors hover:bg-white/10 hover:text-white">
                 <i className="fa-regular fa-calendar text-[10px]" />
                 {DATE_FILTER_LABELS[dateFilter]}
                 <i
-                  className={`fa-solid fa-chevron-down text-[9px] text-white/30 transition-transform duration-150 ${filterDropdownOpen ? "rotate-180" : ""}`}
+                  className={`fa-solid fa-chevron-down text-[9px] text-white/55 transition-transform duration-150 ${filterDropdownOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
@@ -275,7 +275,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                         }}
                         className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
                           dateFilter === filter ? "text-white" : (
-                            "text-white/40 hover:bg-white/5 hover:text-white/80"
+                            "text-white/55 hover:bg-white/5 hover:text-white/80"
                           )
                         }`}>
                         <i
@@ -311,7 +311,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 transition={{ duration: 0.18, ease: "easeOut" }}
                 className="flex h-full min-h-[200px] flex-col">
                 {recentRecords.length === 0 ?
-                  <div className="flex flex-1 flex-col items-center justify-center text-white/30">
+                  <div className="flex flex-1 flex-col items-center justify-center text-white/55">
                     <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
                     <div className="text-[12px] font-medium">
                       No records{" "}
@@ -323,7 +323,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                     </div>
                   </div>
                 : filteredRecords.length === 0 ?
-                  <div className="flex flex-1 flex-col items-center justify-center text-white/30">
+                  <div className="flex flex-1 flex-col items-center justify-center text-white/55">
                     <i className="fa-solid fa-ghost mb-3 text-2xl" />
                     <div className="text-[12px] font-medium">No results found</div>
                     <div className="mt-1 text-[11px]">
@@ -343,7 +343,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                               <span className="text-[13px] font-medium text-white transition-colors">
                                 {displayName}
                               </span>
-                              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/60">
+                              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
                                 <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
                                 <span>{formatTime(record.timestamp)}</span>
                               </div>
@@ -351,7 +351,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                           </div>
 
                           <div className="flex items-center gap-4">
-                            <span className="text-[12px] font-medium text-white/30">
+                            <span className="text-[12px] font-medium text-white/55">
                               {getRelativeTime(record.timestamp)}
                             </span>
                           </div>

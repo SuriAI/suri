@@ -169,7 +169,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                 <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
               </Tooltip>
               <i
-                className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/50 transition-transform duration-200 ${
+                className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/65 transition-transform duration-200 ${
                   isOpen ? "rotate-180" : ""
                 } ${iconClassName}`}></i>
             </>
@@ -222,7 +222,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                     className="custom-scroll overflow-y-auto"
                     style={{ maxHeight: `${maxHeight}px` }}>
                     {options.length === 0 ?
-                      <div className="px-3 py-2 text-center text-[11px] font-medium text-white/40">
+                      <div className="px-3 py-2 text-center text-[11px] font-medium text-white/55">
                         {emptyMessage}
                       </div>
                     : <>
@@ -253,7 +253,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                             disabled={option.disabled}
                             className={`w-full truncate rounded-none px-3 py-2 text-left text-sm transition-colors ${
                               value === option.value ? "bg-[rgba(28,35,44,0.88)] text-white"
-                              : option.disabled ? "cursor-not-allowed text-white/30"
+                              : option.disabled ? "cursor-not-allowed text-white/55"
                               : "text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white"
                             } ${optionClassName}`}>
                             <Tooltip content={option.label}>
