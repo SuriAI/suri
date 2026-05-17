@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { Modal } from "@/components/common"
-import { Tooltip, useDialog } from "@/components/shared"
+import { Tooltip, useDialog, InfoPopover } from "@/components/shared"
 import { useAttendanceStore } from "@/components/main/stores"
 import type { AttendanceMember, AttendanceGroup } from "@/components/main/types"
 
@@ -108,24 +108,8 @@ export const ManualEntryModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={
-        <div className="-mt-0.5 flex flex-col">
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-users text-sm text-cyan-400"></i>
-            <span className="text-xl font-bold tracking-tight">Members</span>
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <div className="rounded-full border border-white/10 bg-[rgba(22,28,36,0.62)] px-2.5 py-1 text-[11px] font-bold text-white/65">
-              {members.length} Total
-            </div>
-            <div className="rounded-full border border-cyan-500/10 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-400">
-              {presentPersonIds.size} Present
-            </div>
-            {noFaceCount > 0 && (
-              <div className="rounded-full border border-amber-500/10 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-500/80">
-                {noFaceCount} Not Registered
-              </div>
-            )}
-          </div>
+        <div>
+          <h3 className="text-xl font-semibold tracking-tight">Members</h3>
         </div>
       }
       maxWidth="sm">
@@ -154,6 +138,32 @@ export const ManualEntryModal = ({
           </Tooltip>
         </div>
 
+        {/* Minimalist Members Section Stats Ratio */}
+        <div className="flex items-center gap-3 px-1 text-[11px] font-medium text-white/40">
+          <span className="text-white/40">
+            <strong className="font-semibold text-cyan-400">{presentPersonIds.size}</strong>
+            <span className="mx-1 text-white/25">/</span>
+            <strong className="font-semibold text-white/70">{members.length}</strong>
+            <span className="ml-1 text-white/55">Present</span>
+          </span>
+          {noFaceCount > 0 && (
+            <>
+              <span className="text-white/10 select-none">•</span>
+              <div className="flex items-center gap-1">
+                <span className="text-white/55">
+                  <strong className="font-semibold text-white/70">{noFaceCount}</strong> Not
+                  Registered
+                </span>
+                <InfoPopover
+                  title="Not Registered"
+                  description='Members marked "Not Registered" weren&apos;t registered yet or were imported from another device. They must be enrolled on this device to be recognized by the camera.'
+                  side="top"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
         {error && (
           <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-[11px] font-bold text-red-300">
             <i className="fa-solid fa-circle-exclamation text-[10px]"></i>
@@ -162,8 +172,8 @@ export const ManualEntryModal = ({
         )}
 
         {sortedAllMembers.length > 0 ?
-          <div className="overflow-hidden rounded-xl border border-white/10 bg-[rgba(15,19,25,0.98)]">
-            <div className="custom-scroll max-h-48 overflow-y-auto">
+          <div className="custom-scroll max-h-52 overflow-y-auto pr-1">
+            <div className="flex w-full flex-col gap-1">
               {sortedAllMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id)
                 const isEntrySubmitting = submittingId === member.person_id
@@ -174,36 +184,36 @@ export const ManualEntryModal = ({
                   <div
                     key={member.person_id}
                     onClick={() => !isPresent && handleManualEntry(member.person_id)}
-                    className={`group/item flex items-center gap-3 border-b border-white/5 px-4 py-2.5 transition-all last:border-0 ${
+                    className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
                       isPresent ?
-                        "cursor-default bg-[rgba(22,28,36,0.44)] opacity-50 grayscale-[0.3]"
-                      : "cursor-pointer hover:bg-[rgba(22,28,36,0.52)] active:scale-[0.99]"
+                        "cursor-default bg-transparent"
+                      : "cursor-pointer hover:bg-white/[0.03] active:scale-[0.995]"
                     }`}>
                     <span className="flex-1 truncate text-[12px] font-bold text-white/70 transition-colors group-hover/item:text-white">
                       {member.name}
                     </span>
 
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex min-w-[96px] shrink-0 items-center justify-end">
                       {isPresent ?
-                        <div className="flex items-center gap-1.5 px-2 py-1">
-                          <i className="fa-solid fa-check text-[10px] text-cyan-400"></i>
+                        <div className="flex items-center px-2 py-1">
                           <span className="text-[11px] font-bold text-cyan-400">Present</span>
                         </div>
                       : isEntrySubmitting ?
-                        <div className="flex w-24 justify-center">
+                        <div className="flex w-24 justify-end pr-2">
                           <i className="fa-solid fa-spinner fa-spin text-[10px] text-cyan-400"></i>
                         </div>
-                      : <div className="flex items-center gap-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-cyan-400 opacity-0 transition-all group-hover/item:opacity-100 hover:bg-cyan-500/20 active:scale-95">
-                          <i className="fa-solid fa-plus text-[8px]"></i>
-                          Mark Present
-                        </div>
+                      : <>
+                          <div className="hidden items-center gap-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-cyan-400 transition-all group-hover/item:flex hover:bg-cyan-500/20 active:scale-95">
+                            <i className="fa-solid fa-plus text-[8px]"></i>
+                            Mark Present
+                          </div>
+                          {!isPresent && hasFace === false && (
+                            <div className="block px-2 py-1 text-[11px] font-bold tracking-tight text-white/30 transition-opacity group-hover/item:hidden">
+                              Not Registered
+                            </div>
+                          )}
+                        </>
                       }
-                      {!isPresent && hasFace === false && (
-                        <div
-                          className={`px-2 py-1 text-[11px] font-bold text-amber-500/40 ${isEntrySubmitting || searchQuery ? "hidden" : "group-hover/item:opacity-0"} tracking-tight transition-opacity`}>
-                          Not Registered
-                        </div>
-                      )}
                     </div>
                   </div>
                 )
@@ -215,19 +225,6 @@ export const ManualEntryModal = ({
             <p className="text-[11px] font-bold tracking-wider text-white/55">No results found</p>
           </div>
         }
-
-        {noFaceCount > 0 && (
-          <div className="rounded-xl border border-white/10 bg-[rgba(15,19,25,0.98)] px-4 py-3 shadow-inner">
-            <p className="flex items-start gap-3 text-xs leading-relaxed font-bold text-white/65">
-              <i className="fa-solid fa-circle-info mt-1 shrink-0 text-[12px] text-amber-500/60"></i>
-              <span className="tracking-tight">
-                Members marked <span className="text-amber-500/80">&quot;No face data&quot;</span>{" "}
-                weren&apos;t registered yet or were imported from another device. They must be
-                enrolled on this device to be recognized by the camera.
-              </span>
-            </p>
-          </div>
-        )}
       </div>
     </Modal>
   )

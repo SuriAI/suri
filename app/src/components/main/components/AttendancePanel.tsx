@@ -9,8 +9,6 @@ import {
   limitAttendanceRecords,
   processAttendanceRecords,
   type AttendanceRecordScope,
-  type AttendanceSortField,
-  type AttendanceSortOrder,
 } from "@/components/main/components/attendancePanelUtils"
 
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
@@ -329,25 +327,12 @@ export const AttendancePanel = memo(function AttendancePanel({
 
   const [searchQuery, setSearchQuery] = useState("")
   const [recordScope, setRecordScope] = useState<AttendanceRecordScope>("today")
-  const [sortField, setSortField] = useState<AttendanceSortField>("time")
-  const [sortOrder, setSortOrder] = useState<AttendanceSortOrder>("desc")
   const [displayLimit, setDisplayLimit] = useState(20)
   const effectiveRecordScope: AttendanceRecordScope =
     recentAttendance.length === 0 ? "all" : recordScope
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
-  }, [])
-
-  const handleSortFieldChange = useCallback((field: AttendanceSortField | null) => {
-    if (field) {
-      setSortField(field)
-      if (field === "time") {
-        setSortOrder("desc")
-      } else if (field === "name") {
-        setSortOrder("asc")
-      }
-    }
   }, [])
 
   const handleRecordScopeChange = useCallback((scope: AttendanceRecordScope | null) => {
@@ -376,10 +361,10 @@ export const AttendancePanel = memo(function AttendancePanel({
       displayNameMap,
       recordScope: effectiveRecordScope,
       searchQuery,
-      sortField,
-      sortOrder,
+      sortField: "time",
+      sortOrder: "desc",
     })
-  }, [recentAttendance, displayNameMap, effectiveRecordScope, searchQuery, sortField, sortOrder])
+  }, [recentAttendance, displayNameMap, effectiveRecordScope, searchQuery])
 
   const visibleRecords = useMemo(() => {
     return limitAttendanceRecords(processedRecords, displayLimit)
@@ -390,7 +375,7 @@ export const AttendancePanel = memo(function AttendancePanel({
   useEffect(() => {
     const timer = setTimeout(() => setDisplayLimit(20), 0)
     return () => clearTimeout(timer)
-  }, [recordScope, searchQuery, sortField, sortOrder])
+  }, [recordScope, searchQuery])
 
   if (!isShellReady) {
     return (
@@ -479,12 +464,19 @@ export const AttendancePanel = memo(function AttendancePanel({
 
               <div className="shrink-0">
                 <Tooltip
-                  content={`Show: ${recordScope === "today" ? "Today" : "All records"}`}
+                  content={`Show: ${
+                    recordScope === "today" ? "Today"
+                    : recordScope === "yesterday" ? "Yesterday"
+                    : recordScope === "week" ? "This Week"
+                    : "All records"
+                  }`}
                   position="top">
                   <Dropdown
                     className="w-9"
                     options={[
                       { value: "today", label: "Today" },
+                      { value: "yesterday", label: "Yesterday" },
+                      { value: "week", label: "This Week" },
                       { value: "all", label: "All" },
                     ]}
                     value={recordScope}
@@ -494,38 +486,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                         <i className={`fa-solid fa-calendar-day ${sidebarActionIconClassName}`} />
                       </span>
                     }
-                    menuWidth={110}
-                    buttonClassName={`${sidebarDropdownIconButtonClassName} rounded-none border-r-0`}
-                    showPlaceholderOption={false}
-                    allowClear={false}
-                  />
-                </Tooltip>
-              </div>
-
-              <div className="shrink-0">
-                <Tooltip
-                  content={`Sort: ${sortField === "time" ? "Latest" : "Name"}`}
-                  position="top">
-                  <Dropdown
-                    className="w-9"
-                    options={[
-                      { value: "time", label: "Latest" },
-                      { value: "name", label: "Name" },
-                    ]}
-                    value={sortField}
-                    onChange={(val) => handleSortFieldChange(val as AttendanceSortField)}
-                    trigger={
-                      <span className="inline-flex h-4 w-4 items-center justify-center">
-                        <i
-                          className={`${
-                            sortField === "time" ? "fa-solid fa-clock" : (
-                              "fa-solid fa-arrow-down-a-z"
-                            )
-                          } ${sidebarActionIconClassName}`}
-                        />
-                      </span>
-                    }
-                    menuWidth={110}
+                    menuWidth={120}
                     buttonClassName={`${sidebarDropdownIconButtonClassName} rounded-r-lg rounded-l-none`}
                     showPlaceholderOption={false}
                     allowClear={false}

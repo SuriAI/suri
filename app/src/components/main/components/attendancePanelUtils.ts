@@ -2,7 +2,7 @@ import type { AttendanceRecord } from "@/components/main/types"
 
 export type AttendanceSortField = "time" | "name"
 export type AttendanceSortOrder = "asc" | "desc"
-export type AttendanceRecordScope = "today" | "all"
+export type AttendanceRecordScope = "today" | "yesterday" | "week" | "all"
 
 interface ProcessAttendanceRecordsOptions {
   recentAttendance: AttendanceRecord[]
@@ -32,6 +32,24 @@ export function processAttendanceRecords({
   if (recordScope === "today") {
     const todayString = today.toDateString()
     filtered = filtered.filter((record) => record.timestamp.toDateString() === todayString)
+  } else if (recordScope === "yesterday") {
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayString = yesterday.toDateString()
+    filtered = filtered.filter((record) => record.timestamp.toDateString() === yesterdayString)
+  } else if (recordScope === "week") {
+    // This week: Monday to today
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+    monday.setHours(0, 0, 0, 0)
+
+    const endOfWeek = new Date(today)
+    endOfWeek.setHours(23, 59, 59, 999)
+
+    filtered = filtered.filter((record) => {
+      const recordTime = record.timestamp.getTime()
+      return recordTime >= monday.getTime() && recordTime <= endOfWeek.getTime()
+    })
   }
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
