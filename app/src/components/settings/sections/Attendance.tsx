@@ -29,7 +29,7 @@ export function Attendance({
   hasSelectedGroup = false,
 }: AttendanceProps) {
   return (
-    <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-2 pb-10">
+    <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
       <div className="overflow-hidden">
         <div className="pt-6 pb-2">
           <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">

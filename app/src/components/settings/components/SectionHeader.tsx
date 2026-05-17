@@ -11,38 +11,32 @@ interface SectionHeaderProps {
 export function SectionHeader({
   title,
   eyebrow,
-  eyebrowColor = "text-white/20",
+  eyebrowColor = "text-white/50",
   actions,
 }: SectionHeaderProps) {
   return (
-    <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-[rgba(15,19,25,0.8)] pt-6 pr-14 pb-4 pl-10 backdrop-blur-md">
+    <div className="sticky top-0 z-20 border-b border-white/[0.04] bg-[rgba(15,19,25,0.7)] py-3.5 pr-16 pl-10 backdrop-blur-md">
       <div className="flex w-full items-center justify-between">
-        <div className="flex flex-col">
-          <AnimatePresence mode="wait">
+        <div className="flex items-center">
+          <div className="flex items-center gap-2 text-[13px] font-medium">
             {eyebrow && (
-              <motion.span
-                key={eyebrow}
-                initial={{ opacity: 0, y: -2 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -2 }}
-                transition={{ duration: 0.2 }}
-                className={`mb-0.5 text-[10px] font-bold tracking-[0.15em] uppercase ${eyebrowColor}`}>
-                {eyebrow}
-              </motion.span>
+              <>
+                <span className={`${eyebrowColor} tracking-wide`}>{eyebrow}</span>
+                <span className="font-light text-white/15 select-none">/</span>
+              </>
             )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            <motion.h2
-              key={title}
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 4 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-              {title}
-            </motion.h2>
-          </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={title}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 6 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="font-semibold text-white">
+                {title}
+              </motion.span>
+            </AnimatePresence>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -53,7 +47,7 @@ export function SectionHeader({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}>
+                transition={{ duration: 0.15 }}>
                 {actions}
               </motion.div>
             )}

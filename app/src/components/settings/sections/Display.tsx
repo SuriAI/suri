@@ -29,7 +29,7 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
   ]
 
   return (
-    <div className="mx-auto w-full max-w-[900px] space-y-4 px-10 pt-2 pb-10">
+    <div className="mx-auto w-full max-w-[900px] space-y-4 px-10 pt-8 pb-10">
       {settingItems.map(({ key, label, descriptions }) => (
         <div key={key} className="flex items-center gap-4 border-b border-white/5 py-3">
           <div className="min-w-0 flex-1">

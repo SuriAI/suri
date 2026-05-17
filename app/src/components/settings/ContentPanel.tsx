@@ -163,7 +163,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
           <button
             onClick={openEditGroup}
             className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
-            <i className="fa-solid fa-pen-to-square text-[10px]"></i>
+            <i className="fa-solid fa-pen text-[10px]"></i>
             EDIT GROUP
           </button>
         )
@@ -181,7 +181,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       return {
         title: sectionLabel || "Overview",
         eyebrow: groupName,
-        eyebrowColor: "text-cyan-400/80",
+        eyebrowColor: "text-white/50",
         actions,
         isGroupSection: true,
       }

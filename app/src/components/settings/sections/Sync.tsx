@@ -196,7 +196,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
     : "text-white/65"
 
   return (
-    <div className="mx-auto w-full max-w-[900px] space-y-10 px-10 pt-4 pb-16">
+    <div className="mx-auto w-full max-w-[900px] space-y-10 px-10 pt-8 pb-16">
       <div className="space-y-8">
         <section className="space-y-6">
           <div className="pt-2 pb-2">

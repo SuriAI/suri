@@ -10,7 +10,7 @@ const SETTINGS_STATUS_SWAP_DURATION = 0.14
 
 export function Notifications({ audioSettings, onAudioSettingsChange }: NotificationsProps) {
   return (
-    <div className="mx-auto w-full max-w-[900px] space-y-4 px-10 pt-2 pb-10">
+    <div className="mx-auto w-full max-w-[900px] space-y-4 px-10 pt-8 pb-10">
       <div className="space-y-4">
         {/* Recognition sound */}
         <div className="flex items-center gap-4 border-b border-white/5 py-3">
