@@ -140,6 +140,12 @@ async def delete_group(
         if not success:
             raise HTTPException(status_code=404, detail="Group not found")
 
+        # Synchronize face recognizer in-memory cache immediately to prevent ghost recognitions
+        from core.lifespan import face_recognizer
+
+        if face_recognizer:
+            await face_recognizer.refresh_cache(repo.organization_id)
+
         await repo.add_audit_log(
             action="GROUP_DELETED",
             target_type="group",

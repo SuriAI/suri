@@ -18,7 +18,7 @@ interface DatabaseProps {
   onRefreshTimeHealth: () => void
   groups: AttendanceGroup[]
   isLoading: boolean
-  onClearDatabase: () => void
+  onClearDatabase: (skipConfirmation?: boolean) => void
   onGroupsChanged?: () => void
 }
 
@@ -208,19 +208,17 @@ export function Database({
       })
     : null
   const timeHealthSummary =
-    timeHealthState.loading ? "Checking your device time..."
-    : timeHealthStatus === "verified" ? "Time verified."
-    : timeHealthStatus === "drift_detected" ? "Your device time may need attention."
-    : timeHealthStatus === "offline" ? "Online time checking is unavailable right now."
-    : "Time status is unavailable right now."
+    timeHealthState.loading ? "Checking time..."
+    : timeHealthStatus === "verified" ? "Time synchronized"
+    : timeHealthStatus === "drift_detected" ? "Clock drift detected"
+    : timeHealthStatus === "offline" ? "Offline mode"
+    : "Status unavailable"
   const timeHealthDetails =
-    timeHealthState.loading ? "Please wait while Facenox checks the current time."
-    : timeHealthStatus === "verified" ? "Your device time is correct."
-    : timeHealthStatus === "drift_detected" ?
-      "Please check your computer's date, time, and timezone settings."
-    : timeHealthStatus === "offline" ?
-      "Facenox still works offline, but it cannot verify internet time right now."
-    : "Facenox could not read the current time status."
+    timeHealthState.loading ? "Verifying clock accuracy..."
+    : timeHealthStatus === "verified" ? "Your device clock is accurate."
+    : timeHealthStatus === "drift_detected" ? "Adjust your computer's date and time settings."
+    : timeHealthStatus === "offline" ? "Cannot verify time online. Using local backup clock."
+    : "Could not read the current time authority status."
 
   return (
     <div className="mx-auto flex w-full max-w-[900px] flex-col space-y-16 px-10 pt-10 pb-20">
@@ -267,7 +265,7 @@ export function Database({
               {timeHealthState.loading ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-rotate-right" />}
-              Check Now
+              {timeHealthState.loading ? "Checking..." : "Check Now"}
             </button>
 
             {!timeHealthState.loading &&
@@ -385,10 +383,11 @@ export function Database({
           </div>
         </div>
 
-        <div>
-          <div className={`${filteredData.length === 0 ? "h-32" : "h-auto"} space-y-1`}>
+        <div className="border-y border-white/5">
+          <div
+            className={`${filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
             {filteredData.length === 0 ?
-              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/5 bg-white/[0.01] py-12 text-white/20">
+              <div className="flex flex-col items-center justify-center py-12 text-white/20">
                 <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
                 <div className="text-[12px] font-medium tracking-wide">No results found</div>
                 {groups.length === 0 && (
@@ -426,25 +425,24 @@ export function Database({
       </section>
 
       {/* Danger Zone */}
-      <section className="relative overflow-hidden rounded-xl border-0 bg-red-500/[0.03] shadow-none outline-none">
+      <section className="relative flex w-full flex-col items-center overflow-hidden pt-12 pb-2">
+        {/* Sleek fading gradient divider to match the centered design */}
+        <div className="absolute top-0 right-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
+        {/* Sleek centered trigger */}
         <button
           onClick={() => setIsDangerZoneOpen(!isDangerZoneOpen)}
-          className="flex w-full items-center justify-between px-6 py-4 transition-colors hover:bg-red-500/[0.04]">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
-              <i className="fa-solid fa-triangle-exclamation text-sm" />
-            </div>
-            <div className="text-left">
-              <h3 className="text-[12px] font-bold tracking-wider text-red-500/80 uppercase">
-                Danger Zone
-              </h3>
-              <p className="text-[11px] text-red-500/40">Destructive actions and data clearing</p>
-            </div>
-          </div>
-          <motion.div animate={{ rotate: isDangerZoneOpen ? 180 : 0 }} className="text-red-500/30">
-            <i className="fa-solid fa-chevron-down text-xs" />
-          </motion.div>
+          className="group flex items-center gap-2.5 rounded-full border-0 bg-transparent px-5 py-2.5 text-[11px] font-extrabold tracking-[0.2em] text-red-500/40 uppercase shadow-none transition-all duration-300 outline-none hover:bg-red-500/[0.03] hover:text-red-400 focus:outline-none active:scale-95">
+          <i className="fa-solid fa-triangle-exclamation text-[10px] opacity-60 transition-transform group-hover:scale-110" />
+          <span>Danger Zone</span>
+          <motion.i
+            animate={{ rotate: isDangerZoneOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="fa-solid fa-chevron-down text-[9px] opacity-50"
+          />
         </button>
+        <p className="mt-1 text-center text-[11px] font-medium tracking-wide text-white/25 select-none">
+          Destructive actions and local data clearing
+        </p>
 
         <AnimatePresence>
           {isDangerZoneOpen && (
@@ -452,40 +450,53 @@ export function Database({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}>
-              <div className="border-t border-red-500/10 px-6 py-6">
-                <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                  <div className="flex-1">
-                    <p className="text-[13px] leading-relaxed text-red-200/40">
-                      These actions are <span className="font-bold text-red-500/60">permanent</span>{" "}
-                      and cannot be undone. Biometric profiles, history, and group structures will
-                      be removed from this device.
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full overflow-hidden">
+              <div className="w-full divide-y divide-red-500/5 pt-4 pb-8">
+                {/* Action 1: Clear Groups */}
+                <div className="flex flex-col gap-6 py-6 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0 flex-1 text-left">
+                    <h4 className="text-[15px] font-semibold text-red-400/80">
+                      Clear Group Directory
+                    </h4>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+                      Permanently deletes all groups and member profiles. This wipes out your entire
+                      local directory structure.
                     </p>
                   </div>
+                  <button
+                    onClick={() =>
+                      setConfirmModal({ isOpen: true, type: "clear_groups", inputValue: "" })
+                    }
+                    disabled={isLoading || deletingGroup === "all" || groups.length === 0}
+                    className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
+                    {deletingGroup === "all" ?
+                      <i className="fa-solid fa-spinner fa-spin"></i>
+                    : <i className="fa-solid fa-trash-can text-[11px] opacity-60" />}
+                    Clear Groups
+                  </button>
+                </div>
 
-                  <div className="flex shrink-0 gap-3">
-                    <button
-                      onClick={() =>
-                        setConfirmModal({ isOpen: true, type: "clear_groups", inputValue: "" })
-                      }
-                      disabled={isLoading || deletingGroup === "all" || groups.length === 0}
-                      className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-transparent px-4 py-2 text-[12px] font-bold text-red-400 transition-all hover:bg-red-500/10 active:scale-95 disabled:opacity-20">
-                      {deletingGroup === "all" ?
-                        <i className="fa-solid fa-spinner fa-spin"></i>
-                      : <i className="fa-solid fa-trash-can text-[11px] opacity-60" />}
-                      Clear Groups
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        setConfirmModal({ isOpen: true, type: "reset_faces", inputValue: "" })
-                      }
-                      disabled={isLoading}
-                      className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-transparent px-4 py-2 text-[12px] font-bold text-red-500 transition-all hover:bg-red-500/10 active:scale-95 disabled:opacity-20">
-                      <i className="fa-solid fa-user-slash text-[11px] opacity-60" />
-                      Reset Face Data
-                    </button>
+                {/* Action 2: Reset Face Data */}
+                <div className="flex flex-col gap-6 py-6 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0 flex-1 text-left">
+                    <h4 className="text-[15px] font-semibold text-red-400/80">
+                      Reset Biometric Data
+                    </h4>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+                      Wipes all face recognition signatures. Registered members will need to
+                      re-register their biometric profiles.
+                    </p>
                   </div>
+                  <button
+                    onClick={() =>
+                      setConfirmModal({ isOpen: true, type: "reset_faces", inputValue: "" })
+                    }
+                    disabled={isLoading}
+                    className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
+                    <i className="fa-solid fa-user-slash text-[11px] opacity-60" />
+                    Reset Face Data
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -567,7 +578,7 @@ export function Database({
                 setPasswordInput("")
                 setShowPassword(false)
               }}
-              className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/45 shadow-none transition-colors hover:text-white active:scale-95">
               Cancel
             </button>
             <button
@@ -583,7 +594,7 @@ export function Database({
                   handleImport(pass, passwordModal.overwrite)
                 }
               }}
-              className="min-w-25 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95 disabled:opacity-50">
+              className="min-w-25 rounded-lg border-0 bg-cyan-500/10 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 shadow-none transition-all hover:bg-cyan-500/20 active:scale-95 disabled:opacity-50">
               {passwordModal.action === "export" ? "Create" : "Restore"}
             </button>
           </div>
@@ -597,8 +608,8 @@ export function Database({
         title="Confirm Destructive Action"
         icon={<i className="fa-solid fa-triangle-exclamation text-red-500" />}>
         <div className="space-y-6">
-          <div className="rounded-lg border border-red-500/10 bg-red-500/5 p-4">
-            <p className="text-[12px] leading-relaxed text-red-200/60">
+          <div className="rounded-none border-l-2 border-red-500/30 bg-transparent py-1.5 pl-4">
+            <p className="text-[12px] leading-relaxed text-red-200/50">
               {confirmModal.type === "clear_groups" ?
                 "You are about to delete all groups and members. This will permanently erase your local directory."
               : "You are about to reset all biometric profiles. All enrolled members will need to re-register their faces."
@@ -623,7 +634,7 @@ export function Database({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
-              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/40 transition-colors hover:text-white">
+              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/45 shadow-none transition-colors hover:text-white active:scale-95">
               Cancel
             </button>
             <button
@@ -632,12 +643,12 @@ export function Database({
                 const type = confirmModal.type
                 setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })
                 if (type === "clear_groups") {
-                  handleClearAllGroups()
+                  handleClearAllGroups(true)
                 } else {
-                  onClearDatabase()
+                  onClearDatabase(true)
                 }
               }}
-              className="rounded-lg bg-red-500 px-6 py-2 text-[11px] font-bold tracking-wider text-white transition-all hover:bg-red-600 active:scale-95 disabled:opacity-20 disabled:grayscale">
+              className="rounded-lg border-0 bg-red-500 px-6 py-2 text-[11px] font-bold tracking-wider text-white shadow-none transition-all hover:bg-red-600 active:scale-95 disabled:opacity-20 disabled:grayscale">
               Proceed
             </button>
           </div>

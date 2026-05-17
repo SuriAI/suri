@@ -6,7 +6,6 @@ import type {
   GroupField,
 } from "@/components/settings/sections/types"
 import { MemberEntry } from "@/components/settings/sections/components/MemberEntry"
-import { Tooltip } from "@/components/shared"
 import { Modal } from "@/components/common/Modal"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
@@ -63,16 +62,13 @@ export function GroupEntry({
   }
 
   return (
-    <div
-      className={`group/row flex flex-col rounded-lg border transition-colors ${isExpanded ? "border-white/10 bg-white/[0.02]" : "border-transparent bg-transparent hover:bg-white/[0.02]"}`}>
+    <div className="group/row flex flex-col bg-transparent transition-colors hover:bg-white/[0.01]">
       {/* Group Header */}
-      <div className="flex w-full items-center justify-between p-4 transition-colors">
-        <div className="flex min-w-0 flex-1 items-center gap-4">
-          <button
-            onClick={() => onToggle(group.id)}
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/5 text-white/40 transition-colors hover:bg-white/10 hover:text-white ${isExpanded ? "bg-white/10 text-white" : ""}`}>
-            <i className={`fa-solid fa-users text-[11px]`}></i>
-          </button>
+      <div className="flex w-full items-center justify-between px-2 py-3.5 transition-colors">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center text-white/30 transition-colors group-hover/row:text-white/50">
+            <i className="fa-solid fa-users text-[13px]"></i>
+          </div>
 
           <div className="flex min-w-0 flex-col">
             {/* Group Name */}
@@ -86,56 +82,42 @@ export function GroupEntry({
                 onClick={(e) => e.stopPropagation()}
                 autoFocus
                 disabled={savingGroup === group.id}
-                className="h-6 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[14px] font-medium text-white transition-all outline-none focus:ring-1 focus:ring-white/20"
+                className="h-6 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[13px] font-semibold text-white transition-all outline-none focus:ring-1 focus:ring-white/20"
               />
             : <div
                 onClick={(e) => {
                   e.stopPropagation()
                   onStartEditingGroup(group, "name")
                 }}
-                className="flex items-center gap-2 truncate text-[14px] font-medium text-white transition-colors hover:text-white/70">
+                className="flex cursor-pointer items-center gap-2 truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
                 {group.name}
                 {savingGroup === group.id && (
                   <i className="fa-solid fa-spinner fa-spin text-[10px] text-white/40"></i>
                 )}
               </div>
             }
-            <div className="mt-0.5 hidden truncate font-mono text-[11px] text-white/30 sm:block">
-              Group ID: {group.id}
+            <div className="mt-0.5 hidden truncate font-mono text-[10px] tracking-tight text-white/25 sm:block">
+              ID: {group.id}
             </div>
           </div>
         </div>
 
-        <div className="ml-4 flex shrink-0 items-center gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-[12px] font-medium text-white/50">
-              {memberCount} {memberCount === 1 ? "Member" : "Members"}
+        <div className="ml-4 flex shrink-0 items-center gap-3">
+          <span className="text-[11px] font-medium text-white/40">
+            {memberCount} {memberCount === 1 ? "member" : "members"}
+          </span>
+          {registeredCount > 0 && (
+            <span className="rounded-md border border-cyan-500/10 bg-cyan-500/[0.06] px-1.5 py-0.5 text-[10px] font-semibold text-cyan-400/90">
+              {registeredCount} Registered
             </span>
-            {registeredCount > 0 && (
-              <span className="rounded-md bg-cyan-500/10 px-2 py-1 text-[11px] font-semibold text-cyan-400">
-                {registeredCount} Registered
-              </span>
-            )}
+          )}
 
-            <button
-              onClick={() => onToggle(group.id)}
-              className="ml-2 rounded-md bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-white/15">
-              Manage
-            </button>
-          </div>
-
-          <Tooltip content="Delete group" position="top">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDeleteGroup(group.id)
-              }}
-              disabled={deletingGroup === group.id || deletingGroup === "all"}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-white/20 transition-all hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50">
-              <i
-                className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can opacity-0 group-hover/row:opacity-100"} text-[13px]`}></i>
-            </button>
-          </Tooltip>
+          <button
+            onClick={() => onToggle(group.id)}
+            title="Manage Group"
+            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/40 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95">
+            <i className="fa-solid fa-sliders text-[12px] opacity-70" />
+          </button>
         </div>
       </div>
 
@@ -144,13 +126,27 @@ export function GroupEntry({
         isOpen={isExpanded}
         onClose={() => onToggle(group.id)}
         title={`${group.name} Members`}
+        headerActions={
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDeleteGroup(group.id)
+              onToggle(group.id)
+            }}
+            disabled={deletingGroup === group.id || deletingGroup === "all"}
+            className="flex h-7 items-center justify-center gap-1.5 rounded-md border-0 bg-red-500/10 px-2.5 text-[10px] font-bold tracking-wider text-red-400 uppercase shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-50">
+            <i
+              className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
+            <span>Delete Group</span>
+          </button>
+        }
         maxWidth="max-w-3xl">
         <div className="p-1">
           {group.members.length === 0 ?
-            <div className="px-4 py-8 text-center text-[13px] text-white/30">
+            <div className="px-4 py-8 text-center text-[12px] text-white/30">
               No members in this group
             </div>
-          : <div className="max-h-[60vh] space-y-1 overflow-y-auto pr-1">
+          : <div className="max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">
               {group.members.map((member) => (
                 <MemberEntry
                   key={member.person_id}

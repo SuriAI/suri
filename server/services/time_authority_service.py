@@ -133,7 +133,16 @@ class TimeAuthorityService:
 
         warning_message = os_clock_warning
 
+        if online_status == "drift_detected":
+            warning_message = (
+                "Device clock differs from online reference time. Please correct the "
+                "system clock to avoid user confusion."
+            )
+        elif warning_message is None and online_status == "offline":
+            warning_message = None
+
         # Back-dating detection: current time cannot be before the last recorded attendance
+        # This has absolute priority and must never be overridden.
         if (
             self._last_known_time_utc
             and (current_utc + timedelta(seconds=1)) < self._last_known_time_utc
@@ -142,14 +151,6 @@ class TimeAuthorityService:
                 "Clock manipulation detected! System time is earlier than the last "
                 "recorded attendance. Please correct your clock to continue."
             )
-
-        if online_status == "drift_detected":
-            warning_message = (
-                "Device clock differs from online reference time. Please correct the "
-                "system clock to avoid user confusion."
-            )
-        elif warning_message is None and online_status == "offline":
-            warning_message = None
 
         return TimeHealthSnapshot(
             source="backend_monotonic_clock",
