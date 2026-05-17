@@ -27,6 +27,14 @@ export function MemberRow({
   return (
     <motion.div
       layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{
+        opacity: { duration: 0.15 },
+        y: { type: "spring", stiffness: 380, damping: 30 },
+        layout: { type: "spring", stiffness: 380, damping: 30 },
+      }}
       onClick={() => onToggleSelect?.(member.person_id)}
       className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all ${
         onToggleSelect ? "cursor-pointer" : ""

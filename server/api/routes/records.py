@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Depends
 
@@ -96,6 +96,11 @@ async def get_records(
 ):
     """Get attendance records with optional filters"""
     try:
+        if end_date and end_date.time() == time.min:
+            end_date = end_date.replace(
+                hour=23, minute=59, second=59, microsecond=999999
+            )
+
         records = await repo.get_records(
             group_id=group_id,
             person_id=person_id,

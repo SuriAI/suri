@@ -41,9 +41,31 @@ export function Members({
 
   const [memberSearch, setMemberSearch] = useState("")
   const [registrationFilter, setRegistrationFilter] = useState<
-    "all" | "registered" | "non-registered" | "no-consent"
+    "all" | "registered" | "non-registered"
   >("all")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
+
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true)
+  }
+
+  const handleSearchBlur = () => {
+    setTimeout(() => {
+      setIsSearchFocused(false)
+    }, 150)
+  }
+
+  const handleDropdownOpenChange = (open: boolean) => {
+    if (open) {
+      if (isSearchFocused || memberSearch.trim().length > 0) {
+        setShouldKeepExpanded(true)
+      }
+    } else {
+      setShouldKeepExpanded(false)
+    }
+  }
 
   const toggleSelect = (personId: string) => {
     setSelectedIds((prev) => {
@@ -72,15 +94,13 @@ export function Members({
       (member) =>
         member.name.toLowerCase().includes(query) ||
         member.displayName.toLowerCase().includes(query) ||
-        member.person_id.toLowerCase().includes(query),
+        member.person_id.toLowerCase().includes(query) ||
+        (member.role || "member").toLowerCase().includes(query),
     )
   }
 
   if (registrationFilter !== "all") {
     filteredMembers = filteredMembers.filter((member) => {
-      if (registrationFilter === "no-consent") {
-        return !member.has_consent
-      }
       const isRegistered = member.has_face_data
       return registrationFilter === "registered" ? isRegistered : !isRegistered
     })
@@ -199,36 +219,11 @@ export function Members({
             <div className="flex items-center justify-between gap-4">
               <div
                 className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${
-                  memberSearch.trim().length > 0 ?
-                    "max-w-[460px]"
-                  : "max-w-[320px] has-[input:focus]:max-w-[460px]"
+                  memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded ?
+                    "max-w-[420px]"
+                  : "max-w-[260px]"
                 }`}>
-                <div className="relative shrink-0">
-                  <Dropdown
-                    options={[
-                      { value: "all", label: "Filter: All" },
-                      { value: "registered", label: "Registered" },
-                      { value: "non-registered", label: "Not Registered" },
-                      { value: "no-consent", label: "Needs Consent" },
-                    ]}
-                    value={registrationFilter}
-                    onChange={(val) => {
-                      if (val) {
-                        setRegistrationFilter(
-                          val as "all" | "registered" | "non-registered" | "no-consent",
-                        )
-                      }
-                    }}
-                    allowClear={false}
-                    buttonClassName="h-9 !bg-white/5 !border-white/5 border-r-0 rounded-r-none rounded-l-lg px-3 min-w-[130px] text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
-                    optionClassName="text-[11px] font-bold tracking-wider"
-                    iconClassName="text-[10px]"
-                  />
-                </div>
-
                 <div className="relative flex-1">
-                  {/* Subtle vertical divider */}
-                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
                   <svg
                     className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/55"
                     fill="none"
@@ -245,8 +240,35 @@ export function Members({
                     type="search"
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
-                    placeholder="Search name/role..."
-                    className="h-9 w-full rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 py-2 pr-3 pl-11 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/[0.08]"
+                    onFocus={handleSearchFocus}
+                    onBlur={handleSearchBlur}
+                    placeholder="Search name or role..."
+                    className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-11 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/[0.08]"
+                  />
+                </div>
+
+                <div className="relative shrink-0">
+                  {/* Subtle vertical divider */}
+                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
+                  <Dropdown
+                    options={[
+                      { value: "all", label: "All" },
+                      { value: "registered", label: "Registered" },
+                      { value: "non-registered", label: "Not Registered" },
+                    ]}
+                    value={registrationFilter}
+                    onChange={(val) => {
+                      if (val) {
+                        setRegistrationFilter(val as "all" | "registered" | "non-registered")
+                      }
+                    }}
+                    allowClear={false}
+                    menuWidth={160}
+                    align="right"
+                    onOpenChange={handleDropdownOpenChange}
+                    buttonClassName="h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 w-[138px] text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
+                    optionClassName="text-[11px] font-bold tracking-wider"
+                    iconClassName="text-[10px]"
                   />
                 </div>
               </div>
@@ -393,37 +415,49 @@ export function Members({
           </div>
 
           <div className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10">
-            {filteredMembers.length === 0 ?
-              <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
-                <div className="text-[11px] font-medium tracking-wide text-white/55">
-                  {memberSearch.trim() ?
-                    `No results found for "${memberSearch}"`
-                  : registrationFilter === "registered" ?
-                    "No registered members yet"
-                  : registrationFilter === "non-registered" ?
-                    "All members are registered"
-                  : registrationFilter === "no-consent" ?
-                    "All members have given consent"
-                  : "No members found in this group"}
-                </div>
-              </div>
-            : <div className="flex w-full flex-col gap-1">
-                <AnimatePresence mode="popLayout">
-                  {filteredMembers.map((member) => (
-                    <MemberRow
-                      key={member.person_id}
-                      member={member}
-                      isSelected={selectedIds.has(member.person_id)}
-                      isSelectionMode={selectedIds.size > 0}
-                      onToggleSelect={toggleSelect}
-                      onEdit={onEdit}
-                      onDelete={setMemberToDelete}
-                      onResetFace={handleResetFace}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
-            }
+            <AnimatePresence mode="wait">
+              {filteredMembers.length === 0 ?
+                <motion.div
+                  key="empty-state"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
+                  <div className="text-[11px] font-medium tracking-wide text-white/55">
+                    {memberSearch.trim() ?
+                      `No results found for "${memberSearch}"`
+                    : registrationFilter === "registered" ?
+                      "No registered members yet"
+                    : registrationFilter === "non-registered" ?
+                      "All members are registered"
+                    : "No members found in this group"}
+                  </div>
+                </motion.div>
+              : <motion.div
+                  key="members-list"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex w-full flex-col gap-1">
+                  <AnimatePresence mode="popLayout">
+                    {filteredMembers.map((member) => (
+                      <MemberRow
+                        key={member.person_id}
+                        member={member}
+                        isSelected={selectedIds.has(member.person_id)}
+                        isSelectionMode={selectedIds.size > 0}
+                        onToggleSelect={toggleSelect}
+                        onEdit={onEdit}
+                        onDelete={setMemberToDelete}
+                        onResetFace={handleResetFace}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+              }
+            </AnimatePresence>
           </div>
 
           {/* Consent banner */}
