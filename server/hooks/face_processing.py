@@ -1,10 +1,16 @@
 import asyncio
 import logging
+import os
 from typing import Dict, List, Optional
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+# Safety-net timeout for executor-offloaded inference calls.
+# In normal operation ONNX/OpenCV always return promptly; this only
+# guards against theoretical edge-case hangs (driver bugs, etc.).
+INFERENCE_TIMEOUT_SECONDS = float(os.getenv("FACENOX_INFERENCE_TIMEOUT", "10.0"))
 
 liveness_detector = None
 face_recognizer = None
@@ -54,7 +60,10 @@ async def process_face_detection(
                 return face_detector.detect_faces(image, enable_liveness)
 
             try:
-                return await loop.run_in_executor(None, detector_call)
+                return await asyncio.wait_for(
+                    loop.run_in_executor(None, detector_call),
+                    timeout=INFERENCE_TIMEOUT_SECONDS,
+                )
             finally:
                 if original_confidence_threshold is not None:
                     face_detector.set_confidence_threshold(
@@ -65,6 +74,9 @@ async def process_face_detection(
                 if original_min_face_size is not None:
                     face_detector.set_min_face_size(original_min_face_size)
 
+    except asyncio.TimeoutError:
+        logger.error("Face detection timed out after %.1fs", INFERENCE_TIMEOUT_SECONDS)
+        return []
     except Exception as e:
         logger.error(f"Face detection failed: {e}", exc_info=True)
         return []
@@ -85,7 +97,10 @@ async def process_liveness_detection(
             )
 
         try:
-            faces_with_liveness = await loop.run_in_executor(None, detector_call)
+            faces_with_liveness = await asyncio.wait_for(
+                loop.run_in_executor(None, detector_call),
+                timeout=INFERENCE_TIMEOUT_SECONDS,
+            )
         except TypeError as exc:
             if "tracking_namespace" not in str(exc):
                 raise
@@ -93,12 +108,18 @@ async def process_liveness_detection(
             def detector_call_without_namespace():
                 return liveness_detector.detect_faces(image, faces)
 
-            faces_with_liveness = await loop.run_in_executor(
-                None, detector_call_without_namespace
+            faces_with_liveness = await asyncio.wait_for(
+                loop.run_in_executor(None, detector_call_without_namespace),
+                timeout=INFERENCE_TIMEOUT_SECONDS,
             )
 
         return faces_with_liveness
 
+    except asyncio.TimeoutError:
+        logger.error(
+            "Liveness detection timed out after %.1fs",
+            INFERENCE_TIMEOUT_SECONDS,
+        )
     except Exception as e:
         logger.error(f"Liveness detection failed: {e}", exc_info=True)
         for face in faces:

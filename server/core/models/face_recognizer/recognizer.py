@@ -118,8 +118,9 @@ class FaceRecognizer:
 
         # Offload blocking ONNX inference to a background thread
         loop = asyncio.get_running_loop()
-        outputs = await loop.run_in_executor(
-            None, lambda: self.session.run(None, feeds)
+        outputs = await asyncio.wait_for(
+            loop.run_in_executor(None, lambda: self.session.run(None, feeds)),
+            timeout=10.0,
         )
         embeddings = outputs[0]
 

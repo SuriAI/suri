@@ -1,6 +1,11 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import type { WebSocketService } from "@/services/WebSocketService"
 import type { DetectionResult } from "@/components/main/types"
+
+// Safety-net: if a frame has been "in-flight" for longer than this
+// without a response, forcibly reset the lock so the pipeline can resume.
+// In normal operation this never fires — purely defensive insurance.
+const WATCHDOG_TIMEOUT_MS = 15_000
 
 interface UseFaceDetectionOptions {
   webSocketServiceRef: React.RefObject<WebSocketService | null>
@@ -31,6 +36,9 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     detectionInFlightRef,
   } = options
 
+  // Tracks when detectionInFlightRef was last set to true
+  const inflightSinceRef = useRef<number>(0)
+
   const processCurrentFrame = useCallback(async () => {
     if (
       !webSocketServiceRef.current?.isWebSocketReady() ||
@@ -41,8 +49,21 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
       return
     }
 
+    // Watchdog: if a frame has been in-flight far too long, force-reset
     if (detectionInFlightRef.current) {
-      return
+      if (
+        inflightSinceRef.current > 0 &&
+        Date.now() - inflightSinceRef.current > WATCHDOG_TIMEOUT_MS
+      ) {
+        console.warn(
+          "[Watchdog] Detection response not received for >15s — resetting in-flight lock.",
+        )
+        detectionInFlightRef.current = false
+        inflightSinceRef.current = 0
+        // Fall through to process next frame
+      } else {
+        return
+      }
     }
 
     frameCounterRef.current += 1
@@ -61,9 +82,11 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
 
       lastDetectionFrameRef.current = frameData
       detectionInFlightRef.current = true
+      inflightSinceRef.current = Date.now()
 
       webSocketServiceRef.current.sendDetectionRequest(frameData).catch((error) => {
         detectionInFlightRef.current = false
+        inflightSinceRef.current = 0
         console.error("Frame detection request failed:", error)
         requestAnimationFrame(() => processCurrentFrameRef.current?.())
       })
