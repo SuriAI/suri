@@ -78,6 +78,7 @@ export function Registration({
                 {
                   label: "Add Member",
                   onClick: onAddMember,
+                  iconClass: "fa-solid fa-user-plus text-[10px]",
                 }
               : undefined
             }

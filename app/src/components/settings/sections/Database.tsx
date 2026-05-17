@@ -354,12 +354,12 @@ export function Database({
         </div>
       </section>
 
-      {/* Stored Groups */}
+      {/* All Groups */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="pt-2 pb-2">
             <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-              Stored Groups
+              All Groups
             </h3>
           </div>
           <div className="group/search relative min-w-[280px]">
@@ -370,7 +370,7 @@ export function Database({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search groups..."
+              placeholder="Search group name or ID..."
               className="w-full rounded-md border-0 bg-white/5 py-2 pr-8 pl-9 text-[12px] font-medium text-white placeholder-white/20 transition-all outline-none focus:bg-white/[0.08] focus:ring-1 focus:ring-cyan-500/20"
             />
             {searchQuery && (

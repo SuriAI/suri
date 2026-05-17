@@ -80,7 +80,12 @@ export function useDatabaseManagement(
         )
         return { ...group, members: filteredMembers }
       })
-      .filter((group) => group.members.length > 0 || group.name.toLowerCase().includes(query))
+      .filter(
+        (group) =>
+          group.members.length > 0 ||
+          group.name.toLowerCase().includes(query) ||
+          group.id.toLowerCase().includes(query),
+      )
   }, [groupsWithMembers, searchQuery])
 
   const toggleGroup = useCallback((groupId: string) => {

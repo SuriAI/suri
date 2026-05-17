@@ -1,9 +1,6 @@
 import type { Mock } from "vitest"
 import { vi } from "vitest"
-import {
-  DEFAULT_REMOTE_BASE_URL,
-  DEFAULT_SYNC_INTERVAL_MINUTES,
-} from "@/services/remoteSyncDefaults"
+import { DEFAULT_REMOTE_BASE_URL, DEFAULT_SYNC_INTERVAL_MINUTES } from "@/services/syncDefaults"
 
 export interface MockSyncConfig {
   enabled: boolean
@@ -84,6 +81,7 @@ export interface MockFacenoxElectronAPI extends FacenoxElectronAPI {
   onMinimize: Mock
   onRestore: Mock
   getSystemStats: Mock
+  exportHealth: Mock
   getVersion: Mock
   onAppReady: Mock
 }
@@ -192,6 +190,8 @@ export function createElectronAPIMock(): MockElectronAPI {
 
 export function createFacenoxElectronMock(): MockFacenoxElectronAPI {
   return {
+    platform: "linux",
+    desktopEnv: "gnome",
     minimize: vi.fn().mockResolvedValue(true),
     maximize: vi.fn().mockResolvedValue(true),
     close: vi.fn().mockResolvedValue(true),
@@ -207,6 +207,7 @@ export function createFacenoxElectronMock(): MockFacenoxElectronAPI {
       cpu: 0,
       memory: { total: 0, free: 0, appUsage: 0 },
     }),
+    exportHealth: vi.fn().mockResolvedValue({ success: true, path: "/mock/health.zip" }),
     getVersion: vi.fn().mockResolvedValue("1.0.0-beta.1"),
     onAppReady: vi.fn(),
   }

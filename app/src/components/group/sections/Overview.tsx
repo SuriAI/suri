@@ -154,6 +154,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             {
               label: "Add Member",
               onClick: onAddMember,
+              iconClass: "fa-solid fa-user-plus text-[10px]",
             }
           : undefined
         }

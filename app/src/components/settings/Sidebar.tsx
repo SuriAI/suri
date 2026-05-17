@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <section>
           <div className="mb-3 px-3">
             <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/55 uppercase">
-              General
+              Preferences
             </h2>
           </div>
 

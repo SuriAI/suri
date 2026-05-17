@@ -234,7 +234,7 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No face biometric data registered yet.")).toBeInTheDocument()
+    expect(screen.getByText("No face data added yet")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Register Face" }))
 

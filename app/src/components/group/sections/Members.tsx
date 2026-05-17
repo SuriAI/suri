@@ -186,6 +186,7 @@ export function Members({
                 {
                   label: "Add Member",
                   onClick: onAdd,
+                  iconClass: "fa-solid fa-user-plus text-[10px]",
                 }
               : undefined
             }

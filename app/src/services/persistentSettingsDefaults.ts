@@ -1,6 +1,6 @@
 import type { AudioSettings, QuickSettings } from "../components/settings/types"
 import type { UpdateInfo } from "../types/global"
-import { DEFAULT_REMOTE_BASE_URL, DEFAULT_SYNC_INTERVAL_MINUTES } from "./remoteSyncDefaults"
+import { DEFAULT_REMOTE_BASE_URL, DEFAULT_SYNC_INTERVAL_MINUTES } from "./syncDefaults"
 
 export interface PersistentSettingsSchema {
   quickSettings: QuickSettings

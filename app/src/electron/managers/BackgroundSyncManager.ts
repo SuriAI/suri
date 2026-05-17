@@ -1,4 +1,4 @@
-import { syncPushSchema, type SyncPushPayload } from "../../shared/remoteSyncContract.js"
+import { syncPushSchema, type SyncPushPayload } from "../../shared/syncContract.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
@@ -6,7 +6,7 @@ import { getCurrentVersion } from "../updater.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
-} from "../../services/remoteSyncDefaults.js"
+} from "../../services/syncDefaults.js"
 const STARTUP_CATCH_UP_DELAY_MS = 5000
 
 function authHeaders(extra: Record<string, string> = {}) {

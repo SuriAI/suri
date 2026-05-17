@@ -50,7 +50,7 @@ export function MemberRow({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="mb-0.5 flex items-center gap-2 text-[13px] font-bold tracking-tight text-white/90">
+          <div className="mb-0.5 flex items-center gap-2 text-sm font-semibold text-white">
             {member.displayName}
             {isRegistered && (
               <i
@@ -80,15 +80,15 @@ export function MemberRow({
         {!isSelectionMode && (
           <>
             {/* Row Actions (Ultra-Subtle) */}
-            <div className="flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
               <Tooltip content="Edit details">
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     onEdit(member)
                   }}
-                  className="border-transparent bg-transparent p-1 text-white/20 transition-colors hover:bg-transparent hover:text-white">
-                  <i className="fa-solid fa-pen text-[10px]"></i>
+                  className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-white">
+                  <i className="fa-solid fa-pen text-[12px]"></i>
                 </button>
               </Tooltip>
 
@@ -99,8 +99,8 @@ export function MemberRow({
                       e.stopPropagation()
                       onResetFace(member)
                     }}
-                    className="border-transparent bg-transparent p-1 text-white/20 transition-colors hover:bg-transparent hover:text-amber-500">
-                    <i className="fa-solid fa-user-slash text-[10px]"></i>
+                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-amber-500">
+                    <i className="fa-solid fa-user-slash text-[12px]"></i>
                   </button>
                 </Tooltip>
               )}
@@ -111,8 +111,8 @@ export function MemberRow({
                     e.stopPropagation()
                     onDelete(member)
                   }}
-                  className="border-transparent bg-transparent p-1 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
-                  <i className="fa-solid fa-trash-can text-[10px]"></i>
+                  className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
+                  <i className="fa-solid fa-trash-can text-[12px]"></i>
                 </button>
               </Tooltip>
             </div>
