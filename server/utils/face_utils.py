@@ -48,6 +48,9 @@ def serialize_faces(faces: list, endpoint_name: str = "") -> list:
             if not isinstance(liveness, dict):
                 logger.warning(f"Face liveness is not a dict: {face}")
                 del face["liveness"]
+            elif not liveness:
+                # Silently remove empty liveness dicts when disabled/skipped
+                del face["liveness"]
             else:
                 # Validate required liveness fields
                 if "status" not in liveness:
