@@ -623,9 +623,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             : !groupMembers.some((m) => m.has_face_data) ?
               <ScrollCenteredEmptyState>
                 <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
-                  <div className="text-xs text-white/55">
-                    No face biometric data registered yet.
-                  </div>
+                  <div className="text-xs text-white/55">No face data added yet</div>
                   <button
                     onClick={handleOpenSettingsForRegistration}
                     className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">

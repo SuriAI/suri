@@ -6,7 +6,7 @@ import { InfoPopover } from "../../shared/InfoPopover"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
-} from "../../../services/remoteSyncDefaults"
+} from "../../../services/syncDefaults"
 
 type RemoteSyncConfig = {
   enabled: boolean
@@ -70,7 +70,7 @@ const pairingSteps = [
   },
 ]
 
-export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
+export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
   const setSuccess = useUIStore((state) => state.setSuccess)
   const setError = useUIStore((state) => state.setError)
   const [config, setConfig] = useState<RemoteSyncConfig>(defaultConfig)
@@ -228,7 +228,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
         <section className="space-y-6">
           <div className="flex items-center gap-2 pt-2 pb-2">
             <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-              Remote Sync
+              Sync
             </h3>
             <InfoPopover
               title="Data Privacy"

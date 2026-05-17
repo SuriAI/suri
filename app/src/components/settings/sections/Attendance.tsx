@@ -85,6 +85,84 @@ export function Attendance({
 
           <div className="h-px w-full bg-white/8" />
 
+          <div className="flex flex-col">
+            <div className="flex items-center gap-4 py-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="text-sm font-medium text-white/90">Late Tracking</div>
+                  <InfoPopover
+                    title="Late Tracking"
+                    description="Automatically mark members as late if their arrival occurs after the scheduled start time plus the late threshold."
+                    details={["If enabled, late status will be reflected in Overview and Reports."]}
+                    side="right"
+                  />
+                </div>
+                <div className="relative min-h-4">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`${hasSelectedGroup}-${attendanceSettings.lateThresholdEnabled}`}
+                      initial={{ opacity: 0, y: -2 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 2 }}
+                      transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
+                      className="text-xs font-normal text-white/65">
+                      {!hasSelectedGroup ?
+                        "Select a group to enable late tracking"
+                      : attendanceSettings.lateThresholdEnabled ?
+                        "Automatically mark members as late."
+                      : "Late tracking is disabled."}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)}
+                disabled={!hasSelectedGroup}
+                className={`premium-switch ${attendanceSettings.lateThresholdEnabled ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
+                <div
+                  className={`premium-switch-thumb ${attendanceSettings.lateThresholdEnabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {attendanceSettings.lateThresholdEnabled && hasSelectedGroup && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: SETTINGS_PANEL_ANIMATION_DURATION, ease: "easeOut" }}
+                  className="overflow-hidden">
+                  <div className="relative flex items-center gap-4 pt-3 pb-3 pl-4">
+                    <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
+                    <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-white/65">Late threshold in minutes.</div>
+                    </div>
+
+                    <div className="ml-auto flex shrink-0 items-center gap-3">
+                      <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
+                        {attendanceSettings.lateThresholdMinutes} min
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="60"
+                        step="5"
+                        value={attendanceSettings.lateThresholdMinutes}
+                        onChange={(e) => onLateThresholdChange(parseInt(e.target.value))}
+                        className="premium-range h-1 w-24 accent-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="h-px w-full bg-white/8" />
+
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -216,84 +294,6 @@ export function Attendance({
                         value={attendanceSettings.maxRecognitionFacesPerFrame}
                         onChange={(e) => onMaxRecognitionFacesChange(parseInt(e.target.value))}
                         className="premium-range h-1 w-24 accent-cyan-500"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="h-px w-full bg-white/8" />
-
-          <div className="flex flex-col">
-            <div className="flex items-center gap-4 py-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="text-sm font-medium text-white/90">Late Tracking</div>
-                  <InfoPopover
-                    title="Late Tracking"
-                    description="Automatically mark members as late if their arrival occurs after the scheduled start time plus the late threshold."
-                    details={["If enabled, late status will be reflected in Overview and Reports."]}
-                    side="right"
-                  />
-                </div>
-                <div className="relative min-h-4">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`${hasSelectedGroup}-${attendanceSettings.lateThresholdEnabled}`}
-                      initial={{ opacity: 0, y: -2 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 2 }}
-                      transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
-                      className="text-xs font-normal text-white/65">
-                      {!hasSelectedGroup ?
-                        "Select a group to enable late tracking"
-                      : attendanceSettings.lateThresholdEnabled ?
-                        "Automatically mark members as late."
-                      : "Late tracking is disabled."}
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              <button
-                onClick={() => onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)}
-                disabled={!hasSelectedGroup}
-                className={`premium-switch ${attendanceSettings.lateThresholdEnabled ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
-                <div
-                  className={`premium-switch-thumb ${attendanceSettings.lateThresholdEnabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {attendanceSettings.lateThresholdEnabled && hasSelectedGroup && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: SETTINGS_PANEL_ANIMATION_DURATION, ease: "easeOut" }}
-                  className="overflow-hidden">
-                  <div className="relative flex items-center gap-4 pt-3 pb-3 pl-4">
-                    <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
-                    <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs text-white/65">Late threshold in minutes.</div>
-                    </div>
-
-                    <div className="ml-auto flex shrink-0 items-center gap-3">
-                      <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
-                        {attendanceSettings.lateThresholdMinutes} min
-                      </span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="60"
-                        step="5"
-                        value={attendanceSettings.lateThresholdMinutes}
-                        onChange={(e) => onLateThresholdChange(parseInt(e.target.value))}
-                        className="premium-range h-1 w-24 accent-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
                       />
                     </div>
                   </div>

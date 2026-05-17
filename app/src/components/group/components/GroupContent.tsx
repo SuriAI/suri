@@ -52,6 +52,7 @@ function GroupContentComponent({
           action={{
             label: hasGroups ? "Create Group" : "Create first group",
             onClick: openCreateGroup,
+            iconClass: "fa-solid fa-folder-plus text-[10px]",
           }}
           className="h-full"
         />

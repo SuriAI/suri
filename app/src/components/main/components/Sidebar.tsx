@@ -28,9 +28,32 @@ const MAX_WIDTH = 340
 
 function SidebarToggleIcon({ collapsed }: { collapsed: boolean }) {
   return (
-    <i
-      className={`fa-solid inline-block ${collapsed ? "fa-chevron-left" : "fa-chevron-right"} text-[10px] text-white/70 transition-all duration-200 group-hover:text-white ${collapsed ? "" : "-translate-x-[6px]"}`}
-    />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-[18px] w-[18px] text-white/65 transition-colors duration-200 group-hover:text-white"
+      aria-hidden="true">
+      {
+        collapsed ?
+          // PanelRightOpen: Right sidebar, arrow pointing left to pull open
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M15 3v18" />
+            <path d="m10 15-3-3 3-3" />
+          </>
+          // PanelRightClose: Right sidebar, arrow pointing right to push close
+        : <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M15 3v18" />
+            <path d="m8 9 3 3-3 3" />
+          </>
+
+      }
+    </svg>
   )
 }
 
@@ -45,8 +68,8 @@ function SettingsIcon({ className = "" }: { className?: string }) {
       strokeLinejoin="round"
       className={className}
       aria-hidden="true">
-      <path d="M10.31 4.84 9.74 6.4a1 1 0 0 1-.95.66H7.13a1 1 0 0 0-.86.5l-.82 1.43a1 1 0 0 0 .05 1.01l.96 1.36a1 1 0 0 1 0 1.16l-.96 1.36a1 1 0 0 0-.05 1.01l.82 1.43a1 1 0 0 0 .86.5h1.66a1 1 0 0 1 .95.66l.57 1.56a1 1 0 0 0 .94.66h1.65a1 1 0 0 0 .94-.66l.57-1.56a1 1 0 0 1 .95-.66h1.66a1 1 0 0 0 .86-.5l.82-1.43a1 1 0 0 0-.05-1.01l-.96-1.36a1 1 0 0 1 0-1.16l.96-1.36a1 1 0 0 0 .05-1.01l-.82-1.43a1 1 0 0 0-.86-.5h-1.66a1 1 0 0 1-.95-.66l-.57-1.56a1 1 0 0 0-.94-.66h-1.65a1 1 0 0 0-.94.66Z" />
-      <circle cx="12" cy="12" r="2.6" />
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   )
 }
@@ -254,7 +277,7 @@ export const Sidebar = memo(function Sidebar({
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="text-white/65 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/65 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },
@@ -342,7 +365,7 @@ export const Sidebar = memo(function Sidebar({
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="text-white/70 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/70 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },

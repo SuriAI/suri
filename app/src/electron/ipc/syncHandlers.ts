@@ -11,7 +11,7 @@ import { getCurrentVersion } from "../updater.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
-} from "../../services/remoteSyncDefaults.js"
+} from "../../services/syncDefaults.js"
 
 function authHeaders(extra: Record<string, string> = {}) {
   const token = backendService.getToken()

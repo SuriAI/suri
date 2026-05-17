@@ -276,7 +276,7 @@ export const About: React.FC = () => {
       <div className="mx-auto flex h-full max-w-lg flex-col items-center px-10 pt-4 pb-10 text-center">
         <div className="w-full flex-1 space-y-9">
           <div className="flex flex-col items-center gap-3">
-            <div className="flex h-22 w-22 items-center justify-center rounded-3xl border border-white/8 bg-[rgba(22,28,36,0.72)] p-4">
+            <div className="flex h-22 w-22 items-center justify-center">
               <img
                 src="./icons/logo-transparent.png"
                 alt="Facenox logo"
@@ -284,7 +284,7 @@ export const About: React.FC = () => {
               />
             </div>
             <h1 className="text-4xl font-black tracking-[-0.04em] text-white">Facenox</h1>
-            <div className="flex min-h-7 items-center justify-center rounded-full border border-white/6 bg-[rgba(22,28,36,0.46)] px-2.5 py-0.5">
+            <div className="flex min-h-7 items-center justify-center px-2.5 py-0.5">
               <span className="font-mono text-[11px] leading-none tracking-[0.02em] text-white/55">
                 {version || "-"}
               </span>

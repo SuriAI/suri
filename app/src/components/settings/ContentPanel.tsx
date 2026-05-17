@@ -5,7 +5,7 @@ import { Notifications } from "@/components/settings/sections/Notifications"
 import { Database } from "@/components/settings/sections/Database"
 import { Attendance } from "@/components/settings/sections/Attendance"
 import { About } from "@/components/settings/sections/About"
-import { RemoteSync } from "@/components/settings/sections/RemoteSync"
+import { Sync } from "@/components/settings/sections/Sync"
 import { AntiSpoofDetectionModal } from "@/components/settings/AntiSpoofDetectionModal"
 import { GroupPanel, type GroupSection } from "@/components/group"
 import { SectionHeader } from "./components/SectionHeader"
@@ -116,7 +116,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       display: "Display",
       notifications: "Notifications",
       database: "Database",
-      "remote-sync": "Remote Sync",
+      "remote-sync": "Sync",
       about: "About",
     }
     if (isGroupSection) {
@@ -191,7 +191,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       title:
         generalTitles[activeSection] ||
         activeSection.charAt(0).toUpperCase() + activeSection.slice(1),
-      eyebrow: "General Settings",
+      eyebrow: "Preferences",
       eyebrowColor: "text-white/55",
       actions: null,
       isGroupSection: false,
@@ -317,7 +317,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 />
               )}
               {activeSection === "remote-sync" && (
-                <RemoteSync onNavigateToDB={() => setActiveSection("database")} />
+                <Sync onNavigateToDB={() => setActiveSection("database")} />
               )}
               {activeSection === "about" && <About />}
             </motion.div>

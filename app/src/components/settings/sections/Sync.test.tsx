@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import { RemoteSync } from "@/components/settings/sections/RemoteSync"
+import { Sync } from "@/components/settings/sections/Sync"
 import { useUIStore } from "@/components/main/stores"
 import { createSyncConfig, getElectronAPIMock } from "@/test/mocks/electron"
 import { renderWithProviders } from "@/test/utils/renderWithProviders"
@@ -26,12 +26,12 @@ function FeedbackDisplay() {
   )
 }
 
-describe("RemoteSync", () => {
+describe("Sync", () => {
   it("loads config and renders both local-only and connected states", async () => {
     const electronAPI = getElectronAPIMock()
     electronAPI.sync.getConfig.mockResolvedValueOnce(createSyncConfig())
 
-    const { unmount } = renderWithProviders(<RemoteSync />)
+    const { unmount } = renderWithProviders(<Sync />)
 
     await waitFor(() => {
       expect(screen.getByText("Offline Mode")).toBeInTheDocument()
@@ -47,7 +47,7 @@ describe("RemoteSync", () => {
     )
 
     unmount()
-    renderWithProviders(<RemoteSync />)
+    renderWithProviders(<Sync />)
 
     await waitFor(() => {
       expect(screen.getByText("Synced")).toBeInTheDocument()
@@ -56,7 +56,7 @@ describe("RemoteSync", () => {
   })
 
   it("keeps the connect button disabled without a pairing code", async () => {
-    renderWithProviders(<RemoteSync />)
+    renderWithProviders(<Sync />)
 
     const connectButton = await screen.findByRole("button", { name: /Connect/i })
     expect(connectButton).toBeDisabled()
@@ -77,7 +77,7 @@ describe("RemoteSync", () => {
 
     const { user } = renderWithProviders(
       <>
-        <RemoteSync />
+        <Sync />
         <FeedbackDisplay />
       </>,
     )
@@ -103,7 +103,7 @@ describe("RemoteSync", () => {
 
     const { user } = renderWithProviders(
       <>
-        <RemoteSync />
+        <Sync />
         <FeedbackDisplay />
       </>,
     )
@@ -121,7 +121,7 @@ describe("RemoteSync", () => {
 
     renderWithProviders(
       <>
-        <RemoteSync />
+        <Sync />
         <FeedbackDisplay />
       </>,
     )
@@ -159,7 +159,7 @@ describe("RemoteSync", () => {
 
     const { user } = renderWithProviders(
       <>
-        <RemoteSync />
+        <Sync />
         <FeedbackDisplay />
       </>,
     )
@@ -190,7 +190,7 @@ describe("RemoteSync", () => {
 
     const { user } = renderWithProviders(
       <>
-        <RemoteSync />
+        <Sync />
         <FeedbackDisplay />
       </>,
     )
@@ -205,7 +205,7 @@ describe("RemoteSync", () => {
   })
 
   it("keeps advanced form state when toggled closed and reopened", async () => {
-    const { user } = renderWithProviders(<RemoteSync />)
+    const { user } = renderWithProviders(<Sync />)
 
     await user.click(await screen.findByRole("button", { name: /Show advanced settings/i }))
 
@@ -220,7 +220,7 @@ describe("RemoteSync", () => {
   })
 
   it("keeps the hosted server URL hidden unless a custom override is being used", async () => {
-    const { user } = renderWithProviders(<RemoteSync />)
+    const { user } = renderWithProviders(<Sync />)
 
     await user.click(await screen.findByRole("button", { name: /Show Advanced Settings/i }))
 
