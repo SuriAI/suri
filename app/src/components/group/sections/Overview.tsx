@@ -235,7 +235,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 value={activitySearch}
                 onChange={(e) => setActivitySearch(e.target.value)}
                 placeholder="Search..."
-                className="w-36 rounded-md border-0 bg-white/5 py-1.5 pr-7 pl-7 text-[12px] text-white placeholder-white/30 transition-all outline-none focus:w-48 focus:bg-white/10 focus:ring-1 focus:ring-white/20"
+                className="w-36 rounded-md border border-white/5 bg-white/5 py-1.5 pr-7 pl-7 text-[12px] text-white placeholder-white/30 transition-all outline-none focus:w-48 focus:border-white/20 focus:bg-white/10"
               />
               {activitySearch && (
                 <button

@@ -132,7 +132,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                 value={typedConfirmation}
                 onChange={(event) => setTypedConfirmation(event.target.value)}
                 placeholder={active.options.requireTypedConfirmation.placeholder || ""}
-                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-cyan-500/32 focus:bg-[rgba(28,35,44,0.82)] focus:ring-1 focus:ring-cyan-500/5"
+                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
               />
             </div>
           )}

@@ -80,7 +80,7 @@ export function ReportToolbar({
           type="date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
@@ -92,7 +92,7 @@ export function ReportToolbar({
           type="date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
@@ -111,7 +111,7 @@ export function ReportToolbar({
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full min-w-0 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] py-1 pr-3 pl-7 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/40 focus:border-cyan-500/32 focus:ring-1 focus:ring-cyan-500/5 sm:focus:max-w-[220px]"
+            className="w-full min-w-0 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] py-1 pr-3 pl-7 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/40 focus:border-white/20 sm:focus:max-w-[220px]"
           />
         </div>
 

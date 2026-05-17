@@ -371,7 +371,7 @@ export function Database({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search group name or ID..."
-              className="w-full rounded-md border-0 bg-white/5 py-2 pr-8 pl-9 text-[12px] font-medium text-white placeholder-white/20 transition-all outline-none focus:bg-white/[0.08] focus:ring-1 focus:ring-cyan-500/20"
+              className="w-full rounded-md border border-white/5 bg-white/5 py-2 pr-8 pl-9 text-[12px] font-medium text-white placeholder-white/20 transition-all outline-none focus:border-white/20 focus:bg-white/[0.08]"
             />
             {searchQuery && (
               <button
@@ -551,7 +551,7 @@ export function Database({
                   }
                 }}
                 placeholder="Enter password..."
-                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] py-2 pr-10 pl-3 text-xs text-white transition-all duration-300 outline-none focus:border-cyan-500/32 focus:bg-[rgba(28,35,44,0.82)] focus:ring-1 focus:ring-cyan-500/5"
+                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] py-2 pr-10 pl-3 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
               />
               <button
                 type="button"
@@ -627,7 +627,7 @@ export function Database({
               value={confirmModal.inputValue}
               onChange={(e) => setConfirmModal({ ...confirmModal, inputValue: e.target.value })}
               placeholder="Type DELETE..."
-              className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs text-white outline-none focus:border-red-500/30 focus:ring-1 focus:ring-red-500/5"
+              className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs text-white outline-none focus:border-red-500/30"
             />
           </div>
 

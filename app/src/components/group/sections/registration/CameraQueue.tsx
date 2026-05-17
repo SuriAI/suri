@@ -425,7 +425,7 @@ export function CameraQueue({
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                       placeholder="Search members..."
-                      className="w-full rounded-xl border border-white/5 bg-white/5 py-2.5 pr-3 pl-10 text-[11px] font-medium text-white shadow-inner transition-all duration-300 outline-none placeholder:text-white/55 focus:border-cyan-500/32 focus:bg-white/10 focus:ring-1 focus:ring-cyan-500/5"
+                      className="w-full rounded-xl border border-white/5 bg-white/5 py-2.5 pr-3 pl-10 text-[11px] font-medium text-white shadow-inner transition-all duration-300 outline-none placeholder:text-white/55 focus:border-white/20 focus:bg-white/10"
                     />
                   </div>
                   <Dropdown

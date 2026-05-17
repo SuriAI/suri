@@ -280,7 +280,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                     placeholder="ABCD2345"
                     value={pairingCode}
                     onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
-                    className="h-10 w-full rounded-md border-0 bg-white/5 px-4 font-mono text-[13px] tracking-widest text-white uppercase transition-all outline-none placeholder:tracking-normal placeholder:lowercase focus:bg-white/10 focus:ring-1 focus:ring-white/20"
+                    className="h-10 w-full rounded-md border border-white/5 bg-white/5 px-4 font-mono text-[13px] tracking-widest text-white uppercase transition-all outline-none placeholder:tracking-normal placeholder:lowercase focus:border-white/20 focus:bg-white/10"
                   />
                 </div>
                 <button
@@ -355,7 +355,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                             value={remoteBaseUrl}
                             disabled={config.connected}
                             onChange={(e) => setRemoteBaseUrl(e.target.value)}
-                            className="h-9 w-full rounded-md border-0 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:bg-white/10 focus:ring-1 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -368,7 +368,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                             value={deviceName}
                             disabled={config.connected}
                             onChange={(e) => setDeviceName(e.target.value)}
-                            className="h-9 w-full rounded-md border-0 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:bg-white/10 focus:ring-1 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                           />
                         </div>
                       </div>
@@ -386,7 +386,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                             onChange={(e) =>
                               setIntervalMinutes(Math.max(1, Number(e.target.value) || 1))
                             }
-                            className="h-9 w-full rounded-md border-0 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:bg-white/10 focus:ring-1 focus:ring-white/20"
+                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10"
                           />
                         </div>
                         <div className="mt-auto mb-1 flex items-center gap-3">
