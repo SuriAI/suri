@@ -210,7 +210,11 @@ export function Members({
     : "max-w-[330px]"
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.995 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="relative flex h-full w-full flex-col overflow-hidden">
       {/* BACKGROUND CONTENT: Always render the list or empty state */}
       {members.length === 0 ?
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
@@ -554,6 +558,6 @@ export function Members({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 }
