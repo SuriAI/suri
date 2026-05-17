@@ -170,7 +170,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }
 
   return (
-    <section className="mx-auto flex h-full w-full max-w-[900px] flex-col px-10 pt-4">
+    <section className="flex h-full w-full flex-col px-10 pt-4">
       {/* Activity Overview */}
       <section className="shrink-0">
         <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2">
@@ -291,7 +291,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           </div>
         </div>
 
-        <div className="custom-scroll flex-1 overflow-y-auto pr-2 pb-10 text-left">
+        <div className="custom-scroll relative flex-1 overflow-y-auto pr-2 pb-10 text-left">
           <AnimatePresence mode="wait">
             {recordsLoading ?
               <motion.div
@@ -309,9 +309,9 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className="h-full">
+                className="flex h-full min-h-[200px] flex-col">
                 {recentRecords.length === 0 ?
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10 bg-transparent py-12 text-white/30">
+                  <div className="flex flex-1 flex-col items-center justify-center text-white/30">
                     <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
                     <div className="text-[12px] font-medium">
                       No records{" "}
@@ -323,7 +323,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                     </div>
                   </div>
                 : filteredRecords.length === 0 ?
-                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10 bg-transparent py-12 text-white/30">
+                  <div className="flex flex-1 flex-col items-center justify-center text-white/30">
                     <i className="fa-solid fa-ghost mb-3 text-2xl" />
                     <div className="text-[12px] font-medium">No results found</div>
                     <div className="mt-1 text-[11px]">

@@ -6,7 +6,6 @@ interface CameraFeedProps {
   isStreaming: boolean
   isVideoReady: boolean
   cameraError: string | null
-  onCapture: () => void
   onStart: (deviceId?: string) => void
   onStop: () => void
   source: CaptureSource
@@ -21,7 +20,6 @@ export function CameraFeed({
   isStreaming,
   isVideoReady,
   cameraError,
-  onCapture,
   onStart,
   onStop,
   source,
@@ -103,18 +101,6 @@ export function CameraFeed({
       {isStreaming && !isVideoReady && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-cyan-400" />
-        </div>
-      )}
-
-      {isStreaming && (
-        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2">
-          <button
-            onClick={() => onCapture()}
-            disabled={!isVideoReady || !!cameraError}
-            className="group flex h-16 w-16 items-center justify-center rounded-full bg-white/20 p-1 transition-all hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-            title="Capture Face">
-            <div className="h-full w-full rounded-full bg-white transition-transform group-active:scale-90" />
-          </button>
         </div>
       )}
     </div>

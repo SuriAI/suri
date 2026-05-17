@@ -140,12 +140,14 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         !registrationMode
       ) {
         actions = (
-          <button
-            onClick={addMemberHandler}
-            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white">
-            <i className="fa-solid fa-user-plus text-[10px]"></i>
-            ADD MEMBER
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={addMemberHandler}
+              className="flex items-center gap-2 rounded-lg border border-transparent bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/60 transition-all hover:bg-white/10 hover:text-white">
+              <i className="fa-solid fa-user-plus text-[10px]"></i>
+              ADD MEMBER
+            </button>
+          </div>
         )
       } else if (groupInitialSection === "members" && registrationMode) {
         actions = (

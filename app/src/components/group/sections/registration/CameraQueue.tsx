@@ -21,11 +21,18 @@ interface QueuedMember {
 interface CameraQueueProps {
   group: AttendanceGroup
   members: AttendanceMember[]
+  preselectedIds?: string[]
   onRefresh?: () => Promise<void> | void
   onClose?: () => void
 }
 
-export function CameraQueue({ group, members, onRefresh, onClose }: CameraQueueProps) {
+export function CameraQueue({
+  group,
+  members,
+  preselectedIds,
+  onRefresh,
+  onClose,
+}: CameraQueueProps) {
   const setActiveSection = useGroupUIStore((state) => state.setActiveSection)
   const [memberQueue, setMemberQueue] = useState<QueuedMember[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -91,8 +98,16 @@ export function CameraQueue({ group, members, onRefresh, onClose }: CameraQueueP
     }))
     setMemberQueue(queue)
     setCurrentIndex(0)
-    setQueueStarted(false)
   }, [])
+
+  // Auto-start if preselectedIds are provided
+  useEffect(() => {
+    if (preselectedIds && preselectedIds.length > 0) {
+      const preselectedMembers = members.filter((m) => preselectedIds.includes(m.person_id))
+      setupQueue(preselectedMembers)
+      setQueueStarted(true)
+    }
+  }, [preselectedIds, members, setupQueue])
 
   useEffect(() => {
     if (totalMembers > 0 && completedMembers === totalMembers && !isProcessing) {

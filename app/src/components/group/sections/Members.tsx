@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services"
 import { useGroupUIStore } from "@/components/group/stores"
 import { generateDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { EmptyState } from "@/components/group/shared/EmptyState"
-import { Dropdown, Tooltip, useDialog } from "@/components/shared"
+import { Dropdown, useDialog, Tooltip } from "@/components/shared"
 import { DeleteMemberModal } from "./DeleteMemberModal"
 import { BulkConsentModal } from "./BulkConsentModal"
 import { FaceCapture } from "./registration/FaceCapture"
@@ -36,54 +36,92 @@ export function Members({
   const source = useGroupUIStore((state) => state.lastRegistrationSource)
   const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
   const setRegistrationState = useGroupUIStore((state) => state.setRegistrationState)
+  const jumpToRegistration = useGroupUIStore((state) => state.jumpToRegistration)
   const dialog = useDialog()
 
   const [memberSearch, setMemberSearch] = useState("")
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered" | "no-consent"
   >("all")
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const membersWithDisplayNames = useMemo(() => {
-    return generateDisplayNames(members)
-  }, [members])
-
-  const filteredMembers = useMemo(() => {
-    let result = membersWithDisplayNames
-
-    if (memberSearch.trim()) {
-      const query = memberSearch.toLowerCase()
-      result = result.filter(
-        (member) =>
-          member.name.toLowerCase().includes(query) ||
-          member.displayName.toLowerCase().includes(query) ||
-          member.person_id.toLowerCase().includes(query),
-      )
-    }
-
-    if (registrationFilter !== "all") {
-      result = result.filter((member) => {
-        if (registrationFilter === "no-consent") {
-          return !member.has_consent
-        }
-        const isRegistered = member.has_face_data
-        return registrationFilter === "registered" ? isRegistered : !isRegistered
-      })
-    }
-
-    result = [...result].sort((a, b) => {
-      // Sort by registration status first (Not Registered first)
-      if (!a.has_face_data && b.has_face_data) return -1
-      if (a.has_face_data && !b.has_face_data) return 1
-      // Then alphabetically
-      return a.displayName.localeCompare(b.displayName)
+  const toggleSelect = (personId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(personId)) next.delete(personId)
+      else next.add(personId)
+      return next
     })
+  }
 
-    return result
-  }, [memberSearch, membersWithDisplayNames, registrationFilter])
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredMembers.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filteredMembers.map((m) => m.person_id)))
+    }
+  }
+
+  const membersWithDisplayNames = generateDisplayNames(members)
+
+  let filteredMembers = membersWithDisplayNames
+
+  if (memberSearch.trim()) {
+    const query = memberSearch.toLowerCase()
+    filteredMembers = filteredMembers.filter(
+      (member) =>
+        member.name.toLowerCase().includes(query) ||
+        member.displayName.toLowerCase().includes(query) ||
+        member.person_id.toLowerCase().includes(query),
+    )
+  }
+
+  if (registrationFilter !== "all") {
+    filteredMembers = filteredMembers.filter((member) => {
+      if (registrationFilter === "no-consent") {
+        return !member.has_consent
+      }
+      const isRegistered = member.has_face_data
+      return registrationFilter === "registered" ? isRegistered : !isRegistered
+    })
+  }
+
+  filteredMembers = [...filteredMembers].sort((a, b) => {
+    // Sort by registration status first (Not Registered first)
+    if (!a.has_face_data && b.has_face_data) return -1
+    if (a.has_face_data && !b.has_face_data) return 1
+    // Then alphabetically
+    return a.displayName.localeCompare(b.displayName)
+  })
+
+  const selectedMembersList = (() => {
+    if (selectedIds.size === 0) return []
+    return filteredMembers.filter((m) => selectedIds.has(m.person_id))
+  })()
+
+  const selectedStats = (() => {
+    let ready = 0
+    let noConsent = 0
+    let registered = 0
+
+    selectedMembersList.forEach((m) => {
+      if (!m.has_consent) noConsent++
+      else if (m.has_face_data) registered++
+      else ready++
+    })
+    return {
+      ready,
+      noConsent,
+      registered,
+      total: selectedMembersList.length,
+      eligible: ready + registered,
+    }
+  })()
 
   const [memberToDelete, setMemberToDelete] = useState<AttendanceMember | null>(null)
 
   const [isBulkConsentModalOpen, setIsBulkConsentModalOpen] = useState(false)
+  const [bulkConsentScope, setBulkConsentScope] = useState<"all" | "selected">("all")
 
   const handleBulkConsent = async (confirmedIds: string[]) => {
     try {
@@ -136,58 +174,11 @@ export function Members({
     }
   }
 
-  const animationProps = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-    transition: { duration: 0.2 },
-  }
-
   return (
-    <AnimatePresence mode="wait">
-      {mode === "bulk" && source === "upload" ?
-        <motion.div
-          key="bulk-upload"
-          {...animationProps}
-          className="relative flex h-full w-full flex-col">
-          <BulkRegistration
-            group={group}
-            members={members}
-            onRefresh={onMembersChange}
-            onClose={resetRegistration}
-          />
-        </motion.div>
-      : mode === "queue" && source === "camera" ?
-        <motion.div
-          key="camera-queue"
-          {...animationProps}
-          className="relative flex h-full w-full flex-col">
-          <CameraQueue
-            group={group}
-            members={members}
-            onRefresh={onMembersChange}
-            onClose={resetRegistration}
-          />
-        </motion.div>
-      : mode === "single" && source ?
-        <motion.div
-          key="single-capture"
-          {...animationProps}
-          className="relative flex h-full w-full flex-col">
-          <FaceCapture
-            group={group}
-            members={members}
-            onRefresh={onMembersChange}
-            initialSource={source === "camera" ? "live" : source}
-            deselectMemberTrigger={deselectMemberTrigger}
-            onHasSelectedMemberChange={onHasSelectedMemberChange}
-          />
-        </motion.div>
-      : members.length === 0 ?
-        <motion.div
-          key="empty-state"
-          {...animationProps}
-          className="relative flex h-full w-full flex-col">
+    <div className="relative flex h-full w-full flex-col overflow-hidden">
+      {/* BACKGROUND CONTENT: Always render the list or empty state */}
+      {members.length === 0 ?
+        <motion.div key="empty" className="relative flex h-full w-full flex-col">
           <EmptyState
             title="No members in this group yet"
             action={
@@ -202,107 +193,236 @@ export function Members({
         </motion.div>
       : <motion.div
           key="members-list"
-          {...animationProps}
-          className="relative mx-auto flex h-full w-full max-w-[900px] flex-col overflow-hidden">
+          className="relative flex h-full w-full flex-col overflow-hidden">
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-4 pb-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="relative w-full max-w-[320px]">
-                <svg
-                  className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/30"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              <div
+                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${
+                  memberSearch.trim().length > 0 ?
+                    "max-w-[460px]"
+                  : "max-w-[320px] has-[input:focus]:max-w-[460px]"
+                }`}>
+                <div className="relative shrink-0">
+                  <Dropdown
+                    options={[
+                      { value: "all", label: "Filter: All" },
+                      { value: "registered", label: "Registered" },
+                      { value: "non-registered", label: "Not Registered" },
+                      { value: "no-consent", label: "Needs Consent" },
+                    ]}
+                    value={registrationFilter}
+                    onChange={(val) => {
+                      if (val) {
+                        setRegistrationFilter(
+                          val as "all" | "registered" | "non-registered" | "no-consent",
+                        )
+                      }
+                    }}
+                    allowClear={false}
+                    buttonClassName="h-9 !bg-white/5 !border-white/5 border-r-0 rounded-r-none rounded-l-lg px-3 min-w-[130px] text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
+                    optionClassName="text-[11px] font-bold tracking-wider"
+                    iconClassName="text-[10px]"
                   />
-                </svg>
-                <input
-                  type="search"
-                  value={memberSearch}
-                  onChange={(e) => setMemberSearch(e.target.value)}
-                  placeholder="Search members..."
-                  className="w-full rounded-md border border-white/5 bg-white/5 py-2 pr-3 pl-10 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:border-cyan-500/30 focus:bg-white/[0.08]"
-                />
-              </div>
+                </div>
 
-              <div className="flex shrink-0 items-center gap-2">
-                <Dropdown
-                  options={[
-                    { value: "all", label: "Filter: All" },
-                    { value: "non-registered", label: "Not Registered" },
-                    { value: "registered", label: "Registered" },
-                    { value: "no-consent", label: "Needs Consent" },
-                  ]}
-                  value={registrationFilter}
-                  onChange={(val) => {
-                    if (val) {
-                      setRegistrationFilter(
-                        val as "all" | "registered" | "non-registered" | "no-consent",
-                      )
-                    }
-                  }}
-                  allowClear={false}
-                  buttonClassName="!bg-white/5 !border-white/5 py-1.5 px-3 min-w-[130px] rounded-lg text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
-                  optionClassName="text-[11px] font-bold tracking-wider"
-                  iconClassName="text-[10px]"
-                />
-
-                <Tooltip content="Multi-member camera queue">
-                  <button
-                    onClick={() => setRegistrationState("camera", "queue")}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
-                    <i className="fa-solid fa-users-viewfinder text-[11px]"></i>
-                  </button>
-                </Tooltip>
-                <Tooltip content="Batch upload photos">
-                  <button
-                    onClick={() => setRegistrationState("upload", "bulk")}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/30 transition-all duration-300 hover:border-cyan-500/20 hover:bg-cyan-500/10 hover:text-cyan-400">
-                    <i className="fa-solid fa-layer-group text-[11px]"></i>
-                  </button>
-                </Tooltip>
+                <div className="relative flex-1">
+                  {/* Subtle vertical divider */}
+                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
+                  <svg
+                    className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/30"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="search"
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder="Search name/role..."
+                    className="h-9 w-full rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 py-2 pr-3 pl-11 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/[0.08]"
+                  />
+                </div>
               </div>
             </div>
 
             {members.length > 0 && filteredMembers.length > 0 && (
-              <div className="px-2 py-1 text-xs text-white/30">
-                Showing {filteredMembers.length} of {members.length} member
-                {members.length !== 1 ? "s" : ""}
+              <div className="flex w-full items-center justify-between px-10 py-1">
+                <div className="text-xs text-white/30">
+                  {selectedStats.total > 0 ?
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-white/80">
+                        {selectedStats.total} selected
+                      </span>
+                      <div className="h-3 w-px bg-white/10" />
+                      <div className="flex gap-2 text-[10px] font-medium">
+                        {selectedStats.ready > 0 && (
+                          <span className="text-cyan-400">
+                            {selectedStats.ready} not registered yet
+                          </span>
+                        )}
+                        {selectedStats.registered > 0 && (
+                          <span className="text-white/40">
+                            {selectedStats.registered} registered
+                          </span>
+                        )}
+                        {selectedStats.noConsent > 0 && (
+                          <span className="text-amber-400">
+                            {selectedStats.noConsent} no consent
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  : <span>
+                      Showing {filteredMembers.length} of {members.length} member
+                      {members.length !== 1 ? "s" : ""}
+                    </span>
+                  }
+                </div>
+                <div className="flex items-center gap-4">
+                  {selectedStats.noConsent > 0 && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      onClick={() => {
+                        setBulkConsentScope("selected")
+                        setIsBulkConsentModalOpen(true)
+                      }}
+                      className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-amber-400 transition-all hover:bg-amber-500/20">
+                      GRANT CONSENT ({selectedStats.noConsent})
+                    </motion.button>
+                  )}
+
+                  {selectedStats.eligible === 1 && (
+                    <Tooltip
+                      content={
+                        selectedStats.registered > 0 ?
+                          "This member is already registered. Proceed to re-register."
+                        : "Proceed to register member"
+                      }>
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.95, x: 10 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        onClick={() =>
+                          jumpToRegistration(
+                            selectedMembersList.find((m) => m.has_consent)!.person_id,
+                          )
+                        }
+                        className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
+                          selectedStats.registered > 0 ?
+                            "border border-white/10 bg-transparent text-white/50 hover:bg-white/5 hover:text-white"
+                          : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                        }`}>
+                        {selectedStats.registered > 0 ? "RE-REGISTER (1)" : "REGISTER (1)"}
+                      </motion.button>
+                    </Tooltip>
+                  )}
+                  {selectedStats.eligible > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, x: 10 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}>
+                      <Tooltip
+                        content={
+                          selectedStats.registered > 0 ?
+                            `Includes ${selectedStats.registered} already registered member${selectedStats.registered > 1 ? "s" : ""}`
+                          : "Proceed to register members"
+                        }>
+                        <div>
+                          <Dropdown
+                            options={[
+                              { value: "camera", label: "📸 via Webcam" },
+                              { value: "upload", label: "📁 via Bulk Upload" },
+                            ]}
+                            value={null}
+                            onChange={(val) => {
+                              if (val === "camera") setRegistrationState("camera", "queue")
+                              if (val === "upload") setRegistrationState("upload", "bulk")
+                            }}
+                            allowClear={false}
+                            showPlaceholderOption={false}
+                            trigger={
+                              <button
+                                className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
+                                  selectedStats.registered > 0 && selectedStats.ready === 0 ?
+                                    "border border-white/10 bg-transparent text-white/50 hover:bg-white/5 hover:text-white"
+                                  : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                                }`}>
+                                {selectedStats.registered > 0 && selectedStats.ready === 0 ?
+                                  "RE-REGISTER"
+                                : "REGISTER"}{" "}
+                                ({selectedStats.eligible})
+                                <i className="fa-solid fa-chevron-down ml-0.5 text-[9px] opacity-60"></i>
+                              </button>
+                            }
+                            menuWidth={180}
+                            buttonClassName="p-0 border-0 bg-transparent hover:bg-transparent h-auto w-auto"
+                            optionClassName="text-[11px] font-bold tracking-wider py-2.5"
+                          />
+                        </div>
+                      </Tooltip>
+                    </motion.div>
+                  )}
+                  {selectedIds.size > 0 && (
+                    <button
+                      onClick={() => setSelectedIds(new Set())}
+                      className="flex items-center gap-2 text-[11px] font-bold text-white/40 transition-all hover:text-white">
+                      Clear
+                    </button>
+                  )}
+                  <button
+                    onClick={
+                      selectedIds.size === filteredMembers.length ? undefined : toggleSelectAll
+                    }
+                    disabled={selectedIds.size === filteredMembers.length}
+                    className={`flex items-center gap-2 text-[11px] font-bold transition-all ${
+                      selectedIds.size === filteredMembers.length ?
+                        "cursor-default text-white/20"
+                      : "text-cyan-400/80 hover:text-cyan-400"
+                    }`}>
+                    Select All
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="custom-scroll hover-scrollbar flex-1 overflow-y-auto px-10 pb-10">
-            <div className="flex flex-col gap-1">
-              {filteredMembers.length === 0 && (
-                <div className="w-full rounded-xl border border-white/5 bg-white/5 px-3 py-10 text-center">
-                  <div className="text-xs font-medium tracking-wide text-white/40">
-                    {memberSearch.trim() ?
-                      `No results found for "${memberSearch}"`
-                    : registrationFilter === "registered" ?
-                      "No registered members found"
-                    : registrationFilter === "non-registered" ?
-                      "All members in this group are registered"
-                    : "No members found in this group"}
-                  </div>
+          <div className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10">
+            {filteredMembers.length === 0 ?
+              <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
+                <div className="text-[11px] font-medium tracking-wide text-white/30">
+                  {memberSearch.trim() ?
+                    `No results found for "${memberSearch}"`
+                  : registrationFilter === "registered" ?
+                    "No registered members yet"
+                  : registrationFilter === "non-registered" ?
+                    "All members are registered"
+                  : registrationFilter === "no-consent" ?
+                    "All members have given consent"
+                  : "No members found in this group"}
                 </div>
-              )}
-
-              <AnimatePresence mode="popLayout">
-                {filteredMembers.map((member) => (
-                  <MemberRow
-                    key={member.person_id}
-                    member={member}
-                    onEdit={onEdit}
-                    onDelete={setMemberToDelete}
-                    onResetFace={handleResetFace}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
+              </div>
+            : <div className="flex w-full flex-col gap-1">
+                <AnimatePresence mode="popLayout">
+                  {filteredMembers.map((member) => (
+                    <MemberRow
+                      key={member.person_id}
+                      member={member}
+                      isSelected={selectedIds.has(member.person_id)}
+                      isSelectionMode={selectedIds.size > 0}
+                      onToggleSelect={toggleSelect}
+                      onEdit={onEdit}
+                      onDelete={setMemberToDelete}
+                      onResetFace={handleResetFace}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            }
           </div>
 
           {/* Consent banner */}
@@ -316,7 +436,10 @@ export function Members({
                   </span>
                 </div>
                 <button
-                  onClick={() => setIsBulkConsentModalOpen(true)}
+                  onClick={() => {
+                    setBulkConsentScope("all")
+                    setIsBulkConsentModalOpen(true)
+                  }}
                   className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold tracking-wider text-white/50 transition-all hover:bg-white/10 active:scale-95">
                   Grant all
                 </button>
@@ -339,10 +462,52 @@ export function Members({
             isOpen={isBulkConsentModalOpen}
             onClose={() => setIsBulkConsentModalOpen(false)}
             onConfirm={handleBulkConsent}
-            members={members}
+            members={bulkConsentScope === "selected" ? selectedMembersList : members}
           />
         </motion.div>
       }
-    </AnimatePresence>
+
+      {/* OVERLAY CONTENT: Registration tasks */}
+      <AnimatePresence>
+        {mode && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-50 flex flex-col bg-[#0b0e14]/95">
+            {mode === "bulk" && source === "upload" && (
+              <BulkRegistration
+                group={group}
+                members={selectedMembersList.filter((m) => m.has_consent)}
+                onRefresh={onMembersChange}
+                onClose={resetRegistration}
+              />
+            )}
+            {mode === "queue" && source === "camera" && (
+              <CameraQueue
+                group={group}
+                members={members}
+                preselectedIds={selectedMembersList
+                  .filter((m) => m.has_consent)
+                  .map((m) => m.person_id)}
+                onRefresh={onMembersChange}
+                onClose={resetRegistration}
+              />
+            )}
+            {mode === "single" && source && (
+              <FaceCapture
+                group={group}
+                members={members}
+                onRefresh={onMembersChange}
+                initialSource={source === "camera" ? "live" : source}
+                deselectMemberTrigger={deselectMemberTrigger}
+                onHasSelectedMemberChange={onHasSelectedMemberChange}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
