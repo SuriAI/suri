@@ -1,15 +1,13 @@
 @layer base {
   button {
-    border-radius: 8px;
-    /* 8px border-radius */
-    border: 1px solid var(--border-primary);
-    padding: 0.5rem 1rem;
+    /* True neutral reset — visual styling handled by btn-* classes or Tailwind utilities */
+    border: none;
+    padding: 0;
+    background: transparent;
+    color: inherit;
     font-size: 0.875rem;
     font-weight: 500;
-    /* 500 font-weight */
     font-family: inherit;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
@@ -18,7 +16,6 @@
 
   button:active {
     transform: scale(0.98);
-    /* Active state feedback */
   }
 
   button:focus-visible {

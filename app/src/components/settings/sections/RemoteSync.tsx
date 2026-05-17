@@ -272,7 +272,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
             {!config.connected ?
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <label className="text-[11px] font-medium text-white/55 uppercase">
+                  <label className="text-xs font-medium text-white/55 uppercase">
                     Pairing Code
                   </label>
                   <input
@@ -346,7 +346,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
                     <div className="mt-4 space-y-6 rounded-md border border-white/[0.05] p-5">
                       <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/55 uppercase">
+                          <label className="text-xs font-medium text-white/55 uppercase">
                             Custom Server URL
                           </label>
                           <input
@@ -359,7 +359,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/55 uppercase">
+                          <label className="text-xs font-medium text-white/55 uppercase">
                             Device Name Override
                           </label>
                           <input
@@ -375,7 +375,7 @@ export function RemoteSync({ onNavigateToDB }: { onNavigateToDB?: () => void }) 
 
                       <div className="grid gap-6 md:grid-cols-[1fr_auto]">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-medium text-white/55 uppercase">
+                          <label className="text-xs font-medium text-white/55 uppercase">
                             Auto-Sync Interval (Mins)
                           </label>
                           <input

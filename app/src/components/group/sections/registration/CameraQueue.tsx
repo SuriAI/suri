@@ -856,7 +856,7 @@ export function CameraQueue({
               </div>
 
               {/* Keyboard shortcuts - Compact */}
-              <div className="mt-2 flex items-center justify-center gap-4 text-[10px] text-white/55">
+              <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-white/55">
                 <span>
                   <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 text-white/65">Space</kbd>
                   Capture

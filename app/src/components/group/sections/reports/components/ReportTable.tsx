@@ -57,7 +57,7 @@ export function ReportTable({
                     : "No results found"}
                   </h3>
 
-                  <p className="mb-8 max-w-70 text-[11px] leading-relaxed font-medium text-white/55">
+                  <p className="mb-8 max-w-70 text-xs leading-relaxed font-medium text-white/55">
                     {search ?
                       "We couldn't find anything matching your search. Try a different keyword."
                     : statusFilter !== "all" ?

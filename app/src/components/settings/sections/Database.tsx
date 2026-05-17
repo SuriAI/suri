@@ -245,7 +245,7 @@ export function Database({
               {timeHealthSummary}
             </h4>
             <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{timeHealthDetails}</p>
-            <div className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-tight text-white/55">
+            <div className="mt-4 flex items-center gap-2 font-mono text-[11px] tracking-tight text-white/55">
               <i className="fa-solid fa-microchip opacity-50" />
               <span>
                 {timeHealthState.loading ?
@@ -521,7 +521,7 @@ export function Database({
           />
         }>
         <div className="space-y-4">
-          <p className="text-[11px] leading-relaxed text-white/65">
+          <p className="text-xs leading-relaxed text-white/65">
             {passwordModal.action === "export" ?
               "Choose a strong password to encrypt your backup. You will need this password to restore your data later."
             : `Enter the password for ${
@@ -530,7 +530,7 @@ export function Database({
             }
           </p>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-white/55">Backup Password</label>
+            <label className="text-xs font-medium text-white/55">Backup Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -562,7 +562,7 @@ export function Database({
               </button>
             </div>
             {passwordModal.action === "export" && (
-              <div className="flex items-start gap-1.5 pt-1 text-[10px] leading-tight text-amber-500/80">
+              <div className="flex items-start gap-1.5 pt-1 text-[11px] leading-tight text-amber-500/80">
                 <i className="fa-solid fa-triangle-exclamation mt-0.5 shrink-0" />
                 <span>
                   Save this password securely. It is required to restore your data and cannot be
@@ -618,7 +618,7 @@ export function Database({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-white/55">
+            <label className="text-xs font-medium text-white/55">
               Type <span className="font-bold text-white/65">DELETE</span> to confirm
             </label>
             <input

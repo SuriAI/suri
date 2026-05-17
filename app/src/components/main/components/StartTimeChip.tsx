@@ -90,7 +90,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
             : "text-white/90 hover:border-white/10"
           }`}>
           <div className="flex flex-col items-center gap-1">
-            <span className="text-[10px] font-medium text-amber-500/80">
+            <span className="text-[11px] font-medium text-amber-500/80">
               Late Tracking is enabled
             </span>
             <div className="flex items-baseline gap-1">
@@ -111,7 +111,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
 
           {outdated && (
             <div className="flex flex-col items-center opacity-80">
-              <span className="animate-pulse text-[10px] font-medium text-amber-500/80">
+              <span className="animate-pulse text-[11px] font-medium text-amber-500/80">
                 Click to update
               </span>
             </div>
@@ -149,7 +149,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
             <div className="pointer-events-none px-3 py-2.5 text-center">
               <div className="flex items-baseline justify-center gap-1 font-mono text-xl tracking-widest text-white">
                 <span>{formatTimeDisplay(startTime).time}</span>
-                <span className="text-[10px] font-medium tracking-tight text-white/55">
+                <span className="text-[11px] font-medium tracking-tight text-white/55">
                   {formatTimeDisplay(startTime).period}
                 </span>
               </div>

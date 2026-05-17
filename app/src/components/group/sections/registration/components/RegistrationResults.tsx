@@ -56,12 +56,12 @@ export function RegistrationResults({
                   {result.memberName || result.personId}
                 </div>
                 {result.error && (
-                  <div className="mt-1 text-[11px] leading-relaxed font-medium text-red-300/60">
+                  <div className="mt-1 text-xs leading-relaxed font-medium text-red-300/60">
                     {result.error}
                   </div>
                 )}
                 {result.qualityWarning && (
-                  <div className="mt-1 flex items-center gap-1.5 text-[11px] leading-relaxed font-medium text-amber-400/60">
+                  <div className="mt-1 flex items-center gap-1.5 text-xs leading-relaxed font-medium text-amber-400/60">
                     <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
                     {result.qualityWarning}
                   </div>
