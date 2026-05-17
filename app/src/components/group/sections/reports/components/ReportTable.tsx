@@ -23,18 +23,18 @@ export function ReportTable({
   const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
   return (
-    <div className="custom-scroll flex-1 overflow-auto">
+    <div className="custom-scroll scroll-under-header flex-1 overflow-auto">
       <table className="w-full border-separate border-spacing-0 text-left">
-        <thead className="sticky top-0 z-10 bg-[rgba(16,21,28,0.98)]">
+        <thead>
           <tr>
-            {visibleColDefs.map((c, i) => {
+            {visibleColDefs.map((c) => {
               let alignClass = "text-left"
               if (c.align === "center") alignClass = "text-center"
               else if (c.align === "right") alignClass = "text-right"
               return (
                 <th
                   key={c.key}
-                  className={`border-b border-white/6 bg-[rgba(11,15,20,0.98)] px-4 py-2.5 text-[11px] font-medium text-white/55 ${alignClass} ${i === 0 ? "rounded-tl-xl" : ""} ${i === visibleColDefs.length - 1 ? "rounded-tr-xl" : ""}`}>
+                  className={`sticky top-0 z-10 border-b border-white/6 bg-[rgba(16,21,28,0.98)] px-4 py-3 text-[11px] font-medium text-white/55 ${alignClass}`}>
                   {c.label}
                 </th>
               )
@@ -215,10 +215,12 @@ export function ReportTable({
                         if (c.align === "center") alignClass = "text-center"
                         else if (c.align === "right") alignClass = "text-right"
 
+                        const isLast = cIdx === visibleColDefs.length - 1
+
                         return (
                           <td
                             key={c.key}
-                            className={`border-b border-white/5 px-4 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
+                            className={`border-b border-white/5 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""} ${isLast ? "pr-6 pl-4" : "px-4"}`}>
                             {cIdx === 0 && (
                               <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                             )}

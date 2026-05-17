@@ -1,15 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { attendanceManager } from "@/services"
-import { createDisplayNameMap } from "@/utils"
-import { getLocalDateString } from "@/utils"
+import { useGroupStore } from "@/components/group/stores"
+import { createDisplayNameMap, getLocalDateString } from "@/utils"
 import { StatsCard, EmptyState } from "@/components/group/shared"
-import type {
-  AttendanceGroup,
-  AttendanceMember,
-  AttendanceStats,
-  AttendanceRecord,
-} from "@/types/recognition"
+import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface OverviewProps {
   group: AttendanceGroup
@@ -80,13 +74,34 @@ const getDateRange = (filter: DateFilter): { start: string; end: string } => {
 }
 
 export function Overview({ group, members, onAddMember }: OverviewProps) {
-  const [stats, setStats] = useState<AttendanceStats | null>(null)
-  const [recentRecords, setRecentRecords] = useState<AttendanceRecord[]>([])
+  const fetchOverviewData = useGroupStore((state) => state.fetchOverviewData)
+  const stats = useGroupStore((state) => state.overviewStats[group.id])
+
   const [activitySearch, setActivitySearch] = useState("")
   const [dateFilter, setDateFilter] = useState<DateFilter>("today")
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
-  const [recordsLoading, setRecordsLoading] = useState(false)
+  const [showSpinner, setShowSpinner] = useState(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  const { start, end } = useMemo(() => getDateRange(dateFilter), [dateFilter])
+  const cacheKey = `${start}_${end}`
+
+  const cachedRecords = useGroupStore((state) => state.overviewRecords[group.id]?.[cacheKey])
+  const recentRecords = useMemo(() => cachedRecords || [], [cachedRecords])
+  const recordsLoading = useGroupStore((state) => state.loading)
+
+  useEffect(() => {
+    if (stats) return
+
+    const timer = setTimeout(() => {
+      setShowSpinner(true)
+    }, 200)
+
+    return () => {
+      clearTimeout(timer)
+      setShowSpinner(false)
+    }
+  }, [stats])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -117,26 +132,9 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
   const loadOverviewData = useCallback(async () => {
     if (members.length === 0) return
-    try {
-      const { start, end } = getDateRange(dateFilter)
-      setRecordsLoading(true)
-      const [groupStats, records] = await Promise.all([
-        attendanceManager.getGroupStats(group.id, new Date()),
-        attendanceManager.getRecords({
-          group_id: group.id,
-          start_date: start,
-          end_date: end,
-          limit: 100,
-        }),
-      ])
-      setStats(groupStats)
-      setRecentRecords(records)
-    } catch (err) {
-      console.error("Error loading overview data:", err)
-    } finally {
-      setRecordsLoading(false)
-    }
-  }, [group.id, members.length, dateFilter])
+    const { start, end } = getDateRange(dateFilter)
+    await fetchOverviewData(group.id, start, end, false)
+  }, [group.id, members.length, dateFilter, fetchOverviewData])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -163,15 +161,33 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }
 
   if (!stats) {
+    if (!showSpinner) {
+      return <div className="h-full w-full bg-transparent" />
+    }
     return (
-      <section className="flex items-center justify-center py-12">
-        <div className="text-sm text-white/55">Loading overview...</div>
-      </section>
+      <div className="flex h-full w-full items-center justify-center py-32">
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-col items-center text-white/40">
+          <i className="fa-solid fa-circle-notch mb-4 animate-spin text-2xl text-cyan-400" />
+          <div className="text-xs font-semibold tracking-wider text-white/55 uppercase">
+            Loading Overview...
+          </div>
+        </motion.div>
+      </div>
     )
   }
 
   return (
-    <section className="flex h-full w-full flex-col px-10 pt-8">
+    <motion.section
+      initial={{ opacity: 0, y: 8, scale: 0.995 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="flex h-full w-full flex-col px-10 pt-8">
       {/* Activity Overview */}
       <section className="shrink-0">
         <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2">
@@ -366,6 +382,6 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           </AnimatePresence>
         </div>
       </section>
-    </section>
+    </motion.section>
   )
 }
