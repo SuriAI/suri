@@ -32,8 +32,8 @@ hiddenimports.extend(
 # Exclude GPU providers if not needed (reduces size)
 # Note: Only exclude if you're sure you don't need GPU acceleration
 excludedimports = [
-    # 'onnxruntime.providers.cuda',
-    # 'onnxruntime.providers.tensorrt',
-    # 'onnxruntime.providers.dml',  # DirectML for Windows
-    # 'onnxruntime.providers.openvino',
+    "onnxruntime.providers.cuda",
+    "onnxruntime.providers.tensorrt",
+    "onnxruntime.providers.dml",  # DirectML for Windows
+    "onnxruntime.providers.openvino",
 ]

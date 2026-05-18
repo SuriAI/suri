@@ -36,20 +36,6 @@ app.on("second-instance", () => {
   }
 })
 
-// GPU Optimizations
-app.commandLine.appendSwitch("enable-features", "Vulkan,UseSkiaRenderer")
-app.commandLine.appendSwitch("enable-webgl")
-app.commandLine.appendSwitch("enable-webgl2-compute-context")
-app.commandLine.appendSwitch("ignore-gpu-blocklist")
-app.commandLine.appendSwitch("enable-gpu-rasterization")
-app.commandLine.appendSwitch("enable-zero-copy")
-app.commandLine.appendSwitch("enable-unsafe-swiftshader")
-app.commandLine.appendSwitch("use-gl", "any")
-
-if (process.platform === "win32") {
-  app.commandLine.appendSwitch("use-angle", "default")
-}
-
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "app",
