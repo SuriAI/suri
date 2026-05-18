@@ -24,7 +24,7 @@ def init_onnx_session(
                 p[0] if isinstance(p, tuple) else p for p in OPTIMIZED_PROVIDERS
             ]
         except (ImportError, AttributeError):
-            providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+            providers = ["CPUExecutionProvider"]
 
     sess_opts = None
     if session_options is None:

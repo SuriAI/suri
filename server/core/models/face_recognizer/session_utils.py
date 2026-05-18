@@ -28,6 +28,7 @@ def init_face_recognizer_session(
         raise FileNotFoundError(f"Model file not found: {model_path}")
 
     providers = providers or ["CPUExecutionProvider"]
+    clean_providers = [p[0] if isinstance(p, tuple) else p for p in providers]
 
     try:
         ort_opts = ort.SessionOptions()
@@ -38,7 +39,7 @@ def init_face_recognizer_session(
                     setattr(ort_opts, key, value)
 
         session = ort.InferenceSession(
-            model_path, sess_options=ort_opts, providers=providers
+            model_path, sess_options=ort_opts, providers=clean_providers
         )
 
         input_name = session.get_inputs()[0].name
