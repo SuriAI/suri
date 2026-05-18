@@ -219,7 +219,7 @@ export function AddMember({
         </div>
       }
       maxWidth="lg">
-      <div className="-m-5 mt-2 max-h-[90vh] overflow-y-auto p-5">
+      <div className="-m-5 mt-2 max-h-[90vh] overflow-x-hidden overflow-y-auto p-5">
         {/* Mode selector Tabs */}
         <div className="mb-6 flex gap-6 border-b border-white/5">
           <button
