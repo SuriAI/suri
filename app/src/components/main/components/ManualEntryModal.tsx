@@ -185,7 +185,7 @@ export const ManualEntryModal = ({
         )}
 
         {sortedAllMembers.length > 0 ?
-          <div className="custom-scroll max-h-52 overflow-y-auto pr-1">
+          <div className="custom-scroll max-h-52 overflow-x-hidden overflow-y-auto pr-1">
             <div className="flex w-full flex-col gap-1">
               {sortedAllMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id)
