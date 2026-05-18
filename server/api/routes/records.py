@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta, time
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Depends
+from pydantic import BaseModel
 
 from api.schemas import (
     AttendanceRecordCreate,
@@ -256,6 +257,83 @@ async def get_session(
         raise
     except Exception as e:
         logger.error(f"Error getting session for {person_id} on {date}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+class SessionUpdateRequest(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
+    check_in_time: Optional[datetime] = None
+    check_out_time: Optional[datetime] = None
+    is_late: Optional[bool] = None
+    late_minutes: Optional[int] = None
+
+
+@router.put("/sessions/{person_id}/{date}", response_model=AttendanceSessionResponse)
+async def update_session(
+    person_id: str,
+    date: str,
+    payload: SessionUpdateRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Manually update or override an attendance session status and notes."""
+    try:
+        import ulid
+
+        session_obj = await repo.get_session(person_id, date)
+        if not session_obj:
+            # If session doesn't exist (e.g. member was absent), create an override session!
+            member = await repo.get_member(person_id)
+            if not member:
+                raise HTTPException(status_code=404, detail="Member not found")
+            session_data = {
+                "id": ulid.ulid(),
+                "person_id": person_id,
+                "group_id": member.group_id,
+                "applied_rule_id": None,
+                "date": date,
+                "check_in_time": payload.check_in_time,
+                "check_out_time": payload.check_out_time,
+                "total_hours": None,
+                "status": payload.status or "absent",
+                "is_late": payload.is_late or False,
+                "late_minutes": payload.late_minutes,
+                "notes": payload.notes,
+            }
+            session_obj = await repo.upsert_session(session_data)
+        else:
+            # Update fields
+            if payload.status is not None:
+                session_obj.status = payload.status
+            if payload.notes is not None:
+                session_obj.notes = payload.notes
+            if payload.check_in_time is not None:
+                session_obj.check_in_time = payload.check_in_time
+            if payload.check_out_time is not None:
+                session_obj.check_out_time = payload.check_out_time
+            if payload.is_late is not None:
+                session_obj.is_late = payload.is_late
+            if payload.late_minutes is not None:
+                session_obj.late_minutes = payload.late_minutes
+
+            await repo.session.commit()
+            await repo.session.refresh(session_obj)
+
+        await repo.add_audit_log(
+            action="ATTENDANCE_SESSION_OVERRIDDEN",
+            target_type="attendance_session",
+            target_id=session_obj.id,
+            details=(
+                f"person_id={person_id}, "
+                f"date={date}, "
+                f"status={session_obj.status}, "
+                f"notes={session_obj.notes}"
+            ),
+        )
+        return session_obj
+
+    except Exception as e:
+        logger.error(f"Error overriding session: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 

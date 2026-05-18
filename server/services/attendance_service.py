@@ -185,6 +185,27 @@ class AttendanceService:
         for member in members:
             person_id = member.person_id
 
+            # Check if this session was manually overridden (has non-empty notes)
+            existing_session = existing_sessions_map.get(person_id)
+            if existing_session and existing_session.notes:
+                sessions.append(
+                    {
+                        "id": existing_session.id,
+                        "person_id": person_id,
+                        "group_id": existing_session.group_id,
+                        "applied_rule_id": existing_session.applied_rule_id,
+                        "date": target_date,
+                        "check_in_time": existing_session.check_in_time,
+                        "check_out_time": existing_session.check_out_time,
+                        "total_hours": existing_session.total_hours,
+                        "status": existing_session.status,
+                        "is_late": existing_session.is_late,
+                        "late_minutes": existing_session.late_minutes,
+                        "notes": existing_session.notes,
+                    }
+                )
+                continue
+
             # Check if member was enrolled on or before target_date
             if target_date_obj is not None and member.joined_at:
                 try:

@@ -18,8 +18,13 @@ export function DeleteConfirmationModal({
   confirmDeleteGroup,
 }: DeleteConfirmationModalProps) {
   const [confirmationInput, setConfirmationInput] = useState("")
+  const [groupSnapshot, setGroupSnapshot] = useState<AttendanceGroup | null>(null)
 
-  const isConfirmationMatch = confirmationInput.trim() === (groupToDelete?.name ?? "")
+  if (groupToDelete && groupToDelete !== groupSnapshot) {
+    setGroupSnapshot(groupToDelete)
+  }
+
+  const isConfirmationMatch = confirmationInput.trim() === (groupSnapshot?.name ?? "")
 
   return (
     <Modal
@@ -28,12 +33,12 @@ export function DeleteConfirmationModal({
       title="Delete group"
       icon={<i className="fa-solid fa-triangle-exclamation text-red-300"></i>}
       maxWidth="md">
-      {!groupToDelete ? null : (
+      {!groupSnapshot ? null : (
         <>
           <div className="mb-6">
             <p className="mb-4 text-sm text-white/80">
               Are you sure you want to delete the group{" "}
-              <strong className="text-white">&quot;{groupToDelete.name}&quot;</strong>?
+              <strong className="text-white">&quot;{groupSnapshot.name}&quot;</strong>?
             </p>
             <div className="mb-4 rounded-lg border border-red-500/30 bg-red-900/20 p-3">
               <p className="text-xs text-red-300">
@@ -41,7 +46,7 @@ export function DeleteConfirmationModal({
                 attendance records will be permanently removed.
               </p>
             </div>
-            {currentGroup?.id === groupToDelete.id && (
+            {currentGroup?.id === groupSnapshot.id && (
               <div className="rounded-lg border border-amber-500/30 bg-amber-900/20 p-3">
                 <p className="text-xs text-amber-300">
                   <strong>Note:</strong> This is your currently active group. Deleting it will clear
@@ -51,14 +56,14 @@ export function DeleteConfirmationModal({
             )}
             <div className="mt-4 space-y-1.5">
               <label className="text-xs font-medium text-white/65">
-                Type <span className="font-mono text-white/70">{groupToDelete.name}</span> to
+                Type <span className="font-mono text-white/70">{groupSnapshot.name}</span> to
                 continue
               </label>
               <input
                 type="text"
                 value={confirmationInput}
                 onChange={(e) => setConfirmationInput(e.target.value)}
-                placeholder={groupToDelete.name}
+                placeholder={groupSnapshot.name}
                 className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
               />
             </div>
