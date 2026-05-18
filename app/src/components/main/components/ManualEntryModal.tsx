@@ -26,6 +26,7 @@ export const ManualEntryModal = ({
 }: ManualEntryModalProps) => {
   const dialog = useDialog()
   const [searchQuery, setSearchQuery] = useState("")
+  const [manualNote, setManualNote] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -56,6 +57,7 @@ export const ManualEntryModal = ({
 
   const handleClose = () => {
     setSearchQuery("")
+    setManualNote("")
     setError(null)
     setIsSubmitting(false)
     setSubmittingId(null)
@@ -85,7 +87,7 @@ export const ManualEntryModal = ({
         person_id: personId,
         timestamp: new Date(),
         is_manual: true,
-        notes: "Manual entry by admin",
+        notes: manualNote.trim() || "Manual entry by admin",
         created_by: "desktop_admin",
       })
 
@@ -162,6 +164,17 @@ export const ManualEntryModal = ({
               </div>
             </>
           )}
+        </div>
+
+        <div className="group/note relative">
+          <i className="fa-regular fa-clipboard absolute top-1/2 left-3.5 -translate-y-1/2 text-[11px] text-white/50 transition-colors group-focus-within/note:text-cyan-400"></i>
+          <input
+            type="text"
+            placeholder="Add a reason / note for manual entry (Optional)..."
+            value={manualNote}
+            onChange={(e) => setManualNote(e.target.value)}
+            className="h-9 w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] pr-4 pl-9 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/35 focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+          />
         </div>
 
         {error && (

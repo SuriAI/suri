@@ -303,4 +303,45 @@ export class RecordManager {
       return []
     }
   }
+
+  /**
+   * Manually updates a session's details by converting parameters into API-compatible
+   * values and executing a PUT request. This is useful for correct manual logs
+   * and administrative overrides.
+   */
+  async updateSession(
+    personId: string,
+    date: string,
+    updates: {
+      status?: string
+      notes?: string
+      check_in_time?: Date
+      check_out_time?: Date
+      is_late?: boolean
+      late_minutes?: number
+    },
+  ): Promise<AttendanceSession> {
+    try {
+      const payload: Record<string, unknown> = { ...updates }
+      if (updates.check_in_time) {
+        payload.check_in_time = this.toApiDateTimeParam(updates.check_in_time)
+      }
+      if (updates.check_out_time) {
+        payload.check_out_time = this.toApiDateTimeParam(updates.check_out_time)
+      }
+
+      const updated = await this.httpClient.put<AttendanceSession>(
+        `${this.apiEndpoints.sessions}/${personId}/${date}`,
+        payload,
+      )
+      return {
+        ...updated,
+        check_in_time: updated.check_in_time ? new Date(updated.check_in_time) : undefined,
+        check_out_time: updated.check_out_time ? new Date(updated.check_out_time) : undefined,
+      }
+    } catch (error) {
+      console.error("Error updating session:", error)
+      throw error
+    }
+  }
 }

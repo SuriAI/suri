@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useGroupStore } from "@/components/group/stores"
 import { getLocalDateString } from "@/utils"
@@ -11,8 +11,10 @@ import { ReportToolbar } from "@/components/group/sections/reports/components/Re
 import { ReportTable } from "@/components/group/sections/reports/components/ReportTable"
 import { exportReportToCSV } from "@/components/group/sections/reports/utils/exportUtils"
 import { EmptyState } from "@/components/group/shared/EmptyState"
+import { EditSessionModal } from "@/components/group/sections/reports/components/EditSessionModal"
+import { attendanceManager } from "@/services/AttendanceManager"
 
-import type { ColumnKey } from "@/components/group/sections/reports/types"
+import type { ColumnKey, RowData } from "@/components/group/sections/reports/types"
 
 interface ReportsProps {
   group: AttendanceGroup
@@ -37,6 +39,15 @@ export function Reports({
   onAddMember,
 }: ReportsProps) {
   const storeMembers = useGroupStore((state) => state.members)
+  const [editingRow, setEditingRow] = useState<RowData | null>(null)
+
+  // Stores enough context to undo the last correction within a short window
+  const [undoToast, setUndoToast] = useState<{
+    message: string
+    // Snapshot of the row before correction, used to revert
+    originalRow: RowData
+  } | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const defaultColumns = useMemo(
     () => (group.settings?.track_checkout ? CHECKOUT_DEFAULT_COLUMNS : DEFAULT_COLUMNS),
     [group.settings?.track_checkout],
@@ -186,11 +197,86 @@ export function Reports({
                 statusFilter={statusFilter}
                 onResetSearch={() => setSearch("")}
                 onResetFilter={() => setStatusFilter("all")}
+                onEditRow={setEditingRow}
               />
             </motion.div>
           }
         </AnimatePresence>
       </div>
+
+      <EditSessionModal
+        isOpen={!!editingRow}
+        onClose={() => setEditingRow(null)}
+        row={editingRow}
+        group={group}
+        onSuccess={(message, originalRow) => {
+          setEditingRow(null)
+          generateReport()
+
+          // Clear any previous undo timer
+          if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+
+          setUndoToast({ message, originalRow })
+          undoTimerRef.current = setTimeout(() => setUndoToast(null), 5000)
+        }}
+      />
+
+      {/* ── Discord-style undo toast ─────────────────────────────────── */}
+      <AnimatePresence>
+        {undoToast && (
+          <motion.div
+            key="undo-toast"
+            initial={{ opacity: 0, y: 12, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+            // Pause auto-dismiss on hover
+            onMouseEnter={() => {
+              if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+            }}
+            onMouseLeave={() => {
+              undoTimerRef.current = setTimeout(() => setUndoToast(null), 3000)
+            }}>
+            <div className="flex items-center gap-3 rounded-lg bg-[rgba(30,32,36,0.97)] px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/8">
+              <p className="text-[12px] font-medium text-white/80">{undoToast.message}</p>
+              <div className="mx-1 h-3.5 w-px bg-white/10" />
+              <button
+                type="button"
+                onClick={async () => {
+                  const orig = undoToast.originalRow
+                  setUndoToast(null)
+                  try {
+                    await attendanceManager.updateSession(orig.person_id, orig.date, {
+                      status:
+                        orig.status === "no_records" ?
+                          "absent"
+                        : (orig.status as "present" | "absent"),
+                      notes: orig.notes || "Reverted by admin",
+                      check_in_time: orig.check_in_time ? new Date(orig.check_in_time) : undefined,
+                      check_out_time:
+                        orig.check_out_time ? new Date(orig.check_out_time) : undefined,
+                      is_late: orig.is_late,
+                      late_minutes: orig.late_minutes,
+                    })
+                    generateReport()
+                  } catch (e) {
+                    console.error("Undo failed:", e)
+                  }
+                }}
+                className="text-[12px] font-semibold text-white/60 transition-colors hover:text-white">
+                Undo
+              </button>
+              <button
+                type="button"
+                onClick={() => setUndoToast(null)}
+                className="text-white/25 transition-colors hover:text-white/50">
+                <i className="fa-solid fa-xmark text-[10px]" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

@@ -10,6 +10,7 @@ interface ReportTableProps {
   statusFilter?: string
   onResetSearch?: () => void
   onResetFilter?: () => void
+  onEditRow?: (row: RowData) => void
 }
 
 export function ReportTable({
@@ -19,6 +20,7 @@ export function ReportTable({
   search,
   statusFilter,
   onResetFilter,
+  onEditRow,
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
@@ -47,6 +49,9 @@ export function ReportTable({
                 </th>
               )
             })}
+            {onEditRow && (
+              <th className="sticky top-0 z-10 w-10 border-b border-white/6 bg-[rgba(16,21,28,0.98)]" />
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5 text-sm">
@@ -55,7 +60,7 @@ export function ReportTable({
             Object.values(groupedRows).every((rows) => rows.length === 0)
           ) ?
             <tr>
-              <td colSpan={visibleColDefs.length} className="py-24">
+              <td colSpan={visibleColDefs.length + (onEditRow ? 1 : 0)} className="py-24">
                 <div className="flex flex-col items-center justify-center px-6 text-center">
                   <h3 className="mb-2 text-base font-bold text-white/80">
                     {search ?
@@ -107,7 +112,7 @@ export function ReportTable({
                   {groupInfo !== "__all__" && (
                     <tr>
                       <td
-                        colSpan={visibleColDefs.length}
+                        colSpan={visibleColDefs.length + (onEditRow ? 1 : 0)}
                         className="border-b border-white/6 bg-[rgba(22,28,36,0.58)] px-4 py-3">
                         <div className="flex items-center gap-3">
                           <span className="text-xs font-bold tracking-wide text-cyan-100/90">
@@ -216,6 +221,32 @@ export function ReportTable({
                           content = (
                             <span className="font-semibold text-white">{val as string}</span>
                           )
+                        } else if (c.key === "notes") {
+                          if (val) {
+                            const text = val as string
+                            const hasDivider = text.includes(" — ")
+                            if (hasDivider) {
+                              const [reason, note] = text.split(" — ")
+                              content = (
+                                <div className="flex max-w-[280px] flex-col gap-0.5 leading-tight">
+                                  <span className="text-[10px] font-bold tracking-wider text-cyan-400/80 uppercase">
+                                    {reason}
+                                  </span>
+                                  <span className="text-[12px] font-medium break-words whitespace-normal text-white/55">
+                                    {note}
+                                  </span>
+                                </div>
+                              )
+                            } else {
+                              content = (
+                                <span className="max-w-[280px] text-[12px] leading-relaxed font-medium break-words whitespace-normal text-white/60">
+                                  {text}
+                                </span>
+                              )
+                            }
+                          } else {
+                            content = <span className="text-white/10">-</span>
+                          }
                         }
 
                         // Cell alignment
@@ -223,10 +254,13 @@ export function ReportTable({
                         if (c.align === "center") alignClass = "text-center"
                         else if (c.align === "right") alignClass = "text-right"
 
+                        // Notes column should NOT be whitespace-nowrap
+                        const isNotesCol = c.key === "notes"
+
                         return (
                           <td
                             key={c.key}
-                            className={`border-b border-white/5 px-4 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
+                            className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
                             {cIdx === 0 && (
                               <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                             )}
@@ -234,6 +268,16 @@ export function ReportTable({
                           </td>
                         )
                       })}
+                      {onEditRow && (
+                        <td className="border-b border-white/5 px-3 py-3.5 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => onEditRow(row)}
+                            className="p-1.5 text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-white">
+                            <i className="fa-solid fa-pen text-[12px]" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </Fragment>

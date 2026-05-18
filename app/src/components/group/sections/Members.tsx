@@ -503,16 +503,12 @@ export function Members({
             </div>
           )}
 
-          <AnimatePresence>
-            {memberToDelete && (
-              <DeleteMemberModal
-                isOpen={true}
-                member={memberToDelete}
-                onClose={() => setMemberToDelete(null)}
-                onConfirm={confirmRemoveMember}
-              />
-            )}
-          </AnimatePresence>
+          <DeleteMemberModal
+            isOpen={!!memberToDelete}
+            member={memberToDelete}
+            onClose={() => setMemberToDelete(null)}
+            onConfirm={confirmRemoveMember}
+          />
 
           <BulkConsentModal
             isOpen={isBulkConsentModalOpen}

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import type { AttendanceMember } from "@/types/recognition"
 import { Modal } from "@/components/common"
 
@@ -9,7 +10,13 @@ interface DeleteMemberModalProps {
 }
 
 export function DeleteMemberModal({ isOpen, member, onClose, onConfirm }: DeleteMemberModalProps) {
-  if (!member) return null
+  const [memberSnapshot, setMemberSnapshot] = useState<AttendanceMember | null>(null)
+
+  if (member && member !== memberSnapshot) {
+    setMemberSnapshot(member)
+  }
+
+  if (!memberSnapshot) return null
 
   return (
     <Modal
@@ -20,8 +27,8 @@ export function DeleteMemberModal({ isOpen, member, onClose, onConfirm }: Delete
       maxWidth="md">
       <div className="mb-6">
         <p className="mb-4 text-white">
-          Are you sure you want to remove <strong>&quot;{member.name}&quot;</strong> from this
-          group?
+          Are you sure you want to remove <strong>&quot;{memberSnapshot.name}&quot;</strong> from
+          this group?
         </p>
         <div className="rounded-lg border border-red-500/40 bg-red-900/30 p-3">
           <p className="text-sm text-red-300">

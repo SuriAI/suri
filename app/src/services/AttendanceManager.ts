@@ -308,6 +308,26 @@ export class AttendanceManager {
     }
   }
 
+  /**
+   * Modifies daily attendance sessions to allow human auditing and overrides.
+   * This is crucial to correct exceptions, absent markings, and late durations
+   * that machine algorithms/scans did not capture or misclassified.
+   */
+  async updateSession(
+    personId: string,
+    date: string,
+    updates: {
+      status?: string
+      notes?: string
+      check_in_time?: Date
+      check_out_time?: Date
+      is_late?: boolean
+      late_minutes?: number
+    },
+  ): Promise<AttendanceSession> {
+    return this.recordManager.updateSession(personId, date, updates)
+  }
+
   private warnIfSystemClockWentBackwards(): void {
     try {
       const now = Date.now()
