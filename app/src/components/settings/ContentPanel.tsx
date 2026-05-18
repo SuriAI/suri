@@ -141,7 +141,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={addMemberHandler}
-              className="flex items-center gap-2 rounded-lg border border-transparent bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
+              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
               <i className="fa-solid fa-user-plus text-[10px]"></i>
               ADD MEMBER
             </button>
@@ -151,7 +151,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         actions = (
           <button
             onClick={resetRegistration}
-            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-arrow-left text-[10px]"></i>
             BACK TO MEMBERS
           </button>
@@ -160,7 +160,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         actions = (
           <button
             onClick={openEditGroup}
-            className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/65 transition-all hover:bg-white/10 hover:text-white">
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-pen text-[10px]"></i>
             EDIT GROUP
           </button>
@@ -169,8 +169,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         actions = (
           <button
             onClick={reportsExportHandlers.exportCSV}
-            className="flex items-center gap-2 rounded-lg bg-cyan-500/10 px-3 py-1.5 text-[11px] font-bold text-cyan-400 transition-all hover:bg-cyan-500/20">
-            <i className="fa-solid fa-file-csv text-[10px]"></i>
+            className="flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.03] px-3.5 py-2 text-[10.5px] font-bold tracking-[0.08em] text-cyan-400 transition-all duration-200 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-[0.97]">
+            <i className="fa-solid fa-file-csv text-[10px] opacity-75"></i>
             EXPORT CSV
           </button>
         )

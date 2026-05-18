@@ -21,10 +21,10 @@ interface AttendancePanelProps {
 }
 
 const sidebarActionButtonClassName =
-  "flex h-9 w-9 shrink-0 items-center justify-center border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/65 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
+  "flex h-9 w-9 shrink-0 items-center justify-center border border-white/[0.08] bg-white/[0.02] text-white/45 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
 
 const sidebarDropdownIconButtonClassName =
-  "h-9 w-full border border-white/10 bg-[rgba(22,28,36,0.68)] px-0 text-white/65 transition-all duration-200 hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
+  "h-9 w-full border border-white/[0.08] bg-white/[0.02] px-0 text-white/45 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
 
 const sidebarActionIconClassName =
   "pointer-events-none text-sm text-current transition-colors duration-200"
@@ -411,7 +411,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 placeholder="Select group..."
                 emptyMessage="No groups available"
                 maxHeight={256}
-                buttonClassName="text-xs h-9 border-r-0 rounded-r-none focus:ring-0! focus:border-white/20!"
+                buttonClassName="text-xs h-9 !bg-white/[0.02] hover:!bg-white/[0.05] !border-white/[0.08] border-r-0 rounded-r-none focus:ring-0! focus:border-white/20!"
                 allowClear={false}
                 showPlaceholderOption={false}
               />
@@ -439,7 +439,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <div className="text-center text-xs text-white/55">No groups created yet</div>
             <button
               onClick={() => setShowGroupManagement(true)}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+              className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
               <i className="fa-solid fa-plus text-xs"></i>
               Create Group
             </button>
@@ -451,14 +451,14 @@ export const AttendancePanel = memo(function AttendancePanel({
         <div className="shrink-0 px-3 pb-3">
           <div className="flex items-center gap-2">
             <div className="flex min-w-0 flex-1 items-center">
-              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/10 bg-white/3">
+              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/[0.08] bg-white/[0.02] transition-colors duration-200 focus-within:border-cyan-500/25">
                 <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[10px] text-white/20 transition-colors group-focus-within/search:text-cyan-400/60" />
                 <input
                   type="text"
                   placeholder="Search name..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="h-full w-full border-0 bg-transparent pr-3 pl-8 text-xs text-white transition-all placeholder:text-white/20 focus:bg-white/6 focus:outline-none"
+                  className="h-full w-full border-0 bg-transparent pr-3 pl-8 text-xs text-white transition-all placeholder:text-white/20 focus:outline-none"
                 />
               </div>
 
@@ -575,7 +575,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                   </div>
                   <button
                     onClick={handleOpenSettingsForRegistration}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+                    className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
                     Add Member
                   </button>
@@ -587,7 +587,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                   <div className="text-xs text-white/55">No face data added yet</div>
                   <button
                     onClick={handleOpenSettingsForRegistration}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-xs text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+                    className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
                     Register Face
                   </button>

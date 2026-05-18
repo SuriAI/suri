@@ -75,7 +75,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
   const setError = useUIStore((state) => state.setError)
   const [config, setConfig] = useState<RemoteSyncConfig>(defaultConfig)
   const [remoteBaseUrl, setRemoteBaseUrl] = useState("")
-  const [deviceName, setDeviceName] = useState("Facenox Desktop")
+  const [deviceName, setDeviceName] = useState("")
   const [pairingCode, setPairingCode] = useState("")
   const [intervalMinutes, setIntervalMinutes] = useState(DEFAULT_SYNC_INTERVAL_MINUTES)
   const [enabled, setEnabled] = useState(false)
@@ -89,7 +89,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
 
     setConfig(nextConfig)
     setRemoteBaseUrl(nextRemoteBaseUrl === DEFAULT_REMOTE_BASE_URL ? "" : nextRemoteBaseUrl)
-    setDeviceName(nextConfig.deviceName || "Facenox Desktop")
+    setDeviceName(nextConfig.deviceName === "Facenox Desktop" ? "" : nextConfig.deviceName || "")
     setIntervalMinutes(nextConfig.intervalMinutes || DEFAULT_SYNC_INTERVAL_MINUTES)
     setEnabled(nextConfig.enabled)
     setShowAdvanced(nextRemoteBaseUrl !== DEFAULT_REMOTE_BASE_URL)
@@ -270,9 +270,9 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
             : null}
 
             {!config.connected ?
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex max-w-[360px] flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <label className="text-xs font-medium text-white/55 uppercase">
+                  <label className="text-[10px] font-extrabold tracking-[0.15em] text-white/50 uppercase">
                     Pairing Code
                   </label>
                   <input
@@ -280,13 +280,13 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                     placeholder="ABCD2345"
                     value={pairingCode}
                     onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
-                    className="h-10 w-full rounded-md border border-white/5 bg-white/5 px-4 font-mono text-[13px] tracking-widest text-white uppercase transition-all outline-none placeholder:tracking-normal placeholder:lowercase focus:border-white/20 focus:bg-white/10"
+                    className="h-10 w-full rounded-md border border-white/10 bg-white/[0.02] px-4 text-center font-mono text-[13.5px] font-semibold tracking-[0.2em] text-white uppercase transition-all duration-200 outline-none placeholder:text-center placeholder:tracking-[0.1em] placeholder:text-white/20 placeholder:lowercase focus:border-cyan-500/30 focus:bg-cyan-500/[0.03] focus:text-cyan-300"
                   />
                 </div>
                 <button
                   onClick={handlePair}
                   disabled={busyAction !== null || !pairingCode}
-                  className="flex h-10 min-w-32 shrink-0 items-center justify-center gap-2 rounded-md bg-cyan-500/10 px-4 text-[12px] font-bold text-cyan-400 transition-all hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-40">
+                  className="flex h-10 min-w-28 shrink-0 items-center justify-center gap-2 rounded-md border border-cyan-500/20 bg-cyan-500/[0.03] px-4 text-[11px] font-bold tracking-wider text-cyan-400 uppercase transition-all duration-200 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40">
                   <i
                     className={
                       busyAction === "pairing" ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-plug"
@@ -346,7 +346,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                     <div className="mt-4 space-y-6 rounded-md border border-white/[0.05] p-5">
                       <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-white/55 uppercase">
+                          <label className="text-[10px] font-extrabold tracking-[0.15em] text-white/50 uppercase">
                             Custom Server URL
                           </label>
                           <input
@@ -355,27 +355,33 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                             value={remoteBaseUrl}
                             disabled={config.connected}
                             onChange={(e) => setRemoteBaseUrl(e.target.value)}
-                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-9 w-full rounded-md border border-white/10 bg-white/[0.02] px-3 text-[12.5px] text-white transition-all duration-200 outline-none focus:border-white/25 focus:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
                           />
+                          <p className="text-[10.5px] leading-normal font-medium text-white/35">
+                            Leave empty to use official Facenox servers.
+                          </p>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-white/55 uppercase">
+                          <label className="text-[10px] font-extrabold tracking-[0.15em] text-white/50 uppercase">
                             Device Name Override
                           </label>
                           <input
                             type="text"
-                            placeholder="Front Desk Desktop"
+                            placeholder="Facenox Desktop"
                             value={deviceName}
                             disabled={config.connected}
                             onChange={(e) => setDeviceName(e.target.value)}
-                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-9 w-full rounded-md border border-white/10 bg-white/[0.02] px-3 text-[12.5px] text-white transition-all duration-200 outline-none focus:border-white/25 focus:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
                           />
+                          <p className="text-[10.5px] leading-normal font-medium text-white/35">
+                            Used to identify this device on your dashboard (e.g. Main Entrance).
+                          </p>
                         </div>
                       </div>
 
-                      <div className="grid gap-6 md:grid-cols-[1fr_auto]">
+                      <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-medium text-white/55 uppercase">
+                          <label className="text-[10px] font-extrabold tracking-[0.15em] text-white/50 uppercase">
                             Auto-Sync Interval (Mins)
                           </label>
                           <input
@@ -386,35 +392,39 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                             onChange={(e) =>
                               setIntervalMinutes(Math.max(1, Number(e.target.value) || 1))
                             }
-                            className="h-9 w-full rounded-md border border-white/5 bg-white/5 px-3 text-[13px] text-white transition-all outline-none focus:border-white/20 focus:bg-white/10"
+                            className="h-9 w-full rounded-md border border-white/10 bg-white/[0.02] px-3 text-[12.5px] text-white transition-all duration-200 outline-none focus:border-white/25 focus:bg-white/[0.04]"
                           />
                         </div>
-                        <div className="mt-auto mb-1 flex items-center gap-3">
-                          <button
-                            onClick={() => setEnabled(!enabled)}
-                            className={`premium-switch ${enabled ? "premium-switch-on" : "premium-switch-off"}`}>
-                            <div
-                              className={`premium-switch-thumb ${enabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-                          </button>
-                          <span className="text-[13px] font-medium text-white/70">
-                            Enable auto-sync
-                          </span>
+                        <div className="flex flex-col justify-end pb-1.5">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => setEnabled(!enabled)}
+                              className={`premium-switch ${enabled ? "premium-switch-on" : "premium-switch-off"}`}>
+                              <div
+                                className={`premium-switch-thumb ${enabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
+                            </button>
+                            <span className="text-[12.5px] font-semibold tracking-wide text-white/70">
+                              Enable auto-sync
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <button
-                        onClick={handleSave}
-                        disabled={busyAction !== null}
-                        className="flex w-full items-center justify-center gap-2 rounded-md bg-white/10 px-4 py-2 text-[12px] font-medium text-white transition-all hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40">
-                        <i
-                          className={
-                            busyAction === "saving" ?
-                              "fa-solid fa-spinner fa-spin"
-                            : "fa-solid fa-gear"
-                          }
-                        />
-                        Save Settings
-                      </button>
+                      <div className="pt-2">
+                        <button
+                          onClick={handleSave}
+                          disabled={busyAction !== null}
+                          className="flex w-fit items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-6 py-2 text-[11px] font-bold tracking-wide text-white/70 uppercase transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40">
+                          <i
+                            className={
+                              busyAction === "saving" ?
+                                "fa-solid fa-spinner fa-spin"
+                              : "fa-solid fa-gear"
+                            }
+                          />
+                          Save Settings
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 )}

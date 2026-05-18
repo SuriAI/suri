@@ -135,7 +135,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
           className="relative mt-6 w-full max-w-full overflow-hidden rounded-xl border border-white/6 bg-[var(--bg-secondary)] md:h-[92vh] lg:h-[90vh] lg:max-w-[96%] [@media(max-height:760px)_and_(max-width:1100px)]:mt-0 [@media(max-height:760px)_and_(max-width:1100px)]:h-full [@media(max-height:760px)_and_(max-width:1100px)]:max-w-full [@media(max-height:760px)_and_(max-width:1100px)]:rounded-none [@media(max-height:760px)_and_(max-width:1100px)]:border-0">
           <button
             onClick={props.onBack}
-            className="absolute top-[14px] right-[14px] z-50 border-none bg-transparent p-1 text-white/35 shadow-none transition-all duration-200 hover:text-white"
+            className="absolute top-[14px] right-[14px] z-50 rounded-lg border-none bg-transparent p-1 text-white/35 shadow-none transition-all duration-200 hover:bg-white/[0.06] hover:text-white active:scale-95"
             aria-label="Close Settings">
             <i className="fa-solid fa-xmark text-base"></i>
           </button>
