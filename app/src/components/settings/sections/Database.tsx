@@ -194,10 +194,7 @@ export function Database({
 
   const timeHealth = timeHealthState.timeHealth
   const timeHealthStatus = timeHealth?.online_verification_status ?? "unavailable"
-  const timeHealthTone =
-    timeHealthStatus === "verified" ? "text-cyan-400/80"
-    : timeHealthStatus === "drift_detected" ? "text-amber-400/90"
-    : "text-white/65"
+
   const formattedLocalTime =
     timeHealth?.current_time_local ?
       new Date(timeHealth.current_time_local).toLocaleString([], {
@@ -207,17 +204,14 @@ export function Database({
         day: "numeric",
       })
     : null
-  const timeHealthSummary =
-    timeHealthState.loading ? "Checking time..."
-    : timeHealthStatus === "verified" ? "Time synchronized"
-    : timeHealthStatus === "drift_detected" ? "Clock drift detected"
-    : timeHealthStatus === "offline" ? "Offline mode"
-    : "Status unavailable"
   const timeHealthDetails =
     timeHealthState.loading ? "Verifying clock accuracy..."
-    : timeHealthStatus === "verified" ? "Your device clock is accurate."
-    : timeHealthStatus === "drift_detected" ? "Adjust your computer's date and time settings."
-    : timeHealthStatus === "offline" ? "Cannot verify time online. Using local backup clock."
+    : timeHealthStatus === "verified" ?
+      "Verifies your system clock is correct to prevent attendance tampering."
+    : timeHealthStatus === "drift_detected" ?
+      "Device clock is out of sync. Adjust your date and time settings to prevent logging errors."
+    : timeHealthStatus === "offline" ?
+      "Cannot verify time online. Operating in local offline fallback mode."
     : "Could not read the current time authority status."
 
   return (
@@ -241,9 +235,22 @@ export function Database({
 
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 flex-1">
-            <h4 className={`text-[15px] font-semibold tracking-tight ${timeHealthTone}`}>
-              {timeHealthSummary}
-            </h4>
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-[15px] font-semibold text-white/90">System Clock</h4>
+              <span className="text-[11px] font-medium text-white/20">•</span>
+              {timeHealthState.loading ?
+                <span className="inline-flex items-center gap-1.5 text-[12px] text-white/40">
+                  <i className="fa-solid fa-circle-notch fa-spin text-[10px]" />
+                  Checking time...
+                </span>
+              : timeHealthStatus === "verified" ?
+                <span className="text-[12px] text-cyan-400/70">Synced</span>
+              : timeHealthStatus === "drift_detected" ?
+                <span className="text-[12px] text-amber-400/80">Drift warning</span>
+              : timeHealthStatus === "offline" ?
+                <span className="text-[12px] text-white/40">Offline fallback</span>
+              : <span className="text-[12px] text-white/40">Status unavailable</span>}
+            </div>
             <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{timeHealthDetails}</p>
             <div className="mt-4 flex items-center gap-2 font-mono text-[11px] tracking-tight text-white/55">
               <i className="fa-solid fa-microchip opacity-50" />
@@ -261,7 +268,7 @@ export function Database({
             <button
               onClick={onRefreshTimeHealth}
               disabled={timeHealthState.loading}
-              className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/5 px-4 py-1.5 text-[12px] font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">
+              className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-4 py-1.5 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
               {timeHealthState.loading ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-rotate-right" />}
@@ -305,7 +312,7 @@ export function Database({
             <button
               onClick={() => setPasswordModal({ isOpen: true, action: "export" })}
               disabled={isBackingUp}
-              className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white/10 px-5 py-2 text-[12px] font-bold text-white transition-all hover:bg-white/15 active:scale-95 disabled:opacity-40">
+              className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
               {isBackingUp && status.action === "export" ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-file-export text-[11px] opacity-40" />}
@@ -324,7 +331,7 @@ export function Database({
             <button
               onClick={startImportFlow}
               disabled={isBackingUp}
-              className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white/10 px-5 py-2 text-[12px] font-bold text-white transition-all hover:bg-white/15 active:scale-95 disabled:opacity-40">
+              className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
               {isBackingUp && status.action === "import" ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-file-import text-[11px] opacity-40" />}
@@ -344,7 +351,7 @@ export function Database({
             <button
               onClick={handleExportAuditLog}
               disabled={isExportingAuditLog}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-transparent px-5 py-2 text-[12px] font-bold text-white/65 transition-all hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-40">
+              className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
               {isExportingAuditLog ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-download text-[11px] opacity-40" />}

@@ -271,23 +271,23 @@ export const Sidebar = memo(function Sidebar({
                     useUIStore.getState().setSettingsInitialSection("about")
                   }
                 }}
-                className="group relative flex h-9 w-9 items-center justify-center rounded-lg border-none bg-transparent"
+                className="group relative flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent transition-all duration-200 hover:bg-white/[0.06] active:scale-95"
                 disabled={isCollapsed}
                 aria-label="Open Settings"
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="flex items-center justify-center text-white/65 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/45 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },
                   }}
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}>
-                  <SettingsIcon className="h-[20px] w-[20px]" />
+                  <SettingsIcon className="h-[18px] w-[18px]" />
                 </motion.div>
 
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full border border-black bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
+                  <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full border border-black bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
                 )}
               </motion.button>
             </Tooltip>
@@ -338,7 +338,7 @@ export const Sidebar = memo(function Sidebar({
         </div>
 
         {isCollapsed && (
-          <div className="absolute inset-0 flex flex-col items-center gap-3 py-3">
+          <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-2 pt-2 pb-0">
             <Tooltip content="Expand sidebar" position="left">
               <button
                 onClick={toggleSidebar}
@@ -347,8 +347,6 @@ export const Sidebar = memo(function Sidebar({
                 <SidebarToggleIcon collapsed={true} />
               </button>
             </Tooltip>
-
-            <div className="my-1 h-px w-8 bg-white/6"></div>
 
             <Tooltip
               content={updateInfo?.hasUpdate ? "Update available!" : "Settings"}
@@ -360,26 +358,28 @@ export const Sidebar = memo(function Sidebar({
                     useUIStore.getState().setSettingsInitialSection("about")
                   }
                 }}
-                className="group relative flex h-11 w-11 items-center justify-center rounded-lg border-none bg-transparent"
+                className="group relative flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent transition-all duration-200 hover:bg-white/[0.06] active:scale-95"
                 aria-label="Open Settings"
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="flex items-center justify-center text-white/70 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/45 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },
                   }}
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}>
-                  <SettingsIcon className="h-[20px] w-[20px]" />
+                  <SettingsIcon className="h-[18px] w-[18px]" />
                 </motion.div>
 
                 {/* Update Badge */}
                 {updateInfo?.hasUpdate && (
-                  <div className="absolute top-2 right-2 h-2 w-2 rounded-full border border-black bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></div>
+                  <div className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full border border-black bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.6)]"></div>
                 )}
               </motion.button>
             </Tooltip>
+
+            <div className="mt-2 h-px w-full bg-white/10"></div>
           </div>
         )}
       </div>

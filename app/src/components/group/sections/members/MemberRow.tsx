@@ -36,11 +36,11 @@ export function MemberRow({
         layout: { type: "spring", stiffness: 380, damping: 30 },
       }}
       onClick={() => onToggleSelect?.(member.person_id)}
-      className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all ${
+      className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all duration-200 ${
         onToggleSelect ? "cursor-pointer" : ""
       } ${
         isSelected ?
-          "border-cyan-500/20 bg-cyan-500/10"
+          "border-cyan-500/20 bg-cyan-500/10 hover:border-cyan-500/35 hover:bg-cyan-500/[0.16]"
         : "border-white/[0.03] hover:bg-white/[0.02]"
       }`}>
       <div className="flex min-w-0 flex-1 items-center">
@@ -58,13 +58,15 @@ export function MemberRow({
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="mb-0.5 flex items-center gap-2 text-sm font-semibold text-white">
-            {member.displayName}
-            {isRegistered && (
-              <i
-                className="fa-solid fa-face-smile text-[10px] text-cyan-400"
-                title="Registered"></i>
-            )}
+          <div
+            className={`mb-0.5 flex items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
+              isRegistered ? "text-cyan-400" : "text-white"
+            }`}>
+            {isRegistered ?
+              <Tooltip content="Registered" position="top">
+                <span>{member.displayName}</span>
+              </Tooltip>
+            : <span>{member.displayName}</span>}
             {!member.has_consent && (
               <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black tracking-widest text-amber-500/80 uppercase">
                 No Consent

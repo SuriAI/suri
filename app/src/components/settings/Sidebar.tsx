@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   groupSections,
 }) => {
   return (
-    <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[240px] lg:w-[260px]">
+    <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[220px] lg:w-[240px]">
       {/* Workspace Switcher Header */}
       <div className="px-3 pt-6 pb-2">
         <div className="flex items-center gap-1">
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {isActive && (
                       <motion.div
                         layoutId="active-settings-sidebar-pill"
-                        className="absolute left-0 h-4 w-1 rounded-r-full bg-cyan-400"
+                        className="absolute left-[-12px] h-5 w-[3px] rounded-r-full bg-cyan-400"
                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                       />
                     )}
@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="active-settings-sidebar-pill"
-                      className="absolute left-0 h-4 w-1 rounded-r-full bg-cyan-400"
+                      className="absolute left-[-12px] h-5 w-[3px] rounded-r-full bg-cyan-400"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}

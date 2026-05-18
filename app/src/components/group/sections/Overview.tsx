@@ -266,7 +266,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             <div className="relative" ref={filterDropdownRef}>
               <button
                 onClick={() => setFilterDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-[12px] font-medium text-white/65 transition-colors hover:bg-white/10 hover:text-white">
+                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-[12px] font-medium text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
                 <i className="fa-regular fa-calendar text-[10px]" />
                 {DATE_FILTER_LABELS[dateFilter]}
                 <i

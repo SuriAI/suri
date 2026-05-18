@@ -478,7 +478,7 @@ export function Members({
           {/* Consent banner */}
           {members.some((m) => !m.has_consent) && (
             <div className="pointer-events-none absolute right-0 bottom-6 left-0 z-40 flex justify-center">
-              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl backdrop-blur-sm duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl duration-500">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-triangle-exclamation shrink-0 text-amber-500/80" />
                   <span className="leading-snug whitespace-nowrap">
@@ -490,7 +490,7 @@ export function Members({
                     setBulkConsentScope("all")
                     setIsBulkConsentModalOpen(true)
                   }}
-                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold tracking-wider text-white/65 transition-all hover:bg-white/10 active:scale-95">
+                  className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wider text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
                   Grant all
                 </button>
               </div>

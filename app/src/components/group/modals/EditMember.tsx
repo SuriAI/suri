@@ -121,13 +121,13 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={handleClose}
-            className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+            className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2 text-[11px] font-medium text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || loading}
-            className="min-w-[140px] rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95 disabled:opacity-40">
+            className="min-w-[140px] rounded-lg border border-cyan-500/15 bg-cyan-500/5 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all duration-200 hover:border-cyan-500/25 hover:bg-cyan-500/15 active:scale-[0.97] disabled:opacity-40">
             {loading ?
               <i className="fa-solid fa-circle-notch fa-spin mr-2" />
             : null}

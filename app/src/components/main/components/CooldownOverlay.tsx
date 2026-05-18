@@ -60,7 +60,7 @@ export function CooldownOverlay({ persistentCooldowns }: CooldownOverlayProps) {
               layout: { duration: 0.2 },
             }}
             className="group relative">
-            <div className="relative flex items-center gap-2 rounded-full border border-white/[0.04] bg-black/60 px-3 py-1.5 pr-4 shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-lg">
+            <div className="relative flex items-center gap-2 rounded-full border border-white/[0.04] bg-black/60 px-3 py-1.5 pr-4 shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
               <i className="fa-solid fa-check shrink-0 text-xs text-cyan-400"></i>
               <h4 className="max-w-[140px] truncate text-xs font-medium text-white/95">
                 {info.memberName || "Authorized"}
