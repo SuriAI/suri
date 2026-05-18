@@ -146,7 +146,7 @@ export function GroupEntry({
             <div className="px-4 py-8 text-center text-[12px] text-white/55">
               No members in this group
             </div>
-          : <div className="max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">
+          : <div className="custom-scroll max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">
               {group.members.map((member) => (
                 <MemberEntry
                   key={member.person_id}

@@ -75,7 +75,7 @@ export function DeleteConfirmationModal({
                 setConfirmationInput("")
                 cancelDeleteGroup()
               }}
-              className="rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-2 text-[11px] font-medium text-white/65 transition-colors hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
+              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
               Cancel
             </button>
             <button
@@ -84,7 +84,7 @@ export function DeleteConfirmationModal({
                 confirmDeleteGroup()
               }}
               disabled={!isConfirmationMatch}
-              className="btn-error rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider disabled:cursor-not-allowed disabled:opacity-40">
+              className="btn-error rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
               Delete Group
             </button>
           </div>
