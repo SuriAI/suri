@@ -22,9 +22,17 @@ export function ReportTable({
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
+  // Standardized responsive horizontal scroll container
   return (
-    <div className="custom-scroll scroll-under-header flex-1 overflow-auto">
-      <table className="w-full border-separate border-spacing-0 text-left">
+    <div
+      className="custom-scroll hover-scrollbar reports-scroll w-full max-w-full flex-1 overflow-x-auto overflow-y-auto px-10 pb-10"
+      style={{
+        maskImage:
+          "linear-gradient(to bottom, black calc(100% - 50px), transparent calc(100% - 10px), black calc(100% - 10px), black 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, black calc(100% - 50px), transparent calc(100% - 10px), black calc(100% - 10px), black 100%)",
+      }}>
+      <table className="w-full min-w-[900px] border-separate border-spacing-0 text-left">
         <thead>
           <tr>
             {visibleColDefs.map((c) => {
@@ -215,12 +223,10 @@ export function ReportTable({
                         if (c.align === "center") alignClass = "text-center"
                         else if (c.align === "right") alignClass = "text-right"
 
-                        const isLast = cIdx === visibleColDefs.length - 1
-
                         return (
                           <td
                             key={c.key}
-                            className={`border-b border-white/5 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""} ${isLast ? "pr-6 pl-4" : "px-4"}`}>
+                            className={`border-b border-white/5 px-4 py-3.5 whitespace-nowrap ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
                             {cIdx === 0 && (
                               <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                             )}

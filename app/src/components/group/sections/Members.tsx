@@ -429,7 +429,13 @@ export function Members({
             )}
           </div>
 
-          <div className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10">
+          <div
+            className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10"
+            style={{
+              maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+            }}>
             <AnimatePresence mode="wait">
               {filteredMembers.length === 0 ?
                 <motion.div
