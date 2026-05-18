@@ -418,7 +418,7 @@ export function AddMember({
               resetForm()
               onClose()
             }}
-            className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2 text-[11px] font-medium text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
+            className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
             Cancel
           </button>
           <button
@@ -429,10 +429,10 @@ export function AddMember({
               (!isBulkMode && !newMemberName.trim()) ||
               (isBulkMode && !bulkMembersText.trim())
             }
-            className={`min-w-[120px] rounded-lg border px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:opacity-40 ${
+            className={`min-w-[120px] rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:opacity-30 ${
               confirmDuplicate && !isBulkMode ?
-                "border-amber-500/15 bg-amber-500/5 text-amber-400 hover:border-amber-500/25 hover:bg-amber-500/15"
-              : "border-cyan-500/15 bg-cyan-500/5 text-cyan-400 hover:border-cyan-500/25 hover:bg-cyan-500/15"
+                "bg-amber-500 text-slate-950 hover:bg-amber-400"
+              : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
             }`}>
             {loading || isProcessingBulk ?
               "Processing..."

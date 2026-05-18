@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Dropdown, Tooltip } from "@/components/shared"
 import type {
   ColumnKey,
@@ -138,25 +139,32 @@ export function ReportToolbar({
             </button>
           </Tooltip>
 
-          {showFilter && (
-            <div className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md duration-100">
-              {finalStatusOptions.map(({ value: st, label }) => (
-                <button
-                  key={st}
-                  onClick={() => {
-                    setStatusFilter(st as ReportStatusFilter)
-                    setShowFilter(false)
-                  }}
-                  className={`w-full border-0 px-3 py-2.5 text-left text-[11px] font-bold tracking-wider transition-colors ${
-                    statusFilter === st ?
-                      "bg-cyan-500/10 text-cyan-400"
-                    : "text-white/65 hover:bg-white/5 hover:text-white"
-                  }`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
+          <AnimatePresence>
+            {showFilter && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
+                className="absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md">
+                {finalStatusOptions.map(({ value: st, label }) => (
+                  <button
+                    key={st}
+                    onClick={() => {
+                      setStatusFilter(st as ReportStatusFilter)
+                      setShowFilter(false)
+                    }}
+                    className={`w-full border-0 px-3 py-2.5 text-left text-[11px] font-bold tracking-wider transition-colors ${
+                      statusFilter === st ?
+                        "bg-cyan-500/10 text-cyan-400"
+                      : "text-white/65 hover:bg-white/5 hover:text-white"
+                    }`}>
+                    {label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Options */}
@@ -169,71 +177,79 @@ export function ReportToolbar({
                   "border-cyan-500/25 bg-cyan-500/10 text-cyan-400"
                 : "border-white/5 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
               }`}>
-              <i className="fa-solid fa-sliders text-[11px]" />
+              <i className="fa-solid fa-pen text-[11px]" />
             </button>
           </Tooltip>
 
-          {showOptions && (
-            <div
-              className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md duration-100"
-              style={{ maxHeight: "360px" }}>
-              {/* Columns */}
-              <div className="px-3 pt-3 pb-2">
-                <span className="text-[11px] font-bold tracking-wider text-white/65">Columns</span>
-                <div
-                  className="custom-scroll mt-1.5 overflow-y-auto"
-                  style={{ maxHeight: "140px" }}>
-                  {allColumns.map((c) => (
-                    <label
-                      key={c.key}
-                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-white/5">
-                      <div className="relative flex shrink-0 items-center">
-                        <input
-                          type="checkbox"
-                          checked={visibleColumns.includes(c.key)}
-                          onChange={(e) => {
-                            e.stopPropagation()
-                            if (e.target.checked) {
-                              setVisibleColumns([...visibleColumns, c.key])
-                            } else {
-                              setVisibleColumns(visibleColumns.filter((k) => k !== c.key))
-                            }
-                          }}
-                          className="peer h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-white/10 bg-white/5 transition-all checked:border-cyan-500 checked:bg-cyan-500"
-                        />
-                        <i className="fa-solid fa-check pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-black opacity-0 peer-checked:opacity-100" />
-                      </div>
-                      <span className="text-[11px] font-bold tracking-wider text-white/65">
-                        {c.label}
-                      </span>
-                    </label>
-                  ))}
+          <AnimatePresence>
+            {showOptions && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
+                className="absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md"
+                style={{ maxHeight: "360px" }}>
+                {/* Columns */}
+                <div className="px-3 pt-3 pb-2">
+                  <span className="text-[11px] font-bold tracking-wider text-white/65">
+                    Columns
+                  </span>
+                  <div
+                    className="custom-scroll mt-1.5 overflow-y-auto"
+                    style={{ maxHeight: "140px" }}>
+                    {allColumns.map((c) => (
+                      <label
+                        key={c.key}
+                        className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-white/5">
+                        <div className="relative flex shrink-0 items-center">
+                          <input
+                            type="checkbox"
+                            checked={visibleColumns.includes(c.key)}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              if (e.target.checked) {
+                                setVisibleColumns([...visibleColumns, c.key])
+                              } else {
+                                setVisibleColumns(visibleColumns.filter((k) => k !== c.key))
+                              }
+                            }}
+                            className="peer h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-white/10 bg-white/5 transition-all checked:border-cyan-500 checked:bg-cyan-500"
+                          />
+                          <i className="fa-solid fa-check pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-black opacity-0 peer-checked:opacity-100" />
+                        </div>
+                        <span className="text-[11px] font-bold tracking-wider text-white/65">
+                          {c.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="h-px bg-white/5" />
+                <div className="h-px bg-white/5" />
 
-              {/* Group By */}
-              <div className="flex items-center justify-between gap-3 px-3 py-3">
-                <span className="shrink-0 text-[11px] font-bold tracking-wider text-white/65">
-                  Group by
-                </span>
-                <Dropdown
-                  options={GROUP_OPTIONS.map((g) => ({
-                    value: g.value,
-                    label: g.label,
-                  }))}
-                  value={groupBy}
-                  onChange={(v) => v && setGroupBy(v as GroupByKey)}
-                  showPlaceholderOption={false}
-                  allowClear={false}
-                  className="flex-1"
-                  buttonClassName="!rounded-lg !border-white/5 !bg-white/5 !py-1.5 !pl-3 !pr-2 !text-[11px] !font-bold !tracking-wider hover:!bg-white/10 transition-all duration-300"
-                  iconClassName="!text-[9px]"
-                />
-              </div>
-            </div>
-          )}
+                {/* Group By */}
+                <div className="flex items-center justify-between gap-3 px-3 py-3">
+                  <span className="shrink-0 text-[11px] font-bold tracking-wider text-white/65">
+                    Group by
+                  </span>
+                  <Dropdown
+                    options={GROUP_OPTIONS.map((g) => ({
+                      value: g.value,
+                      label: g.label,
+                    }))}
+                    value={groupBy}
+                    onChange={(v) => v && setGroupBy(v as GroupByKey)}
+                    showPlaceholderOption={false}
+                    allowClear={false}
+                    className="flex-1"
+                    buttonClassName="!rounded-lg !border-white/5 !bg-white/5 !py-1.5 !pl-3 !pr-2 !text-[11px] !font-bold !tracking-wider hover:!bg-white/10 transition-all duration-300"
+                    iconClassName="!text-[9px]"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -170,12 +170,12 @@ export function AntiSpoofDetectionModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handleClose}
-              className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-white/65 uppercase transition-colors hover:text-white/85">
+              className="rounded-lg px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-white/55 uppercase transition-all duration-200 hover:bg-white/5 hover:text-white/85 active:scale-[0.97]">
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              className="rounded-lg bg-cyan-500 px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-slate-950 uppercase transition-colors hover:bg-cyan-400">
+              className="rounded-lg bg-cyan-500 px-4 py-2 text-[10px] font-semibold tracking-[0.16em] text-slate-950 uppercase transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
               Enable
             </button>
           </div>

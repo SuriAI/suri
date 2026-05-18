@@ -381,28 +381,23 @@ export function EditSessionModal({
         </div>
 
         {/* ── Fixed Footer Actions (Docked, doesn't scroll) ──────────────── */}
-        <div className="flex items-center justify-between border-t border-white/[0.05] pt-4">
-          <p className="text-[10px] text-white/20">Logged in audit trail.</p>
+        <div className="flex items-center justify-end border-t border-white/[0.05] pt-4">
           <div className="flex gap-2">
             <button
               type="button"
               disabled={isSubmitting}
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/45 transition-colors hover:text-white/75 disabled:opacity-40">
+              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97] disabled:opacity-30">
               Cancel
             </button>
             <button
               type="button"
               disabled={isSubmitting}
               onClick={handleSave}
-              className="inline-flex min-w-[108px] items-center justify-center gap-1.5 rounded-lg bg-cyan-500/10 px-5 py-2 text-[11px] font-bold tracking-wide text-cyan-400 ring-1 ring-cyan-500/20 transition-all hover:bg-cyan-500/15 active:scale-95 disabled:opacity-40">
+              className="inline-flex min-w-[108px] items-center justify-center gap-1.5 rounded-lg bg-cyan-500 px-5 py-2 text-[11px] font-bold tracking-wide text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97] disabled:opacity-30">
               {isSubmitting ?
                 <i className="fa-solid fa-spinner fa-spin text-[10px]" />
-              : <>
-                  <i className="fa-solid fa-floppy-disk text-[10px]" />
-                  Save Changes
-                </>
-              }
+              : "Save Changes"}
             </button>
           </div>
         </div>
