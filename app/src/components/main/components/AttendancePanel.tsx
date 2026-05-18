@@ -508,7 +508,13 @@ export const AttendancePanel = memo(function AttendancePanel({
       {attendanceGroups.length > 0 &&
         (isPanelLoading ? <AttendanceListSkeleton showSearch={Boolean(currentGroup)} />
         : isPanelSwitchPending ? <div className="flex min-h-0 flex-1" />
-        : <div className="hover-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
+        : <div
+            className="hover-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto"
+            style={{
+              maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+            }}>
             {visibleRecords.length > 0 ?
               <>
                 {(() => {

@@ -108,8 +108,8 @@ export function Reports({
   }, [onExportHandlersReady, handleExportCSV, members.length, loading])
 
   return (
-    <section className="custom-scroll flex h-full flex-col overflow-hidden px-10 pt-8 pb-10">
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+    <section className="flex h-full w-full flex-col overflow-hidden bg-transparent">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {error && (
           <div className="animate-in fade-in slide-in-from-top-2 rounded-lg border border-red-500/40 bg-red-600/20 px-4 py-2 text-sm text-red-200">
             {error}
@@ -159,22 +159,24 @@ export function Reports({
               initial={{ opacity: 0, scale: 0.998 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
-              className="flex flex-1 flex-col overflow-hidden rounded-md border border-white/5 bg-transparent">
-              <ReportToolbar
-                startDate={reportStartDate}
-                endDate={reportEndDate}
-                onStartDateChange={setReportStartDate}
-                onEndDateChange={setReportEndDate}
-                visibleColumns={visibleColumns}
-                setVisibleColumns={setVisibleColumns}
-                groupBy={groupBy}
-                setGroupBy={setGroupBy}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                search={search}
-                setSearch={setSearch}
-                allColumns={allColumns}
-              />
+              className="flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
+              <div className="shrink-0 px-10 pt-8 pb-4">
+                <ReportToolbar
+                  startDate={reportStartDate}
+                  endDate={reportEndDate}
+                  onStartDateChange={setReportStartDate}
+                  onEndDateChange={setReportEndDate}
+                  visibleColumns={visibleColumns}
+                  setVisibleColumns={setVisibleColumns}
+                  groupBy={groupBy}
+                  setGroupBy={setGroupBy}
+                  statusFilter={statusFilter}
+                  setStatusFilter={setStatusFilter}
+                  search={search}
+                  setSearch={setSearch}
+                  allColumns={allColumns}
+                />
+              </div>
 
               <ReportTable
                 groupedRows={groupedRows}

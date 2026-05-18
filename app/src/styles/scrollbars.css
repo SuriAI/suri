@@ -59,6 +59,19 @@
   transition: background-color 0.15s ease;
 }
 
+.app-content-wrapper::-webkit-scrollbar-thumb:horizontal,
+.recent-logs-scroll::-webkit-scrollbar-thumb:horizontal,
+.live-detections::-webkit-scrollbar-thumb:horizontal,
+.sidebar::-webkit-scrollbar-thumb:horizontal,
+.custom-scroll::-webkit-scrollbar-thumb:horizontal,
+.hover-scrollbar::-webkit-scrollbar-thumb:horizontal,
+.settings-sidebar-scroll::-webkit-scrollbar-thumb:horizontal {
+  border-top: 4px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+}
+
 .app-content-wrapper::-webkit-scrollbar-thumb:hover,
 .recent-logs-scroll::-webkit-scrollbar-thumb:hover,
 .live-detections::-webkit-scrollbar-thumb:hover,
@@ -142,4 +155,15 @@
 
 .scroll-under-header::-webkit-scrollbar-thumb {
   margin-top: 41px;
+}
+
+/* Reports Custom Thicker Scrollbar */
+.reports-scroll::-webkit-scrollbar {
+  height: 10px; /* Standard horizontal scrollbar */
+  width: 10px;
+}
+
+/* Fix disjointed scrollbar tip UI bug by ending vertical scrollbar track 10px early */
+.reports-scroll::-webkit-scrollbar-track:vertical {
+  margin-bottom: 10px;
 }

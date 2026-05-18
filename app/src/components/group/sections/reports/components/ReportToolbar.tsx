@@ -73,26 +73,26 @@ export function ReportToolbar({
   }, [])
 
   return (
-    <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/5 px-4 py-2.5">
+    <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/5 px-4 pb-3">
       {/* Date Range */}
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
         <input
           type="date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="h-9 w-[124px] cursor-pointer rounded-lg border border-white/5 bg-white/5 px-3 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none hover:bg-white/10 focus:border-white/10 focus:bg-white/[0.08] [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
             } as React.CSSProperties
           }
         />
-        <span className="px-1 text-[11px] font-bold text-white/65">To</span>
+        <span className="px-1.5 text-[11px] font-bold tracking-wider text-white/45">To</span>
         <input
           type="date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
-          className="w-[104px] cursor-pointer rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] px-2 py-1 text-[11px] font-medium tracking-tight text-white/65 transition-all duration-300 outline-none focus:border-white/20 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
+          className="h-9 w-[124px] cursor-pointer rounded-lg border border-white/5 bg-white/5 px-3 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none hover:bg-white/10 focus:border-white/10 focus:bg-white/[0.08] [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
           style={
             {
               colorScheme: "dark",
@@ -102,16 +102,16 @@ export function ReportToolbar({
       </div>
 
       {/* ── Right Controls ── */}
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
         {/* Search */}
-        <div className="relative max-w-[180px] min-w-0 flex-1">
-          <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-2.5 -translate-y-1/2 text-[9px] text-white/20" />
+        <div className="relative max-w-[200px] min-w-0 flex-1">
+          <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-[10px] text-white/25" />
           <input
             type="search"
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full min-w-0 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.62)] py-1 pr-3 pl-7 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/40 focus:border-white/20 sm:focus:max-w-[220px]"
+            className="h-9 w-full min-w-0 rounded-lg border border-white/5 bg-white/5 py-2 pr-3 pl-10 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:border-white/10 focus:bg-white/[0.08]"
           />
         </div>
 
@@ -126,20 +126,20 @@ export function ReportToolbar({
             position="bottom">
             <button
               onClick={() => setShowFilter(!showFilter)}
-              className={`relative flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-300 ${
                 showFilter || statusFilter !== "all" ?
-                  "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
-                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/50 hover:text-white/65"
+                  "border-cyan-500/25 bg-cyan-500/10 text-cyan-400"
+                : "border-white/5 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
               }`}>
-              <i className="fa-solid fa-filter text-[10px]" />
+              <i className="fa-solid fa-filter text-[11px]" />
               {statusFilter !== "all" && (
-                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-cyan-400" />
               )}
             </button>
           </Tooltip>
 
           {showFilter && (
-            <div className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] duration-100">
+            <div className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md duration-100">
               {finalStatusOptions.map(({ value: st, label }) => (
                 <button
                   key={st}
@@ -147,10 +147,10 @@ export function ReportToolbar({
                     setStatusFilter(st as ReportStatusFilter)
                     setShowFilter(false)
                   }}
-                  className={`w-full border-0 px-3 py-1.5 text-left text-[11px] font-medium transition-colors ${
+                  className={`w-full border-0 px-3 py-2.5 text-left text-[11px] font-bold tracking-wider transition-colors ${
                     statusFilter === st ?
                       "bg-cyan-500/10 text-cyan-400"
-                    : "text-white/65 hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
+                    : "text-white/65 hover:bg-white/5 hover:text-white"
                   }`}>
                   {label}
                 </button>
@@ -164,29 +164,29 @@ export function ReportToolbar({
           <Tooltip content="Options" position="bottom">
             <button
               onClick={() => setShowOptions(!showOptions)}
-              className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-300 ${
                 showOptions ?
-                  "border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
-                : "border-white/6 bg-[rgba(22,28,36,0.62)] text-white/50 hover:text-white/65"
+                  "border-cyan-500/25 bg-cyan-500/10 text-cyan-400"
+                : "border-white/5 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
               }`}>
-              <i className="fa-solid fa-sliders text-[10px]" />
+              <i className="fa-solid fa-sliders text-[11px]" />
             </button>
           </Tooltip>
 
           {showOptions && (
             <div
-              className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] duration-100"
+              className="animate-in fade-in zoom-in-95 absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md duration-100"
               style={{ maxHeight: "360px" }}>
               {/* Columns */}
               <div className="px-3 pt-3 pb-2">
-                <span className="text-[11px] font-bold text-white/65">Columns</span>
+                <span className="text-[11px] font-bold tracking-wider text-white/65">Columns</span>
                 <div
                   className="custom-scroll mt-1.5 overflow-y-auto"
                   style={{ maxHeight: "140px" }}>
                   {allColumns.map((c) => (
                     <label
                       key={c.key}
-                      className="flex cursor-pointer items-center gap-2.5 px-1.5 py-1 transition-colors hover:bg-[rgba(22,28,36,0.62)]">
+                      className="flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-white/5">
                       <div className="relative flex shrink-0 items-center">
                         <input
                           type="checkbox"
@@ -199,21 +199,25 @@ export function ReportToolbar({
                               setVisibleColumns(visibleColumns.filter((k) => k !== c.key))
                             }
                           }}
-                          className="peer h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-white/10 bg-[rgba(22,28,36,0.62)] transition-all checked:border-cyan-500 checked:bg-cyan-500"
+                          className="peer h-3.5 w-3.5 cursor-pointer appearance-none rounded border border-white/10 bg-white/5 transition-all checked:border-cyan-500 checked:bg-cyan-500"
                         />
                         <i className="fa-solid fa-check pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] text-black opacity-0 peer-checked:opacity-100" />
                       </div>
-                      <span className="text-[11px] font-medium text-white/65">{c.label}</span>
+                      <span className="text-[11px] font-bold tracking-wider text-white/65">
+                        {c.label}
+                      </span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              <div className="h-px bg-white/6" />
+              <div className="h-px bg-white/5" />
 
               {/* Group By */}
-              <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-                <span className="shrink-0 text-[11px] font-bold text-white/65">Group by</span>
+              <div className="flex items-center justify-between gap-3 px-3 py-3">
+                <span className="shrink-0 text-[11px] font-bold tracking-wider text-white/65">
+                  Group by
+                </span>
                 <Dropdown
                   options={GROUP_OPTIONS.map((g) => ({
                     value: g.value,
@@ -224,8 +228,8 @@ export function ReportToolbar({
                   showPlaceholderOption={false}
                   allowClear={false}
                   className="flex-1"
-                  buttonClassName="!rounded-none !border-transparent !bg-[rgba(22,28,36,0.62)] !py-1 !pl-2 !pr-1.5 !text-[11px] !font-medium"
-                  iconClassName="!text-[8px]"
+                  buttonClassName="!rounded-lg !border-white/5 !bg-white/5 !py-1.5 !pl-3 !pr-2 !text-[11px] !font-bold !tracking-wider hover:!bg-white/10 transition-all duration-300"
+                  iconClassName="!text-[9px]"
                 />
               </div>
             </div>

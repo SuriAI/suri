@@ -308,7 +308,13 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           </div>
         </div>
 
-        <div className="custom-scroll relative flex-1 overflow-y-auto pr-2 pb-10 text-left">
+        <div
+          className="custom-scroll relative flex-1 overflow-y-auto pr-2 pb-10 text-left"
+          style={{
+            maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+          }}>
           <AnimatePresence mode="wait">
             {recordsLoading ?
               <motion.div
