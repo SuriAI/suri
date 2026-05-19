@@ -59,7 +59,6 @@ export function useCamera() {
   const startCamera = useCallback(
     async (forcedDeviceId?: string) => {
       if (isStartingRef.current) {
-        console.warn("[useCamera] startCamera is already in progress, skipping...")
         return
       }
 
@@ -70,10 +69,6 @@ export function useCamera() {
         setIsVideoReady(false)
 
         const videoDevices = await getCameraDevices()
-        console.log(
-          "[useCamera] Available devices:",
-          videoDevices.map((d) => ({ id: d.deviceId, label: d.label })),
-        )
 
         if (videoDevices.length === 0) {
           throw new Error(
@@ -84,19 +79,13 @@ export function useCamera() {
         let deviceIdToUse: string | undefined = undefined
         let cameraToSelect = forcedDeviceId || selectedCamera
 
-        console.log(`[useCamera] Evaluating cameraToSelect: "${cameraToSelect}"`)
-
         if (cameraToSelect && videoDevices.length > 0) {
           const deviceExists = videoDevices.some(
             (device) => device.deviceId && device.deviceId === cameraToSelect,
           )
           if (deviceExists) {
             deviceIdToUse = cameraToSelect
-            console.log(`[useCamera] Device exists, using: ${deviceIdToUse}`)
           } else {
-            console.warn(
-              `Selected camera (${cameraToSelect}) not found. Falling back to first available camera.`,
-            )
             const validDevice = videoDevices.find(
               (device) => device.deviceId && device.deviceId.trim() !== "",
             )
@@ -104,7 +93,6 @@ export function useCamera() {
               deviceIdToUse = validDevice.deviceId
               cameraToSelect = validDevice.deviceId
               setSelectedCamera(validDevice.deviceId)
-              console.log(`[useCamera] Fallback to valid device: ${deviceIdToUse}`)
             }
           }
         } else if (videoDevices.length > 0 && !cameraToSelect) {
@@ -115,7 +103,6 @@ export function useCamera() {
             deviceIdToUse = validDevice.deviceId
             cameraToSelect = validDevice.deviceId
             setSelectedCamera(validDevice.deviceId)
-            console.log(`[useCamera] No selection, defaulting to: ${deviceIdToUse}`)
           }
         }
 
@@ -123,9 +110,7 @@ export function useCamera() {
           throw new Error("No valid camera device found.")
         }
 
-        console.log(`[useCamera] FINAL starting deviceId: ${deviceIdToUse}`)
         const constraints = buildCameraConstraints(deviceIdToUse)
-        console.log(`[useCamera] Constraints:`, constraints)
 
         const stream = await navigator.mediaDevices.getUserMedia(constraints)
         streamRef.current = stream
@@ -220,13 +205,6 @@ export function useCamera() {
       const isHealthy = !!video.srcObject && video.videoWidth > 0 && !video.paused && !cameraError
 
       if (!isHealthy) {
-        let reason = "unknown"
-        if (!video.srcObject) reason = "no srcObject"
-        else if (video.videoWidth <= 0) reason = "videoWidth is 0"
-        else if (video.paused) reason = "video is paused"
-        else if (cameraError) reason = `cameraError: ${cameraError}`
-
-        console.warn(`Video stream became unhealthy: ${reason}`)
         setIsVideoReady(false)
       }
     }, 1000)
