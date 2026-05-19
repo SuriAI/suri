@@ -369,8 +369,8 @@ export function Database({
               All Groups
             </h3>
           </div>
-          <div className="group/search relative min-w-[280px]">
-            <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-white/20 transition-colors group-focus-within/search:text-cyan-400/50">
+          <div className="group/search relative h-9 min-w-[280px]">
+            <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-white/20 transition-colors group-focus-within/search:text-white/45">
               <i className="fa-solid fa-magnifying-glass text-[11px]"></i>
             </div>
             <input
@@ -378,7 +378,7 @@ export function Database({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search group name or ID..."
-              className="w-full rounded-md border border-white/5 bg-white/5 py-2 pr-8 pl-9 text-[12px] font-medium text-white placeholder-white/20 transition-all outline-none focus:border-white/20 focus:bg-white/[0.08]"
+              className="h-full w-full rounded-lg border border-white/5 bg-white/5 pr-8 pl-8.5 text-xs font-medium text-white placeholder-white/30 transition-all outline-none focus:border-white/20 focus:bg-white/[0.08]"
             />
             {searchQuery && (
               <button

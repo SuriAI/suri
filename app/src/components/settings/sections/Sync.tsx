@@ -280,7 +280,7 @@ export function Sync({ onNavigateToDB }: { onNavigateToDB?: () => void }) {
                     placeholder="ABCD2345"
                     value={pairingCode}
                     onChange={(e) => setPairingCode(e.target.value.toUpperCase())}
-                    className="h-10 w-full rounded-md border border-white/10 bg-white/[0.02] px-4 text-center font-mono text-[13.5px] font-semibold tracking-[0.2em] text-white uppercase transition-all duration-200 outline-none placeholder:text-center placeholder:tracking-[0.1em] placeholder:text-white/20 placeholder:lowercase focus:border-cyan-500/30 focus:bg-cyan-500/[0.03] focus:text-cyan-300"
+                    className="h-10 w-full rounded-md border border-white/10 bg-white/[0.02] px-4 text-center font-mono text-[13.5px] font-semibold tracking-[0.2em] text-white uppercase transition-all duration-200 outline-none placeholder:text-center placeholder:tracking-[0.1em] placeholder:text-white/20 placeholder:lowercase focus:border-white/20 focus:bg-white/[0.04]"
                   />
                 </div>
                 <button

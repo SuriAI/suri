@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               placeholder="Select group..."
               emptyMessage="No groups available"
               maxHeight={256}
-              buttonClassName="!h-8 !w-full !rounded-md border-transparent! bg-transparent! !px-2 !text-sm !font-semibold !text-white !transition-colors hover:bg-white/10! focus:ring-0! shadow-none!"
+              buttonClassName="!h-8 !w-full !rounded-md !border-white/5 !bg-white/5 !px-3.5 !text-xs !font-bold !tracking-wide !text-white/80 !transition-all hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 !shadow-none"
               showPlaceholderOption={false}
             />
           </div>
@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 setRegistrationState(null, null)
                 setTriggerCreateGroup(Date.now())
               }}
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-0 bg-transparent text-white/65 transition-colors hover:bg-white/10 hover:text-white">
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/65 transition-all hover:border-white/10 hover:bg-white/[0.08] hover:text-white active:scale-95">
               <i className="fa-solid fa-plus text-[11px]"></i>
             </button>
           </Tooltip>

@@ -104,15 +104,14 @@ export function ReportToolbar({
 
       {/* ── Right Controls ── */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
-        {/* Search */}
-        <div className="relative max-w-[200px] min-w-0 flex-1">
-          <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-[10px] text-white/25" />
+        <div className="group/search relative h-9 max-w-[200px] min-w-0 flex-1">
+          <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45" />
           <input
             type="search"
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 w-full min-w-0 rounded-lg border border-white/5 bg-white/5 py-2 pr-3 pl-10 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:border-white/10 focus:bg-white/[0.08]"
+            className="h-full w-full min-w-0 rounded-lg border border-white/5 bg-white/5 pr-3 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
           />
         </div>
 

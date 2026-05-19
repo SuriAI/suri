@@ -119,13 +119,13 @@ export const ManualEntryModal = ({
         {/* Search & Add Header */}
         <div className="mt-2 flex items-center">
           <div className="group/search relative flex-1">
-            <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3.5 -translate-y-1/2 text-[11px] text-white/50 transition-colors group-focus-within/search:text-cyan-400"></i>
+            <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45"></i>
             <input
               type="text"
               placeholder="Search members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/10 bg-[rgba(22,28,36,0.68)] pr-4 pl-9 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/40 focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+              className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 pr-4 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
             />
           </div>
           <Tooltip content="Add member" position="top">
@@ -134,7 +134,7 @@ export const ManualEntryModal = ({
                 handleClose()
                 onAddMember()
               }}
-              className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/65 transition-all hover:bg-[rgba(28,35,44,0.82)] hover:text-white focus:outline-none">
+              className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
               <i className="fa-solid fa-plus text-xs transition-transform group-hover/add:scale-110"></i>
             </button>
           </Tooltip>
@@ -167,13 +167,13 @@ export const ManualEntryModal = ({
         </div>
 
         <div className="group/note relative">
-          <i className="fa-regular fa-clipboard absolute top-1/2 left-3.5 -translate-y-1/2 text-[11px] text-white/50 transition-colors group-focus-within/note:text-cyan-400"></i>
+          <i className="fa-regular fa-clipboard absolute top-1/2 left-3.5 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/note:text-white/45"></i>
           <input
             type="text"
             placeholder="Add a reason / note for manual entry (Optional)..."
             value={manualNote}
             onChange={(e) => setManualNote(e.target.value)}
-            className="h-9 w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] pr-4 pl-9 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/35 focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+            className="h-9 w-full rounded-lg border border-white/5 bg-white/5 pr-4 pl-9 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
           />
         </div>
 
@@ -200,7 +200,7 @@ export const ManualEntryModal = ({
                     className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
                       isPresent ?
                         "cursor-default bg-transparent"
-                      : "cursor-pointer hover:bg-white/[0.03] active:scale-[0.995]"
+                      : "cursor-pointer hover:bg-white/5 active:scale-[0.995]"
                     }`}>
                     <span className="flex-1 truncate text-[12px] font-bold text-white/70 transition-colors group-hover/item:text-white">
                       {member.name}

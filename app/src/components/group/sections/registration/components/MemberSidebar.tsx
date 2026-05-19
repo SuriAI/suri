@@ -64,9 +64,9 @@ export function MemberSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col space-y-3 overflow-hidden p-6">
       <div className="flex shrink-0 items-center gap-3">
-        <div className="relative flex-1">
+        <div className="group/search relative h-9 flex-1">
           <svg
-            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/55"
+            className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">
@@ -82,7 +82,7 @@ export function MemberSidebar({
             value={memberSearch}
             onChange={(e) => setMemberSearch(e.target.value)}
             placeholder="Search members..."
-            className="w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] py-2.5 pr-3 pl-10 text-[11px] font-medium text-white transition-all duration-300 outline-none placeholder:text-white/55 focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+            className="h-full w-full rounded-lg border border-white/5 bg-white/5 pr-3 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
           />
         </div>
       </div>
@@ -102,28 +102,28 @@ export function MemberSidebar({
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={() => setRegistrationFilter("all")}
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
               registrationFilter === "all" ?
-                "border border-white/20 bg-[rgba(28,35,44,0.82)] text-white"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+                "border border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
+              : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
             All
           </button>
           <button
             onClick={() => setRegistrationFilter("non-registered")}
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
               registrationFilter === "non-registered" ?
                 "border border-amber-500/30 bg-amber-500/20 text-amber-200"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+              : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
             Not Registered
           </button>
           <button
             onClick={() => setRegistrationFilter("registered")}
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
               registrationFilter === "registered" ?
                 "border border-cyan-500/30 bg-cyan-500/20 text-cyan-200"
-              : "border border-white/10 bg-[rgba(22,28,36,0.68)] text-white/55 hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80"
+              : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
             Registered
           </button>
