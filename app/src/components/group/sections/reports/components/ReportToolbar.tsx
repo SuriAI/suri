@@ -127,14 +127,14 @@ export function ReportToolbar({
             position="bottom">
             <button
               onClick={() => setShowFilter(!showFilter)}
-              className={`relative flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-300 ${
+              className={`relative flex h-9 w-9 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-300 active:scale-95 ${
                 showFilter || statusFilter !== "all" ?
-                  "border-cyan-500/25 bg-cyan-500/10 text-cyan-400"
-                : "border-white/5 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
+                  "bg-cyan-500/[0.08] text-cyan-400"
+                : "text-white/55 hover:bg-white/5 hover:text-white"
               }`}>
               <i className="fa-solid fa-filter text-[11px]" />
               {statusFilter !== "all" && (
-                <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
               )}
             </button>
           </Tooltip>
@@ -172,10 +172,10 @@ export function ReportToolbar({
           <Tooltip content="Options" position="bottom">
             <button
               onClick={() => setShowOptions(!showOptions)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all duration-300 ${
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-300 active:scale-95 ${
                 showOptions ?
-                  "border-cyan-500/25 bg-cyan-500/10 text-cyan-400"
-                : "border-white/5 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white"
+                  "bg-cyan-500/[0.08] text-cyan-400"
+                : "text-white/55 hover:bg-white/5 hover:text-white"
               }`}>
               <i className="fa-solid fa-pen text-[11px]" />
             </button>
