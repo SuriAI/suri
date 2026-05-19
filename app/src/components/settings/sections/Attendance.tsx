@@ -109,7 +109,7 @@ export function Attendance({
                       {!hasSelectedGroup ?
                         "Select a group to enable late tracking"
                       : attendanceSettings.lateThresholdEnabled ?
-                        "Automatically mark members as late."
+                        "Automatically mark members as late based on scheduled start times."
                       : "Late tracking is disabled."}
                     </motion.div>
                   </AnimatePresence>
@@ -133,27 +133,35 @@ export function Attendance({
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: SETTINGS_PANEL_ANIMATION_DURATION, ease: "easeOut" }}
                   className="overflow-hidden">
-                  <div className="relative flex items-center gap-4 pt-3 pb-3 pl-4">
+                  <div className="relative flex items-center gap-4 pt-2.5 pb-2.5 pl-4">
                     <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
                     <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs text-white/65">Late threshold in minutes.</div>
+                      <div className="text-xs text-white/65">Late threshold:</div>
                     </div>
 
-                    <div className="ml-auto flex shrink-0 items-center gap-3">
-                      <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
-                        {attendanceSettings.lateThresholdMinutes} min
-                      </span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="60"
-                        step="5"
-                        value={attendanceSettings.lateThresholdMinutes}
-                        onChange={(e) => onLateThresholdChange(parseInt(e.target.value))}
-                        className="premium-range h-1 w-24 accent-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
+                    <div className="ml-auto flex shrink-0 items-center gap-4">
+                      {([5, 10, 15, 30, 45, 60] as const).map((mins) => (
+                        <button
+                          key={mins}
+                          type="button"
+                          onClick={() => onLateThresholdChange(mins)}
+                          className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
+                            attendanceSettings.lateThresholdMinutes === mins ?
+                              "text-cyan-400"
+                            : "text-white/40 hover:text-white/70"
+                          }`}>
+                          {mins}m
+                          {attendanceSettings.lateThresholdMinutes === mins && (
+                            <motion.div
+                              layoutId="lateUnderline"
+                              className="absolute right-1.5 bottom-[-3px] left-1.5 h-[2px] rounded-full bg-cyan-400"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
@@ -179,30 +187,32 @@ export function Attendance({
                 />
               </div>
               <div className="mt-0.5 text-xs text-white/65">
-                Prevent duplicate logs if a person scans again within{" "}
-                {attendanceSettings.attendanceCooldownSeconds < 60 ?
-                  `${attendanceSettings.attendanceCooldownSeconds} seconds`
-                : `${Math.round(attendanceSettings.attendanceCooldownSeconds / 60)} minute${Math.round(attendanceSettings.attendanceCooldownSeconds / 60) !== 1 ? "s" : ""}`
-                }
-                .
+                Automatically filters out repeated scans from the same person to maintain clean,
+                accurate reports.
               </div>
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center gap-3">
-              <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
-                {attendanceSettings.attendanceCooldownSeconds < 60 ?
-                  `${attendanceSettings.attendanceCooldownSeconds}s`
-                : `${Math.round(attendanceSettings.attendanceCooldownSeconds / 60)}m`}
-              </span>
-              <input
-                type="range"
-                min="5"
-                max="3600"
-                step="5"
-                value={attendanceSettings.attendanceCooldownSeconds}
-                onChange={(e) => onAttendanceCooldownChange(parseInt(e.target.value))}
-                className="premium-range h-1 w-24 accent-cyan-500"
-              />
+            <div className="ml-auto flex shrink-0 items-center gap-4">
+              {([5, 30, 60, 300, 600, 1800] as const).map((secs) => (
+                <button
+                  key={secs}
+                  type="button"
+                  onClick={() => onAttendanceCooldownChange(secs)}
+                  className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
+                    attendanceSettings.attendanceCooldownSeconds === secs ?
+                      "text-cyan-400"
+                    : "text-white/40 hover:text-white/70"
+                  }`}>
+                  {secs < 60 ? `${secs}s` : `${secs / 60}m`}
+                  {attendanceSettings.attendanceCooldownSeconds === secs && (
+                    <motion.div
+                      layoutId="cooldownUnderline"
+                      className="absolute right-1.5 bottom-[-3px] left-1.5 h-[2px] rounded-full bg-cyan-400"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -235,7 +245,8 @@ export function Attendance({
                       className="text-xs font-normal text-white/65">
                       {attendanceSettings.maxRecognitionFacesPerFrame === 0 ?
                         "Process all detected faces."
-                      : "Limit recognition to a specific number of faces."}
+                      : "Limit the maximum number of faces recognized per frame to optimize performance."
+                      }
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -272,29 +283,35 @@ export function Attendance({
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: SETTINGS_PANEL_ANIMATION_DURATION, ease: "easeOut" }}
                   className="overflow-hidden">
-                  <div className="relative flex items-center gap-4 pt-3 pb-3 pl-4">
+                  <div className="relative flex items-center gap-4 pt-2.5 pb-2.5 pl-4">
                     <div className="absolute top-0 bottom-1/2 left-0 w-px rounded-bl-xs bg-white/10"></div>
                     <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 rounded-bl-xs bg-white/10"></div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs text-white/65">
-                        Maximum faces to process per frame.
-                      </div>
+                      <div className="text-xs text-white/65">Limit to:</div>
                     </div>
 
-                    <div className="ml-auto flex shrink-0 items-center gap-3">
-                      <span className="min-w-10 text-right text-[11px] font-medium whitespace-nowrap text-cyan-400/80">
-                        {attendanceSettings.maxRecognitionFacesPerFrame} faces
-                      </span>
-                      <input
-                        type="range"
-                        min="1"
-                        max="20"
-                        step="1"
-                        value={attendanceSettings.maxRecognitionFacesPerFrame}
-                        onChange={(e) => onMaxRecognitionFacesChange(parseInt(e.target.value))}
-                        className="premium-range h-1 w-24 accent-cyan-500"
-                      />
+                    <div className="ml-auto flex shrink-0 items-center gap-4">
+                      {([1, 2, 3, 5, 8, 10, 15, 20] as const).map((faces) => (
+                        <button
+                          key={faces}
+                          type="button"
+                          onClick={() => onMaxRecognitionFacesChange(faces)}
+                          className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
+                            attendanceSettings.maxRecognitionFacesPerFrame === faces ?
+                              "text-cyan-400"
+                            : "text-white/40 hover:text-white/70"
+                          }`}>
+                          {faces}
+                          {attendanceSettings.maxRecognitionFacesPerFrame === faces && (
+                            <motion.div
+                              layoutId="facesUnderline"
+                              className="absolute right-1.5 bottom-[-3px] left-1.5 h-[2px] rounded-full bg-cyan-400"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
