@@ -137,7 +137,7 @@ export function ReportTable({
                           const s = row.status
                           let textColor = "text-white/55"
                           if (s === "present") textColor = "text-cyan-400"
-                          if (s === "late") textColor = "text-amber-400"
+                          if (s === "late") textColor = "text-orange-400"
                           if (s === "absent") textColor = "text-red-400"
                           if (s === "no_records") textColor = "text-white/55"
 
@@ -150,7 +150,7 @@ export function ReportTable({
                         } else if (c.key === "is_late") {
                           content =
                             row.is_late ?
-                              <span className="text-[11px] font-semibold text-amber-400/80">
+                              <span className="text-[11px] font-semibold text-orange-400/80">
                                 Late
                               </span>
                             : <span className="text-white/10">-</span>
@@ -165,7 +165,7 @@ export function ReportTable({
                                   })}
                                 </span>
                                 {row.is_late && row.late_minutes > 0 && (
-                                  <span className="mt-0.5 text-[10px] font-semibold text-amber-500/75">
+                                  <span className="mt-0.5 text-[10px] font-semibold text-orange-500/75">
                                     {formatDuration(row.late_minutes)} Late
                                   </span>
                                 )}
@@ -203,7 +203,7 @@ export function ReportTable({
                         } else if (c.key === "late_minutes") {
                           content =
                             row.late_minutes > 0 ?
-                              <span className="font-medium text-amber-400/80">
+                              <span className="font-medium text-orange-400/80">
                                 {formatDuration(row.late_minutes)}
                               </span>
                             : <span className="text-white/10">-</span>

@@ -150,17 +150,17 @@ const AttendanceRecordItem = memo(
               status: minutesLate > severeLateThreshold ? "severe-late" : "late",
               minutes: minutesLate,
               label: `${formatDuration(minutesLate)} LATE`,
-              color: minutesLate > severeLateThreshold ? "text-red-400" : "text-amber-400",
+              color: minutesLate > severeLateThreshold ? "text-red-400" : "text-orange-400",
               pillColor:
                 minutesLate > severeLateThreshold ?
                   "bg-red-500/10 text-red-400/90"
-                : "bg-amber-500/10 text-amber-400/90",
+                : "bg-orange-500/10 text-orange-400/90",
               borderColor:
-                minutesLate > severeLateThreshold ? "border-l-red-500" : "border-l-amber-500",
+                minutesLate > severeLateThreshold ? "border-l-red-500" : "border-l-orange-500",
               avatarColor:
                 minutesLate > severeLateThreshold ?
                   "bg-red-500/10 text-red-500/70"
-                : "bg-amber-500/10 text-amber-500/70",
+                : "bg-orange-500/10 text-orange-500/70",
             }
           }
 

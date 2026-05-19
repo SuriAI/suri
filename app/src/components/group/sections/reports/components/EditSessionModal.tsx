@@ -200,6 +200,7 @@ export function EditSessionModal({
 
   const statusColor =
     originalStatus === "present" ? "text-cyan-400"
+    : originalStatus === "late" ? "text-orange-400"
     : originalStatus === "absent" ? "text-red-400"
     : "text-white/35"
 
@@ -237,8 +238,8 @@ export function EditSessionModal({
                 <p className="mb-0.5 text-[10px] text-white/30">Status</p>
                 <p className={`text-sm font-semibold capitalize ${statusColor}`}>
                   {originalStatus}
-                  {rowSnapshot.is_late && (
-                    <span className="ml-1 text-[11px] font-normal text-amber-400/80">· late</span>
+                  {rowSnapshot.is_late && originalStatus !== "late" && (
+                    <span className="ml-1 text-[11px] font-normal text-orange-400/80">· late</span>
                   )}
                 </p>
               </div>
@@ -281,14 +282,6 @@ export function EditSessionModal({
                         : "bg-red-500/10 ring-1 ring-red-500/25"
                       : "bg-white/[0.03] ring-1 ring-white/[0.06] hover:bg-white/[0.05]"
                     }`}>
-                    <i
-                      className={`fa-solid ${isPresent ? "fa-circle-check" : "fa-circle-xmark"} text-[12px] ${
-                        active ?
-                          isPresent ? "text-cyan-400"
-                          : "text-red-400"
-                        : "text-white/20"
-                      }`}
-                    />
                     <span
                       className={`text-[12px] leading-none font-bold capitalize ${
                         active ?
