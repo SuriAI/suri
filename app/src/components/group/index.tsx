@@ -87,6 +87,7 @@ function GroupPanelComponent({
   useEffect(() => {
     if (initialSection) {
       setActiveSection(initialSection)
+      prevActiveSectionRef.current = initialSection // Sync the ref to prevent staleness
     }
   }, [initialSection, setActiveSection])
 

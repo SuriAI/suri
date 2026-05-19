@@ -20,14 +20,19 @@ export function useReportData(
   const [loading, setLoading] = useState(initialMembers.length > 0)
   const [error, setError] = useState<string | null>(null)
 
+  // Reset report state only when the active group changes
   useEffect(() => {
-    // Reset if group changes
     setReport(null)
     setSessions([])
     setMembers(initialMembers)
     setError(null)
     setLoading(initialMembers.length > 0)
-  }, [group.id, initialMembers])
+  }, [group.id])
+
+  // Sync local members list when background hydration completes or changes reference
+  useEffect(() => {
+    setMembers(initialMembers)
+  }, [initialMembers])
 
   const generateReport = useCallback(async () => {
     if (members.length === 0) {
