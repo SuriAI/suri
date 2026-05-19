@@ -86,6 +86,8 @@ export function useReportTransform(
           status = "no_records"
         } else if (!finalSession) {
           status = "absent"
+        } else if (finalSession.is_late) {
+          status = "late"
         } else {
           // Map session status to ReportStatusFilter.
           status = finalSession.status as ReportStatusFilter
@@ -268,7 +270,5 @@ const ALL_COLUMNS = [
   { key: "check_in_time", label: "Time In", align: "center" },
   { key: "check_out_time", label: "Time Out", align: "center" }, // NEW
   { key: "total_hours", label: "Hours", align: "center" }, // NEW
-  { key: "is_late", label: "Late", align: "center" },
-  { key: "late_minutes", label: "Minutes Late", align: "center" },
   { key: "notes", label: "Notes", align: "left" },
 ] as const

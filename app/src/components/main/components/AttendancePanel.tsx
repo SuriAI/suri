@@ -153,8 +153,8 @@ const AttendanceRecordItem = memo(
               color: minutesLate > severeLateThreshold ? "text-red-400" : "text-amber-400",
               pillColor:
                 minutesLate > severeLateThreshold ?
-                  "bg-red-500/15 text-red-400 border-red-500/30"
-                : "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                  "bg-red-500/10 text-red-400/90"
+                : "bg-amber-500/10 text-amber-400/90",
               borderColor:
                 minutesLate > severeLateThreshold ? "border-l-red-500" : "border-l-amber-500",
               avatarColor:
@@ -171,7 +171,7 @@ const AttendanceRecordItem = memo(
               minutes: minutesEarly,
               label: `${formatDuration(minutesEarly)} EARLY`,
               color: "text-cyan-400/80",
-              pillColor: "bg-cyan-500/10 text-cyan-400/80 border-cyan-500/20",
+              pillColor: "bg-cyan-500/10 text-cyan-400/90",
               borderColor: "border-l-transparent",
               avatarColor: "bg-cyan-500/10 text-cyan-400",
             }
@@ -186,9 +186,9 @@ const AttendanceRecordItem = memo(
             : lateThresholdEnabled ? "ON TIME"
             : "",
           color: "text-white/55",
-          pillColor: "bg-[rgba(22,28,36,0.62)] text-white/55 border-white/10",
+          pillColor: "bg-white/5 text-white/45",
           borderColor: "border-l-transparent",
-          avatarColor: "bg-[rgba(22,28,36,0.62)] text-white/55",
+          avatarColor: "bg-white/5 text-white/45",
         }
       } catch {
         return null
@@ -242,7 +242,7 @@ const AttendanceRecordItem = memo(
 
                 {timeStatus?.label && (
                   <span
-                    className={`rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-tight ${timeStatus.pillColor}`}>
+                    className={`rounded px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider uppercase ${timeStatus.pillColor}`}>
                     {timeStatus.label}
                   </span>
                 )}
