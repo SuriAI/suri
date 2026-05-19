@@ -7,6 +7,7 @@ import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
 } from "../../../services/syncDefaults"
+import { updaterService } from "@/services"
 
 type RemoteSyncConfig = {
   enabled: boolean
@@ -48,9 +49,11 @@ const pairingSteps = [
       <>
         Get a pairing code from the{" "}
         <a
-          href="https://facenox.com/app/devices"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://app.facenox.com"
+          onClick={(e) => {
+            e.preventDefault()
+            updaterService.openReleasePage("https://app.facenox.com")
+          }}
           className="text-cyan-400 underline transition-colors hover:text-cyan-300">
           Management Dashboard
         </a>
