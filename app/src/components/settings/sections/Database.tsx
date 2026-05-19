@@ -225,11 +225,11 @@ export function Database({
         />
       </section>
 
-      {/* Device Time */}
+      {/* System Time */}
       <section className="space-y-6">
         <div className="pt-2 pb-2">
           <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-            Device Time & Status
+            System Time
           </h3>
         </div>
 
@@ -288,11 +288,11 @@ export function Database({
         </div>
       </section>
 
-      {/* Data Management */}
+      {/* Backup & Export */}
       <section className="space-y-8">
         <div className="pt-2 pb-2">
           <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-            Data Management
+            Backup & Export
           </h3>
         </div>
 
