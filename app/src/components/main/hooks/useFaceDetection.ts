@@ -55,9 +55,6 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
         inflightSinceRef.current > 0 &&
         Date.now() - inflightSinceRef.current > WATCHDOG_TIMEOUT_MS
       ) {
-        console.warn(
-          "[Watchdog] Detection response not received for >15s — resetting in-flight lock.",
-        )
         detectionInFlightRef.current = false
         inflightSinceRef.current = 0
         // Fall through to process next frame

@@ -134,9 +134,6 @@ export function useCameraControl({
         if (deviceExists) {
           deviceIdToUse = selectedCamera
         } else {
-          console.warn(
-            `Selected camera (${selectedCamera}) not found. Falling back to first available camera.`,
-          )
           const validDevice = cameraDevices.find(
             (device) => device.deviceId && device.deviceId.trim() !== "",
           )

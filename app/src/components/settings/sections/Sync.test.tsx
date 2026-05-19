@@ -209,14 +209,14 @@ describe("Sync", () => {
 
     await user.click(await screen.findByRole("button", { name: /Show advanced settings/i }))
 
-    fireEvent.change(screen.getByPlaceholderText("Front Desk Desktop"), {
+    fireEvent.change(screen.getByPlaceholderText("Facenox Desktop"), {
       target: { value: "Reception Desk" },
     })
 
     await user.click(screen.getByRole("button", { name: /Hide Advanced Settings/i }))
     await user.click(screen.getByRole("button", { name: /Show Advanced Settings/i }))
 
-    expect(screen.getByPlaceholderText("Front Desk Desktop")).toHaveValue("Reception Desk")
+    expect(screen.getByPlaceholderText("Facenox Desktop")).toHaveValue("Reception Desk")
   })
 
   it("keeps the hosted server URL hidden unless a custom override is being used", async () => {
