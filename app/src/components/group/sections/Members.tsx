@@ -236,13 +236,11 @@ export function Members({
           className="relative flex h-full w-full flex-col overflow-hidden">
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
             <div className="flex items-center justify-between gap-4">
-              <motion.div
-                layout
-                transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                className={`group/searchbar flex w-full items-center ${searchBarMaxWidthClass}`}>
-                <motion.div layout className="relative flex-1">
+              <div
+                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
+                <div className="relative flex-1">
                   <svg
-                    className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/55"
+                    className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/searchbar:text-white/45"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -260,13 +258,13 @@ export function Members({
                     onFocus={handleSearchFocus}
                     onBlur={handleSearchBlur}
                     placeholder="Search name or role..."
-                    className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-11 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/[0.08]"
+                    className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-9 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
                   />
-                </motion.div>
+                </div>
 
-                <motion.div layout className="relative shrink-0">
+                <div className="relative shrink-0">
                   {/* Subtle vertical divider */}
-                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
+                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/5"></div>
                   <Dropdown
                     options={[
                       { value: "all", label: "All" },
@@ -283,12 +281,12 @@ export function Members({
                     menuWidth={160}
                     align="right"
                     onOpenChange={handleDropdownOpenChange}
-                    buttonClassName={`h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 ${dropdownWidthClass} text-[11px] font-bold tracking-wider text-white hover:!bg-white/10 transition-all duration-300`}
+                    buttonClassName={`h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 ${dropdownWidthClass} text-[11px] font-bold tracking-wider text-white hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 focus:!bg-white/[0.08] transition-all duration-300`}
                     optionClassName="text-[11px] font-bold tracking-wider"
                     iconClassName="text-[10px]"
                   />
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </div>
 
             {members.length > 0 && filteredMembers.length > 0 && (

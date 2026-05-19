@@ -451,14 +451,14 @@ export const AttendancePanel = memo(function AttendancePanel({
         <div className="shrink-0 px-3 pb-3">
           <div className="flex items-center gap-2">
             <div className="flex min-w-0 flex-1 items-center">
-              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/[0.08] bg-white/[0.02] transition-colors duration-200 focus-within:border-cyan-500/25">
-                <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[10px] text-white/20 transition-colors group-focus-within/search:text-cyan-400/60" />
+              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/5 bg-white/5 transition-colors duration-200 focus-within:border-white/20">
+                <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45" />
                 <input
                   type="text"
                   placeholder="Search name..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="h-full w-full border-0 bg-transparent pr-3 pl-8 text-xs text-white transition-all placeholder:text-white/20 focus:outline-none"
+                  className="h-full w-full border-0 bg-transparent pr-3 pl-8.5 text-xs font-medium text-white transition-all placeholder:text-white/30 focus:outline-none"
                 />
               </div>
 
@@ -549,7 +549,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                   <div className="px-2 py-2">
                     <button
                       onClick={handleLoadMore}
-                      className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] py-2 text-xs text-white/70 transition-colors hover:bg-[rgba(28,35,44,0.82)]">
+                      className="w-full rounded-lg border border-white/5 bg-white/5 py-2 text-xs font-semibold text-white/80 transition-all hover:border-white/10 hover:bg-white/[0.08] active:scale-[0.99]">
                       Load More ({processedRecords.length - displayLimit} remaining)
                     </button>
                   </div>

@@ -242,8 +242,8 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
 
           <div className="flex shrink-0 items-center gap-2">
             {/* Search */}
-            <div className="group/search relative">
-              <div className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-white/55 transition-colors group-focus-within/search:text-white/65">
+            <div className="group/search relative h-9">
+              <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45">
                 <i className="fa-solid fa-magnifying-glass text-[11px]"></i>
               </div>
               <input
@@ -251,7 +251,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 value={activitySearch}
                 onChange={(e) => setActivitySearch(e.target.value)}
                 placeholder="Search..."
-                className="w-36 rounded-md border border-white/5 bg-white/5 py-1.5 pr-7 pl-7 text-[12px] text-white placeholder-white/30 transition-all outline-none focus:w-48 focus:border-white/20 focus:bg-white/10"
+                className="h-full w-36 rounded-lg border border-white/5 bg-white/5 pr-7 pl-8.5 text-xs font-medium text-white placeholder-white/30 transition-all outline-none focus:w-48 focus:border-white/20 focus:bg-white/[0.08]"
               />
               {activitySearch && (
                 <button
@@ -266,7 +266,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             <div className="relative" ref={filterDropdownRef}>
               <button
                 onClick={() => setFilterDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2.5 py-1.5 text-[12px] font-medium text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
+                className="flex items-center gap-1.5 rounded-md border border-white/5 bg-white/5 px-2.5 py-1.5 text-[12px] font-semibold text-white/80 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] active:scale-95">
                 <i className="fa-regular fa-calendar text-[10px]" />
                 {DATE_FILTER_LABELS[dateFilter]}
                 <i
@@ -281,7 +281,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -5 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] p-1">
+                    className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/5 bg-[#0f1319]/95 p-1 shadow-xl backdrop-blur-md">
                     {(["today", "yesterday", "week"] as DateFilter[]).map((filter) => (
                       <button
                         key={filter}
@@ -290,10 +290,10 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                           setActivitySearch("")
                           setFilterDropdownOpen(false)
                         }}
-                        className={`flex w-full items-center rounded-md px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
+                        className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
                           dateFilter === filter ?
-                            "bg-white/[0.06] font-semibold text-cyan-400"
-                          : "text-white/65 hover:bg-white/[0.03] hover:text-white"
+                            "bg-cyan-500/10 font-semibold text-cyan-400"
+                          : "text-white/65 hover:bg-white/5 hover:text-white"
                         }`}>
                         {DATE_FILTER_LABELS[filter]}
                       </button>

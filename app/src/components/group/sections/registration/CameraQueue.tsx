@@ -407,9 +407,9 @@ export function CameraQueue({
 
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <div className="relative min-w-55 flex-1">
+                  <div className="group/search relative h-9 min-w-55 flex-1">
                     <svg
-                      className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-white/55"
+                      className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24">
@@ -425,7 +425,7 @@ export function CameraQueue({
                       value={memberSearch}
                       onChange={(e) => setMemberSearch(e.target.value)}
                       placeholder="Search members..."
-                      className="w-full rounded-xl border border-white/5 bg-white/5 py-2.5 pr-3 pl-10 text-[11px] font-medium text-white shadow-inner transition-all duration-300 outline-none placeholder:text-white/55 focus:border-white/20 focus:bg-white/10"
+                      className="h-full w-full rounded-lg border border-white/5 bg-white/5 pr-3 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
                     />
                   </div>
                   <Dropdown
@@ -440,7 +440,7 @@ export function CameraQueue({
                         setRegistrationFilter(value as "all" | "registered" | "non-registered")
                       }
                     }}
-                    buttonClassName="!bg-white/5 !border-white/5 py-2.5 px-3 h-full min-w-[130px] rounded-xl text-[11px] font-bold tracking-wider text-white hover:!bg-white/10"
+                    buttonClassName="!bg-white/5 !border-white/5 py-2.5 px-3 h-full min-w-[130px] rounded-md text-[11px] font-bold tracking-wider text-white hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 focus:!bg-white/[0.08]"
                     optionClassName="text-[11px] font-bold tracking-wider"
                     iconClassName="text-[10px]"
                     showPlaceholderOption={false}

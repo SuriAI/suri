@@ -183,7 +183,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleToggle}
           disabled={disabled}
-          className={`flex w-full min-w-0 cursor-pointer items-center justify-between rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] py-2 text-left text-sm text-white transition-all hover:bg-[rgba(28,35,44,0.82)] focus:border-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${trigger ? "justify-center px-0" : "ps-3 pe-2"} ${buttonClassName} `}>
+          className={`flex w-full min-w-0 cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 py-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${trigger ? "justify-center px-0" : "ps-3 pe-2"} ${buttonClassName} `}>
           {trigger ?
             trigger
           : <>
@@ -218,7 +218,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-9999 overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)]"
+                  className="fixed z-9999 overflow-hidden rounded-lg border border-white/5 bg-[#0f1319]/95 shadow-xl backdrop-blur-md"
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
                     top: menuPosition ? `${menuPosition.top}px` : "-9999px",
@@ -260,12 +260,12 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                               }}
                               className={`w-full rounded-none px-3 py-2 text-left text-sm transition-colors ${
                                 !value ?
-                                  "bg-[rgba(28,35,44,0.88)] text-white"
-                                : "text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white"
+                                  "bg-cyan-500/10 font-semibold text-cyan-400"
+                                : "text-white/70 hover:bg-white/5 hover:text-white"
                               } ${optionClassName}`}>
                               {placeholder}
                             </button>
-                            {options.length > 0 && <div className="mx-2 h-px bg-white/10"></div>}
+                            {options.length > 0 && <div className="mx-2 h-px bg-white/5"></div>}
                           </>
                         )}
 
@@ -276,9 +276,9 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                             onClick={() => handleSelect(option.value)}
                             disabled={option.disabled}
                             className={`w-full truncate rounded-none px-3 py-2 text-left text-sm transition-colors ${
-                              value === option.value ? "bg-[rgba(28,35,44,0.88)] text-white"
+                              value === option.value ? "bg-cyan-500/10 font-semibold text-cyan-400"
                               : option.disabled ? "cursor-not-allowed text-white/55"
-                              : "text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white"
+                              : "text-white/70 hover:bg-white/5 hover:text-white"
                             } ${optionClassName}`}>
                             <Tooltip content={option.label}>
                               <span className="block truncate">{option.label}</span>

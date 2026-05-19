@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { attendanceManager } from "@/services"
 import { getLocalDateString, parseLocalDate } from "@/utils"
 import type {
@@ -20,13 +20,18 @@ export function useReportData(
   const [loading, setLoading] = useState(initialMembers.length > 0)
   const [error, setError] = useState<string | null>(null)
 
+  const initialMembersRef = useRef(initialMembers)
+  useEffect(() => {
+    initialMembersRef.current = initialMembers
+  }, [initialMembers])
+
   // Reset report state only when the active group changes
   useEffect(() => {
     setReport(null)
     setSessions([])
-    setMembers(initialMembers)
+    setMembers(initialMembersRef.current)
     setError(null)
-    setLoading(initialMembers.length > 0)
+    setLoading(initialMembersRef.current.length > 0)
   }, [group.id])
 
   // Sync local members list when background hydration completes or changes reference
