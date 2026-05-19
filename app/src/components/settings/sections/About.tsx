@@ -373,7 +373,7 @@ export const About: React.FC = () => {
               Docs
             </button>
           </div>
-          <p className="text-[11px] font-medium text-white/55">(c) 2026 Facenox</p>
+          <p className="text-[11px] font-medium text-white/55">© 2026 Facenox</p>
         </div>
       </div>
     </div>
