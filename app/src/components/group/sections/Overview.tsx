@@ -281,7 +281,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -5 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] py-1">
+                    className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] p-1">
                     {(["today", "yesterday", "week"] as DateFilter[]).map((filter) => (
                       <button
                         key={filter}
@@ -290,14 +290,11 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                           setActivitySearch("")
                           setFilterDropdownOpen(false)
                         }}
-                        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] transition-colors ${
-                          dateFilter === filter ? "text-white" : (
-                            "text-white/55 hover:bg-white/5 hover:text-white/80"
-                          )
+                        className={`flex w-full items-center rounded-md px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
+                          dateFilter === filter ?
+                            "bg-white/[0.06] font-semibold text-cyan-400"
+                          : "text-white/65 hover:bg-white/[0.03] hover:text-white"
                         }`}>
-                        <i
-                          className={`fa-solid fa-check text-[9px] text-cyan-400 transition-opacity ${dateFilter === filter ? "opacity-100" : "opacity-0"}`}
-                        />
                         {DATE_FILTER_LABELS[filter]}
                       </button>
                     ))}
