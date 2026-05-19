@@ -357,7 +357,7 @@ export function Attendance({
                     {attendanceSettings.forceLiveness ?
                       "Enforced by central administration."
                     : attendanceSettings.enableSpoofDetection ?
-                      "Verify faces are real before recognition."
+                      "Prevent spoofing attempts using printed photos, video playback, or digital screens."
                     : "Skip liveness verification."}
                   </motion.div>
                 </AnimatePresence>

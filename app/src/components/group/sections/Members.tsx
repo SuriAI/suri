@@ -236,9 +236,11 @@ export function Members({
           className="relative flex h-full w-full flex-col overflow-hidden">
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
             <div className="flex items-center justify-between gap-4">
-              <div
-                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
-                <div className="relative flex-1">
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                className={`group/searchbar flex w-full items-center ${searchBarMaxWidthClass}`}>
+                <motion.div layout className="relative flex-1">
                   <svg
                     className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-white/55"
                     fill="none"
@@ -260,9 +262,9 @@ export function Members({
                     placeholder="Search name or role..."
                     className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-11 text-[11px] font-bold tracking-wide text-white transition-all duration-300 outline-none placeholder:text-white/20 focus:bg-white/[0.08]"
                   />
-                </div>
+                </motion.div>
 
-                <div className="relative shrink-0">
+                <motion.div layout className="relative shrink-0">
                   {/* Subtle vertical divider */}
                   <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/10"></div>
                   <Dropdown
@@ -285,8 +287,8 @@ export function Members({
                     optionClassName="text-[11px] font-bold tracking-wider"
                     iconClassName="text-[10px]"
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
 
             {members.length > 0 && filteredMembers.length > 0 && (

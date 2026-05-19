@@ -115,7 +115,7 @@ export function GroupEntry({
           <button
             onClick={() => onToggle(group.id)}
             title="Edit Group"
-            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95">
+            className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-white/5 hover:text-white focus:outline-none active:scale-95 lg:opacity-0 lg:group-hover/row:opacity-100">
             <i className="fa-solid fa-pen text-[11px] opacity-70" />
           </button>
         </div>
