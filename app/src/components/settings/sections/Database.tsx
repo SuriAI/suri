@@ -54,6 +54,8 @@ export function Database({
     handleDeleteGroup,
     handleDeleteMember,
     handleClearAllGroups,
+    handlePurgeHistory,
+    isPurgingHistory,
   } = useDatabaseManagement(groups, onGroupsChanged, dialog)
 
   const { setError, setSuccess } = useUIStore()
@@ -68,18 +70,7 @@ export function Database({
   const [importFilePath, setImportFilePath] = useState<string | null>(null)
   const [passwordInput, setPasswordInput] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-
   const [isDangerZoneOpen, setIsDangerZoneOpen] = useState(false)
-  const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean
-    type: "clear_groups" | "reset_faces" | null
-    inputValue: string
-  }>({
-    isOpen: false,
-    type: null,
-    inputValue: "",
-  })
-
   const handleExport = async (password: string) => {
     setStatus({ type: "loading", action: "export" })
     try {
@@ -472,9 +463,7 @@ export function Database({
                     </p>
                   </div>
                   <button
-                    onClick={() =>
-                      setConfirmModal({ isOpen: true, type: "clear_groups", inputValue: "" })
-                    }
+                    onClick={() => handleClearAllGroups(false)}
                     disabled={isLoading || deletingGroup === "all" || groups.length === 0}
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     {deletingGroup === "all" ?
@@ -496,13 +485,34 @@ export function Database({
                     </p>
                   </div>
                   <button
-                    onClick={() =>
-                      setConfirmModal({ isOpen: true, type: "reset_faces", inputValue: "" })
-                    }
+                    onClick={() => onClearDatabase(false)}
                     disabled={isLoading}
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     <i className="fa-solid fa-user-slash text-[11px] opacity-60" />
                     Reset Face Data
+                  </button>
+                </div>
+
+                {/* Action 3: Purge Attendance Logs */}
+                <div className="flex flex-col gap-6 py-6 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0 flex-1 text-left">
+                    <h4 className="text-[15px] font-semibold text-red-400/80">
+                      Purge Attendance Logs
+                    </h4>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
+                      Permanently wipes all daily attendance check-ins, checkout timestamps, and
+                      history records. Configured groups, member profiles, and biometric face
+                      profiles will remain safe.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handlePurgeHistory(false)}
+                    disabled={isLoading || isPurgingHistory}
+                    className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
+                    {isPurgingHistory ?
+                      <i className="fa-solid fa-spinner fa-spin"></i>
+                    : <i className="fa-solid fa-clock-rotate-left text-[11px] opacity-60" />}
+                    Wipe History
                   </button>
                 </div>
               </div>
@@ -603,60 +613,6 @@ export function Database({
               }}
               className="min-w-25 rounded-lg border-0 bg-cyan-500/10 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 shadow-none transition-all hover:bg-cyan-500/20 active:scale-95 disabled:opacity-50">
               {passwordModal.action === "export" ? "Create" : "Restore"}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Irreversible Action Confirmation */}
-      <Modal
-        isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
-        title="Confirm Destructive Action"
-        icon={<i className="fa-solid fa-triangle-exclamation text-red-500" />}>
-        <div className="space-y-6">
-          <div className="rounded-none border-l-2 border-red-500/30 bg-transparent py-1.5 pl-4">
-            <p className="text-[12px] leading-relaxed text-red-200/50">
-              {confirmModal.type === "clear_groups" ?
-                "You are about to delete all groups and members. This will permanently erase your local directory."
-              : "You are about to reset all biometric profiles. All enrolled members will need to re-register their faces."
-              }
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-white/55">
-              Type <span className="font-bold text-white/65">DELETE</span> to confirm
-            </label>
-            <input
-              type="text"
-              autoFocus
-              value={confirmModal.inputValue}
-              onChange={(e) => setConfirmModal({ ...confirmModal, inputValue: e.target.value })}
-              placeholder="Type DELETE..."
-              className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs text-white outline-none focus:border-red-500/30"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })}
-              className="rounded-lg border-0 bg-transparent px-4 py-2 text-[11px] font-medium text-white/65 shadow-none transition-colors hover:text-white active:scale-95">
-              Cancel
-            </button>
-            <button
-              disabled={confirmModal.inputValue !== "DELETE"}
-              onClick={() => {
-                const type = confirmModal.type
-                setConfirmModal({ ...confirmModal, isOpen: false, inputValue: "" })
-                if (type === "clear_groups") {
-                  handleClearAllGroups(true)
-                } else {
-                  onClearDatabase(true)
-                }
-              }}
-              className="rounded-lg border-0 bg-red-500 px-6 py-2 text-[11px] font-bold tracking-wider text-white shadow-none transition-all hover:bg-red-600 active:scale-95 disabled:opacity-20 disabled:grayscale">
-              Proceed
             </button>
           </div>
         </div>

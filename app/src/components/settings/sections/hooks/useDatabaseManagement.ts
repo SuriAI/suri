@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { attendanceManager } from "@/services"
+import { attendanceManager, backendService } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useAttendanceStore } from "@/components/main/stores"
 import type { DialogAPI } from "@/components/shared"
@@ -317,20 +317,20 @@ export function useDatabaseManagement(
   const handleClearAllGroups = useCallback(
     async (skipConfirmation = false) => {
       const groupCount = groups.length
-      const confirmMessage = `Delete ALL ${groupCount} groups?\n\nThis will delete all groups and all their members. This cannot be undone.`
+      const confirmMessage = `Delete ALL ${groupCount} groups and member profiles? This will permanently wipe out your entire local directory structure and soft-delete member accounts. This cannot be undone.`
 
       if (!skipConfirmation) {
         if (dialog) {
           const ok = await dialog.confirm({
-            title: "Delete all groups",
+            title: "Delete Group Directory",
             message: confirmMessage,
-            confirmText: "Delete all",
+            confirmText: "Wipe Directory",
             cancelText: "Cancel",
             confirmVariant: "danger",
             requireTypedConfirmation: {
-              label: 'Type "DELETE ALL GROUPS" to continue',
-              placeholder: "DELETE ALL GROUPS",
-              value: "DELETE ALL GROUPS",
+              label: 'Type "DELETE DIRECTORY" to continue',
+              placeholder: "DELETE DIRECTORY",
+              value: "DELETE DIRECTORY",
             },
           })
           if (!ok) return
@@ -343,34 +343,92 @@ export function useDatabaseManagement(
       try {
         const deletePromises = groups.map((group) => attendanceManager.deleteGroup(group.id))
         await Promise.all(deletePromises)
+
+        // Securely invalidate face recognition RAM cache to prevent biometric memory leaks
+        await backendService.clearCache().catch(() => null)
+
         setGroupsWithMembers([])
         if (onGroupsChanged) {
           onGroupsChanged()
         }
         if (dialog) {
           await dialog.alert({
-            title: "Groups deleted",
-            message: `Successfully deleted ${groupCount} groups.`,
+            title: "Directory deleted",
+            message: `Successfully deleted all ${groupCount} groups and invalidated biometric index caches.`,
           })
-        } else {
-          alert(`✓ Successfully deleted ${groupCount} groups`)
         }
       } catch (error) {
         console.error("Error deleting all groups:", error)
         if (dialog) {
           await dialog.alert({
             title: "Delete failed",
-            message: "Failed to delete some groups.",
+            message: "Failed to delete directory structure.",
             variant: "danger",
           })
-        } else {
-          alert("Failed to delete some groups")
         }
       } finally {
         setDeletingGroup(null)
       }
     },
     [groups, onGroupsChanged, dialog],
+  )
+
+  const [isPurgingHistory, setIsPurgingHistory] = useState(false)
+
+  const handlePurgeHistory = useCallback(
+    async (skipConfirmation = false) => {
+      const confirmMessage = `Purge ALL attendance history logs?\n\nThis will delete all historical records and daily sessions. Configured groups, member profiles, and biometric face profiles will remain safe. This cannot be undone.`
+
+      if (!skipConfirmation) {
+        if (dialog) {
+          const ok = await dialog.confirm({
+            title: "Purge attendance history",
+            message: confirmMessage,
+            confirmText: "Wipe history",
+            cancelText: "Cancel",
+            confirmVariant: "danger",
+            requireTypedConfirmation: {
+              label: 'Type "PURGE HISTORY" to continue',
+              placeholder: "PURGE HISTORY",
+              value: "PURGE HISTORY",
+            },
+          })
+          if (!ok) return
+        } else {
+          if (!window.confirm(confirmMessage)) return
+        }
+      }
+
+      setIsPurgingHistory(true)
+      try {
+        await attendanceManager.purgeAttendanceHistory()
+        if (onGroupsChanged) {
+          onGroupsChanged()
+        }
+        if (dialog) {
+          await dialog.alert({
+            title: "History purged",
+            message: "Successfully purged all attendance records and sessions.",
+          })
+        } else {
+          alert("✓ Successfully purged all history logs")
+        }
+      } catch (error) {
+        console.error("Error purging history:", error)
+        if (dialog) {
+          await dialog.alert({
+            title: "Purge failed",
+            message: "Failed to purge attendance history. Please try again.",
+            variant: "danger",
+          })
+        } else {
+          alert("Failed to purge history")
+        }
+      } finally {
+        setIsPurgingHistory(false)
+      }
+    },
+    [onGroupsChanged, dialog],
   )
 
   const totalMembers = useMemo(
@@ -401,6 +459,8 @@ export function useDatabaseManagement(
     handleDeleteGroup,
     handleDeleteMember,
     handleClearAllGroups,
+    handlePurgeHistory,
+    isPurgingHistory,
     totalMembers,
   }
 }

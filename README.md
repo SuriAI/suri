@@ -91,12 +91,12 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 
 ---
 
-> [!IMPORTANT]  
-## Security & Trust
-
-- **Automated Audits:** Every commit is analyzed by [GitHub CodeQL](https://codeql.github.com/) to detect and prevent security vulnerabilities.
-- **Build Transparency:** All release binaries are built automatically via GitHub Actions. This ensures that the software you download is a direct, untampered reflection of the open-source code in this repository.
-- **Privacy First:** We follow a "Zero-Knowledge" architecture. Your biometric data never leaves your device.
+> [!IMPORTANT]
+> **Security & Trust**
+> 
+> - **Automated Audits:** Every commit is analyzed by [GitHub CodeQL](https://codeql.github.com/) to detect and prevent security vulnerabilities.
+> - **Build Transparency:** All release binaries are built automatically via GitHub Actions. This ensures that the software you download is a direct, untampered reflection of the open-source code in this repository.
+> - **Privacy First:** We follow a "Zero-Knowledge" architecture. Your biometric data never leaves your device.
 
 > **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 

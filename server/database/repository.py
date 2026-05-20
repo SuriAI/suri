@@ -771,6 +771,31 @@ class AttendanceRepository:
             "sessions_deleted": len(sessions_to_delete),
         }
 
+    async def clear_attendance_history(self) -> Dict[str, int]:
+        """Wipe all operational transaction data: records and daily sessions without deleting members or groups."""
+        # 1. Delete all AttendanceRecord
+        records_query = select(AttendanceRecord)
+        records_query = self._apply_org_scope(records_query, AttendanceRecord)
+        records_result = await self.session.execute(records_query)
+        records_to_delete = records_result.scalars().all()
+        for r in records_to_delete:
+            await self.session.delete(r)
+
+        # 2. Delete all AttendanceSession
+        sessions_query = select(AttendanceSession)
+        sessions_query = self._apply_org_scope(sessions_query, AttendanceSession)
+        sessions_result = await self.session.execute(sessions_query)
+        sessions_to_delete = sessions_result.scalars().all()
+        for s in sessions_to_delete:
+            await self.session.delete(s)
+
+        await self.session.commit()
+
+        return {
+            "records_deleted": len(records_to_delete),
+            "sessions_deleted": len(sessions_to_delete),
+        }
+
 
 class FaceRepository:
     """Repository pattern for Face database operations"""

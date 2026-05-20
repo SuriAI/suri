@@ -278,7 +278,7 @@ export function AddMember({
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 className="grid gap-4">
                 <label className="flex flex-col gap-1.5 text-sm">
-                  <span className="pl-1 text-[11px] font-medium text-white/65">Full Name</span>
+                  <span className="pl-1 text-[11px] font-medium text-white/65">Name</span>
                   <FormInput
                     ref={nameInputRef}
                     value={newMemberName}
