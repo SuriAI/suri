@@ -260,6 +260,10 @@ export class AttendanceManager {
     })
   }
 
+  async purgeAttendanceHistory(): Promise<void> {
+    await this.httpClient.post("/attendance/purge-history")
+  }
+
   async exportData(): Promise<string> {
     const data = await this.httpClient.post<Record<string, unknown>>("/attendance/export")
     return JSON.stringify(data, null, 2)

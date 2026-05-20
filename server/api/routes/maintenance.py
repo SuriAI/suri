@@ -74,3 +74,30 @@ async def remote_wipe_data(
     except Exception as e:
         logger.error(f"Error during remote wipe: {e}")
         raise HTTPException(status_code=500, detail=f"Wipe failed: {str(e)}")
+
+
+@router.post("/purge-history", response_model=SuccessResponse)
+async def purge_attendance_history(
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """
+    Wipe all operational attendance transaction records and daily sessions.
+    Preserves structural directories, members, and biometric faces.
+    """
+    try:
+        results = await repo.clear_attendance_history()
+
+        await repo.add_audit_log(
+            action="ATTENDANCE_HISTORY_PURGED",
+            target_type="system",
+            target_id="history",
+            details=f"All history logs manually purged. Records cleared: {results.get('records_deleted', 0)}. Sessions cleared: {results.get('sessions_deleted', 0)}.",
+        )
+
+        return SuccessResponse(
+            message=f"Purged successfully. Records: {results.get('records_deleted', 0)}, Sessions: {results.get('sessions_deleted', 0)}."
+        )
+
+    except Exception as e:
+        logger.error(f"Error during history purge: {e}")
+        raise HTTPException(status_code=500, detail=f"Purge failed: {str(e)}")

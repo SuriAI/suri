@@ -61,6 +61,14 @@ async def update_settings(
             raise HTTPException(status_code=500, detail="Failed to update settings")
 
         updated_settings = await repo.get_settings()
+
+        await repo.add_audit_log(
+            action="SETTINGS_UPDATED",
+            target_type="system",
+            target_id="settings",
+            details=f"Fields updated: {', '.join(update_data.keys())}",
+        )
+
         return updated_settings
 
     except HTTPException:
@@ -77,17 +85,25 @@ async def export_audit_log(repo: AttendanceRepository = Depends(get_repository))
         logs = await repo.get_audit_logs()
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["timestamp", "action", "target_type", "target_id", "details"])
+        writer.writerow(["Timestamp", "Action", "Target Type", "Target ID", "Details"])
         for log in logs:
+            action_raw = log.action or ""
+            action_clean = action_raw.replace("_", " ").title() if action_raw else ""
+            if action_raw == "ATTENDANCE_HISTORY_PURGED":
+                action_clean = "Attendance History Purged"
+
+            target_type_clean = (log.target_type or "").title()
+
             writer.writerow(
                 [
                     log.timestamp.isoformat() if log.timestamp else "",
-                    log.action or "",
-                    log.target_type or "",
+                    action_clean,
+                    target_type_clean,
                     log.target_id or "",
                     log.details or "",
                 ]
             )
+
         output.seek(0)
         return StreamingResponse(
             iter([output.getvalue()]),
