@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Display } from "@/components/settings/sections/Display"
 import { Notifications } from "@/components/settings/sections/Notifications"
@@ -12,6 +12,7 @@ import { SectionHeader } from "./components/SectionHeader"
 import { useGroupModals } from "@/components/group/hooks"
 import { useGroupUIStore } from "@/components/group/stores"
 import { useUIStore } from "@/components/main/stores"
+import { attendanceManager } from "@/services"
 import type {
   QuickSettings,
   AttendanceSettings,
@@ -103,9 +104,26 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   const setAntiSpoofDetectionInfoDismissed = useUIStore(
     (state) => state.setAntiSpoofDetectionInfoDismissed,
   )
+  const setSuccess = useUIStore((state) => state.setSuccess)
+  const setError = useUIStore((state) => state.setError)
   const [isAntiSpoofModalOpen, setIsAntiSpoofModalOpen] = useState(false)
   const [dontShowAntiSpoofInfoAgain, setDontShowAntiSpoofInfoAgain] = useState(false)
   const isGroupSection = activeSection === "group"
+
+  const [isExportingAuditLog, setIsExportingAuditLog] = useState(false)
+
+  /** Audit log export — owned here so the page header can surface the action. */
+  const handleExportAuditLog = useCallback(async () => {
+    setIsExportingAuditLog(true)
+    try {
+      await attendanceManager.downloadAuditLog()
+      setSuccess("Audit log downloaded.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to export audit log.")
+    } finally {
+      setIsExportingAuditLog(false)
+    }
+  }, [setSuccess, setError])
 
   // Dynamic Header Logic
   const headerProps = useMemo(() => {
@@ -191,7 +209,18 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         activeSection.charAt(0).toUpperCase() + activeSection.slice(1),
       eyebrow: "Preferences",
       eyebrowColor: "text-white/55",
-      actions: null,
+      actions:
+        activeSection === "database" ?
+          <button
+            onClick={handleExportAuditLog}
+            disabled={isExportingAuditLog}
+            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/50 transition-all duration-200 hover:border-white/20 hover:bg-white/5 hover:text-white/70 active:scale-[0.97] disabled:opacity-40">
+            {isExportingAuditLog ?
+              <i className="fa-solid fa-circle-notch fa-spin text-[10px]" />
+            : <i className="fa-solid fa-download text-[10px] opacity-60" />}
+            CSV LOG
+          </button>
+        : null,
       isGroupSection: false,
     }
   }, [
@@ -208,6 +237,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     resetRegistration,
     openEditGroup,
     reportsExportHandlers,
+    isExportingAuditLog,
+    handleExportAuditLog,
   ])
 
   const handleSpoofDetectionToggle = (enabled: boolean) => {
