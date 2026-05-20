@@ -8,7 +8,6 @@ import { GroupEntry } from "@/components/settings/sections/components/GroupEntry
 import { useDialog } from "@/components/shared"
 import { Modal } from "@/components/common/Modal"
 import { useUIStore } from "@/components/main/stores"
-import { attendanceManager } from "@/services"
 
 type BackupStatus = { type: "idle" } | { type: "loading"; action: "export" | "import" }
 
@@ -61,7 +60,6 @@ export function Database({
   const { setError, setSuccess } = useUIStore()
 
   const [status, setStatus] = useState<BackupStatus>({ type: "idle" })
-  const [isExportingAuditLog, setIsExportingAuditLog] = useState(false)
   const [passwordModal, setPasswordModal] = useState<{
     isOpen: boolean
     action: "export" | "import"
@@ -139,17 +137,7 @@ export function Database({
 
   const isBackingUp = status.type === "loading"
 
-  const handleExportAuditLog = async () => {
-    setIsExportingAuditLog(true)
-    try {
-      await attendanceManager.downloadAuditLog()
-      setSuccess("Audit log downloaded.")
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to export audit log.")
-    } finally {
-      setIsExportingAuditLog(false)
-    }
-  }
+
 
   const getFriendlyTimeZoneLabel = (): string => {
     const health = timeHealthState.timeHealth
@@ -330,25 +318,6 @@ export function Database({
             </button>
           </div>
 
-          {/* Audit Log */}
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="min-w-0 flex-1">
-              <h4 className="text-[15px] font-semibold text-white/90">Export Audit Log</h4>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
-                Download a CSV of admin actions, including consent changes, deletions, and backup
-                activity.
-              </p>
-            </div>
-            <button
-              onClick={handleExportAuditLog}
-              disabled={isExportingAuditLog}
-              className="flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
-              {isExportingAuditLog ?
-                <i className="fa-solid fa-circle-notch fa-spin" />
-              : <i className="fa-solid fa-download text-[11px] opacity-40" />}
-              CSV Log
-            </button>
-          </div>
         </div>
       </section>
 
@@ -466,9 +435,7 @@ export function Database({
                     onClick={() => handleClearAllGroups(false)}
                     disabled={isLoading || deletingGroup === "all" || groups.length === 0}
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
-                    {deletingGroup === "all" ?
-                      <i className="fa-solid fa-spinner fa-spin"></i>
-                    : <i className="fa-solid fa-trash-can text-[11px] opacity-60" />}
+                    {deletingGroup === "all" && <i className="fa-solid fa-spinner fa-spin" />}
                     Clear Groups
                   </button>
                 </div>
@@ -487,8 +454,7 @@ export function Database({
                   <button
                     onClick={() => onClearDatabase(false)}
                     disabled={isLoading}
-                    className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
-                    <i className="fa-solid fa-user-slash text-[11px] opacity-60" />
+                    className="flex shrink-0 items-center justify-center self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     Reset Face Data
                   </button>
                 </div>
@@ -509,9 +475,7 @@ export function Database({
                     onClick={() => handlePurgeHistory(false)}
                     disabled={isLoading || isPurgingHistory}
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
-                    {isPurgingHistory ?
-                      <i className="fa-solid fa-spinner fa-spin"></i>
-                    : <i className="fa-solid fa-clock-rotate-left text-[11px] opacity-60" />}
+                    {isPurgingHistory && <i className="fa-solid fa-spinner fa-spin" />}
                     Wipe History
                   </button>
                 </div>
