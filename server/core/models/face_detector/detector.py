@@ -54,22 +54,23 @@ class FaceDetector:
         roi = image[center_y1:center_y2, center_x1:center_x2]
 
         if roi.size > 0:
-            gray = cv.cvtColor(roi, cv.COLOR_BGR2GRAY)
-            mean_brightness = float(np.mean(gray))
+            ycrcb_roi = cv.cvtColor(roi, cv.COLOR_BGR2YCrCb)
+            mean_brightness = float(np.mean(ycrcb_roi[:, :, 0]))
         else:
-            gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-            mean_brightness = float(np.mean(gray))
+            ycrcb_img = cv.cvtColor(image, cv.COLOR_BGR2YCrCb)
+            mean_brightness = float(np.mean(ycrcb_img[:, :, 0]))
 
-        if mean_brightness < 85.0:
+        # Best Practice: Lower pre-detection trigger to 60.0 on pure Y-luminance
+        if mean_brightness < 60.0:
             logger.debug(
-                "Low-light detected in face ROI (mean brightness: %.1f). Applying noise-immune Bilateral + Dynamic Gamma pipeline.",
+                "Low-light detected in face ROI (mean luminance: %.1f). Applying noise-immune Bilateral + Dynamic Gamma pipeline.",
                 mean_brightness,
             )
             # Bilateral filter suppresses low-light sensor grain while preserving face edges
             smoothed = cv.bilateralFilter(image, d=5, sigmaColor=75, sigmaSpace=75)
 
-            # Dynamic scale factor based on brightness level
-            gamma = max(0.4, min(1.0, mean_brightness / 85.0))
+            # Dynamic scale factor based on brightness level (relative to 60.0 threshold)
+            gamma = max(0.4, min(1.0, mean_brightness / 60.0))
             inv_gamma = 1.0 / gamma
 
             # Fast LUT mapping for gamma performance
@@ -87,7 +88,7 @@ class FaceDetector:
             # Continuous score threshold scaling prevents step-function detection drops
             original_threshold = self.conf_threshold
             dynamic_threshold = max(
-                0.5, min(original_threshold, 0.5 + (mean_brightness - 40.0) / 150.0)
+                0.5, min(original_threshold, 0.5 + (mean_brightness - 30.0) / 100.0)
             )
             self.set_score_threshold(dynamic_threshold)
             try:
@@ -124,12 +125,34 @@ class FaceDetector:
 
                 face_roi = image[fy1:fy2, fx1:fx2]
                 if face_roi.size > 0:
-                    face_gray = cv.cvtColor(face_roi, cv.COLOR_BGR2GRAY)
-                    face_brightness = float(np.mean(face_gray))
+                    # Convert to YCrCb to isolate pure luminance channel (Y)
+                    ycrcb_face = cv.cvtColor(face_roi, cv.COLOR_BGR2YCrCb)
+                    y_channel = ycrcb_face[:, :, 0]
+
+                    # Crop to inner facial T-zone to ignore dark hair (top/sides) and collar shadows (bottom)
+                    fh_roi, fw_roi = y_channel.shape[:2]
+                    inner_y1 = int(fh_roi * 0.20)
+                    inner_y2 = int(fh_roi * 0.85)
+                    inner_x1 = int(fw_roi * 0.25)
+                    inner_x2 = int(fw_roi * 0.75)
+                    skin_roi = y_channel[inner_y1:inner_y2, inner_x1:inner_x2]
+
+                    if skin_roi.size > 0:
+                        face_brightness = float(np.mean(skin_roi))
+                        face_variance = float(np.var(skin_roi))
+                    else:
+                        face_brightness = float(np.mean(y_channel))
+                        face_variance = float(np.var(y_channel))
                 else:
                     face_brightness = mean_brightness
+                    face_variance = 0.0
 
-                is_face_low_light = bool(face_brightness < 85.0)
+                # Best Practice: Face is low-light if skin Y-channel is extremely low (< 55.0)
+                # OR if moderately low (< 70.0) with high sensor grain variance (> 150.0)
+                is_face_low_light = bool(
+                    face_brightness < 55.0
+                    or (face_brightness < 70.0 and face_variance > 150.0)
+                )
                 detection["low_light"] = is_face_low_light
                 detections.append(detection)
 
