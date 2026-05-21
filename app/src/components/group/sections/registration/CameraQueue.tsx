@@ -3,7 +3,7 @@ import { attendanceManager, backendService } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
 import { useGroupUIStore } from "@/components/group/stores/groupUIStore"
-import { Dropdown, Tooltip } from "@/components/shared"
+import { Dropdown, InfoPopover } from "@/components/shared"
 import { dataUrlToBlob } from "@/utils/dataUrl"
 
 type CaptureStatus = "pending" | "capturing" | "processing" | "completed" | "skipped" | "error"
@@ -45,7 +45,6 @@ export function CameraQueue({
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered"
   >("all")
-  const [showPrivacyNotice, setShowPrivacyNotice] = useState(true)
 
   const {
     videoRef,
@@ -341,27 +340,6 @@ export function CameraQueue({
 
   return (
     <div className="flex h-full flex-col overflow-hidden text-white">
-      {/* Privacy Notice — DPA Sec.16(a) / GDPR Art.13: inform data subjects at point of collection */}
-      {showPrivacyNotice && (
-        <div className="mx-6 mt-4 flex shrink-0 items-start gap-3 rounded-lg border border-blue-500/25 bg-blue-500/8 px-4 py-3 text-xs text-blue-200/80">
-          <i className="fa-solid fa-circle-info mt-0.5 shrink-0 text-blue-400" />
-          <div className="flex-1 leading-relaxed">
-            <span className="font-bold text-blue-200">Privacy Notice for Data Subjects:&nbsp;</span>
-            Facial features are converted to a numeric signature and stored encrypted on this device
-            only. No photos are kept. Data is used solely for attendance tracking and is not shared
-            with third parties. Individuals may withdraw consent and request deletion at any time by
-            contacting the administrator.
-          </div>
-          <Tooltip content="Dismiss notice" position="top">
-            <button
-              onClick={() => setShowPrivacyNotice(false)}
-              className="shrink-0 border-none bg-transparent p-0 text-blue-200/40 transition hover:text-blue-100">
-              <i className="fa fa-times text-xs"></i>
-            </button>
-          </Tooltip>
-        </div>
-      )}
-
       {error && (
         <div className="mx-6 mt-4 flex shrink-0 items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           <div className="h-1 w-1 animate-pulse rounded-full bg-red-400" />
@@ -386,7 +364,19 @@ export function CameraQueue({
           <div className="space-y-6">
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">Select Members to Register</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-white">Select Members to Register</h3>
+                  <InfoPopover
+                    title="Privacy & Data Protection"
+                    description="Facial features are converted into encrypted numeric signatures stored strictly on this device. No raw photos are saved, and data is never shared with third parties."
+                    details={[
+                      "100% on-device processing",
+                      "Encrypted face signature database",
+                      "Revokable authorization at any time",
+                    ]}
+                    side="right"
+                  />
+                </div>
                 <div className="flex items-center gap-3">
                   {memberQueue.length > 0 && (
                     <button

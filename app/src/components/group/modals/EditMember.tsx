@@ -106,17 +106,33 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
             />
           </label>
 
-          {/* Implicit Certification Notice */}
-          <div className="mt-2 rounded-lg border border-cyan-500/10 bg-cyan-500/5 px-3.5 py-2.5">
-            <p className="flex items-start text-xs leading-relaxed text-cyan-200/60">
-              <i className="fa-solid fa-circle-check mt-0.5 mr-2 shrink-0 text-cyan-400/50"></i>
-              <span>
-                By updating this member, you certify that you have obtained their{" "}
-                <span className="font-medium text-cyan-300/80">explicit biometric consent</span> in
-                accordance with the Data Privacy Act.
-              </span>
-            </p>
-          </div>
+          {/* Explicit Certification Consent Checkbox */}
+          <label className="group mt-3 flex cursor-pointer items-start gap-2.5 py-1.5 select-none">
+            <div className="relative mt-0.5 flex shrink-0 items-center justify-center">
+              <input
+                type="checkbox"
+                checked={hasBiometricConsent}
+                onChange={(e) => setHasBiometricConsent(e.target.checked)}
+                className="peer sr-only"
+              />
+              <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
+                <svg
+                  className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
+                    hasBiometricConsent ? "opacity-100" : "opacity-0"
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
+              I certify that explicit biometric consent has been obtained for this member in
+              accordance with the Data Privacy Act.
+            </span>
+          </label>
         </div>
         <div className="mt-8 flex justify-end gap-3">
           <button
@@ -126,7 +142,7 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
           </button>
           <button
             onClick={handleSave}
-            disabled={!name.trim() || loading}
+            disabled={!name.trim() || loading || !hasBiometricConsent}
             className="min-w-[140px] rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97] disabled:opacity-30">
             {loading ?
               <i className="fa-solid fa-circle-notch fa-spin mr-2" />
