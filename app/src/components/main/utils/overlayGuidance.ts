@@ -351,7 +351,7 @@ export const getOverlayGuidance = (
 
   if (face.low_light) {
     return {
-      label: "Low light detected",
+      label: "Poor lighting detected",
       tone: "warning",
     }
   }
