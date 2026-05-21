@@ -86,7 +86,6 @@ export class BackendClient {
     return (await response.json()) as ModelsResponse
   }
 
-  // Helper method for health check status
   async checkReadiness(
     isRunning: boolean,
   ): Promise<{ ready: boolean; modelsLoaded: boolean; error?: string }> {

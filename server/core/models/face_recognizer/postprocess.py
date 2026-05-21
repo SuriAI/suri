@@ -39,7 +39,6 @@ def find_best_match(
     if not database:
         return None, 0.0
 
-    # Filter by allowed person IDs if provided
     if allowed_person_ids is not None:
         filtered_db = {
             pid: emb for pid, emb in database.items() if pid in allowed_person_ids
@@ -49,18 +48,15 @@ def find_best_match(
     else:
         filtered_db = database
 
-    # Extract keys and stack embeddings into a matrix
     person_ids = list(filtered_db.keys())
     db_matrix = np.stack(list(filtered_db.values()))  # Shape: (N, 512)
 
     # Compute cosine similarities in parallel: (1, 512) @ (512, N) -> (1, N)
     similarities = np.dot(query_embedding, db_matrix.T)
 
-    # Find the index of the highest similarity
     best_idx = np.argmax(similarities)
     best_similarity = float(similarities[best_idx])
 
-    # Check against threshold
     if best_similarity >= similarity_threshold:
         return person_ids[best_idx], best_similarity
     else:

@@ -60,7 +60,6 @@ class UpdaterService {
       this.cachedUpdateInfo = updateInfo
       this.lastChecked = new Date()
 
-      // Persist to disk
       await persistentSettings.setUpdaterInfo({
         cachedInfo: updateInfo,
         lastChecked: this.lastChecked.toISOString(),
@@ -131,7 +130,6 @@ class UpdaterService {
       this.cachedUpdateInfo = updateInfo
       this.lastChecked = new Date()
 
-      // Persist to disk
       await persistentSettings.setUpdaterInfo({
         cachedInfo: updateInfo,
         lastChecked: this.lastChecked.toISOString(),
@@ -159,7 +157,6 @@ class UpdaterService {
 
   parseReleaseNotes(notes: string): string[] {
     if (!notes) return []
-    // Split by newlines, filter empty lines, and take first 10 lines
     return notes
       .split("\n")
       .map((line) => line.trim())
@@ -168,5 +165,4 @@ class UpdaterService {
   }
 }
 
-// Singleton instance
 export const updaterService = new UpdaterService()

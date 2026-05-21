@@ -60,20 +60,16 @@ class FaceDetector:
             ycrcb_img = cv.cvtColor(image, cv.COLOR_BGR2YCrCb)
             mean_brightness = float(np.mean(ycrcb_img[:, :, 0]))
 
-        # Best Practice: Lower pre-detection trigger to 60.0 on pure Y-luminance
         if mean_brightness < 60.0:
             logger.debug(
                 "Low-light detected in face ROI (mean luminance: %.1f). Applying noise-immune Bilateral + Dynamic Gamma pipeline.",
                 mean_brightness,
             )
-            # Bilateral filter suppresses low-light sensor grain while preserving face edges
             smoothed = cv.bilateralFilter(image, d=5, sigmaColor=75, sigmaSpace=75)
 
-            # Dynamic scale factor based on brightness level (relative to 60.0 threshold)
             gamma = max(0.4, min(1.0, mean_brightness / 60.0))
             inv_gamma = 1.0 / gamma
 
-            # Fast LUT mapping for gamma performance
             table = np.array(
                 [((i / 255.0) ** inv_gamma) * 255 for i in np.arange(0, 256)]
             ).astype("uint8")
@@ -116,7 +112,6 @@ class FaceDetector:
                 margin,
             )
             if detection is not None:
-                # Calculate brightness specifically inside the detected face region
                 fx, fy, fw, fh = map(int, face[0:4])
                 fx1 = max(0, fx)
                 fy1 = max(0, fy)
@@ -125,7 +120,6 @@ class FaceDetector:
 
                 face_roi = image[fy1:fy2, fx1:fx2]
                 if face_roi.size > 0:
-                    # Convert to YCrCb to isolate pure luminance channel (Y)
                     ycrcb_face = cv.cvtColor(face_roi, cv.COLOR_BGR2YCrCb)
                     y_channel = ycrcb_face[:, :, 0]
 
