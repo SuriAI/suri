@@ -275,7 +275,6 @@ export const AttendancePanel = memo(function AttendancePanel({
     groupMembers,
     isShellReady,
     isPanelLoading,
-    isPanelRefreshing,
     isPanelSwitchPending,
     setShowGroupManagement,
   } = useAttendanceStore()
@@ -494,13 +493,6 @@ export const AttendancePanel = memo(function AttendancePanel({
                 </Tooltip>
               </div>
             </div>
-
-            {isPanelRefreshing && (
-              <div className="flex h-9 shrink-0 items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/8 px-3 text-[10px] font-semibold tracking-wide text-cyan-300/85 uppercase">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
-                Refreshing
-              </div>
-            )}
           </div>
         </div>
       )}
