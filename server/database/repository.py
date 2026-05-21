@@ -640,13 +640,28 @@ class AttendanceRepository:
         await self.session.commit()
         return log
 
-    async def get_audit_logs(self) -> List[AuditLog]:
-        """Return all audit logs for this organization, newest first."""
-        result = await self.session.execute(
+    async def get_audit_logs(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> List[AuditLog]:
+        """Return audit logs for this organization, newest first.
+
+        Args:
+            start_date: Inclusive lower bound on AuditLog.timestamp.
+            end_date: Inclusive upper bound on AuditLog.timestamp (set to 23:59:59
+                      by the caller so the full end day is included).
+        """
+        query = (
             select(AuditLog)
             .where(AuditLog.organization_id == self.organization_id)
             .order_by(desc(AuditLog.timestamp))
         )
+        if start_date:
+            query = query.where(AuditLog.timestamp >= start_date)
+        if end_date:
+            query = query.where(AuditLog.timestamp <= end_date)
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
     # Stats

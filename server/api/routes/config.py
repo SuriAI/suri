@@ -1,6 +1,8 @@
 import csv
 import io
 import logging
+from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 
@@ -79,10 +81,37 @@ async def update_settings(
 
 
 @router.get("/audit-log")
-async def export_audit_log(repo: AttendanceRepository = Depends(get_repository)):
+async def export_audit_log(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    repo: AttendanceRepository = Depends(get_repository),
+):
     """Export audit log as CSV for compliance review."""
     try:
-        logs = await repo.get_audit_logs()
+        start_dt = None
+        if start_date:
+            try:
+                # Handle possible 'Z' suffix or other standard ISO strings
+                clean_start = start_date.replace("Z", "+00:00")
+                start_dt = datetime.fromisoformat(clean_start)
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid start_date format. Must be ISO format.",
+                )
+
+        end_dt = None
+        if end_date:
+            try:
+                clean_end = end_date.replace("Z", "+00:00")
+                end_dt = datetime.fromisoformat(clean_end)
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid end_date format. Must be ISO format.",
+                )
+
+        logs = await repo.get_audit_logs(start_date=start_dt, end_date=end_dt)
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(["Timestamp", "Action", "Target Type", "Target ID", "Details"])

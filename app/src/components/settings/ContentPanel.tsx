@@ -7,6 +7,7 @@ import { Attendance } from "@/components/settings/sections/Attendance"
 import { About } from "@/components/settings/sections/About"
 import { Sync } from "@/components/settings/sections/Sync"
 import { AntiSpoofDetectionModal } from "@/components/settings/AntiSpoofDetectionModal"
+import { AuditLogExportModal } from "@/components/settings/AuditLogExportModal"
 import { GroupPanel, type GroupSection } from "@/components/group"
 import { SectionHeader } from "./components/SectionHeader"
 import { useGroupModals } from "@/components/group/hooks"
@@ -108,25 +109,25 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   const setError = useUIStore((state) => state.setError)
   const [isAntiSpoofModalOpen, setIsAntiSpoofModalOpen] = useState(false)
   const [dontShowAntiSpoofInfoAgain, setDontShowAntiSpoofInfoAgain] = useState(false)
-  const isGroupSection = activeSection === "group"
-
-  const [isExportingAuditLog, setIsExportingAuditLog] = useState(false)
+  const [isAuditLogModalOpen, setIsAuditLogModalOpen] = useState(false)
 
   /** Audit log export — owned here so the page header can surface the action. */
-  const handleExportAuditLog = useCallback(async () => {
-    setIsExportingAuditLog(true)
-    try {
-      await attendanceManager.downloadAuditLog()
-      setSuccess("Audit log downloaded.")
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to export audit log.")
-    } finally {
-      setIsExportingAuditLog(false)
-    }
-  }, [setSuccess, setError])
+  const handleExportAuditLog = useCallback(
+    async (startDate?: string, endDate?: string) => {
+      try {
+        await attendanceManager.downloadAuditLog(startDate, endDate)
+        setSuccess("Audit log downloaded.")
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to export audit log.")
+      }
+    },
+    [setSuccess, setError],
+  )
 
   // Dynamic Header Logic
   const headerProps = useMemo(() => {
+    const isGroupSection = activeSection === "group"
+
     const generalTitles: Record<string, string> = {
       attendance: "General",
       display: "Display",
@@ -136,10 +137,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       about: "About",
     }
     if (isGroupSection) {
-      const groupName =
-        dropdownValue ?
-          dropdownGroups.find((g) => g.id === dropdownValue)?.name
-        : "Group Management"
+      const groupName = validInitialGroup?.name || "Group Management"
 
       const sectionLabel =
         groupInitialSection ?
@@ -212,22 +210,16 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       actions:
         activeSection === "database" ?
           <button
-            onClick={handleExportAuditLog}
-            disabled={isExportingAuditLog}
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/50 transition-all duration-200 hover:border-white/20 hover:bg-white/5 hover:text-white/70 active:scale-[0.97] disabled:opacity-40">
-            {isExportingAuditLog ?
-              <i className="fa-solid fa-circle-notch fa-spin text-[10px]" />
-            : <i className="fa-solid fa-download text-[10px] opacity-60" />}
-            CSV LOG
+            onClick={() => setIsAuditLogModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/50 transition-all duration-200 hover:border-white/20 hover:bg-white/5 hover:text-white/70 active:scale-[0.97]">
+            <i className="fa-solid fa-download text-[10px] opacity-60" />
+            AUDIT LOG
           </button>
         : null,
       isGroupSection: false,
     }
   }, [
     activeSection,
-    isGroupSection,
-    dropdownValue,
-    dropdownGroups,
     groupInitialSection,
     groupSections,
     validInitialGroup,
@@ -237,8 +229,6 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     resetRegistration,
     openEditGroup,
     reportsExportHandlers,
-    isExportingAuditLog,
-    handleExportAuditLog,
   ])
 
   const handleSpoofDetectionToggle = (enabled: boolean) => {
@@ -400,6 +390,11 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         onClose={() => setIsAntiSpoofModalOpen(false)}
         onConfirm={handleConfirmAntiSpoofDetection}
         onDontShowAgainChange={setDontShowAntiSpoofInfoAgain}
+      />
+      <AuditLogExportModal
+        isOpen={isAuditLogModalOpen}
+        onClose={() => setIsAuditLogModalOpen(false)}
+        onExport={handleExportAuditLog}
       />
     </>
   )
