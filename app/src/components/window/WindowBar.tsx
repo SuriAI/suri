@@ -75,7 +75,9 @@ export default function WindowBar() {
 
       {!isMac && (
         <div
-          className="relative z-70 flex h-full items-center px-1 [webkit-app-region:no-drag]"
+          className={`relative z-70 flex h-full [webkit-app-region:no-drag] ${
+            isLinux ? "items-center px-1" : "items-stretch"
+          }`}
           style={
             {
               WebkitAppRegion: "no-drag",
@@ -85,10 +87,10 @@ export default function WindowBar() {
           <button
             onClick={handleMinimize}
             title="Minimize"
-            className={`group flex h-[28px] items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
+            className={`group flex items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
               isLinux ?
-                "mx-0.5 w-[28px] rounded-full hover:bg-white/10"
-              : "w-[46px] hover:bg-white/10"
+                "mx-0.5 h-[28px] w-[28px] rounded-full hover:bg-white/10"
+              : "h-full w-[46px] hover:bg-white/10"
             }`}>
             <span
               className="h-full w-full bg-white/70 transition-colors group-hover:bg-white"
@@ -100,10 +102,10 @@ export default function WindowBar() {
           <button
             onClick={handleMaximize}
             title={isMaximized ? "Restore" : "Maximize"}
-            className={`group flex h-[28px] items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
+            className={`group flex items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
               isLinux ?
-                "mx-0.5 w-[28px] rounded-full hover:bg-white/10"
-              : "w-[46px] hover:bg-white/10"
+                "mx-0.5 h-[28px] w-[28px] rounded-full hover:bg-white/10"
+              : "h-full w-[46px] hover:bg-white/10"
             }`}>
             <span
               className="h-full w-full bg-white/70 transition-colors group-hover:bg-white"
@@ -115,10 +117,10 @@ export default function WindowBar() {
           <button
             onClick={handleClose}
             title="Close"
-            className={`group flex h-[28px] items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
+            className={`group flex items-center justify-center border-none bg-transparent p-0 transition-all duration-150 outline-none ${
               isLinux ?
-                "mx-0.5 w-[28px] rounded-full hover:bg-[#e81123]"
-              : "w-[46px] hover:bg-[#e81123]"
+                "mx-0.5 h-[28px] w-[28px] rounded-full hover:bg-[#e81123]"
+              : "h-full w-[46px] hover:bg-[#e81123]"
             }`}>
             <span
               className="h-full w-full bg-white/80 transition-colors group-hover:bg-white"
