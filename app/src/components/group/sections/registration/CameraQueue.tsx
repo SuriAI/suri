@@ -5,6 +5,7 @@ import { useCamera } from "@/components/group/sections/registration/hooks/useCam
 import { useGroupUIStore } from "@/components/group/stores/groupUIStore"
 import { Dropdown, InfoPopover } from "@/components/shared"
 import { dataUrlToBlob } from "@/utils/dataUrl"
+import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed"
 
 type CaptureStatus = "pending" | "capturing" | "processing" | "completed" | "skipped" | "error"
 
@@ -99,14 +100,14 @@ export function CameraQueue({
     setCurrentIndex(0)
   }, [])
 
-  // Auto-start if preselectedIds are provided
+  // Auto-start if preselectedIds are provided (initial load only)
   useEffect(() => {
-    if (preselectedIds && preselectedIds.length > 0) {
+    if (memberQueue.length === 0 && preselectedIds && preselectedIds.length > 0) {
       const preselectedMembers = members.filter((m) => preselectedIds.includes(m.person_id))
       setupQueue(preselectedMembers)
       setQueueStarted(true)
     }
-  }, [preselectedIds, members, setupQueue])
+  }, [preselectedIds, members, setupQueue, memberQueue.length])
 
   useEffect(() => {
     if (totalMembers > 0 && completedMembers === totalMembers && !isProcessing) {
@@ -336,6 +337,22 @@ export function CameraQueue({
     members,
   ])
 
+  // Automatically start camera in queue mode if queue is started and not already streaming
+  useEffect(() => {
+    let active = true
+    if (queueStarted && currentMember && !isStreaming && !successMessage) {
+      const timer = setTimeout(() => {
+        if (active) {
+          startCamera()
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+    return () => {
+      active = false
+    }
+  }, [queueStarted, currentMember, isStreaming, successMessage, startCamera])
+
   useEffect(() => () => stopCamera(), [stopCamera])
 
   return (
@@ -541,79 +558,18 @@ export function CameraQueue({
         : <div className="flex h-full gap-4">
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="relative flex-1 overflow-hidden rounded-lg border border-white/20 bg-black">
-                <video
-                  ref={videoRef}
-                  className="h-full w-full scale-x-[-1] object-contain"
-                  playsInline
-                  muted
+                <CameraFeed
+                  videoRef={videoRef}
+                  isStreaming={isStreaming}
+                  isVideoReady={isVideoReady}
+                  cameraError={cameraError}
+                  onStart={startCamera}
+                  onStop={stopCamera}
+                  source="live"
+                  cameraDevices={cameraDevices}
+                  selectedCamera={selectedCamera}
+                  setSelectedCamera={setSelectedCamera}
                 />
-
-                {!isStreaming && !cameraError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/95">
-                    <div className="max-w-xs space-y-4 text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/5 bg-white/5">
-                        <i className="fa-solid fa-video text-2xl text-white/55"></i>
-                      </div>
-                      <div className="text-sm text-white/65">Select a camera to start</div>
-
-                      {cameraDevices.length > 0 && (
-                        <Dropdown
-                          options={cameraDevices.map((device, index) => ({
-                            value: device.deviceId,
-                            label: device.label || `Camera ${index + 1}`,
-                          }))}
-                          value={selectedCamera || null}
-                          onChange={(value: string | number | null) => {
-                            if (value) {
-                              setSelectedCamera(value as string)
-                            }
-                          }}
-                          placeholder="Select camera..."
-                          emptyMessage="No cameras available"
-                          showPlaceholderOption={false}
-                          allowClear={false}
-                          buttonClassName="bg-white/10 border-white/20"
-                        />
-                      )}
-                      {cameraDevices.length === 0 && (
-                        <div className="text-xs text-white/55">No cameras detected</div>
-                      )}
-
-                      <button
-                        onClick={() => void startCamera()}
-                        disabled={!selectedCamera && cameraDevices.length > 0}
-                        className="w-full rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-4 py-2.5 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">
-                        <i className="fa-solid fa-play mr-2"></i>
-                        Start Camera
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {isStreaming && !isVideoReady && !cameraError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/90">
-                    <div className="space-y-3 text-center">
-                      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-cyan-400" />
-                      <div className="text-xs text-white/65">Starting camera...</div>
-                    </div>
-                  </div>
-                )}
-
-                {cameraError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/90 p-4 text-center">
-                    <div className="space-y-3">
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
-                        <i className="fa-solid fa-exclamation-triangle text-lg text-red-400"></i>
-                      </div>
-                      <div className="max-w-xs text-xs text-red-300">{cameraError}</div>
-                      <button
-                        onClick={() => void startCamera()}
-                        className="rounded-lg border border-white/5 bg-white/5 px-4 py-2 text-[11px] font-bold tracking-wider text-white/65 transition-all hover:bg-white/10 hover:text-white">
-                        Try Again
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {/* Privacy Shield Overlay */}
                 {(() => {
@@ -643,8 +599,16 @@ export function CameraQueue({
 
                 {currentMember && (
                   <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                    <div className="text-md truncate font-medium text-white/80">
-                      {currentMember.name}
+                    <button
+                      onClick={() => setQueueStarted(false)}
+                      className="flex w-fit items-center gap-1 text-[10px] font-bold tracking-[0.15em] text-cyan-400/80 uppercase transition-all hover:text-cyan-300">
+                      <i className="fa-solid fa-chevron-left text-[8px]" /> Queue List
+                    </button>
+                    <div className="text-md flex items-center gap-2 font-medium text-white/80">
+                      <span className="truncate">{currentMember.name}</span>
+                      <span className="text-xs font-normal text-white/40">
+                        ({currentIndex + 1}/{totalMembers})
+                      </span>
                     </div>
                     {currentMember.role && (
                       <div className="text-xs text-white/55">{currentMember.role}</div>
@@ -674,26 +638,6 @@ export function CameraQueue({
                     })()}
                   </div>
                 )}
-
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  <span className="text-xs text-white/65">
-                    {currentIndex + 1}/{totalMembers}
-                  </span>
-                  {isStreaming && (
-                    <button
-                      onClick={() => stopCamera()}
-                      className="rounded-lg border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs font-medium text-red-500 transition-all hover:bg-red-500/20">
-                      <i className="fa-solid fa-stop mr-1"></i>
-                      Stop
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setQueueStarted(false)}
-                    className="rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white">
-                    <i className="fa-solid fa-list-ul mr-1"></i>
-                    Queue
-                  </button>
-                </div>
 
                 <div className="absolute inset-y-0 left-2 z-10 flex items-center">
                   <button
