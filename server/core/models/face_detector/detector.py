@@ -104,7 +104,6 @@ class FaceDetector:
         min_size = self.min_face_size if enable_liveness else 0
 
         detections = []
-        is_low_light = bool(mean_brightness < 85.0)
         for face in faces:
             landmarks_5 = face[4:14].reshape(5, 2)
             detection = process_detection(
@@ -116,7 +115,22 @@ class FaceDetector:
                 margin,
             )
             if detection is not None:
-                detection["low_light"] = is_low_light
+                # Calculate brightness specifically inside the detected face region
+                fx, fy, fw, fh = map(int, face[0:4])
+                fx1 = max(0, fx)
+                fy1 = max(0, fy)
+                fx2 = min(orig_width, fx + fw)
+                fy2 = min(orig_height, fy + fh)
+
+                face_roi = image[fy1:fy2, fx1:fx2]
+                if face_roi.size > 0:
+                    face_gray = cv.cvtColor(face_roi, cv.COLOR_BGR2GRAY)
+                    face_brightness = float(np.mean(face_gray))
+                else:
+                    face_brightness = mean_brightness
+
+                is_face_low_light = bool(face_brightness < 85.0)
+                detection["low_light"] = is_face_low_light
                 detections.append(detection)
 
         return detections
