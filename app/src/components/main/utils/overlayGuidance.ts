@@ -373,7 +373,7 @@ export const getOverlayGuidance = (
   if (status === "spoof" || status === "candidate_real" || status === "unknown") {
     if (verifyingHintActive) {
       return {
-        label: "Move slightly",
+        label: "Move slightly, ensure face is clearly visible with proper lighting",
         tone: "warning",
       }
     }

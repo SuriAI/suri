@@ -48,23 +48,17 @@ export const drawBoundingBox = (
   y1: number,
   x2: number,
   y2: number,
-  isAnonymous?: boolean,
 ) => {
   const width = x2 - x1
   const height = y2 - y1
   const cornerRadius = 8
 
-  if (isAnonymous) {
-    ctx.setLineDash([5, 5])
-  } else {
-    ctx.setLineDash([])
-  }
+  // Always enforce clean, premium solid lines for a high-fidelity scanning experience
+  ctx.setLineDash([])
 
   ctx.beginPath()
   drawRoundedRect(ctx, x1, y1, width, height, cornerRadius)
   ctx.stroke()
-
-  ctx.setLineDash([])
 }
 
 export const setupCanvasContext = (ctx: CanvasRenderingContext2D, color: string) => {
@@ -113,12 +107,10 @@ export const drawOverlays = ({
   isStreaming,
   currentRecognitionResults,
   recognitionEnabled,
-  persistentCooldowns,
   quickSettings,
   enableSpoofDetection,
   getVideoRect,
   calculateScaleFactors,
-  currentGroupId,
 }: DrawOverlaysParams) => {
   const video = videoRef.current
   const overlayCanvas = overlayCanvasRef.current
@@ -257,7 +249,7 @@ export const drawOverlays = ({
       ctx.restore()
     } else {
       setupCanvasContext(ctx, color)
-      drawBoundingBox(ctx, x1, y1, x2, y2, !isRecognized)
+      drawBoundingBox(ctx, x1, y1, x2, y2)
     }
 
     const isActuallyRecognized = isRecognized && !!recognitionResult?.person_id
@@ -269,9 +261,7 @@ export const drawOverlays = ({
       if (recognitionResult.has_consent === false) {
         label = "No Consent"
       } else {
-        const cooldownKey = `${recognitionResult.person_id}-${currentGroupId}`
-        const isDone = persistentCooldowns.has(cooldownKey)
-        label = (recognitionResult.name || recognitionResult.person_id || "") + (isDone ? " ✓" : "")
+        label = recognitionResult.name || recognitionResult.person_id || ""
       }
       shouldShowLabel = !!label
     }
@@ -284,9 +274,19 @@ export const drawOverlays = ({
 
     if (shouldShowLabel) {
       const isShield = labelTone === "recognition" && recognitionResult?.has_consent === false
+
+      // Premium Micro-interaction: Sequential Smoothly-Fading Ellipsis
+      // The dots appear one-by-one sequentially, but each individual dot fades in smoothly
+      // using a smoothstep interpolation, and then all dots fade out together at the end of the cycle.
+      const isVerifyingState = label === "Verifying..."
       const text = label
+
       ctx.font = "bold 12px system-ui, sans-serif"
-      const textWidth = ctx.measureText(text).width
+
+      // Layout Stability & Bug Fix: Dynamically measure the full label text width
+      // to ensure long labels like 'Move slightly...' never overflow!
+      const measureText = isVerifyingState ? "Verifying..." : text
+      const textWidth = ctx.measureText(measureText).width
       const paddingH = 10
       const badgeW = textWidth + paddingH * 2
       const badgeH = 20
@@ -294,25 +294,74 @@ export const drawOverlays = ({
       const badgeX = x1 + (width - badgeW) / 2
       const badgeY = Math.max(6, y1 - 25)
 
-      if (isShield) {
-        ctx.fillStyle = "#818cf8"
-      } else if (labelTone === "guidance-failure") {
-        ctx.fillStyle = "rgba(146, 112, 52, 0.94)"
-      } else if (labelTone === "guidance-warning") {
-        ctx.fillStyle = "rgba(100, 116, 139, 0.94)"
-      } else {
-        ctx.fillStyle = color
+      // Premium Minimalist Floating Design:
+      // All guidance and warning prompts float in a clean, solid white (#f8fafc) to reduce visual clutter.
+      // Cyan is strictly reserved for successfully verified member names, keeping the viewport calm and premium.
+      let textColor = "#f8fafc" // solid white by default for all guidance prompts
+      if (labelTone === "recognition") {
+        if (isShield) {
+          textColor = "#818cf8" // indigo-400 for No Consent shield
+        } else {
+          textColor = color // status color (cyan for verified success)
+        }
       }
-      drawRoundedRect(ctx, badgeX, badgeY, badgeW, badgeH, 10)
-      ctx.fill()
 
-      ctx.fillStyle = isShield ? "#000000" : "#f8fafc"
-      ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.fillText(text, badgeX + badgeW / 2, badgeY + badgeH / 2)
+
+      // Enforce high-readability drop shadow for weightless floating text
+      ctx.shadowColor = "rgba(0, 0, 0, 0.9)"
+      ctx.shadowBlur = 4
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 1
+
+      if (isVerifyingState) {
+        const textStartX = badgeX + badgeW / 2 - textWidth / 2
+        ctx.textAlign = "left"
+        ctx.fillStyle = textColor
+        ctx.fillText("Verifying", textStartX, badgeY + badgeH / 2)
+
+        const baseTextWidth = ctx.measureText("Verifying").width
+        const dotSpacing = 3.5
+
+        // Cycle parameters: 1.8s per sequential loop
+        const cycleDuration = 1800
+        const t = (performance.now() % cycleDuration) / cycleDuration
+
+        for (let i = 0; i < 3; i++) {
+          const dotX = textStartX + baseTextWidth + i * dotSpacing + 1.5
+
+          let opacity: number
+          if (t < 0.75) {
+            // Sequential smooth fade-in per dot
+            const start = i * 0.25
+            const end = start + 0.25
+            if (t >= end) {
+              opacity = 1.0
+            } else if (t >= start) {
+              const progress = (t - start) / 0.25
+              opacity = progress * progress * (3 - 2 * progress) // smoothstep
+            } else {
+              opacity = 0.0
+            }
+          } else {
+            // Simultaneous smooth fade-out at cycle end
+            const progress = (t - 0.75) / 0.25
+            const fadeOutProgress = progress * progress * (3 - 2 * progress)
+            opacity = 1.0 - fadeOutProgress
+          }
+
+          ctx.fillStyle = `rgba(248, 250, 252, ${opacity})`
+          ctx.fillText(".", dotX, badgeY + badgeH / 2)
+        }
+      } else {
+        ctx.fillStyle = textColor
+        ctx.textAlign = "center"
+        ctx.fillText(text, badgeX + badgeW / 2, badgeY + badgeH / 2)
+      }
     }
 
     ctx.shadowBlur = 0
+    ctx.shadowColor = "transparent"
     ctx.restore()
   })
 

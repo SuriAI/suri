@@ -130,7 +130,7 @@ describe("overlayGuidance", () => {
         verifyingHintActive: true,
       }),
     ).toEqual({
-      label: "Move slightly",
+      label: "Move slightly, ensure face is clearly visible with proper lighting",
       tone: "warning",
     })
   })
