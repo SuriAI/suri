@@ -183,7 +183,14 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleToggle}
           disabled={disabled}
-          className={`flex w-full min-w-0 cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 py-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${trigger ? "justify-center px-0" : "ps-3 pe-2"} ${buttonClassName} `}>
+          className={`flex min-w-0 cursor-pointer items-center justify-between focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+            (
+              trigger &&
+              (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
+            ) ?
+              "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
+            : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+          } ${buttonClassName} `}>
           {trigger ?
             trigger
           : <>
