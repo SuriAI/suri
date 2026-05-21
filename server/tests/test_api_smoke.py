@@ -269,8 +269,8 @@ def test_manual_attendance_record_can_be_voided_and_recomputes_sessions(
     audit_log = client.get("/attendance/settings/audit-log", headers=headers)
     assert audit_log.status_code == 200, audit_log.text
     audit_csv = audit_log.text
-    assert "MANUAL_ATTENDANCE_RECORDED" in audit_csv
-    assert "ATTENDANCE_RECORD_VOIDED" in audit_csv
+    assert "Manual Attendance Recorded" in audit_csv
+    assert "Attendance Record Voided" in audit_csv
 
 
 def test_auto_attendance_record_can_be_voided(test_client, set_api_token) -> None:
@@ -335,4 +335,4 @@ def test_auto_attendance_record_can_be_voided(test_client, set_api_token) -> Non
 
     audit_log = client.get("/attendance/settings/audit-log", headers=headers)
     assert audit_log.status_code == 200, audit_log.text
-    assert "ATTENDANCE_RECORD_VOIDED" in audit_log.text
+    assert "Attendance Record Voided" in audit_log.text
