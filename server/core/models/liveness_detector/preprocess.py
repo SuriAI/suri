@@ -5,36 +5,31 @@ from typing import List, Dict, Tuple, Optional
 
 def enhance_face_illumination(img_rgb: np.ndarray) -> np.ndarray:
     """
-    Applies Contrast Limited Adaptive Histogram Equalization (CLAHE) on the Y channel (YUV space)
-    to dynamically balance lighting, lift deep shadows around eyes, and compensate for low light.
-    Only active under poor or uneven lighting conditions to prevent embedding distortion.
+    Applies CLAHE on the YUV Y-channel to compensate for low light and eye-socket shadows.
+    Only fires under poor or uneven lighting to avoid distorting well-lit crops.
     """
     try:
-        # Convert RGB to YUV
         yuv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2YUV)
         y = yuv[:, :, 0]
 
         mean_y = np.mean(y)
         std_y = np.std(y)
 
-        # Adaptive check: only enhance if face is dark (<90) or uneven/shadowed (std > 45)
-        if mean_y < 90.0 or (std_y > 45.0 and mean_y < 120.0):
-            # A clip limit of 1.8 is extremely natural for skin tones, avoiding harsh gradients
-            clahe = cv2.createCLAHE(clipLimit=1.8, tileGridSize=(8, 8))
+        # Trigger only under dark (< 85) or shadowed (std > 48 and mean < 95) conditions.
+        # Bright crops bypass to preserve raw micro-texture critical for spoof detection.
+        if mean_y < 85.0 or (std_y > 48.0 and mean_y < 95.0):
+            clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
             yuv[:, :, 0] = clahe.apply(y)
             return cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB)
 
         return img_rgb
     except Exception:
-        # Graceful fallback to raw crop
         return img_rgb
 
 
 def preprocess(img: np.ndarray, model_img_size: int) -> np.ndarray:
-    # 1. Enhance facial illumination to eliminate shadows under eyes/low light
     img = enhance_face_illumination(img)
 
-    # 2. Resize and pad
     new_size = model_img_size
     old_size = img.shape[:2]
 
