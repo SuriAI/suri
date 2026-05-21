@@ -11,6 +11,7 @@ interface AttendanceProps {
   onMaxRecognitionFacesChange: (count: number) => void
   onTrackCheckoutToggle: (enabled: boolean) => void
   onDataRetentionChange: (days: number) => void
+  onBiometricConsentToggle?: (enabled: boolean) => void
   hasSelectedGroup?: boolean
 }
 
@@ -26,6 +27,7 @@ export function Attendance({
   onMaxRecognitionFacesChange,
   onTrackCheckoutToggle,
   onDataRetentionChange,
+  onBiometricConsentToggle,
   hasSelectedGroup = false,
 }: AttendanceProps) {
   return (
@@ -378,6 +380,53 @@ export function Attendance({
                   <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />
                 )}
               </div>
+            </button>
+          </div>
+
+          <div className="h-px w-full bg-white/8" />
+
+          <div className="flex items-center gap-4 py-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <div className="text-sm font-medium text-white/90">Global Group Consent</div>
+                <InfoPopover
+                  title="Global Group Consent"
+                  description="Certify that explicit biometric consent forms have been signed off-system (e.g. in employment contracts) by all members of this group. Enabling this will remove repetitive consent checkboxes from manual registration and edit flows."
+                  details={[
+                    "Certifies that consent is managed off-system.",
+                    "Removes manual checkbox prompts on member add/edit.",
+                    "Enables immediate one-click registration.",
+                  ]}
+                  side="right"
+                />
+              </div>
+              <div className="relative min-h-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${hasSelectedGroup}-${attendanceSettings.biometricConsentCertified}`}
+                    initial={{ opacity: 0, y: -2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 2 }}
+                    transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
+                    className="text-xs font-normal text-white/65">
+                    {!hasSelectedGroup ?
+                      "Select a group to enable this feature"
+                    : attendanceSettings.biometricConsentCertified ?
+                      "Bypass manual consent checkboxes during member registration."
+                    : "Require manual consent checkbox certification for each member."}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                onBiometricConsentToggle?.(!attendanceSettings.biometricConsentCertified)
+              }
+              disabled={!hasSelectedGroup}
+              className={`premium-switch ${attendanceSettings.biometricConsentCertified ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
+              <div
+                className={`premium-switch-thumb ${attendanceSettings.biometricConsentCertified ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
             </button>
           </div>
         </div>

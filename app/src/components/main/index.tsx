@@ -742,6 +742,8 @@ export default function Main() {
               maxRecognitionFacesPerFrame: maxRecognitionFacesPerFrame,
               trackCheckout: currentGroup?.settings?.track_checkout ?? false,
               dataRetentionDays: dataRetentionDays,
+              biometricConsentCertified:
+                currentGroup?.settings?.biometric_consent_certified ?? false,
             }}
             onAttendanceSettingsChange={async (updates) => {
               if (updates.enableSpoofDetection !== undefined) {
@@ -750,6 +752,24 @@ export default function Main() {
 
               if (updates.maxRecognitionFacesPerFrame !== undefined) {
                 setMaxRecognitionFacesPerFrame(updates.maxRecognitionFacesPerFrame)
+              }
+
+              if (updates.biometricConsentCertified !== undefined && currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  biometric_consent_certified: updates.biometricConsentCertified,
+                }
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, {
+                    settings: updatedSettings,
+                  })
+                  syncUpdatedGroupLocally({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  })
+                } catch (error) {
+                  console.error("Failed to update biometric consent certification setting:", error)
+                }
               }
 
               if (updates.trackCheckout !== undefined && currentGroup) {

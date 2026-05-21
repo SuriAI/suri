@@ -24,6 +24,7 @@ export interface AttendanceSettings {
   trackCheckout: boolean
   dataRetentionDays?: number
   forceLiveness?: boolean
+  biometricConsentCertified?: boolean
 }
 
 export interface SettingsOverview {

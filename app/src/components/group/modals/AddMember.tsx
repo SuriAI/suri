@@ -48,6 +48,16 @@ export function AddMember({
   const [confirmDuplicate, setConfirmDuplicate] = useState(false)
   const [hasConsent, setHasConsent] = useState(false)
 
+  const isConsentCertified = Boolean(group?.settings?.biometric_consent_certified)
+
+  useEffect(() => {
+    if (isConsentCertified) {
+      setHasConsent(true)
+    } else if (isOpen) {
+      setHasConsent(false)
+    }
+  }, [isConsentCertified, isOpen])
+
   const nameInputRef = useRef<HTMLInputElement>(null)
   const singleSubmitInFlightRef = useRef(false)
   const bulkSubmitInFlightRef = useRef(false)
@@ -60,7 +70,7 @@ export function AddMember({
     setIsBulkMode(false)
     setConfirmDuplicate(false)
     setError(null)
-    setHasConsent(false)
+    setHasConsent(isConsentCertified)
   }
 
   useEffect(() => {
@@ -317,32 +327,34 @@ export function AddMember({
                 </label>
 
                 {/* Explicit Certification Consent Checkbox */}
-                <label className="group mt-3 flex cursor-pointer items-start gap-2.5 py-1.5 select-none">
-                  <div className="relative mt-0.5 flex shrink-0 items-center justify-center">
-                    <input
-                      type="checkbox"
-                      checked={hasConsent}
-                      onChange={(e) => setHasConsent(e.target.checked)}
-                      className="peer sr-only"
-                    />
-                    <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
-                      <svg
-                        className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
-                          hasConsent ? "opacity-100" : "opacity-0"
-                        }`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                {!isConsentCertified && (
+                  <label className="group mt-3 flex cursor-pointer items-start gap-2.5 py-1.5 select-none">
+                    <div className="relative mt-0.5 flex shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={hasConsent}
+                        onChange={(e) => setHasConsent(e.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
+                        <svg
+                          className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
+                            hasConsent ? "opacity-100" : "opacity-0"
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
-                    I certify that explicit biometric consent has been obtained for this member in
-                    accordance with the Data Privacy Act.
-                  </span>
-                </label>
+                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
+                      I certify that explicit biometric consent has been obtained for this member in
+                      accordance with the Data Privacy Act.
+                    </span>
+                  </label>
+                )}
               </motion.div>
             : <motion.div
                 key="bulk"
@@ -380,32 +392,34 @@ export function AddMember({
                 </div>
 
                 {/* Explicit Certification Consent Checkbox for Bulk */}
-                <label className="group mt-3 flex cursor-pointer items-start gap-2.5 py-1.5 select-none">
-                  <div className="relative mt-0.5 flex shrink-0 items-center justify-center">
-                    <input
-                      type="checkbox"
-                      checked={hasConsent}
-                      onChange={(e) => setHasConsent(e.target.checked)}
-                      className="peer sr-only"
-                    />
-                    <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
-                      <svg
-                        className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
-                          hasConsent ? "opacity-100" : "opacity-0"
-                        }`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
+                {!isConsentCertified && (
+                  <label className="group mt-3 flex cursor-pointer items-start gap-2.5 py-1.5 select-none">
+                    <div className="relative mt-0.5 flex shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={hasConsent}
+                        onChange={(e) => setHasConsent(e.target.checked)}
+                        className="peer sr-only"
+                      />
+                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
+                        <svg
+                          className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
+                            hasConsent ? "opacity-100" : "opacity-0"
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
-                    I certify that explicit biometric consent has been obtained for all imported
-                    individuals in accordance with the Data Privacy Act.
-                  </span>
-                </label>
+                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
+                      I certify that explicit biometric consent has been obtained for all imported
+                      individuals in accordance with the Data Privacy Act.
+                    </span>
+                  </label>
+                )}
 
                 {/* Bulk Results */}
                 {bulkResults && (

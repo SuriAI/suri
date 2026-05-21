@@ -81,7 +81,6 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   updateAudioSetting,
   attendanceSettings,
   updateAttendanceSetting,
-  dropdownValue,
   systemData,
   timeHealthState,
   groups,
@@ -339,7 +338,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                   onDataRetentionChange={(days) =>
                     updateAttendanceSetting({ dataRetentionDays: days })
                   }
-                  hasSelectedGroup={!!dropdownValue}
+                  onBiometricConsentToggle={(enabled) =>
+                    updateAttendanceSetting({ biometricConsentCertified: enabled })
+                  }
+                  hasSelectedGroup={!!validInitialGroup}
                 />
               </motion.div>
             )}
