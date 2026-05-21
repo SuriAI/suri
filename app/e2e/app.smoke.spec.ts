@@ -427,7 +427,7 @@ test.describe("renderer smoke", () => {
     await bootApp(page, { hasSeenIntro: true })
 
     await expect(page.getByText("Morning Class")).toBeVisible()
-    await expect(page.getByRole("button", { name: "Start Tracking" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Start" })).toBeVisible()
     await expect(page.getByPlaceholder("Search name...")).toBeVisible()
     await expect(page.getByText("Ready")).toBeVisible()
 
