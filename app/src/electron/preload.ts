@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron"
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  // Generic IPC invoke method removed
   invoke: (channel: string, ...args: unknown[]) => {
     return ipcRenderer.invoke(channel, ...args)
   },

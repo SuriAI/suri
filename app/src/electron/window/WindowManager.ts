@@ -233,16 +233,13 @@ export class WindowManager {
 
     state.mainWindow = mainWindow
 
-    // Load content
     if (isDev() && process.env.ELECTRON_RENDERER_URL) {
       mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
     } else {
       mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"))
     }
 
-    mainWindow.once("ready-to-show", () => {
-      // Intentionally left blank or can be removed if nothing else is inside
-    })
+    mainWindow.once("ready-to-show", () => {})
 
     mainWindow.on("maximize", () => {
       mainWindow.webContents.send("window:maximized")

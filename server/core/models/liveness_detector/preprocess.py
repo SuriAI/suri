@@ -10,16 +10,16 @@ def enhance_face_illumination(img_rgb: np.ndarray) -> np.ndarray:
     """
     try:
         lab = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2LAB)
-        l = lab[:, :, 0]
+        l_channel = lab[:, :, 0]
 
-        mean_l = np.mean(l)
-        std_l = np.std(l)
+        mean_l = np.mean(l_channel)
+        std_l = np.std(l_channel)
 
         # Trigger only under dark (< 85) or shadowed (std > 48 and mean < 95) conditions.
         # Bright crops bypass to preserve raw micro-texture critical for spoof detection.
         if mean_l < 85.0 or (std_l > 48.0 and mean_l < 95.0):
             clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
-            lab[:, :, 0] = clahe.apply(l)
+            lab[:, :, 0] = clahe.apply(l_channel)
             return cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
 
         return img_rgb

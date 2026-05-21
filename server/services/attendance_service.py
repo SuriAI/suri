@@ -42,10 +42,8 @@ class AttendanceService:
 
     async def generate_person_id(self, name: str, group_id: str = None) -> str:
         """Generate a unique person ID"""
-        # Generate ULID
         person_id = ulid.ulid()
 
-        # Ensure uniqueness
         max_attempts = 10
         attempt = 0
 
@@ -54,7 +52,6 @@ class AttendanceService:
             if not existing_member:
                 break
 
-            # Generate new ULID if collision occurs
             person_id = ulid.ulid()
             attempt += 1
 
@@ -438,7 +435,6 @@ class AttendanceService:
             "created_by": None,
         }
 
-        # Add record
         await self.repo.add_record(record_data)
 
         session_rule = None
@@ -477,7 +473,6 @@ class AttendanceService:
             if normalized_rule["track_checkout"]:
                 event_type = "check_out"
                 check_out_time = timestamp
-                # Calculate hours
                 duration = check_out_time - check_in_time
                 total_hours = max(0, duration.total_seconds() / 3600.0)
             else:
@@ -562,12 +557,10 @@ class AttendanceService:
         if not self.face_recognizer:
             raise ValueError("Face recognition system not available")
 
-        # Verify group exists
         group = await self.repo.get_group(group_id)
         if not group:
             raise ValueError("Group not found")
 
-        # Verify member exists and belongs to group
         member = await self.repo.get_member(person_id)
         if not member:
             raise ValueError("Member not found")
@@ -626,12 +619,10 @@ class AttendanceService:
         if not self.face_recognizer:
             raise ValueError("Face recognition system not available")
 
-        # Verify group exists
         group = await self.repo.get_group(group_id)
         if not group:
             raise ValueError("Group not found")
 
-        # Verify member exists and belongs to group
         member = await self.repo.get_member(person_id)
         if not member:
             raise ValueError("Member not found")
@@ -739,9 +730,7 @@ class AttendanceService:
         if not group:
             raise ValueError("Group not found")
 
-        # Create a mapping of file names to UploadFile objects for easy lookup
         file_map = {f.filename: f for f in files if f.filename}
-        # Fallback to index-based mapping if no filenames
         file_list = [f for f in files]
 
         success_count = 0
@@ -753,7 +742,6 @@ class AttendanceService:
             filename = reg_data.get("filename")
 
             try:
-                # Get the corresponding file
                 file = None
                 if filename and filename in file_map:
                     file = file_map[filename]
