@@ -91,7 +91,7 @@ const hasHigherPriorityGuidance = (face: Face): boolean => {
   return status === "center_face" || status === "move_closer"
 }
 
-const isVerifyingStatus = (status: Face["liveness"] extends { status: infer T } ? T : never) =>
+const isVerifyingStatus = (status: string | undefined) =>
   status === "spoof" || status === "candidate_real" || status === "unknown"
 
 const isHoldStillCandidate = (
@@ -345,6 +345,10 @@ export const getOverlayGuidance = (
     return null
   }
 
+  if (recognitionEnabled && recognitionResult && !recognitionResult.person_id) {
+    return null
+  }
+
   const status = face.liveness?.status
 
   if (status === "center_face") {
@@ -361,11 +365,18 @@ export const getOverlayGuidance = (
 
   if (status === "spoof" || status === "candidate_real" || status === "unknown") {
     if (verifyingHintActive) {
+      if (face.low_light) {
+        return {
+          label: "Low light detected",
+          tone: "warning",
+        }
+      }
       return {
-        label: "Try better lighting or a clearer camera view.",
+        label: "Reposition face",
         tone: "warning",
       }
     }
+
     return { label: "Verifying...", tone: "warning" }
   }
 

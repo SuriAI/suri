@@ -299,6 +299,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
                   confidence: face.confidence,
                   track_id: face.track_id,
                   landmarks_5: face.landmarks_5,
+                  low_light: face.low_light,
                   liveness: (() => {
                     if (!face.liveness) {
                       return undefined

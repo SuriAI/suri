@@ -113,7 +113,7 @@ describe("overlayGuidance", () => {
     })
   })
 
-  it("shows a more helpful delayed hint when verifying stays stuck", () => {
+  it("shows a more helpful delayed hint when verifying stays stuck in optimal light", () => {
     const face = baseFace({
       liveness: {
         is_real: false,
@@ -130,7 +130,53 @@ describe("overlayGuidance", () => {
         verifyingHintActive: true,
       }),
     ).toEqual({
-      label: "Try better lighting or a clearer camera view.",
+      label: "Reposition face",
+      tone: "warning",
+    })
+  })
+
+  it("shows Verifying... when low-light is true", () => {
+    const face = baseFace({
+      low_light: true,
+      liveness: {
+        is_real: false,
+        status: "spoof",
+      },
+    })
+
+    expect(
+      getOverlayGuidance(face, {
+        enableSpoofDetection: true,
+        recognitionEnabled: true,
+        recognitionResult: null,
+        holdStillActive: false,
+        verifyingHintActive: false,
+      }),
+    ).toEqual({
+      label: "Verifying...",
+      tone: "warning",
+    })
+  })
+
+  it("shows Low light detected when stuck in low light", () => {
+    const face = baseFace({
+      low_light: true,
+      liveness: {
+        is_real: false,
+        status: "spoof",
+      },
+    })
+
+    expect(
+      getOverlayGuidance(face, {
+        enableSpoofDetection: true,
+        recognitionEnabled: true,
+        recognitionResult: null,
+        holdStillActive: false,
+        verifyingHintActive: true,
+      }),
+    ).toEqual({
+      label: "Low light detected",
       tone: "warning",
     })
   })
@@ -243,5 +289,32 @@ describe("overlayGuidance", () => {
     )
     expect(trackedPass.activeKeys.size).toBe(0)
     expect(trackedPass.nextCache.size).toBe(0)
+  })
+
+  it("suppresses overlay guidance for unrecognized faces to stay sleek and neutral", () => {
+    const face = baseFace({
+      track_id: 10,
+      liveness: {
+        is_real: false,
+        status: "candidate_real",
+      },
+    })
+
+    expect(
+      getOverlayGuidance(face, {
+        enableSpoofDetection: true,
+        recognitionEnabled: true,
+        recognitionResult: {
+          success: true,
+          person_id: null,
+          name: "Unknown",
+          similarity: 0.1,
+          processing_time: 0,
+          error: null,
+        },
+        holdStillActive: false,
+        verifyingHintActive: false,
+      }),
+    ).toBeNull()
   })
 })
