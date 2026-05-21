@@ -171,9 +171,8 @@ export const useSettings = ({
   const dropdownGroups = useMemo(() => initialGroups, [initialGroups])
 
   const validInitialGroup = useMemo(() => {
-    if (!currentGroup) return null
-    return initialGroups.some((group) => group.id === currentGroup.id) ? currentGroup : null
-  }, [currentGroup, initialGroups])
+    return currentGroup
+  }, [currentGroup])
 
   const handleGroupBack = useCallback(() => {
     setActiveSection("attendance")

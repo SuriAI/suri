@@ -137,8 +137,6 @@ export function Database({
 
   const isBackingUp = status.type === "loading"
 
-
-
   const getFriendlyTimeZoneLabel = (): string => {
     const health = timeHealthState.timeHealth
     if (!health?.current_time_local) {
@@ -317,7 +315,6 @@ export function Database({
               Restore
             </button>
           </div>
-
         </div>
       </section>
 

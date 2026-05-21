@@ -269,8 +269,17 @@ export class AttendanceManager {
     return JSON.stringify(data, null, 2)
   }
 
-  async downloadAuditLog(): Promise<void> {
-    const csv = await this.httpClient.getText("/attendance/settings/audit-log")
+  async downloadAuditLog(startDate?: string, endDate?: string): Promise<void> {
+    const params = new URLSearchParams()
+    if (startDate) params.append("start_date", startDate)
+    if (endDate) params.append("end_date", endDate)
+    const queryString = params.toString()
+    const urlPath =
+      queryString ?
+        `/attendance/settings/audit-log?${queryString}`
+      : "/attendance/settings/audit-log"
+
+    const csv = await this.httpClient.getText(urlPath)
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")

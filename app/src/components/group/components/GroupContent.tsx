@@ -1,4 +1,5 @@
-import { useMemo, memo } from "react"
+import React, { useMemo, memo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
 import { Members, Overview, Reports } from "@/components/group/sections"
 import { EmptyState } from "@/components/group/shared"
@@ -43,6 +44,14 @@ function GroupContentComponent({
   }, [selectedGroup, selectedGroupId])
   const hasGroups = groupsLength > 0
 
+  const motionProps = {
+    initial: { opacity: 0, scale: 0.995 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.995 },
+    transition: { duration: 0.18, ease: "easeOut" as const },
+    style: { willChange: "opacity, transform" } as React.CSSProperties,
+  }
+
   if (!hasSelectedGroup || !selectedGroup) {
     return (
       <div className="h-full px-6 pt-6">
@@ -60,31 +69,48 @@ function GroupContentComponent({
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col">
-      {activeSection === "overview" && (
-        <Overview group={selectedGroup} members={members} onAddMember={openAddMember} />
-      )}
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <AnimatePresence mode="wait">
+        {activeSection === "overview" && (
+          <motion.div
+            key={`overview-${selectedGroupId}`}
+            {...motionProps}
+            className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+            <Overview group={selectedGroup} members={members} onAddMember={openAddMember} />
+          </motion.div>
+        )}
 
-      {activeSection === "reports" && (
-        <Reports
-          group={selectedGroup}
-          onDaysTrackedChange={onDaysTrackedChange}
-          onExportHandlersReady={onExportHandlersReady}
-          onAddMember={openAddMember}
-        />
-      )}
+        {activeSection === "reports" && (
+          <motion.div
+            key={`reports-${selectedGroupId}`}
+            {...motionProps}
+            className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+            <Reports
+              group={selectedGroup}
+              onDaysTrackedChange={onDaysTrackedChange}
+              onExportHandlersReady={onExportHandlersReady}
+              onAddMember={openAddMember}
+            />
+          </motion.div>
+        )}
 
-      {activeSection === "members" && (
-        <Members
-          group={selectedGroup}
-          members={members}
-          onMembersChange={handleMembersChange}
-          onEdit={openEditMember}
-          onAdd={openAddMember}
-          deselectMemberTrigger={deselectMemberTrigger}
-          onHasSelectedMemberChange={onHasSelectedMemberChange}
-        />
-      )}
+        {activeSection === "members" && (
+          <motion.div
+            key={`members-${selectedGroupId}`}
+            {...motionProps}
+            className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+            <Members
+              group={selectedGroup}
+              members={members}
+              onMembersChange={handleMembersChange}
+              onEdit={openEditMember}
+              onAdd={openAddMember}
+              deselectMemberTrigger={deselectMemberTrigger}
+              onHasSelectedMemberChange={onHasSelectedMemberChange}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
