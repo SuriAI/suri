@@ -146,12 +146,9 @@ class FaceDetector:
                 else:
                     face_brightness = mean_brightness
                     face_variance = 0.0
-
-                # Best Practice: Face is low-light if skin Y-channel is extremely low (< 55.0)
-                # OR if moderately low (< 70.0) with high sensor grain variance (> 150.0)
                 is_face_low_light = bool(
-                    face_brightness < 55.0
-                    or (face_brightness < 70.0 and face_variance > 150.0)
+                    face_brightness < 65.0
+                    or (face_brightness < 78.0 and face_variance > 120.0)
                 )
                 detection["low_light"] = is_face_low_light
                 detections.append(detection)

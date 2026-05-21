@@ -135,7 +135,7 @@ describe("overlayGuidance", () => {
     })
   })
 
-  it("shows Verifying... when low-light is true", () => {
+  it("shows Low light detected instantly when low-light is true", () => {
     const face = baseFace({
       low_light: true,
       liveness: {
@@ -153,7 +153,7 @@ describe("overlayGuidance", () => {
         verifyingHintActive: false,
       }),
     ).toEqual({
-      label: "Verifying...",
+      label: "Low light detected",
       tone: "warning",
     })
   })

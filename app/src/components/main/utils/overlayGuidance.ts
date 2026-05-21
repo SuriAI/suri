@@ -349,6 +349,13 @@ export const getOverlayGuidance = (
     return null
   }
 
+  if (face.low_light) {
+    return {
+      label: "Low light detected",
+      tone: "warning",
+    }
+  }
+
   const status = face.liveness?.status
 
   if (status === "center_face") {
@@ -365,12 +372,6 @@ export const getOverlayGuidance = (
 
   if (status === "spoof" || status === "candidate_real" || status === "unknown") {
     if (verifyingHintActive) {
-      if (face.low_light) {
-        return {
-          label: "Low light detected",
-          tone: "warning",
-        }
-      }
       return {
         label: "Move slightly",
         tone: "warning",
