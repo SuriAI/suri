@@ -43,28 +43,25 @@ def align_face(
 
 def enhance_face_illumination_bgr(img_bgr: np.ndarray) -> np.ndarray:
     """
-    Applies Contrast Limited Adaptive Histogram Equalization (CLAHE) on the Y channel (YUV space)
-    on a BGR image to dynamically balance lighting, lift deep shadows, and improve recognition.
-    Only active under poor or uneven lighting conditions to prevent embedding distortion.
+    Applies CLAHE on the YUV Y-channel to compensate for low light and shadows.
+    More generous than the liveness preprocessor - recognition has no spoof boundary risk.
     """
     try:
-        # Convert BGR to YUV
         yuv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YUV)
         y = yuv[:, :, 0]
 
         mean_y = np.mean(y)
         std_y = np.std(y)
 
-        # Adaptive check: only enhance if face is dark (<90) or uneven/shadowed (std > 45)
+        # Wider gate than liveness (< 90 dark, std > 45 shadow, mean < 120) -
+        # recognition benefits from stronger compensation without security risk.
         if mean_y < 90.0 or (std_y > 45.0 and mean_y < 120.0):
-            # A clip limit of 1.8 is extremely natural for skin tones, avoiding harsh gradients
             clahe = cv2.createCLAHE(clipLimit=1.8, tileGridSize=(8, 8))
             yuv[:, :, 0] = clahe.apply(y)
             return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
 
         return img_bgr
     except Exception:
-        # Graceful fallback to raw crop
         return img_bgr
 
 
@@ -82,10 +79,8 @@ def preprocess_image(
     Returns:
         Preprocessed tensor with shape [C, H, W] (no batch dimension)
     """
-    # 1. Enhance face illumination to remove shadows and low-light noise
     aligned_face = enhance_face_illumination_bgr(aligned_face)
 
-    # 2. Convert to RGB and normalize
     rgb_image = cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB)
     normalized = (rgb_image.astype(np.float32) - input_mean) / input_std
     input_tensor = np.transpose(normalized, (2, 0, 1))
