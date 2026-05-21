@@ -88,20 +88,24 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
         )}
 
         <div className="grid gap-4">
-          <label className="text-sm">
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="pl-1 text-[11px] font-medium text-white/65">Name</span>
             <FormInput
               ref={inputRef}
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="New Name"
+              placeholder=""
               focusColor="border-cyan-400/30"
             />
           </label>
-          <label className="text-sm">
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="pl-1 text-[11px] font-medium text-white/65">
+              Role <span className="opacity-50">(Optional)</span>
+            </span>
             <FormInput
               value={role}
               onChange={(event) => setRole(event.target.value)}
-              placeholder="New Role"
+              placeholder=""
               focusColor="border-cyan-400/30"
             />
           </label>

@@ -96,7 +96,7 @@ export function AddMember({
     return existingMembers.some((m) => m.name.toLowerCase() === normalizedName)
   }, [newMemberName, existingMembers])
 
-  const modalSubtitle = isBulkMode ? "Import people into" : "Add a person to"
+  const modalSubtitle = isBulkMode ? "Add multiple people to" : "Add a person to"
 
   // Reset confirmation when name changes
   useEffect(() => {
@@ -252,7 +252,7 @@ export function AddMember({
             className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
               isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
             }`}>
-            Bulk Import
+            Multiple
             {isBulkMode && (
               <motion.div
                 layoutId="addMemberTabIndicator"
@@ -285,7 +285,7 @@ export function AddMember({
                     ref={nameInputRef}
                     value={newMemberName}
                     onChange={(event) => setNewMemberName(event.target.value)}
-                    placeholder="e.g. John Doe"
+                    placeholder=""
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleAddMember()
                     }}
@@ -308,7 +308,7 @@ export function AddMember({
                   <FormInput
                     value={newMemberRole}
                     onChange={(event) => setNewMemberRole(event.target.value)}
-                    placeholder="e.g. Employee, Student"
+                    placeholder=""
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleAddMember()
                     }}
@@ -470,7 +470,7 @@ export function AddMember({
             : confirmDuplicate && !isBulkMode ?
               "Add Anyway"
             : isBulkMode ?
-              "Import Members"
+              "Add Members"
             : "Add Member"}
           </button>
         </div>
