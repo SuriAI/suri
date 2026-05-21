@@ -41,7 +41,7 @@ interface VerifyingHintCacheOptions {
 const HOLD_STILL_IOU_THRESHOLD = 0.3
 const DEFAULT_MIN_FRAMES = 2
 const DEFAULT_MIN_DURATION_MS = 250
-const DEFAULT_VERIFYING_HINT_MIN_DURATION_MS = 1800
+const DEFAULT_VERIFYING_HINT_MIN_DURATION_MS = 2000
 
 const hasPositiveTrackId = (trackId: number | undefined): boolean =>
   typeof trackId === "number" && trackId > 0
@@ -372,7 +372,7 @@ export const getOverlayGuidance = (
         }
       }
       return {
-        label: "Reposition face",
+        label: "Move slightly",
         tone: "warning",
       }
     }
