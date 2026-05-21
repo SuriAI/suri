@@ -5,22 +5,22 @@ from typing import List, Dict, Tuple, Optional
 
 def enhance_face_illumination(img_rgb: np.ndarray) -> np.ndarray:
     """
-    Applies CLAHE on the YUV Y-channel to compensate for low light and eye-socket shadows.
+    Applies CLAHE on the LAB L-channel to compensate for low light and eye-socket shadows.
     Only fires under poor or uneven lighting to avoid distorting well-lit crops.
     """
     try:
-        yuv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2YUV)
-        y = yuv[:, :, 0]
+        lab = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2LAB)
+        l = lab[:, :, 0]
 
-        mean_y = np.mean(y)
-        std_y = np.std(y)
+        mean_l = np.mean(l)
+        std_l = np.std(l)
 
         # Trigger only under dark (< 85) or shadowed (std > 48 and mean < 95) conditions.
         # Bright crops bypass to preserve raw micro-texture critical for spoof detection.
-        if mean_y < 85.0 or (std_y > 48.0 and mean_y < 95.0):
+        if mean_l < 85.0 or (std_l > 48.0 and mean_l < 95.0):
             clahe = cv2.createCLAHE(clipLimit=1.3, tileGridSize=(8, 8))
-            yuv[:, :, 0] = clahe.apply(y)
-            return cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB)
+            lab[:, :, 0] = clahe.apply(l)
+            return cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
 
         return img_rgb
     except Exception:
