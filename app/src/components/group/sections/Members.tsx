@@ -374,7 +374,7 @@ export function Members({
                           <Dropdown
                             options={[
                               { value: "camera", label: "📸 via Webcam" },
-                              { value: "upload", label: "📁 via Bulk Upload" },
+                              { value: "upload", label: "📁 via File Upload" },
                             ]}
                             value={null}
                             onChange={(val) => {

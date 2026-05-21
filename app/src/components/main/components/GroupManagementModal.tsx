@@ -50,15 +50,18 @@ export function GroupManagementModal({
       title="Create Group"
       maxWidth="sm">
       <div className="mt-2 space-y-3">
-        <div>
-          <FormInput
-            ref={inputRef}
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter group name"
-            focusColor="border-cyan-500/60"
-          />
+        <div className="grid gap-4">
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="pl-1 text-[11px] font-medium text-white/65">Group Name</span>
+            <FormInput
+              ref={inputRef}
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder=""
+              focusColor="border-cyan-500/60"
+            />
+          </label>
         </div>
         <div className="mt-8 flex justify-end gap-3">
           <button

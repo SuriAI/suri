@@ -53,12 +53,15 @@ export function CreateGroup({ isOpen, onClose, onSuccess }: CreateGroupProps) {
         {error && <ErrorMessage message={error} />}
 
         <div className="grid gap-4">
-          <FormInput
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Enter Group Name"
-            focusColor="border-cyan-500/60"
-          />
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="pl-1 text-[11px] font-medium text-white/65">Group Name</span>
+            <FormInput
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder=""
+              focusColor="border-cyan-500/60"
+            />
+          </label>
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
