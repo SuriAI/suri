@@ -15,6 +15,7 @@ export interface DetectionResult {
     confidence: number
     track_id?: number
     landmarks_5: number[][]
+    low_light?: boolean
     liveness?: {
       is_real: boolean | null
       confidence?: number
@@ -46,6 +47,7 @@ export interface WebSocketFaceData {
   confidence?: number
   track_id?: number
   landmarks_5?: number[][] // Required by our pipeline; validated at mapping time.
+  low_light?: boolean
   liveness?: {
     is_real?: boolean | null
     confidence?: number
