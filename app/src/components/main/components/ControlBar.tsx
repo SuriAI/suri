@@ -36,10 +36,10 @@ export function ControlBar({
   const getButtonState = () => {
     if (isStreaming) {
       return {
-        label: "Stop Tracking",
+        label: "Stop",
         className:
-          "bg-rose-500/5 border border-rose-500/10 text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/20",
-        tooltip: "Stop tracking attendance",
+          "bg-rose-500/5 border border-rose-500/10 text-rose-400/80 hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/20 hover:shadow-[0_0_15px_rgba(244,63,94,0.18)] tracking-wider",
+        tooltip: "Stop attendance logging",
         enabled: true,
       }
     }
@@ -56,30 +56,31 @@ export function ControlBar({
 
     if (!hasGroups) {
       return {
-        label: "Start Tracking",
+        label: "Start",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/70",
-        tooltip: "Create a group first to start tracking",
+        tooltip: "Create a group first to begin attendance logging",
         enabled: false,
       }
     }
 
     if (!hasSelectedGroup) {
       return {
-        label: "Start Tracking",
+        label: "Start",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/70",
-        tooltip: "Select a group first to start tracking",
+        tooltip: "Select a group first to begin attendance logging",
         enabled: false,
       }
     }
 
-    const cyanStyle = "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20"
+    const cyanStyle =
+      "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:shadow-[0_0_15px_rgba(6,182,212,0.22)] tracking-wider"
 
-    const standardTooltip = hasCameraDevices ? "Start tracking attendance" : "No camera detected"
+    const standardTooltip = hasCameraDevices ? "Start attendance logging" : "No camera detected"
 
     return {
-      label: "Start Tracking",
+      label: "Start",
       className: cyanStyle,
       tooltip: standardTooltip,
       enabled: hasCameraDevices,
@@ -122,7 +123,7 @@ export function ControlBar({
             <button
               onClick={handlePrimaryAction}
               disabled={!buttonState.enabled}
-              className={`flex min-w-35 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 ${buttonState.className}`}>
+              className={`flex min-w-28 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 ${buttonState.className}`}>
               {buttonState.label}
             </button>
           </Tooltip>

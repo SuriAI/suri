@@ -125,8 +125,8 @@ export const VideoCanvas = memo(function VideoCanvas({
                 {!isShellReady ?
                   "Loading groups and settings..."
                 : hasSelectedGroup ?
-                  "Select a camera, then press Start Tracking to begin attendance."
-                : "Create a group or choose one to start tracking attendance."}
+                  "Select a camera, then press Start to begin attendance logging."
+                : "Create a group or choose one to begin attendance logging."}
               </p>
 
               {hasSelectedGroup && onStartTimeChange && lateTrackingEnabled && (
