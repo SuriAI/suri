@@ -141,6 +141,7 @@ export interface AttendanceGroup {
     late_threshold_enabled?: boolean
     class_start_time?: string
     track_checkout?: boolean
+    biometric_consent_certified?: boolean
   }
 }
 
