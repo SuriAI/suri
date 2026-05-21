@@ -135,7 +135,7 @@ describe("overlayGuidance", () => {
     })
   })
 
-  it("shows Low light detected instantly when low-light is true", () => {
+  it("shows Poor lighting detected instantly when low-light is true", () => {
     const face = baseFace({
       low_light: true,
       liveness: {
@@ -153,12 +153,12 @@ describe("overlayGuidance", () => {
         verifyingHintActive: false,
       }),
     ).toEqual({
-      label: "Low light detected",
+      label: "Poor lighting detected",
       tone: "warning",
     })
   })
 
-  it("shows Low light detected when stuck in low light", () => {
+  it("shows Poor lighting detected when stuck in low light", () => {
     const face = baseFace({
       low_light: true,
       liveness: {
@@ -176,7 +176,7 @@ describe("overlayGuidance", () => {
         verifyingHintActive: true,
       }),
     ).toEqual({
-      label: "Low light detected",
+      label: "Poor lighting detected",
       tone: "warning",
     })
   })
