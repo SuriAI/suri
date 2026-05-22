@@ -34,7 +34,7 @@ describe("Sync", () => {
     const { unmount } = renderWithProviders(<Sync />)
 
     await waitFor(() => {
-      expect(screen.getByText("Offline Mode")).toBeInTheDocument()
+      expect(screen.getByText("Offline")).toBeInTheDocument()
     })
 
     electronAPI.sync.getConfig.mockResolvedValueOnce(
@@ -50,7 +50,7 @@ describe("Sync", () => {
     renderWithProviders(<Sync />)
 
     await waitFor(() => {
-      expect(screen.getByText("Synced")).toBeInTheDocument()
+      expect(screen.getByText("Online")).toBeInTheDocument()
       expect(
         screen.getByText(/Linked to Acme Org • Site Location: Main Campus/i),
       ).toBeInTheDocument()
