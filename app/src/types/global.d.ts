@@ -262,6 +262,7 @@ declare global {
       message: string
       syncedAt?: string
     }>
+    triggerDebouncedSync: () => Promise<void>
   }
 
   interface BackendServiceAPI {

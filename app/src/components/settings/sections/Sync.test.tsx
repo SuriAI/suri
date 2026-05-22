@@ -51,7 +51,9 @@ describe("Sync", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Synced")).toBeInTheDocument()
-      expect(screen.getByText(/Linked to: Acme Org – Main Campus/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Linked to Acme Org • Site Location: Main Campus/i),
+      ).toBeInTheDocument()
     })
   })
 
@@ -126,8 +128,8 @@ describe("Sync", () => {
       </>,
     )
 
-    fireEvent.click(await screen.findByRole("button", { name: /Show Advanced Settings/i }))
-    fireEvent.click(screen.getByRole("button", { name: /Save Settings/i }))
+    fireEvent.click(await screen.findByRole("button", { name: /Advanced Settings/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Save Configuration/i }))
 
     expect(
       await screen.findByText(
@@ -135,8 +137,8 @@ describe("Sync", () => {
       ),
     ).toBeInTheDocument()
 
-    fireEvent.click(await screen.findByRole("button", { name: /Show Advanced Settings/i }))
-    fireEvent.click(screen.getByRole("button", { name: /Save Settings/i }))
+    fireEvent.click(await screen.findByRole("button", { name: /Advanced Settings/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Save Configuration/i }))
 
     expect(
       await screen.findByText("Remote sync settings saved. Auto-sync state updated."),
@@ -195,7 +197,7 @@ describe("Sync", () => {
       </>,
     )
 
-    await user.click(await screen.findByRole("button", { name: /Disconnect Device/i }))
+    await user.click(await screen.findByRole("button", { name: /Disconnect/i }))
 
     expect(
       await screen.findByText(
@@ -207,14 +209,14 @@ describe("Sync", () => {
   it("keeps advanced form state when toggled closed and reopened", async () => {
     const { user } = renderWithProviders(<Sync />)
 
-    await user.click(await screen.findByRole("button", { name: /Show advanced settings/i }))
+    await user.click(await screen.findByRole("button", { name: /Advanced Settings/i }))
 
     fireEvent.change(screen.getByPlaceholderText("Facenox Desktop"), {
       target: { value: "Reception Desk" },
     })
 
-    await user.click(screen.getByRole("button", { name: /Hide Advanced Settings/i }))
-    await user.click(screen.getByRole("button", { name: /Show Advanced Settings/i }))
+    await user.click(screen.getByRole("button", { name: /Hide Advanced/i }))
+    await user.click(screen.getByRole("button", { name: /Advanced Settings/i }))
 
     expect(screen.getByPlaceholderText("Facenox Desktop")).toHaveValue("Reception Desk")
   })
@@ -222,7 +224,7 @@ describe("Sync", () => {
   it("keeps the hosted server URL hidden unless a custom override is being used", async () => {
     const { user } = renderWithProviders(<Sync />)
 
-    await user.click(await screen.findByRole("button", { name: /Show Advanced Settings/i }))
+    await user.click(await screen.findByRole("button", { name: /Advanced Settings/i }))
 
     const serverUrlInput = screen.getByPlaceholderText("Leave empty for official sync")
     expect(serverUrlInput).toHaveValue("")

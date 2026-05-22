@@ -144,6 +144,7 @@ export class BackgroundSyncManager {
   private timer: NodeJS.Timeout | null = null
   private commandTimer: NodeJS.Timeout | null = null
   private catchUpTimer: NodeJS.Timeout | null = null
+  private debounceTimer: NodeJS.Timeout | null = null
   private isSyncing = false
   private reconnectAttempts = 0
 
@@ -308,6 +309,10 @@ export class BackgroundSyncManager {
 
   stop() {
     this.clearCatchUpTimer()
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+      this.debounceTimer = null
+    }
     if (this.timer) {
       clearInterval(this.timer)
       this.timer = null
@@ -535,6 +540,23 @@ export class BackgroundSyncManager {
     } finally {
       this.isSyncing = false
     }
+  }
+
+  triggerDebouncedSync(delayMs = 3000) {
+    const { enabled } = this.getSyncConfig()
+    if (!enabled) {
+      return
+    }
+
+    console.log(`[Sync] Debounced sync triggered. Delaying execution by ${delayMs}ms.`)
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      this.debounceTimer = null
+      void this.performSync()
+    }, delayMs)
   }
 }
 

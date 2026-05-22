@@ -129,6 +129,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     triggerNow: () => {
       return ipcRenderer.invoke("sync:trigger-now")
     },
+    triggerDebouncedSync: () => {
+      return ipcRenderer.invoke("sync:trigger-debounced")
+    },
   },
 })
 
