@@ -68,9 +68,9 @@ export function ManualCorrectionModal({
       maxWidth="sm">
       <div className="space-y-4">
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-          <p className="text-sm leading-relaxed text-amber-100/90">
-            This will remove the attendance entry for <strong>{displayName}</strong> and update
-            today&apos;s status.
+          <p className="text-sm leading-relaxed break-words text-amber-100/90">
+            This will remove the attendance entry for{" "}
+            <strong className="break-all">{displayName}</strong> and update today&apos;s status.
           </p>
         </div>
 

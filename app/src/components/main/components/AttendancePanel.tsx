@@ -198,66 +198,72 @@ const AttendanceRecordItem = memo(
     const timeStatus = calculateTimeStatus()
 
     return (
-      <MemberTooltip
-        member={member}
-        position="right"
-        role={record.event_type === "check_out" ? "Exiting" : "Present"}>
-        <div
-          onMouseEnter={() => {
-            if (onVoidManual) {
-              setIsHovered(true)
-            }
-          }}
-          onMouseLeave={() => setIsHovered(false)}
-          className={`group relative border-b border-l-2 border-white/5 py-2.5 pr-3 pl-4 transition-colors hover:bg-[rgba(22,28,36,0.52)] ${timeStatus?.borderColor || "border-l-transparent"}`}>
-          <div className="flex items-center gap-3 py-0.5">
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-white/90">
+      <div
+        onMouseEnter={() => {
+          if (onVoidManual) {
+            setIsHovered(true)
+          }
+        }}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`group relative border-b border-l-2 border-white/5 py-2.5 pr-3 pl-4 transition-colors hover:bg-[rgba(22,28,36,0.52)] ${timeStatus?.borderColor || "border-l-transparent"}`}>
+        <div className="flex items-center gap-3 py-0.5">
+          <MemberTooltip
+            member={member}
+            position="top"
+            showRegistration={false}
+            role={record.event_type === "check_out" ? "Exiting" : "Present"}>
+            <span className="min-w-0 flex-1 cursor-help truncate text-[13px] font-medium text-white/90 hover:text-white">
               {displayName}
             </span>
+          </MemberTooltip>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <div className="flex items-center gap-0">
-                <AnimatePresence initial={false}>
-                  {isHovered && onVoidManual && (
-                    <motion.div
-                      key="remove-action"
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: 32, opacity: 1 }}
-                      exit={{ width: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="flex items-center justify-center overflow-hidden pr-1">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          onVoidManual(record)
-                        }}
-                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-none bg-transparent p-0 text-red-500/40 shadow-none transition-all outline-none hover:bg-red-500/15 hover:text-red-400"
-                        aria-label={`Remove manual attendance for ${displayName}`}>
-                        <i className="fa-regular fa-trash-can text-[10px]"></i>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {timeStatus?.label && (
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider uppercase ${timeStatus.pillColor}`}>
-                    {timeStatus.label}
-                  </span>
-                )}
-              </div>
-
-              <span className="block w-[54px] text-right font-mono text-[11px] text-white/55 tabular-nums">
-                {record.timestamp.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+          <div className="flex shrink-0 items-center gap-2">
+            {timeStatus?.label && (
+              <span
+                className={`rounded px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider uppercase ${timeStatus.pillColor}`}>
+                {timeStatus.label}
               </span>
+            )}
+
+            <div className="relative flex h-6 w-[54px] shrink-0 items-center justify-center overflow-hidden">
+              <AnimatePresence initial={false}>
+                {isHovered && onVoidManual ?
+                  <motion.div
+                    key="trash-btn"
+                    initial={{ opacity: 0, scale: 0.9, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 8 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute flex h-6 w-6 items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onVoidManual(record)
+                      }}
+                      className="flex h-6 w-6 items-center justify-center rounded-full border-none bg-transparent p-0 text-red-500/50 shadow-none transition-all outline-none hover:bg-red-500/15 hover:text-red-400"
+                      aria-label={`Remove manual attendance for ${displayName}`}>
+                      <i className="fa-regular fa-trash-can text-[12px]"></i>
+                    </button>
+                  </motion.div>
+                : <motion.span
+                    key="time-text"
+                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute block w-full text-center font-mono text-[11px] text-white/55 tabular-nums">
+                    {record.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </motion.span>
+                }
+              </AnimatePresence>
             </div>
           </div>
         </div>
-      </MemberTooltip>
+      </div>
     )
   },
 )

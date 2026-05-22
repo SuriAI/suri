@@ -6,35 +6,39 @@ interface MemberTooltipProps {
   children: React.ReactElement
   position?: "top" | "bottom" | "left" | "right"
   role?: string
+  showRegistration?: boolean
 }
 
-export function MemberTooltip({ member, children, position = "right", role }: MemberTooltipProps) {
+export function MemberTooltip({
+  member,
+  children,
+  position = "right",
+  role,
+  showRegistration = true,
+}: MemberTooltipProps) {
   const isRegistered = member?.has_face_data ?? false
   const memberRole = role || member?.role || "Member"
 
-  const content = (
-    <div className="flex min-w-[120px] flex-col items-center gap-1.5 p-1 text-center">
-      <div className="flex flex-col items-center">
-        <span className="text-[11px] font-medium text-white/55">{memberRole}</span>
-      </div>
+  const hasMultipleLines = showRegistration || !!member?.email
 
-      <div className="flex items-center justify-center">
-        <span
-          className={`text-[11px] font-semibold ${
-            isRegistered ? "text-cyan-400" : "text-white/55"
-          }`}>
-          {isRegistered ? "Registered" : "Not Registered"}
-        </span>
-      </div>
+  const content =
+    hasMultipleLines ?
+      <div className="flex flex-col items-center gap-0.5 text-center">
+        <span className="text-[10px] font-medium text-white/90">{memberRole}</span>
+        {showRegistration && (
+          <span
+            className={`text-[10px] font-semibold ${isRegistered ? "text-cyan-400" : "text-white/45"}`}>
+            {isRegistered ? "Registered" : "Not Registered"}
+          </span>
+        )}
 
-      {member?.email && (
-        <div className="mt-0.5 flex items-center justify-center gap-2">
-          <i className="fa-solid fa-envelope text-[10px] text-white/55"></i>
-          <span className="max-w-[140px] truncate text-[11px] text-white/65">{member.email}</span>
-        </div>
-      )}
-    </div>
-  )
+        {member?.email && (
+          <span className="mt-0.5 max-w-[140px] truncate text-[9px] text-white/45">
+            {member.email}
+          </span>
+        )}
+      </div>
+    : memberRole
 
   return (
     <Tooltip content={content} position={position} delay={300}>
