@@ -62,11 +62,9 @@ class FaceDetector:
 
         if mean_brightness < 60.0:
             logger.debug(
-                "Low-light detected in face ROI (mean luminance: %.1f). Applying noise-immune Bilateral + Dynamic Gamma pipeline.",
+                "Low-light detected in face ROI (mean luminance: %.1f). Applying dynamic Gamma correction to LAB L-channel.",
                 mean_brightness,
             )
-            smoothed = cv.bilateralFilter(image, d=5, sigmaColor=75, sigmaSpace=75)
-
             gamma = max(0.4, min(1.0, mean_brightness / 60.0))
             inv_gamma = 1.0 / gamma
 
@@ -75,7 +73,7 @@ class FaceDetector:
             ).astype("uint8")
 
             # LAB L-channel tuning avoids recognition-breaking color/feature shifts
-            lab = cv.cvtColor(smoothed, cv.COLOR_BGR2LAB)
+            lab = cv.cvtColor(image, cv.COLOR_BGR2LAB)
             l_channel, a_channel, b_channel = cv.split(lab)
             gamma_corrected_l = cv.LUT(l_channel, table)
             enhanced_lab = cv.merge((gamma_corrected_l, a_channel, b_channel))
