@@ -41,30 +41,6 @@ def align_face(
     return aligned_face
 
 
-def enhance_face_illumination_bgr(img_bgr: np.ndarray) -> np.ndarray:
-    """
-    Applies CLAHE on the YUV Y-channel to compensate for low light and shadows.
-    More generous than the liveness preprocessor - recognition has no spoof boundary risk.
-    """
-    try:
-        yuv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YUV)
-        y = yuv[:, :, 0]
-
-        mean_y = np.mean(y)
-        std_y = np.std(y)
-
-        # Wider gate than liveness (< 90 dark, std > 45 shadow, mean < 120) -
-        # recognition benefits from stronger compensation without security risk.
-        if mean_y < 90.0 or (std_y > 45.0 and mean_y < 120.0):
-            clahe = cv2.createCLAHE(clipLimit=1.8, tileGridSize=(8, 8))
-            yuv[:, :, 0] = clahe.apply(y)
-            return cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-
-        return img_bgr
-    except Exception:
-        return img_bgr
-
-
 def preprocess_image(
     aligned_face: np.ndarray, input_mean: float = 127.5, input_std: float = 127.5
 ) -> np.ndarray:
@@ -79,8 +55,6 @@ def preprocess_image(
     Returns:
         Preprocessed tensor with shape [C, H, W] (no batch dimension)
     """
-    aligned_face = enhance_face_illumination_bgr(aligned_face)
-
     rgb_image = cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB)
     normalized = (rgb_image.astype(np.float32) - input_mean) / input_std
     input_tensor = np.transpose(normalized, (2, 0, 1))
