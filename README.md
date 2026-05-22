@@ -53,7 +53,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 - **No GPU Required:** Real-time matching on standard CPUs.
 - **Environment:** Optimized for controlled lighting and consistent setups.
-- **Hardware:** Verified on hardware as old as 2nd-gen Intel i5 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops.
+- **Hardware:** Verified on hardware as old as 2nd-gen Intel i7 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops.
 
 ## Offline-First Behavior
 
