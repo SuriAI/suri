@@ -24,6 +24,27 @@ export function ReportTable({
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
+  const getColWidthClass = (key: ColumnKey) => {
+    switch (key) {
+      case "name":
+        return "w-[20%] min-w-[150px]"
+      case "date":
+        return "w-[140px] min-w-[140px]"
+      case "status":
+        return "w-[100px] min-w-[100px]"
+      case "check_in_time":
+        return "w-[120px] min-w-[120px]"
+      case "check_out_time":
+        return "w-[120px] min-w-[120px]"
+      case "total_hours":
+        return "w-[100px] min-w-[100px]"
+      case "notes":
+        return "min-w-[250px]"
+      default:
+        return ""
+    }
+  }
+
   // Standardized responsive horizontal scroll container
   return (
     <div
@@ -41,10 +62,11 @@ export function ReportTable({
               let alignClass = "text-left"
               if (c.align === "center") alignClass = "text-center"
               else if (c.align === "right") alignClass = "text-right"
+              const widthClass = getColWidthClass(c.key)
               return (
                 <th
                   key={c.key}
-                  className={`sticky top-0 z-10 border-b border-white/6 bg-[rgba(16,21,28,0.98)] px-4 py-3 text-[11px] font-medium text-white/55 ${alignClass}`}>
+                  className={`sticky top-0 z-10 border-b border-white/6 bg-[rgba(16,21,28,0.98)] px-4 py-3 text-[11px] font-medium text-white/55 ${alignClass} ${widthClass}`}>
                   {c.label}
                 </th>
               )
@@ -256,11 +278,12 @@ export function ReportTable({
 
                         // Notes column should NOT be whitespace-nowrap
                         const isNotesCol = c.key === "notes"
+                        const widthClass = getColWidthClass(c.key)
 
                         return (
                           <td
                             key={c.key}
-                            className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${cIdx === 0 ? "relative" : ""}`}>
+                            className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${widthClass} ${cIdx === 0 ? "relative" : ""}`}>
                             {cIdx === 0 && (
                               <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                             )}

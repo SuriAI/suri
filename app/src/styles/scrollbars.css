@@ -167,3 +167,12 @@
 .reports-scroll::-webkit-scrollbar-track:vertical {
   margin-bottom: 10px;
 }
+
+/* Targeted Smooth Scrolling for Premium Micro-Interactions */
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar,
+  .custom-scroll,
+  .settings-sidebar-scroll {
+    scroll-behavior: smooth;
+  }
+}
