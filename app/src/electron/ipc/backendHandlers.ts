@@ -1,4 +1,5 @@
 import { ipcMain } from "electron"
+import fs from "node:fs"
 import { backendService } from "../backendService.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 
@@ -110,4 +111,61 @@ export function registerBackendHandlers() {
       return false
     }
   })
+
+  ipcMain.handle(
+    "backend:post-multipart",
+    async (
+      _event,
+      endpoint: string,
+      files: {
+        name: string
+        filename: string
+        path?: string
+        buffer?: ArrayBuffer
+        mimeType: string
+      }[],
+      extraFields?: Record<string, string>,
+    ) => {
+      try {
+        const formData = new FormData()
+        for (const file of files) {
+          let blob: Blob
+          if (file.path) {
+            const buffer = fs.readFileSync(file.path)
+            blob = new Blob([new Uint8Array(buffer)], { type: file.mimeType })
+          } else if (file.buffer) {
+            blob = new Blob([new Uint8Array(file.buffer)], { type: file.mimeType })
+          } else {
+            throw new Error(`File ${file.filename} has no content payload`)
+          }
+          formData.append(file.name, blob, file.filename)
+        }
+        if (extraFields) {
+          for (const [key, val] of Object.entries(extraFields)) {
+            formData.append(key, val)
+          }
+        }
+
+        const response = await fetch(`${backendService.getUrl()}${endpoint}`, {
+          method: "POST",
+          body: formData,
+          headers: authHeaders(),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(
+            errorData.detail ||
+              errorData.error ||
+              `HTTP ${response.status}: ${response.statusText}`,
+          )
+        }
+
+        return await response.json()
+      } catch (handlerError) {
+        console.error("Error inside backend:post-multipart IPC handler:", handlerError)
+        throw handlerError
+      }
+    },
+  )
 }

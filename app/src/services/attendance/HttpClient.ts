@@ -128,6 +128,73 @@ export class HttpClient {
   }
 
   async postMultipart<T>(endpoint: string, formData: FormData): Promise<T> {
+    if (window.electronAPI?.invoke) {
+      try {
+        const files: {
+          name: string
+          filename: string
+          path?: string
+          buffer?: ArrayBuffer
+          mimeType: string
+        }[] = []
+        const extraFields: Record<string, string> = {}
+
+        for (const [key, value] of formData.entries()) {
+          if (value instanceof File) {
+            const electronFile = value as File & { path?: string }
+            if (electronFile.path) {
+              files.push({
+                name: key,
+                filename: value.name,
+                path: electronFile.path,
+                mimeType: value.type,
+              })
+            } else {
+              const buffer = await value.arrayBuffer()
+              files.push({
+                name: key,
+                filename: value.name,
+                buffer,
+                mimeType: value.type,
+              })
+            }
+          } else if (typeof value !== "string") {
+            const blob = value as unknown as Blob & { path?: string }
+            if (blob.path) {
+              files.push({
+                name: key,
+                filename: "blob",
+                path: blob.path,
+                mimeType: blob.type,
+              })
+            } else {
+              const buffer = await blob.arrayBuffer()
+              files.push({
+                name: key,
+                filename: "blob",
+                buffer,
+                mimeType: blob.type,
+              })
+            }
+          } else {
+            extraFields[key] = value
+          }
+        }
+
+        return (await window.electronAPI.invoke(
+          "backend:post-multipart",
+          endpoint,
+          files,
+          extraFields,
+        )) as T
+      } catch (ipcError) {
+        console.error(
+          "[HttpClient] Electron IPC postMultipart failed, falling back to renderer fetch:",
+          ipcError,
+        )
+      }
+    }
+
     const url = `${this.baseUrl}${endpoint}`
     const token = await this.getApiToken()
     const headers: Record<string, string> = {}
