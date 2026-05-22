@@ -64,7 +64,7 @@ export function MemberEntry({
           }
 
           {/* Metadata Block: Role and Email */}
-          <div className="mt-0.5 flex items-center gap-2.5 text-[11px]">
+          <div className="mt-0.5 flex min-w-0 items-center gap-2.5 text-[11px]">
             {isEditing("role") ?
               <input
                 type="text"
@@ -90,7 +90,7 @@ export function MemberEntry({
 
             {showEmailField && (
               <>
-                <span className="h-2 w-[1px] bg-white/10 select-none" />
+                <span className="h-2 w-[1px] shrink-0 bg-white/10 select-none" />
 
                 {isEditing("email") ?
                   <input

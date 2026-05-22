@@ -56,7 +56,7 @@ export function ControlBar({
 
     if (!hasGroups) {
       return {
-        label: "Start",
+        label: "Start Scan",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/70",
         tooltip: "Create a group first to begin attendance logging",
@@ -66,7 +66,7 @@ export function ControlBar({
 
     if (!hasSelectedGroup) {
       return {
-        label: "Start",
+        label: "Start Scan",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/70 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/70",
         tooltip: "Select a group first to begin attendance logging",
@@ -80,7 +80,7 @@ export function ControlBar({
     const standardTooltip = hasCameraDevices ? "Start attendance logging" : "No camera detected"
 
     return {
-      label: "Start",
+      label: "Start Scan",
       className: cyanStyle,
       tooltip: standardTooltip,
       enabled: hasCameraDevices,

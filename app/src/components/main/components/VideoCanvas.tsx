@@ -120,12 +120,12 @@ export const VideoCanvas = memo(function VideoCanvas({
                 />
               </svg>
             </div>
-            <div className="relative flex max-w-sm flex-col items-center gap-4 text-xs text-white/65">
+            <div className="relative flex max-w-md flex-col items-center gap-4 text-xs text-white/65">
               <p>
                 {!isShellReady ?
                   "Loading groups and settings..."
                 : hasSelectedGroup ?
-                  "Select a camera, then press Start to begin attendance logging."
+                  "Select a camera, then press Start Scan to begin attendance logging."
                 : "Create a group or choose one to begin attendance logging."}
               </p>
 

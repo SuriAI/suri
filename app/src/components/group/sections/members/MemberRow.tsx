@@ -59,27 +59,27 @@ export function MemberRow({
         )}
         <div className="min-w-0 flex-1">
           <div
-            className={`mb-0.5 flex items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
+            className={`mb-0.5 flex min-w-0 items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
               isRegistered ? "text-cyan-400" : "text-white"
             }`}>
             {isRegistered ?
               <Tooltip content="Registered" position="top">
-                <span>{member.displayName}</span>
+                <span className="block truncate">{member.displayName}</span>
               </Tooltip>
-            : <span>{member.displayName}</span>}
+            : <span className="block truncate">{member.displayName}</span>}
             {!member.has_consent && (
-              <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black tracking-widest text-amber-500/80 uppercase">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black tracking-widest text-amber-500/80 uppercase">
                 No Consent
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-medium text-white/55">
-            {member.role || "Member"}
+          <div className="flex min-w-0 items-center gap-2 text-[11px] font-medium text-white/55">
+            <span className="truncate">{member.role || "Member"}</span>
             {member.email && (
-              <div className="flex items-center gap-2">
-                <span className="h-0.5 w-0.5 rounded-full bg-white/10" />
-                {member.email}
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-white/10" />
+                <span className="truncate">{member.email}</span>
               </div>
             )}
           </div>
