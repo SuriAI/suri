@@ -523,11 +523,11 @@ export function Members({
       <AnimatePresence>
         {mode && (
           <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 z-50 flex flex-col bg-[#0b0e14]/95">
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="absolute inset-0 z-50 flex flex-col bg-[#0b0e14]">
             {mode === "bulk" && source === "upload" && (
               <BulkRegistration
                 group={group}

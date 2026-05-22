@@ -87,13 +87,8 @@ export function useFaceCapture(
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Face analysis failed. Please try again."
-        updateFrame(id, (frame) => ({
-          ...frame,
-          status: "error",
-          error: message,
-          confidence: undefined,
-          bbox: undefined,
-        }))
+        setFrames((prev) => prev.filter((frame) => frame.id !== id))
+        setGlobalError(message)
       }
     },
     [updateFrame],
