@@ -157,6 +157,10 @@ export function registerSyncHandlers() {
     return await syncManager.performSync()
   })
 
+  ipcMain.handle("sync:trigger-debounced", () => {
+    syncManager.triggerDebouncedSync()
+  })
+
   ipcMain.handle("sync:get-config", () => {
     return getRemoteSyncStatus()
   })

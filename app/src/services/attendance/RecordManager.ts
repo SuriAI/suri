@@ -31,6 +31,12 @@ export class RecordManager {
     this.emitClockWarning = emitClockWarning
   }
 
+  private triggerSync() {
+    if (typeof window !== "undefined" && window.electronAPI?.sync?.triggerDebouncedSync) {
+      void window.electronAPI.sync.triggerDebouncedSync()
+    }
+  }
+
   async processAttendanceEvent(
     personId: string,
     confidence: number,
@@ -56,6 +62,7 @@ export class RecordManager {
       if (event.time_health?.warning_message) {
         this.emitClockWarning(event.time_health.warning_message)
       }
+      this.triggerSync()
 
       return {
         ...event,
@@ -214,6 +221,7 @@ export class RecordManager {
         this.apiEndpoints.records,
         recordData,
       )
+      this.triggerSync()
       return {
         ...newRecord,
         timestamp: new Date(newRecord.timestamp),
@@ -234,6 +242,7 @@ export class RecordManager {
           voided_by: voidedBy,
         },
       )
+      this.triggerSync()
       return {
         ...updatedRecord,
         timestamp: new Date(updatedRecord.timestamp),
@@ -334,6 +343,7 @@ export class RecordManager {
         `${this.apiEndpoints.sessions}/${personId}/${date}`,
         payload,
       )
+      this.triggerSync()
       return {
         ...updated,
         check_in_time: updated.check_in_time ? new Date(updated.check_in_time) : undefined,
