@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useGroupUIStore } from "@/components/group/stores"
 import { Modal } from "@/components/common"
+import { motion, AnimatePresence } from "framer-motion"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
 import { useFaceCapture } from "@/components/group/sections/registration/hooks/useFaceCapture"
@@ -79,7 +80,8 @@ export function FaceCapture({
     resetFrames,
   } = useFaceCapture(group, members, onRefresh, dialog)
 
-  const framesReady = frames.length > 0
+  const framesReady = frames.some((f) => f.status === "ready" || f.status === "registered")
+  const isProcessing = frames.some((f) => f.status === "processing")
 
   useEffect(() => {
     let active = true
@@ -99,6 +101,10 @@ export function FaceCapture({
       onSelectedMemberChange(!!selectedMemberId)
     }
   }, [selectedMemberId, onSelectedMemberChange])
+
+  useEffect(() => {
+    setGlobalError(null)
+  }, [selectedMemberId, setGlobalError])
 
   useEffect(() => {
     if (deselectMemberTrigger) {
@@ -180,117 +186,129 @@ export function FaceCapture({
         </div>
       </Modal>
 
-      <Modal
-        isOpen={!!globalError}
-        onClose={() => setGlobalError(null)}
-        title="Something went wrong"
-        icon={<i className="fa-solid fa-triangle-exclamation text-red-400"></i>}
-        maxWidth="sm">
-        <div className="flex flex-col items-center gap-4 py-2">
-          <p className="text-center text-sm font-medium text-red-200/60">{globalError}</p>
-
-          <div className="mt-2 flex w-full justify-end">
-            <button
-              onClick={() => setGlobalError(null)}
-              className="rounded-lg border border-white/5 bg-white/5 px-6 py-2 text-[11px] font-bold tracking-wider text-white/65 transition-all hover:bg-white/10 hover:text-white">
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {!selectedMemberId && (
-          <MemberSidebar
-            members={members}
-            memberStatus={memberStatus}
-            selectedMemberId={selectedMemberId}
-            onSelectMember={setSelectedMemberId}
-            memberSearch={memberSearch}
-            setMemberSearch={setMemberSearch}
-            registrationFilter={registrationFilter}
-            setRegistrationFilter={setRegistrationFilter}
-            onRemoveFaceData={handleWrapperRemoveData}
-          />
-        )}
-
-        {selectedMemberId && (
-          <div className="flex h-full flex-col items-center justify-center gap-4 overflow-hidden p-6">
-            <div className="relative aspect-video min-h-0 w-full max-w-4xl shrink overflow-hidden rounded-xl border border-white/6 bg-black/40 shadow-2xl">
-              {/* Floating Header Overlay */}
-              <div className="pointer-events-none absolute top-0 right-0 left-0 z-20 flex flex-col items-start bg-gradient-to-b from-black/80 via-black/40 to-transparent px-8 pt-6 pb-12">
-                <span className="mb-0.5 text-[10px] font-bold tracking-[0.15em] text-cyan-400/80 uppercase">
-                  Member
-                </span>
-                <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-                  {selectedMemberName}
-                </h2>
-              </div>
-
-              {!framesReady ?
-                source === "live" ?
-                  <CameraFeed
-                    videoRef={videoRef}
-                    isStreaming={isStreaming}
-                    isVideoReady={isVideoReady}
-                    cameraError={cameraError}
-                    onStart={startCamera}
-                    onStop={stopCamera}
-                    source={source}
-                    cameraDevices={cameraDevices}
-                    selectedCamera={selectedCamera}
-                    setSelectedCamera={setSelectedCamera}
-                  />
-                : <UploadArea
-                    onFileProcessed={(url: string, w: number, h: number) =>
-                      captureProcessedFrame("Front", url, w, h)
-                    }
-                    onError={setGlobalError}
-                  />
-
-              : <ResultView
-                  frames={frames}
-                  selectedMemberName={selectedMemberName}
-                  onRetake={resetWorkflow}
-                  onRegister={handleWrapperRegister}
-                  isRegistering={isRegistering}
-                  framesReady={!!framesReady}
-                />
-              }
-            </div>
-
-            {/* Bottom Control Bar */}
-            {!framesReady && (
-              <div className="flex w-full max-w-4xl items-center justify-between px-4">
-                <div className="w-32">
-                  <button
-                    onClick={() => setSource(source === "live" ? "upload" : "live")}
-                    className="group flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/65 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
-                    title={source === "live" ? "Upload Photo Instead" : "Use Camera Instead"}>
-                    <i
-                      className={`fa-solid ${source === "live" ? "fa-file-image" : "fa-camera"} text-sm`}></i>
-                    <span>{source === "live" ? "Upload" : "Camera"}</span>
-                  </button>
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+          {!selectedMemberId ?
+            <motion.div
+              key="sidebar"
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="absolute inset-0 flex min-h-0 flex-col">
+              <MemberSidebar
+                members={members}
+                memberStatus={memberStatus}
+                selectedMemberId={selectedMemberId}
+                onSelectMember={setSelectedMemberId}
+                memberSearch={memberSearch}
+                setMemberSearch={setMemberSearch}
+                registrationFilter={registrationFilter}
+                setRegistrationFilter={setRegistrationFilter}
+                onRemoveFaceData={handleWrapperRemoveData}
+              />
+            </motion.div>
+          : <motion.div
+              key="camera-viewport"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-hidden p-6">
+              <div className="relative aspect-video min-h-0 w-full max-w-4xl shrink overflow-hidden rounded-xl">
+                {/* Floating Header Overlay */}
+                <div className="pointer-events-none absolute top-0 right-0 left-0 z-20 flex flex-col items-start bg-gradient-to-b from-black/80 via-black/40 to-transparent px-8 pt-6 pb-12">
+                  <span className="mb-0.5 text-[10px] font-bold tracking-[0.15em] text-cyan-400/80 uppercase">
+                    Member
+                  </span>
+                  <h2 className="w-full max-w-[60%] truncate text-xl font-bold tracking-tight text-white sm:max-w-[70%] sm:text-2xl">
+                    {selectedMemberName}
+                  </h2>
                 </div>
 
-                <div className="flex flex-1 justify-center">
-                  {source === "live" && isStreaming && (
-                    <button
-                      onClick={handleCaptureFromCamera}
-                      disabled={!isVideoReady || !!cameraError}
-                      className="group flex h-16 w-16 items-center justify-center rounded-full bg-white/10 p-1 transition-all hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40"
-                      title="Capture Face">
-                      <div className="h-full w-full rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform group-active:scale-90" />
-                    </button>
+                {!framesReady ?
+                  source === "live" ?
+                    <CameraFeed
+                      videoRef={videoRef}
+                      isStreaming={isStreaming}
+                      isVideoReady={isVideoReady}
+                      cameraError={cameraError}
+                      onStart={startCamera}
+                      onStop={stopCamera}
+                      source={source}
+                      cameraDevices={cameraDevices}
+                      selectedCamera={selectedCamera}
+                      setSelectedCamera={setSelectedCamera}
+                    />
+                  : <UploadArea
+                      onFileProcessed={(url: string, w: number, h: number) =>
+                        captureProcessedFrame("Front", url, w, h)
+                      }
+                      onError={setGlobalError}
+                    />
+
+                : <ResultView
+                    frames={frames}
+                    selectedMemberName={selectedMemberName}
+                    onRetake={resetWorkflow}
+                    onRegister={handleWrapperRegister}
+                    isRegistering={isRegistering}
+                    framesReady={!!framesReady}
+                  />
+                }
+
+                {/* Sleek, non-blocking glassmorphic warning toast inside single viewport */}
+                <AnimatePresence>
+                  {globalError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="pointer-events-auto absolute bottom-4 left-1/2 z-20 flex max-w-[85%] -translate-x-1/2 items-center gap-2 rounded-lg border border-red-500/30 bg-red-950/85 px-4 py-2.5 text-center text-[11px] font-medium text-red-200 shadow-xl backdrop-blur-[2px]">
+                      <i className="fa-solid fa-circle-exclamation shrink-0 text-sm text-red-400"></i>
+                      <span>{globalError}</span>
+                    </motion.div>
                   )}
-                </div>
-
-                {/* Empty div for right side balance */}
-                <div className="w-32"></div>
+                </AnimatePresence>
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Bottom Control Bar */}
+              {!framesReady && (
+                <div className="flex w-full max-w-4xl items-center justify-between px-4">
+                  <div className="w-32">
+                    <button
+                      onClick={() => setSource(source === "live" ? "upload" : "live")}
+                      className="group flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-medium text-white/65 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                      title={source === "live" ? "Upload Photo Instead" : "Use Camera Instead"}>
+                      <i
+                        className={`fa-solid ${source === "live" ? "fa-file-image" : "fa-camera"} text-sm`}></i>
+                      <span>{source === "live" ? "Upload" : "Camera"}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-1 justify-center">
+                    {source === "live" && isStreaming && (
+                      <button
+                        onClick={handleCaptureFromCamera}
+                        disabled={!isVideoReady || !!cameraError || isProcessing}
+                        className="group flex h-16 w-16 items-center justify-center rounded-full bg-white/10 p-1 transition-all hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40"
+                        title="Capture Face">
+                        {isProcessing ?
+                          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                        : <div className="h-full w-full rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform group-active:scale-90" />
+                        }
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Empty div for right side balance */}
+                  <div className="w-32"></div>
+                </div>
+              )}
+            </motion.div>
+          }
+        </AnimatePresence>
       </div>
     </div>
   )
