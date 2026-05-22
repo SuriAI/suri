@@ -534,6 +534,7 @@ export function Members({
                 members={selectedMembersList.filter((m) => m.has_consent)}
                 onRefresh={onMembersChange}
                 onClose={resetRegistration}
+                className="flex-1"
               />
             )}
             {mode === "queue" && source === "camera" && (
