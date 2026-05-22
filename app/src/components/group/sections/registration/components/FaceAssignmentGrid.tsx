@@ -7,10 +7,8 @@ interface FaceAssignmentGridProps {
   members: AttendanceMember[]
   availableMembers: AttendanceMember[]
   assignedCount: number
-  isRegistering: boolean
   onAssignMember: (faceId: string, personId: string) => void
   onUnassign: (faceId: string) => void
-  onBulkRegister: () => void
 }
 
 export function FaceAssignmentGrid({
@@ -18,32 +16,33 @@ export function FaceAssignmentGrid({
   members,
   availableMembers,
   assignedCount,
-  isRegistering,
   onAssignMember,
   onUnassign,
-  onBulkRegister,
 }: FaceAssignmentGridProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex h-7 items-center rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 shadow-[0_0_15px_rgba(34,211,238,0.05)]">
-          <span className="text-[11px] font-bold tracking-tight text-white/90">
-            {assignedCount}
-            <span className="mx-1 text-white/55">/</span>
-            {detectedFaces.length}
-            <span className="ml-1.5 font-medium tracking-wider text-white/55">Assigned</span>
-          </span>
-        </div>
-
-        <div className="flex h-7 items-center rounded-full border border-white/10 bg-[rgba(22,28,36,0.62)] px-3">
-          <span className="text-[11px] font-medium text-white/55">
-            {availableMembers.length} {availableMembers.length === 1 ? "member" : "members"}{" "}
-            available
-          </span>
-        </div>
+    <div className="flex flex-col gap-6">
+      {/* Meta row — no pills, just inline text */}
+      <div className="flex items-baseline gap-2 text-[11px]">
+        <span className="font-semibold text-white">
+          {assignedCount}
+          <span className="text-white/30">/{detectedFaces.length}</span>
+        </span>
+        <span className="text-white/35">assigned</span>
+        {availableMembers.length > 0 && (
+          <>
+            <span className="text-white/15">·</span>
+            <span className="text-white/35">
+              {availableMembers.length} {availableMembers.length === 1 ? "member" : "members"}{" "}
+              remaining
+            </span>
+          </>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      {/* Face grid — auto-fill, cards fill available width */}
+      <div
+        className="grid gap-x-5 gap-y-7"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
         {detectedFaces.map((face) => {
           const assignedMember =
             face.assignedPersonId ?
@@ -51,86 +50,61 @@ export function FaceAssignmentGrid({
             : null
 
           return (
-            <div
-              key={face.faceId}
-              className={`group overflow-hidden rounded-lg border transition-all ${
-                face.assignedPersonId ?
-                  "border-cyan-400/40 bg-linear-to-br from-cyan-500/10 to-cyan-600/5"
-                : face.isAcceptable ?
-                  "border-white/10 bg-[rgba(17,22,29,0.96)] hover:border-white/20"
-                : "border-amber-400/30 bg-amber-500/5"
-              }`}>
-              <div className="relative aspect-square">
+            <div key={face.faceId} className="group flex flex-col gap-2">
+              {/* Image — full bleed, rounded, no border */}
+              <div className="relative aspect-square overflow-hidden rounded-xl">
                 <img
                   src={face.previewUrl}
                   alt="Detected face"
-                  className="h-full w-full object-cover"
+                  className={`h-full w-full object-cover transition-all duration-300 ${
+                    face.assignedPersonId ? "brightness-90" : "brightness-75"
+                  }`}
                 />
+
+                {/* Quality warning — bottom overlay strip */}
                 {!face.isAcceptable && (
-                  <div className="absolute right-2 bottom-2 left-2 translate-z-0 transform rounded-lg bg-amber-500/90 px-2 py-1.5 text-center shadow-lg">
-                    <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold text-black">
-                      <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
-                      Quality Issue
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-amber-950/90 to-transparent px-3 py-2.5">
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-300">
+                      <i className="fa-solid fa-triangle-exclamation text-[9px]" />
+                      Low quality
                     </div>
                   </div>
                 )}
+
+                {/* Unassign on hover — subtle overlay button */}
+                {face.assignedPersonId && (
+                  <button
+                    onClick={() => onUnassign(face.faceId)}
+                    className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/40 group-hover:opacity-100">
+                    <span className="text-[11px] font-semibold text-white/80">Change</span>
+                  </button>
+                )}
               </div>
 
-              <div className="space-y-2 p-3">
-                {!face.assignedPersonId ?
-                  <Dropdown
-                    options={availableMembers.map((m) => ({
-                      value: m.person_id,
-                      label: m.name,
-                    }))}
-                    value=""
-                    onChange={(val) => val && onAssignMember(face.faceId, val as string)}
-                    placeholder="Select member..."
-                    showPlaceholderOption={true}
-                    allowClear={false}
-                    buttonClassName="!py-1.5 !text-[11px] border-white/10 bg-[rgba(22,28,36,0.68)] hover:border-cyan-400/30 hover:bg-cyan-500/3"
-                  />
-                : <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[11px] font-bold text-cyan-200">
-                        {assignedMember?.name}
-                      </div>
-                      <div className="text-[9px] font-medium tracking-wider text-cyan-400/40">
-                        Assigned
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => onUnassign(face.faceId)}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[rgba(22,28,36,0.62)] text-white/65 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-[rgba(28,35,44,0.82)] hover:text-white">
-                      <i className="fa-solid fa-xmark text-[10px]"></i>
-                    </button>
-                  </div>
-                }
-              </div>
+              {/* Assignment label / dropdown — below image, no container */}
+              {!face.assignedPersonId ?
+                <Dropdown
+                  options={availableMembers.map((m) => ({
+                    value: m.person_id,
+                    label: m.name,
+                  }))}
+                  value=""
+                  onChange={(val) => val && onAssignMember(face.faceId, val as string)}
+                  placeholder="Assign member…"
+                  showPlaceholderOption={true}
+                  allowClear={false}
+                  buttonClassName="!py-1.5 !text-[11px] !bg-transparent !border-0 !border-b !border-white/10 !rounded-none !px-0 hover:!border-white/25 focus:!border-cyan-500/50 transition-colors"
+                />
+              : <div className="flex items-center justify-between px-0.5">
+                  <span className="truncate text-[12px] font-semibold text-white">
+                    {assignedMember?.name}
+                  </span>
+                </div>
+              }
             </div>
           )
         })}
       </div>
-
-      {assignedCount > 0 && (
-        <button
-          onClick={onBulkRegister}
-          disabled={isRegistering}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-4 py-4 text-sm font-medium text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95 disabled:border-white/10 disabled:bg-[rgba(22,28,36,0.62)] disabled:text-white/20">
-          {isRegistering ?
-            <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-              <span>Registering {assignedCount} faces...</span>
-            </>
-          : <>
-              <span className="text-lg">✓</span>
-              <span>
-                Register {assignedCount} {assignedCount === 1 ? "Face" : "Faces"}
-              </span>
-            </>
-          }
-        </button>
-      )}
     </div>
   )
 }
