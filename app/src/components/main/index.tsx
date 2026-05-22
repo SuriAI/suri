@@ -662,7 +662,7 @@ export default function Main() {
 
       <div className="flex min-h-0 flex-1">
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="relative flex min-h-0 flex-1 items-center justify-center p-4">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center p-3">
             <VideoCanvas
               videoRef={videoRef}
               canvasRef={canvasRef}

@@ -65,12 +65,15 @@ export default function WindowBar() {
       {/* Spacer for Mac native traffic lights */}
       {isMac && <div className="w-[80px] shrink-0" />}
 
-      <div className="pointer-events-none relative z-40 ml-4 flex flex-1 items-center space-x-3">
+      <div className="pointer-events-none relative z-40 ml-3 flex flex-1 items-center gap-2">
         <img
           src="./icons/logo-transparent.png"
           alt="Facenox"
-          className={`${isMac ? "-ml-5" : "-ml-3"} h-5 w-5 object-contain opacity-90`}
+          className={`${isMac ? "-ml-4" : ""} h-4 w-4 object-contain opacity-40`}
         />
+        <span className="relative top-[0.5px] text-[10px] leading-none font-bold tracking-[0.25em] text-white/30 uppercase">
+          Facenox
+        </span>
       </div>
 
       {!isMac && (

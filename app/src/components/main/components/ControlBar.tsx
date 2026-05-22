@@ -91,7 +91,7 @@ export function ControlBar({
 
   return (
     <div>
-      <div className="flex min-h-16 items-center justify-between gap-4 rounded-lg p-4 pt-0">
+      <div className="flex min-h-16 items-center justify-between gap-4 rounded-lg p-3 pt-0">
         <div className="flex items-center space-x-6">
           {cameraDevices.length > 0 && (
             <div className="flex flex-col items-start space-y-1">

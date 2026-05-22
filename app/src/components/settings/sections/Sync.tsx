@@ -267,7 +267,7 @@ export function Sync() {
 
                 <div className="grid max-w-xl gap-3 font-mono text-[11px] text-white/40 sm:grid-cols-2">
                   <div className="space-y-0.5">
-                    <div>Device: {config.deviceName || "Facenox Kiosk"}</div>
+                    <div>Device: {config.deviceName || "Facenox Desktop"}</div>
                     <div>Hardware ID: {config.deviceId}</div>
                   </div>
                   <div className="space-y-0.5 sm:text-right">
