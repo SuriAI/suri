@@ -177,7 +177,7 @@ export function Sync() {
           {/* Status Row */}
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-white/90">Sync Connection Status</div>
+              <div className="text-sm font-medium text-white/90">Connection Status</div>
               <div className="relative min-h-4">
                 <div className="mt-0.5 text-xs text-white/65">
                   {config.connected ?
@@ -188,7 +188,7 @@ export function Sync() {
             </div>
             <div
               className={`rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${badgeTone}`}>
-              {config.connected ? "Synced" : "Offline Mode"}
+              {config.connected ? "Online" : "Offline"}
             </div>
           </div>
 

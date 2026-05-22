@@ -71,7 +71,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       opensUp: boolean
     } | null>(null)
     const internalRef = useRef<HTMLDivElement>(null)
-    const buttonRef = useRef<HTMLButtonElement>(null)
+    const buttonRef = useRef<HTMLElement>(null)
     const menuRef = useRef<HTMLDivElement>(null)
 
     // Combine refs
@@ -177,33 +177,44 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
 
     return (
       <div className={`relative min-w-0 ${className}`} ref={internalRef} {...props}>
-        <button
-          type="button"
-          ref={buttonRef}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleToggle}
-          disabled={disabled}
-          className={`flex min-w-0 cursor-pointer items-center justify-between focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-            (
-              trigger &&
-              (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
-            ) ?
-              "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
-            : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
-          } ${buttonClassName} `}>
-          {trigger ?
-            trigger
-          : <>
-              <Tooltip content={displayText} disabled={!shouldShowCustomTooltip(displayText)}>
-                <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
-              </Tooltip>
-              <i
-                className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/65 transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : ""
-                } ${iconClassName}`}></i>
-            </>
-          }
-        </button>
+        {trigger ?
+          <div
+            ref={buttonRef as React.RefObject<HTMLDivElement | null>}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={handleToggle}
+            className={`flex min-w-0 cursor-pointer items-center justify-between focus:outline-none ${
+              (
+                trigger &&
+                (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
+              ) ?
+                "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
+              : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+            } ${buttonClassName} `}>
+            {trigger}
+          </div>
+        : <button
+            type="button"
+            ref={buttonRef as React.RefObject<HTMLButtonElement | null>}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={handleToggle}
+            disabled={disabled}
+            className={`flex min-w-0 cursor-pointer items-center justify-between focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+              (
+                trigger &&
+                (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
+              ) ?
+                "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
+              : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+            } ${buttonClassName} `}>
+            <Tooltip content={displayText} disabled={!shouldShowCustomTooltip(displayText)}>
+              <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
+            </Tooltip>
+            <i
+              className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/65 transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              } ${iconClassName}`}></i>
+          </button>
+        }
 
         {createPortal(
           <AnimatePresence>
