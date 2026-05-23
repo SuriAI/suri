@@ -222,8 +222,7 @@ async def get_sessions(
                     rule_history=rule_history,
                 )
 
-                for session in day_sessions:
-                    await repo.upsert_session(session)
+                await repo.upsert_sessions(day_sessions)
 
                 computed_sessions.extend(day_sessions)
                 current_date += timedelta(days=1)

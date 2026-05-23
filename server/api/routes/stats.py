@@ -74,8 +74,7 @@ async def get_group_stats(
                 rule_history=rule_history,
             )
 
-            for session_data in session_dicts:
-                await repo.upsert_session(session_data)
+            await repo.upsert_sessions(session_dicts)
 
         # Re-fetch sessions
         sessions = await repo.get_sessions(

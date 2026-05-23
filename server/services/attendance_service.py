@@ -369,8 +369,7 @@ class AttendanceService:
             rule_history=rule_history,
         )
 
-        for session_data in session_dicts:
-            await self.repo.upsert_session(session_data)
+        await self.repo.upsert_sessions(session_dicts)
 
         return session_dicts
 

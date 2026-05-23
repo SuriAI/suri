@@ -1,5 +1,6 @@
 from typing import Optional, List, Any, Dict
 from datetime import datetime, timedelta
+import logging
 from sqlalchemy import select, desc, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 import ulid
@@ -15,6 +16,8 @@ from database.models import (
     Face,
 )
 from time_utils import local_now, to_storage_local
+
+logger = logging.getLogger(__name__)
 
 
 class AttendanceRepository:
@@ -636,6 +639,84 @@ class AttendanceRepository:
         await self.session.commit()
         await self.session.refresh(session_obj)
         return session_obj
+
+    async def upsert_sessions(
+        self, sessions_data: List[Dict[str, Any]]
+    ) -> List[AttendanceSession]:
+        if not sessions_data:
+            return []
+
+        person_ids = {sd["person_id"] for sd in sessions_data}
+        member_query = select(AttendanceMember).where(
+            AttendanceMember.person_id.in_(person_ids)
+        )
+        member_result = await self.session.execute(member_query)
+        members_map = {m.person_id: m for m in member_result.scalars().all()}
+
+        # Reflect database columns dynamically from the ORM model definition
+        session_columns = AttendanceSession.__table__.columns.keys()
+
+        # Pre-resolve model-level scalar default values once
+        model_defaults = {}
+        for col in session_columns:
+            col_obj = AttendanceSession.__table__.columns[col]
+            if col_obj.default is not None:
+                if getattr(col_obj.default, "is_scalar", False):
+                    model_defaults[col] = col_obj.default.arg
+                elif getattr(col_obj.default, "is_callable", False):
+                    try:
+                        model_defaults[col] = col_obj.default.arg(None)
+                    except Exception:
+                        pass
+
+        values_to_insert = []
+        for sd in sessions_data:
+            pid = sd["person_id"]
+            member = members_map.get(pid)
+            if not member:
+                logger.warning(
+                    f"Member with person_id {pid} not found during bulk upsert"
+                )
+                continue
+
+            row = {}
+            for col in session_columns:
+                if col == "member_id":
+                    row[col] = member.id
+                elif col == "organization_id":
+                    row[col] = self.organization_id
+                elif col in sd:
+                    row[col] = sd[col]
+                elif col in model_defaults:
+                    row[col] = model_defaults[col]
+                # If the column is omitted and has no model default, we leave it out of the dictionary
+                # so that SQLite's native nullability or database-level defaults handle it.
+
+            values_to_insert.append(row)
+
+        if not values_to_insert:
+            return []
+
+        from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+        stmt = sqlite_insert(AttendanceSession).values(values_to_insert)
+
+        # Exclude primary keys and conflict target columns from update clause
+        non_update_cols = {"id", "member_id", "date"}
+        update_cols = {col for col in session_columns if col not in non_update_cols}
+
+        # Build dynamic upsert set parameters using reflection attribute getters
+        dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
+
+        upsert_stmt = stmt.on_conflict_do_update(
+            index_elements=["member_id", "date"],
+            set_=dynamic_set,
+        )
+
+        await self.session.execute(upsert_stmt)
+        await self.session.commit()
+
+        return []
 
     async def get_session(
         self, person_id: str, date: str
