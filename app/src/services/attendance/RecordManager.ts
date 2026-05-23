@@ -119,6 +119,16 @@ export class RecordManager {
       const timeDiff = Math.abs(endDate.getTime() - startDate.getTime())
       const totalDaysInRange = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1
 
+      const sessionsByPerson = new Map<string, AttendanceSession[]>()
+      for (const s of sessions) {
+        let list = sessionsByPerson.get(s.person_id)
+        if (!list) {
+          list = []
+          sessionsByPerson.set(s.person_id, list)
+        }
+        list.push(s)
+      }
+
       const memberReports = members.map((member: AttendanceMember) => {
         let memberJoinedAt: Date
         if (member.joined_at instanceof Date) {
@@ -136,8 +146,8 @@ export class RecordManager {
         const memberTimeDiff = Math.abs(endDate.getTime() - effectiveStartDate.getTime())
         const totalDaysMemberWasInGroup = Math.ceil(memberTimeDiff / (1000 * 60 * 60 * 24)) + 1
 
-        const memberSessions = sessions.filter((s: AttendanceSession) => {
-          if (s.person_id !== member.person_id) return false
+        const personSessions = sessionsByPerson.get(member.person_id) || []
+        const memberSessions = personSessions.filter((s: AttendanceSession) => {
           const sessionDate = parseLocalDate(s.date)
           sessionDate.setHours(0, 0, 0, 0)
           const joinedDate = new Date(memberJoinedAt)

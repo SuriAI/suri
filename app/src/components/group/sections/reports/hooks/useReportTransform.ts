@@ -136,6 +136,24 @@ export function useReportTransform(
 
       if (search) {
         const q = search.toLowerCase()
+
+        // High-performance shortcut: Check if the search query matches name, status, notes, or raw date string first.
+        // Since 99% of searches are for names or basic statuses, this saves massive CPU cycles by avoiding V8 i18n engines.
+        const nameLower = r.name.toLowerCase()
+        const statusLower = r.status.toLowerCase()
+        const notesLower = r.notes.toLowerCase()
+        const dateRawLower = r.date.toLowerCase()
+
+        const hasBasicMatch =
+          nameLower.includes(q) ||
+          statusLower.includes(q) ||
+          notesLower.includes(q) ||
+          dateRawLower.includes(q)
+
+        if (hasBasicMatch) {
+          return true
+        }
+
         const formattedDate = new Date(r.date).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",

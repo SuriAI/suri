@@ -104,6 +104,7 @@ def main():
             port=server_config["port"],
             reload=server_config["reload"],
             log_level=server_config["log_level"],
+            log_config=config["logging"],
             workers=server_config["workers"],
             access_log=True,
         )
