@@ -16,14 +16,7 @@
         <div class="logo-wrapper">
           <div class="logo-glow"></div>
 
-          <img
-            class="logo"
-            src="./logo-transparent.png"
-            onerror="
-              this.onerror = null
-              this.src = '../../public/icons/logo-transparent.png'
-            "
-            alt="Facenox" />
+          <img class="logo" id="logo" src="./logo-transparent.png" alt="Facenox" />
         </div>
 
         <div class="brand-block">
@@ -36,6 +29,17 @@
     </div>
 
     <script>
+      const logo = document.getElementById("logo")
+      if (logo) {
+        logo.addEventListener(
+          "error",
+          () => {
+            logo.src = "../../public/icons/logo-transparent.png"
+          },
+          { once: true },
+        )
+      }
+
       const progressFill = document.getElementById("progress-fill")
       const progressTrack = document.querySelector(".progress-track")
       let currentProgress = 0

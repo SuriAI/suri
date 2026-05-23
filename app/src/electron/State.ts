@@ -23,4 +23,5 @@ export const state = {
   pendingDeferredSplashProgress: null as number | null,
   pendingRevealAfterSplashRender: false,
   splashRevealTimeout: null as NodeJS.Timeout | null,
+  splashRevealSafetyTimeout: null as NodeJS.Timeout | null,
 }
