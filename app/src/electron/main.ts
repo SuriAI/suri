@@ -86,47 +86,62 @@ app.whenReady().then(async () => {
 
   WindowManager.createSplashWindow()
 
-  const backendPromise = (async () => {
-    try {
-      await backendService.start()
+  // Warm background services sequentially to prevent CPU/IO thrashing.
+  let backendReady = false
+  try {
+    await backendService.start()
 
-      const maxWaitTime = 120000
-      const startTime = Date.now()
+    const maxWaitTime = 120000
+    const startTime = Date.now()
 
-      while (Date.now() - startTime < maxWaitTime) {
-        const readiness = await backendService.checkReadiness()
-        if (readiness.ready) return true
-        await new Promise((r) => setTimeout(r, 250))
+    while (Date.now() - startTime < maxWaitTime) {
+      const readiness = await backendService.checkReadiness()
+      if (readiness.ready) {
+        backendReady = true
+        break
       }
-
-      throw new Error("Backend synchronization timed out.")
-    } catch (e) {
-      console.error("[Main] Backend fail:", e)
-      const { dialog } = await import("electron")
-      await dialog.showMessageBox({
-        type: "error",
-        title: "FACENOX Startup Error",
-        message: "Failed to start background services.",
-        detail:
-          e instanceof Error ? e.message : "An unknown error occurred during backend startup.",
-        buttons: ["Retry", "Quit"],
-      })
-      return false
+      await new Promise((r) => setTimeout(r, 250))
     }
-  })()
 
-  const windowPromise = new Promise<void>((resolve) => {
-    WindowManager.createWindow()
+    if (!backendReady) {
+      throw new Error("Backend readiness synchronization timed out.")
+    }
+  } catch (e) {
+    console.error("[Main] Backend initialization failed:", e)
+
+    // Destroy splash to reveal the blocking system modal dialog.
+    WindowManager.destroySplash()
+
+    const { dialog } = await import("electron")
+    const { response } = await dialog.showMessageBox({
+      type: "error",
+      title: "FACENOX Startup Error",
+      message: "Failed to start background services.",
+      detail: e instanceof Error ? e.message : "An unknown error occurred during backend startup.",
+      buttons: ["Retry", "Quit"],
+    })
+
+    if (response === 0) {
+      app.relaunch()
+      app.exit(0)
+    } else {
+      app.quit()
+    }
+    return
+  }
+
+  // Advance splash state to stage 7 (backend hot) and spawn background syncing.
+  WindowManager.updateSplashProgress(WindowManager.progressFromStep(7))
+  WindowManager.unlockSplashDataPhase()
+  syncManager.start()
+
+  // Instantiate Chromium window only after CPU-bound backend boot sequence ends.
+  WindowManager.createWindow()
+
+  // Wait for compositor ready before unlocking transition handshakes.
+  await new Promise<void>((resolve) => {
     state.mainWindow?.once("ready-to-show", () => resolve())
   })
-
-  const [backendReady] = await Promise.all([backendPromise, windowPromise])
-
-  if (backendReady) {
-    WindowManager.updateSplashProgress(WindowManager.progressFromStep(7))
-    WindowManager.unlockSplashDataPhase()
-    syncManager.start()
-  }
 
   TrayManager.createTray()
 

@@ -31,7 +31,10 @@ export default defineConfig({
     build: {
       externalizeDeps: true,
       lib: {
-        entry: "src/electron/preload.ts",
+        entry: {
+          preload: resolve(__dirname, "src/electron/preload.ts"),
+          "preload-splash": resolve(__dirname, "src/electron/preload-splash.ts"),
+        },
       },
     },
   },

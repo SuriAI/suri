@@ -32,6 +32,7 @@ export class WindowManager {
     state.pendingDeferredSplashProgress = null
     state.pendingRevealAfterSplashRender = false
     state.splashRevealTimeout = null
+    state.splashRevealSafetyTimeout = null
 
     const splash = new BrowserWindow({
       width: 300,
@@ -48,7 +49,7 @@ export class WindowManager {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(window_dirname, "../preload/preload.js"),
+        preload: path.join(window_dirname, "../preload/preload-splash.js"),
       },
     })
 
@@ -81,6 +82,10 @@ export class WindowManager {
     if (state.splashRevealTimeout) {
       clearTimeout(state.splashRevealTimeout)
       state.splashRevealTimeout = null
+    }
+    if (state.splashRevealSafetyTimeout) {
+      clearTimeout(state.splashRevealSafetyTimeout)
+      state.splashRevealSafetyTimeout = null
     }
     state.pendingSplashProgress = []
     state.isSplashReady = false
@@ -159,8 +164,19 @@ export class WindowManager {
   }
 
   private static finalizeSplashReveal(): void {
-    WindowManager.destroySplash()
+    if (state.splashRevealSafetyTimeout) {
+      clearTimeout(state.splashRevealSafetyTimeout)
+      state.splashRevealSafetyTimeout = null
+    }
+    if (state.splashRevealTimeout) {
+      clearTimeout(state.splashRevealTimeout)
+      state.splashRevealTimeout = null
+    }
     WindowManager.showMainWindow()
+    // Overlap windows to prevent the OS compositor from showing desktop wallpaper.
+    setTimeout(() => {
+      WindowManager.destroySplash()
+    }, 100)
   }
 
   private static scheduleSplashRevealAfterCompletion(): void {
@@ -185,6 +201,13 @@ export class WindowManager {
     }
 
     state.isRevealingMainWindow = true
+
+    // Fallback guard to prevent persistent UI hang if renderer crashes.
+    state.splashRevealSafetyTimeout = setTimeout(() => {
+      console.warn("[WindowManager] Splash reveal handshake timed out. Forcing show.")
+      WindowManager.finalizeSplashReveal()
+    }, 2000)
+
     if (
       state.splashWindow &&
       !state.splashWindow.isDestroyed() &&

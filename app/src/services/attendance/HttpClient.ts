@@ -3,7 +3,6 @@ import { withLocalBackendHeaders } from "../localBackendScope"
 
 export class HttpClient {
   private baseUrl: string
-  private readinessPromise: Promise<void> | null = null
   /** Cached per-session API token. `null` = not fetched yet, `""` = unavailable. */
   private token: string | null = null
 
@@ -28,40 +27,12 @@ export class HttpClient {
   }
 
   /**
-   * Gatekeeper: Blocks until backend is confirmed ready via IPC.
-   * Prevents "Connection Refused" errors by enfacenoxng we never call fetch() too early.
+   * Gatekeeper: No-op.
+   * The sequential Electron boot flow guarantees that the background C++ / ONNX
+   * services are fully warmed and active before this Chromium renderer window is loaded.
    */
   private async ensureBackendReady(): Promise<void> {
-    if (this.readinessPromise) {
-      return this.readinessPromise
-    }
-
-    this.readinessPromise = (async () => {
-      const maxWaitTime = 300000 // 5 minutes safety
-      const checkInterval = 250
-      const startTime = Date.now()
-
-      if (!window.electronAPI?.backend_ready) {
-        console.warn("[HttpClient] Electron API not found, skipping strict readiness check.")
-        return
-      }
-
-      while (Date.now() - startTime < maxWaitTime) {
-        try {
-          const ready = await window.electronAPI.backend_ready.isReady()
-          if (ready) {
-            return
-          }
-        } catch {
-          // Ignore IPC errors
-        }
-        await new Promise((resolve) => setTimeout(resolve, checkInterval))
-      }
-
-      console.error("[HttpClient] Backend readiness check timed out.")
-    })()
-
-    return this.readinessPromise
+    return
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
