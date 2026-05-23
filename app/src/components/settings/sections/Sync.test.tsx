@@ -40,7 +40,7 @@ describe("Sync", () => {
     electronAPI.sync.getConfig.mockResolvedValueOnce(
       createSyncConfig({
         connected: true,
-        organizationName: "Acme Org",
+        organizationName: "Facenox Org",
         siteName: "Main Campus",
         deviceId: "device-1",
       }),
@@ -52,7 +52,7 @@ describe("Sync", () => {
     await waitFor(() => {
       expect(screen.getByText("Online")).toBeInTheDocument()
       expect(
-        screen.getByText(/Linked to Acme Org • Site Location: Main Campus/i),
+        screen.getByText(/Linked to Facenox Org • Site Location: Main Campus/i),
       ).toBeInTheDocument()
     })
   })
@@ -72,7 +72,7 @@ describe("Sync", () => {
       initialSyncSucceeded: true,
       config: createSyncConfig({
         connected: true,
-        organizationName: "Acme Org",
+        organizationName: "Facenox Org",
         siteName: "Main Campus",
       }),
     })
@@ -150,7 +150,7 @@ describe("Sync", () => {
     electronAPI.sync.getConfig.mockResolvedValue(
       createSyncConfig({
         connected: true,
-        organizationName: "Acme Org",
+        organizationName: "Facenox Org",
         siteName: "Main Campus",
       }),
     )
@@ -180,7 +180,7 @@ describe("Sync", () => {
     electronAPI.sync.getConfig.mockResolvedValue(
       createSyncConfig({
         connected: true,
-        organizationName: "Acme Org",
+        organizationName: "Facenox Org",
         siteName: "Main Campus",
       }),
     )

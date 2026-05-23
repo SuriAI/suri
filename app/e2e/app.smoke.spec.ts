@@ -261,7 +261,7 @@ async function installRuntimeMocks(page: Page, { hasSeenIntro }: { hasSeenIntro:
                 enabled: true,
                 cloudBaseUrl: "https://cloud.facenox.test",
                 organizationId: "org-1",
-                organizationName: "Acme Org",
+                organizationName: "Facenox Org",
                 siteId: "site-1",
                 siteName: "Main Campus",
                 deviceId: "device-1",
