@@ -58,6 +58,9 @@ async def lifespan(app: FastAPI):
                 model_img_size=LIVENESS_DETECTOR_CONFIG["model_img_size"],
                 confidence_threshold=LIVENESS_DETECTOR_CONFIG["confidence_threshold"],
                 bbox_inc=LIVENESS_DETECTOR_CONFIG["bbox_inc"],
+                required_real_frames=LIVENESS_DETECTOR_CONFIG.get(
+                    "required_real_frames", 3
+                ),
             )
 
         def _load_face_recognizer():
