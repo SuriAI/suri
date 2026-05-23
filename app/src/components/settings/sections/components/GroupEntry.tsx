@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react"
 import type {
   GroupWithMembers,
   EditingMember,
@@ -53,6 +54,33 @@ export function GroupEntry({
   const memberCount = group.members.length
   const registeredCount = group.members.filter((m) => m.has_face_data).length
 
+  const [scrollTop, setScrollTop] = useState(0)
+  const [prevExpanded, setPrevExpanded] = useState(isExpanded)
+
+  if (isExpanded !== prevExpanded) {
+    setPrevExpanded(isExpanded)
+    if (!isExpanded) {
+      setScrollTop(0)
+    }
+  }
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
+
+  const ITEM_HEIGHT = 58
+
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5)
+  const endIndex = Math.min(
+    group.members.length - 1,
+    Math.floor((scrollTop + 500) / ITEM_HEIGHT) + 5,
+  )
+
+  const visibleMembers = group.members.slice(startIndex, endIndex + 1)
+
+  const paddingTop = startIndex * ITEM_HEIGHT
+  const paddingBottom = Math.max(0, (group.members.length - 1 - endIndex) * ITEM_HEIGHT)
+
   const handleGroupKeyDown = (e: React.KeyboardEvent, field: GroupField) => {
     if (e.key === "Enter") {
       onSaveGroupEdit(group.id, field, editValue)
@@ -107,9 +135,12 @@ export function GroupEntry({
             {memberCount} {memberCount === 1 ? "member" : "members"}
           </span>
           {registeredCount > 0 && (
-            <span className="rounded-md border border-cyan-500/10 bg-cyan-500/[0.06] px-1.5 py-0.5 text-[10px] font-semibold text-cyan-400/90">
-              {registeredCount} Registered
-            </span>
+            <>
+              <span className="text-[11px] font-medium text-white/20">•</span>
+              <span className="text-[11px] font-medium text-cyan-400/80">
+                {registeredCount} Registered
+              </span>
+            </>
           )}
 
           <button
@@ -146,22 +177,30 @@ export function GroupEntry({
             <div className="px-4 py-8 text-center text-[12px] text-white/55">
               No members in this group
             </div>
-          : <div className="custom-scroll max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">
-              {group.members.map((member) => (
-                <MemberEntry
-                  key={member.person_id}
-                  member={member}
-                  editingMember={editingMember}
-                  editValue={editValue}
-                  savingMember={savingMember}
-                  deletingMember={deletingMember}
-                  onStartEditing={onStartEditingMember}
-                  onEditValueChange={onEditValueChange}
-                  onSaveEdit={onSaveMemberEdit}
-                  onCancelEditing={onCancelEditing}
-                  onDeleteMember={onDeleteMember}
-                />
-              ))}
+          : <div
+              onScroll={handleScroll}
+              className="custom-scroll max-h-[60vh] divide-y divide-white/5 overflow-y-auto pr-1">
+              <div
+                style={{
+                  paddingTop: `${paddingTop}px`,
+                  paddingBottom: `${paddingBottom}px`,
+                }}>
+                {visibleMembers.map((member) => (
+                  <MemberEntry
+                    key={member.person_id}
+                    member={member}
+                    editingMember={editingMember}
+                    editValue={editValue}
+                    savingMember={savingMember}
+                    deletingMember={deletingMember}
+                    onStartEditing={onStartEditingMember}
+                    onEditValueChange={onEditValueChange}
+                    onSaveEdit={onSaveMemberEdit}
+                    onCancelEditing={onCancelEditing}
+                    onDeleteMember={onDeleteMember}
+                  />
+                ))}
+              </div>
             </div>
           }
         </div>

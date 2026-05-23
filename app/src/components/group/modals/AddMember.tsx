@@ -43,6 +43,10 @@ export function AddMember({
     failed: number
     errors: string[]
   } | null>(null)
+  const [bulkProgress, setBulkProgress] = useState<{
+    current: number
+    total: number
+  } | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [confirmDuplicate, setConfirmDuplicate] = useState(false)
@@ -67,6 +71,7 @@ export function AddMember({
     setNewMemberRole("")
     setBulkMembersText("")
     setBulkResults(null)
+    setBulkProgress(null)
     setIsBulkMode(false)
     setConfirmDuplicate(false)
     setError(null)
@@ -168,9 +173,17 @@ export function AddMember({
     try {
       await waitForNextPaint()
       const lines = bulkMembersText.split("\n").filter((line: string) => line.trim())
-      let success = 0
-      let failed = 0
+      const total = lines.length
+      setBulkProgress({ current: 0, total })
+
+      const membersToCreate: Array<{
+        name: string
+        role?: string
+        email?: string
+        hasConsent?: boolean
+      }> = []
       const errors: string[] = []
+      let failedPrecheck = 0
 
       for (const line of lines) {
         const parts = line.split(",").map((p: string) => p.trim())
@@ -178,23 +191,32 @@ export function AddMember({
         const role = parts[1] || ""
 
         if (!name) {
-          failed++
+          failedPrecheck++
           errors.push(`Empty name in line: "${line}"`)
           continue
         }
 
-        try {
-          await attendanceManager.addMember(group.id, name, {
-            role: role || undefined,
-            hasConsent: true,
+        membersToCreate.push({
+          name,
+          role: role || undefined,
+          hasConsent: true,
+        })
+      }
+
+      let success = 0
+      let failed = failedPrecheck
+
+      if (membersToCreate.length > 0) {
+        setBulkProgress({ current: 0, total: membersToCreate.length })
+        const res = await attendanceManager.addMembersBulk(membersToCreate, group.id)
+        success = res.success_count
+        failed += res.error_count
+        if (res.errors && res.errors.length > 0) {
+          res.errors.forEach((err) => {
+            errors.push(`Failed: ${err.error}`)
           })
-          success++
-        } catch (err) {
-          failed++
-          errors.push(
-            `Failed to add "${name}": ${err instanceof Error ? err.message : "Unknown error"}`,
-          )
         }
+        setBulkProgress({ current: membersToCreate.length, total: membersToCreate.length })
       }
 
       setBulkResults({ success, failed, errors })
@@ -231,7 +253,7 @@ export function AddMember({
         </div>
       }
       maxWidth="lg">
-      <div className="-m-5 mt-2 max-h-[90vh] overflow-x-hidden overflow-y-auto p-5">
+      <div className="custom-scroll -m-5 mt-2 max-h-[90vh] overflow-x-hidden overflow-y-auto p-5">
         {/* Mode selector Tabs */}
         <div className="mb-6 flex gap-6 border-b border-white/5">
           <button
@@ -367,7 +389,7 @@ export function AddMember({
                   <textarea
                     value={bulkMembersText}
                     onChange={(event) => setBulkMembersText(event.target.value)}
-                    className="min-h-[132px] w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-3 font-mono text-sm transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+                    className="custom-scroll min-h-[132px] w-full resize-none rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-3 font-mono text-sm transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
                     placeholder="Enter one member per line"
                   />
                   <div className="mt-2 flex items-center justify-between">
@@ -423,27 +445,33 @@ export function AddMember({
 
                 {/* Bulk Results */}
                 {bulkResults && (
-                  <div
-                    className={`rounded-lg border p-3 ${
-                      bulkResults.failed === 0 ?
-                        "border-cyan-500/40 bg-cyan-500/10"
-                      : "border-yellow-500/40 bg-yellow-500/10"
-                    }`}>
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-semibold">
-                        {bulkResults.failed === 0 ? "✓ Success!" : "⚠ Partial Success"}
-                      </span>
-                      <span className="text-xs">
-                        {bulkResults.success} added, {bulkResults.failed} failed
+                  <div className="py-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {bulkResults.failed === 0 ?
+                          <>
+                            <i className="fa-solid fa-circle-check text-[13px] text-cyan-400" />
+                            <span className="text-[13px] font-semibold text-cyan-400">
+                              Import complete
+                            </span>
+                          </>
+                        : <>
+                            <i className="fa-solid fa-triangle-exclamation text-[13px] text-amber-400" />
+                            <span className="text-[13px] font-semibold text-amber-400">
+                              Import complete with warnings
+                            </span>
+                          </>
+                        }
+                      </div>
+                      <span className="text-[11px] font-medium text-white/55">
+                        {bulkResults.success} added • {bulkResults.failed} failed
                       </span>
                     </div>
                     {bulkResults.errors.length > 0 && (
-                      <div className="mt-2 max-h-32 space-y-1 overflow-y-auto">
+                      <div className="custom-scroll mt-3 max-h-32 space-y-1.5 overflow-y-auto pl-5">
                         {bulkResults.errors.map((err: string, idx: number) => (
-                          <div
-                            key={idx}
-                            className="rounded bg-red-500/10 px-2 py-1 text-xs text-red-200">
-                            {err}
+                          <div key={idx} className="text-[11px] leading-relaxed text-red-400/90">
+                            • {err}
                           </div>
                         ))}
                       </div>
@@ -480,7 +508,9 @@ export function AddMember({
               : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
             }`}>
             {loading || isProcessingBulk ?
-              "Processing..."
+              bulkProgress ?
+                `Processing (${bulkProgress.current}/${bulkProgress.total})`
+              : "Processing..."
             : confirmDuplicate && !isBulkMode ?
               "Add Anyway"
             : isBulkMode ?

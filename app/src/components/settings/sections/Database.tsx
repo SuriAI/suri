@@ -187,8 +187,7 @@ export function Database({
       "Verifies your system clock is correct to prevent attendance tampering."
     : timeHealthStatus === "drift_detected" ?
       "Device clock is out of sync. Adjust your date and time settings to prevent logging errors."
-    : timeHealthStatus === "offline" ?
-      "Cannot verify time online. Operating in local offline fallback mode."
+    : timeHealthStatus === "offline" ? "Cannot verify time online."
     : "Could not read the current time authority status."
 
   return (
@@ -225,7 +224,7 @@ export function Database({
               : timeHealthStatus === "drift_detected" ?
                 <span className="text-[12px] text-amber-400/80">Drift warning</span>
               : timeHealthStatus === "offline" ?
-                <span className="text-[12px] text-white/40">Offline fallback</span>
+                <span className="text-[12px] text-white/40">Cannot verify</span>
               : <span className="text-[12px] text-white/40">Status unavailable</span>}
             </div>
             <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">{timeHealthDetails}</p>

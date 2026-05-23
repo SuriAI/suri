@@ -31,6 +31,11 @@ export const ManualEntryModal = ({
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [faceDataMap, setFaceDataMap] = useState<Map<string, boolean>>(new Map())
+  const [scrollTop, setScrollTop] = useState(0)
+
+  useEffect(() => {
+    setScrollTop(0)
+  }, [searchQuery])
 
   useEffect(() => {
     if (!currentGroup?.id) return
@@ -54,6 +59,23 @@ export const ManualEntryModal = ({
     return sortedAllMembers.filter((m) => faceDataMap.size > 0 && !faceDataMap.get(m.person_id))
       .length
   }, [sortedAllMembers, faceDataMap])
+
+  const ITEM_HEIGHT = 38
+
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5)
+  const endIndex = Math.min(
+    sortedAllMembers.length - 1,
+    Math.floor((scrollTop + 208) / ITEM_HEIGHT) + 5,
+  )
+
+  const visibleMembers = sortedAllMembers.slice(startIndex, endIndex + 1)
+
+  const paddingTop = startIndex * ITEM_HEIGHT
+  const paddingBottom = Math.max(0, (sortedAllMembers.length - 1 - endIndex) * ITEM_HEIGHT)
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }
 
   const handleClose = () => {
     setSearchQuery("")
@@ -185,9 +207,16 @@ export const ManualEntryModal = ({
         )}
 
         {sortedAllMembers.length > 0 ?
-          <div className="custom-scroll max-h-52 overflow-x-hidden overflow-y-auto pr-1">
-            <div className="flex w-full flex-col gap-1">
-              {sortedAllMembers.map((member) => {
+          <div
+            onScroll={handleScroll}
+            className="custom-scroll max-h-52 overflow-x-hidden overflow-y-auto pr-1">
+            <div
+              className="flex w-full flex-col gap-1"
+              style={{
+                paddingTop: `${paddingTop}px`,
+                paddingBottom: `${paddingBottom}px`,
+              }}>
+              {visibleMembers.map((member) => {
                 const isPresent = presentPersonIds.has(member.person_id)
                 const isEntrySubmitting = submittingId === member.person_id
                 const hasFace =

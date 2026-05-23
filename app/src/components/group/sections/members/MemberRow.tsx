@@ -1,4 +1,4 @@
-import { motion } from "framer-motion"
+import React from "react"
 import { Tooltip } from "@/components/shared"
 import type { AttendanceMember } from "@/types/recognition"
 import { RegistrationAction } from "./RegistrationAction"
@@ -13,126 +13,128 @@ interface MemberRowProps {
   onResetFace: (member: AttendanceMember) => void
 }
 
-export function MemberRow({
-  member,
-  isSelected,
-  isSelectionMode,
-  onToggleSelect,
-  onEdit,
-  onDelete,
-  onResetFace,
-}: MemberRowProps) {
-  const isRegistered = !!member.has_face_data
+export const MemberRow = React.memo(
+  function MemberRow({
+    member,
+    isSelected,
+    isSelectionMode,
+    onToggleSelect,
+    onEdit,
+    onDelete,
+    onResetFace,
+  }: MemberRowProps) {
+    const isRegistered = !!member.has_face_data
 
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{
-        opacity: { duration: 0.15 },
-        y: { type: "spring", stiffness: 380, damping: 30 },
-        layout: { type: "spring", stiffness: 380, damping: 30 },
-      }}
-      onClick={() => onToggleSelect?.(member.person_id)}
-      className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all duration-200 ${
-        onToggleSelect ? "cursor-pointer" : ""
-      } ${
-        isSelected ?
-          "border-cyan-500/20 bg-cyan-500/10 hover:border-cyan-500/35 hover:bg-cyan-500/[0.16]"
-        : "border-white/[0.03] hover:bg-white/[0.02]"
-      }`}>
-      <div className="flex min-w-0 flex-1 items-center">
-        {onToggleSelect && (
-          <div
-            className={`flex shrink-0 items-center justify-center overflow-hidden transition-all duration-300 ${
-              isSelected ? "w-8 pr-3 pl-1 opacity-100" : "w-0 px-0 opacity-0"
-            }`}>
+    return (
+      <div
+        onClick={() => onToggleSelect?.(member.person_id)}
+        className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all duration-200 ${
+          onToggleSelect ? "cursor-pointer" : ""
+        } ${
+          isSelected ?
+            "border-cyan-500/20 bg-cyan-500/10 hover:border-cyan-500/35 hover:bg-cyan-500/[0.16]"
+          : "border-white/[0.03] hover:bg-white/[0.02]"
+        }`}>
+        <div className="flex min-w-0 flex-1 items-center">
+          {onToggleSelect && (
             <div
-              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                isSelected ? "border-cyan-500 bg-cyan-500 text-black" : "border-white/20 bg-white/5"
+              className={`flex shrink-0 items-center justify-center overflow-hidden transition-all duration-300 ${
+                isSelected ? "w-8 pr-3 pl-1 opacity-100" : "w-0 px-0 opacity-0"
               }`}>
-              {isSelected && <i className="fa-solid fa-check text-[10px]"></i>}
+              <div
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                  isSelected ?
+                    "border-cyan-500 bg-cyan-500 text-black"
+                  : "border-white/20 bg-white/5"
+                }`}>
+                {isSelected && <i className="fa-solid fa-check text-[10px]"></i>}
+              </div>
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div
+              className={`mb-0.5 flex min-w-0 items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
+                isRegistered ? "text-cyan-400" : "text-white"
+              }`}>
+              {isRegistered ?
+                <Tooltip content="Registered" position="top">
+                  <span className="block truncate">{member.displayName}</span>
+                </Tooltip>
+              : <span className="block truncate">{member.displayName}</span>}
+              {!member.has_consent && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black tracking-widest text-amber-500/80 uppercase">
+                  No Consent
+                </span>
+              )}
+            </div>
+
+            <div className="flex min-w-0 items-center gap-2 text-[11px] font-medium text-white/55">
+              <span className="truncate">{member.role || "Member"}</span>
+              {member.email && (
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-white/10" />
+                  <span className="truncate">{member.email}</span>
+                </div>
+              )}
             </div>
           </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <div
-            className={`mb-0.5 flex min-w-0 items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
-              isRegistered ? "text-cyan-400" : "text-white"
-            }`}>
-            {isRegistered ?
-              <Tooltip content="Registered" position="top">
-                <span className="block truncate">{member.displayName}</span>
-              </Tooltip>
-            : <span className="block truncate">{member.displayName}</span>}
-            {!member.has_consent && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[8px] font-black tracking-widest text-amber-500/80 uppercase">
-                No Consent
-              </span>
-            )}
-          </div>
-
-          <div className="flex min-w-0 items-center gap-2 text-[11px] font-medium text-white/55">
-            <span className="truncate">{member.role || "Member"}</span>
-            {member.email && (
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-white/10" />
-                <span className="truncate">{member.email}</span>
-              </div>
-            )}
-          </div>
         </div>
-      </div>
 
-      <div className="flex shrink-0 items-center gap-3">
-        {!isSelectionMode && (
-          <>
-            {/* Row Actions (Ultra-Subtle) */}
-            <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              <Tooltip content="Edit details">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onEdit(member)
-                  }}
-                  className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-white">
-                  <i className="fa-solid fa-pen text-[12px]"></i>
-                </button>
-              </Tooltip>
-
-              {isRegistered && (
-                <Tooltip content="Clear face data">
+        <div className="flex shrink-0 items-center gap-3">
+          {!isSelectionMode && (
+            <>
+              {/* Row Actions (Ultra-Subtle) */}
+              <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                <Tooltip content="Edit details">
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      onResetFace(member)
+                      onEdit(member)
                     }}
-                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-amber-500">
-                    <i className="fa-solid fa-user-slash text-[12px]"></i>
+                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-white">
+                    <i className="fa-solid fa-pen text-[12px]"></i>
                   </button>
                 </Tooltip>
-              )}
 
-              <Tooltip content="Remove member">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDelete(member)
-                  }}
-                  className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
-                  <i className="fa-solid fa-trash-can text-[12px]"></i>
-                </button>
-              </Tooltip>
-            </div>
+                {isRegistered && (
+                  <Tooltip content="Clear face data">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onResetFace(member)
+                      }}
+                      className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-amber-500">
+                      <i className="fa-solid fa-user-slash text-[12px]"></i>
+                    </button>
+                  </Tooltip>
+                )}
 
-            <div onClick={(e) => e.stopPropagation()}>
-              <RegistrationAction memberId={member.person_id} isRegistered={isRegistered} />
-            </div>
-          </>
-        )}
+                <Tooltip content="Remove member">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete(member)
+                    }}
+                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
+                    <i className="fa-solid fa-trash-can text-[12px]"></i>
+                  </button>
+                </Tooltip>
+              </div>
+
+              <div onClick={(e) => e.stopPropagation()}>
+                <RegistrationAction memberId={member.person_id} isRegistered={isRegistered} />
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </motion.div>
-  )
-}
+    )
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.member === nextProps.member &&
+      prevProps.isSelected === nextProps.isSelected &&
+      prevProps.isSelectionMode === nextProps.isSelectionMode
+    )
+  },
+)
