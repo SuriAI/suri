@@ -6,11 +6,19 @@ import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { FormInput, Modal } from "@/components/common"
 import { useGroupUIStore } from "@/components/group/stores"
 
+/**
+ * Properties for the AddMember component.
+ */
 interface AddMemberProps {
+  /** Indicates whether the add member modal is open */
   isOpen: boolean
+  /** The attendance group to add the member to */
   group: AttendanceGroup
+  /** Array of existing group members to prevent duplicate registrations */
   existingMembers?: AttendanceMember[]
+  /** Callback function when the modal is closed */
   onClose: () => void
+  /** Callback function when a member is successfully added */
   onSuccess: () => void
 }
 
@@ -19,6 +27,11 @@ const waitForNextPaint = () =>
     requestAnimationFrame(() => resolve())
   })
 
+/**
+ * A modal dialog that allows registration of a single new member
+ * or multiple new members in bulk via a comma-separated list or file import.
+ * Includes biometric consent verification and duplicate warnings.
+ */
 export function AddMember({
   isOpen,
   group,
@@ -65,8 +78,21 @@ export function AddMember({
   const nameInputRef = useRef<HTMLInputElement>(null)
   const singleSubmitInFlightRef = useRef(false)
   const bulkSubmitInFlightRef = useRef(false)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const resetForm = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
     setNewMemberName("")
     setNewMemberRole("")
     setBulkMembersText("")
@@ -100,6 +126,7 @@ export function AddMember({
     try {
       const text = await file.text()
       setBulkMembersText(text)
+      setBulkResults(null)
     } catch {
       setError("Failed to read file. Please ensure it's a valid text or CSV file.")
     }
@@ -110,6 +137,10 @@ export function AddMember({
     const normalizedName = newMemberName.trim().toLowerCase()
     return existingMembers.some((m) => m.name.toLowerCase() === normalizedName)
   }, [newMemberName, existingMembers])
+
+  const typedCount = useMemo(() => {
+    return bulkMembersText.split("\n").filter((line) => line.trim()).length
+  }, [bulkMembersText])
 
   const modalSubtitle = isBulkMode ? "Add multiple people to" : "Add a person to"
 
@@ -229,14 +260,13 @@ export function AddMember({
         setBulkProgress({ current: totalItems, total: totalItems })
       }
 
-      setBulkResults({ success, failed, errors })
       onSuccess()
 
       if (failed === 0) {
-        setTimeout(() => {
-          resetForm()
-          onClose()
-        }, 2000)
+        resetForm()
+        onClose()
+      } else {
+        setBulkResults({ success, failed, errors })
       }
     } catch (err) {
       console.error("Error bulk adding members:", err)
@@ -265,44 +295,59 @@ export function AddMember({
       maxWidth="lg">
       <div className="custom-scroll -m-5 mt-2 max-h-[90vh] overflow-x-hidden overflow-y-auto p-5">
         {/* Mode selector Tabs */}
-        <div className="mb-6 flex gap-6 border-b border-white/5">
-          <button
-            onClick={() => {
-              setIsBulkMode(false)
-              setBulkMembersText("")
-              setConfirmDuplicate(false)
-            }}
-            className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
-              !isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
-            }`}>
-            Single
-            {!isBulkMode && (
+        <div className="mb-6 flex items-end justify-between border-b border-white/5">
+          <div className="flex gap-6">
+            <button
+              onClick={() => {
+                setIsBulkMode(false)
+                setBulkMembersText("")
+                setConfirmDuplicate(false)
+              }}
+              className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
+                !isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
+              }`}>
+              Single
+              {!isBulkMode && (
+                <motion.div
+                  layoutId="addMemberTabIndicator"
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute bottom-0 left-0 h-[2px] w-full rounded-t-full bg-cyan-400"
+                />
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setIsBulkMode(true)
+                setNewMemberName("")
+                setNewMemberRole("")
+                setConfirmDuplicate(false)
+              }}
+              className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
+                isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
+              }`}>
+              Multiple
+              {isBulkMode && (
+                <motion.div
+                  layoutId="addMemberTabIndicator"
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute bottom-0 left-0 h-[2px] w-full rounded-t-full bg-cyan-400"
+                />
+              )}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {isBulkMode && typedCount > 0 && (
               <motion.div
-                layoutId="addMemberTabIndicator"
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 left-0 h-[2px] w-full rounded-t-full bg-cyan-400"
-              />
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 15 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="pb-3 text-[11px] font-medium text-cyan-400/80">
+                {typedCount} {typedCount === 1 ? "member" : "members"}
+              </motion.div>
             )}
-          </button>
-          <button
-            onClick={() => {
-              setIsBulkMode(true)
-              setNewMemberName("")
-              setNewMemberRole("")
-              setConfirmDuplicate(false)
-            }}
-            className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
-              isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
-            }`}>
-            Multiple
-            {isBulkMode && (
-              <motion.div
-                layoutId="addMemberTabIndicator"
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute bottom-0 left-0 h-[2px] w-full rounded-t-full bg-cyan-400"
-              />
-            )}
-          </button>
+          </AnimatePresence>
         </div>
 
         {error && (
@@ -398,7 +443,12 @@ export function AddMember({
                 <div>
                   <textarea
                     value={bulkMembersText}
-                    onChange={(event) => setBulkMembersText(event.target.value)}
+                    onChange={(event) => {
+                      setBulkMembersText(event.target.value)
+                      if (bulkResults) {
+                        setBulkResults(null)
+                      }
+                    }}
                     className="custom-scroll min-h-[132px] w-full resize-none rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-4 py-3 font-mono text-sm transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
                     placeholder="Enter one member per line"
                   />
@@ -494,40 +544,54 @@ export function AddMember({
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-end gap-3">
-          <button
-            onClick={() => {
-              resetForm()
-              onClose()
-            }}
-            className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
-            Cancel
-          </button>
-          <button
-            onClick={isBulkMode ? () => void handleBulkAddMembers() : handleAddMember}
-            disabled={
-              loading ||
-              isProcessingBulk ||
-              !hasConsent ||
-              (!isBulkMode && !newMemberName.trim()) ||
-              (isBulkMode && !bulkMembersText.trim())
+        {!(isBulkMode && bulkResults && bulkResults.failed === 0) && (
+          <div className="mt-8 flex justify-end gap-3">
+            {isBulkMode && bulkResults ?
+              <button
+                onClick={() => {
+                  resetForm()
+                  onClose()
+                }}
+                className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
+                Close
+              </button>
+            : <>
+                <button
+                  onClick={() => {
+                    resetForm()
+                    onClose()
+                  }}
+                  className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
+                  Cancel
+                </button>
+                <button
+                  onClick={isBulkMode ? () => void handleBulkAddMembers() : handleAddMember}
+                  disabled={
+                    loading ||
+                    isProcessingBulk ||
+                    !hasConsent ||
+                    (!isBulkMode && !newMemberName.trim()) ||
+                    (isBulkMode && !bulkMembersText.trim())
+                  }
+                  className={`min-w-[120px] rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:opacity-30 ${
+                    confirmDuplicate && !isBulkMode ?
+                      "bg-amber-500 text-slate-950 hover:bg-amber-400"
+                    : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                  }`}>
+                  {loading || isProcessingBulk ?
+                    bulkProgress ?
+                      `Processing (${bulkProgress.current}/${bulkProgress.total})`
+                    : "Processing..."
+                  : confirmDuplicate && !isBulkMode ?
+                    "Add Anyway"
+                  : isBulkMode ?
+                    "Add Members"
+                  : "Add Member"}
+                </button>
+              </>
             }
-            className={`min-w-[120px] rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:opacity-30 ${
-              confirmDuplicate && !isBulkMode ?
-                "bg-amber-500 text-slate-950 hover:bg-amber-400"
-              : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
-            }`}>
-            {loading || isProcessingBulk ?
-              bulkProgress ?
-                `Processing (${bulkProgress.current}/${bulkProgress.total})`
-              : "Processing..."
-            : confirmDuplicate && !isBulkMode ?
-              "Add Anyway"
-            : isBulkMode ?
-              "Add Members"
-            : "Add Member"}
-          </button>
-        </div>
+          </div>
+        )}
       </div>
     </Modal>
   )

@@ -13,6 +13,7 @@ import { exportReportToCSV } from "@/components/group/sections/reports/utils/exp
 import { EmptyState } from "@/components/group/shared/EmptyState"
 import { EditSessionModal } from "@/components/group/sections/reports/components/EditSessionModal"
 import { attendanceManager } from "@/services/AttendanceManager"
+import { Spinner } from "@/components/common"
 
 import type { ColumnKey, RowData } from "@/components/group/sections/reports/types"
 
@@ -137,10 +138,7 @@ export function Reports({
               transition={{ duration: 0.2 }}
               className="flex flex-1 items-center justify-center">
               <div className="flex flex-col items-center gap-4">
-                <div className="relative h-12 w-12">
-                  <div className="absolute inset-0 rounded-full border-4 border-cyan-500/10"></div>
-                  <div className="absolute inset-0 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent"></div>
-                </div>
+                <Spinner size="lg" className="mb-1" />
                 <span className="text-sm font-medium text-white/65">Generating Report</span>
               </div>
             </motion.div>
