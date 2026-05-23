@@ -16,6 +16,7 @@ MODEL_CONFIGS = {
         "confidence_threshold": 0.6,
         "bbox_inc": 1.5,
         "model_img_size": 128,
+        "required_real_frames": 3,
     },
     "face_recognizer": {
         "model_path": MODELS_DIR / "recognizer.onnx",

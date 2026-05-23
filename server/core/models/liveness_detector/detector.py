@@ -26,6 +26,7 @@ class LivenessDetector:
         model_img_size: int,
         confidence_threshold: float,
         bbox_inc: float,
+        required_real_frames: int,
     ):
         self.model_img_size = model_img_size
         self.bbox_inc = bbox_inc
@@ -33,7 +34,9 @@ class LivenessDetector:
         self.logit_threshold = probability_to_logit_threshold(confidence_threshold)
 
         self.ort_session, self.input_name = self._init_session_(model_path)
-        self.track_memory = TrackLivenessMemory()
+        self.track_memory = TrackLivenessMemory(
+            required_real_frames=required_real_frames
+        )
 
         self.frame_counter = 0
 
