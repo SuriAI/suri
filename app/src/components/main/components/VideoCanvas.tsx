@@ -66,7 +66,7 @@ export const VideoCanvas = memo(function VideoCanvas({
 
       {isStreaming && lateTrackingEnabled && (
         <div
-          className={`animate-in fade-in zoom-in-95 pointer-events-none absolute right-4 bottom-4 z-50 flex items-center gap-3.5 rounded-lg border bg-[rgba(10,13,18,0.72)] px-3.5 py-1.5 shadow-2xl shadow-black/40 backdrop-blur-md transition-colors duration-500 ${outdated ? "border-amber-500/30" : "border-white/10"}`}>
+          className={`animate-in fade-in zoom-in-95 pointer-events-none absolute right-4 bottom-4 z-50 flex items-center gap-3.5 rounded-lg border bg-[rgba(10,13,18,0.72)] px-3.5 py-1.5 shadow-2xl shadow-black/40 transition-colors duration-500 ${outdated ? "border-amber-500/30" : "border-white/10"}`}>
           <div className="flex flex-col items-start">
             <span className="text-[9px] font-bold tracking-wider text-white/45 uppercase">
               Start Time

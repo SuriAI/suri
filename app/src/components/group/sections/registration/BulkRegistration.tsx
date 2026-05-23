@@ -48,7 +48,7 @@ export function BulkRegistration({
       {/* Duplicate files dialog — floating, minimal */}
       {pendingDuplicates && (
         <>
-          <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 z-40 bg-black/60" />
 
           <div className="absolute top-1/2 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 px-4">
             <div className="rounded-2xl bg-[#111318] px-6 py-5">

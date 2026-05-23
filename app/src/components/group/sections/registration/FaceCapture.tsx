@@ -269,7 +269,7 @@ export function FaceCapture({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.22, ease: "easeOut" }}
-                      className="pointer-events-auto absolute bottom-4 left-1/2 z-20 flex max-w-[85%] -translate-x-1/2 items-center gap-2 rounded-lg border border-red-500/30 bg-red-950/85 px-4 py-2.5 text-center text-[11px] font-medium text-red-200 shadow-xl backdrop-blur-[2px]">
+                      className="pointer-events-auto absolute bottom-4 left-1/2 z-20 flex max-w-[85%] -translate-x-1/2 items-center gap-2 rounded-lg border border-red-500/30 bg-red-950/85 px-4 py-2.5 text-center text-[11px] font-medium text-red-200">
                       <i className="fa-solid fa-circle-exclamation shrink-0 text-sm text-red-400"></i>
                       <span>{globalError}</span>
                     </motion.div>
