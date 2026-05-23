@@ -17,4 +17,4 @@ export {
 } from "@/components/main/utils/recognitionHelpers"
 
 export { getMemberFromCache } from "@/components/main/utils/memberCacheHelpers"
-export { drawOverlays } from "@/components/main/utils/overlayRenderer"
+export { drawOverlays, clearOverlayRendererCache } from "@/components/main/utils/overlayRenderer"
