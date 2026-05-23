@@ -4,6 +4,7 @@ import { useGroupStore } from "@/components/group/stores"
 import { createDisplayNameMap, getLocalDateString } from "@/utils"
 import { StatsCard, EmptyState } from "@/components/group/shared"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
+import { Spinner } from "@/components/common"
 
 interface OverviewProps {
   group: AttendanceGroup
@@ -173,7 +174,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="flex flex-col items-center text-white/40">
-          <i className="fa-solid fa-circle-notch mb-4 animate-spin text-2xl text-cyan-400" />
+          <Spinner size="lg" className="mb-4" />
           <div className="text-xs font-semibold tracking-wider text-white/55 uppercase">
             Loading Overview...
           </div>
@@ -317,7 +318,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="flex items-center justify-center py-12 text-white/20">
-                <i className="fa-solid fa-circle-notch animate-spin text-lg" />
+                <Spinner size="sm" color="muted" />
               </motion.div>
             : <motion.div
                 key={dateFilter}

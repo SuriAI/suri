@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { updaterService } from "@/services"
 import type { UpdateInfo } from "@/types/global"
-import { Modal } from "@/components/common"
+import { Modal, Spinner } from "@/components/common"
 
 interface PrivacyModalProps {
   isOpen: boolean
@@ -168,7 +168,7 @@ const UpdateStatus: React.FC<UpdateStatusProps> = ({
           } disabled:opacity-50`}>
           {isChecking ?
             <div className="flex items-center gap-2">
-              <i className="fa-solid fa-spinner animate-spin text-[10px]" />
+              <Spinner size="xs" color="white" className="opacity-60" />
               <span>Checking...</span>
             </div>
           : "Check for updates"}
@@ -342,7 +342,7 @@ export const About: React.FC = () => {
                 className="group flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-medium text-white/65 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white active:scale-95 disabled:opacity-50">
                 {isExporting ?
                   <>
-                    <i className="fa-solid fa-spinner animate-spin text-[10px]" />
+                    <Spinner size="xs" color="white" className="opacity-60" />
                     <span>Exporting...</span>
                   </>
                 : <span>Export Health Data</span>}
