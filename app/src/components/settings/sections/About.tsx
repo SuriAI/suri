@@ -345,11 +345,7 @@ export const About: React.FC = () => {
                     <i className="fa-solid fa-spinner animate-spin text-[10px]" />
                     <span>Exporting...</span>
                   </>
-                : <>
-                    <i className="fa-solid fa-file-export text-[10px] text-white/55 group-hover:text-white/65" />
-                    <span>Export Health Data</span>
-                  </>
-                }
+                : <span>Export Health Data</span>}
               </button>
             </div>
           </div>
