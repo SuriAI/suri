@@ -89,55 +89,48 @@ async def add_members_bulk(
     bulk_data: BulkMemberCreate,
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Add multiple members in bulk"""
+    """Add multiple members in bulk using a single database transaction"""
     try:
+        # Check if groups exist
+        group_ids = list(set(m.group_id for m in bulk_data.members))
+        for gid in group_ids:
+            group = await repo.get_group(gid)
+            if not group:
+                raise HTTPException(status_code=404, detail=f"Group {gid} not found")
+
+        # Prepare list and insert in a single transaction
+        members_list = [m.model_dump() for m in bulk_data.members]
+        bulk_results = await repo.add_members_bulk(members_list)
+
         success_count = 0
         error_count = 0
         errors = []
 
-        for member_data in bulk_data.members:
-            try:
-                # Check if group exists
-                group = await repo.get_group(member_data.group_id)
-                if not group:
-                    errors.append(
-                        {
-                            "person_id": member_data.person_id,
-                            "error": f"Group {member_data.group_id} not found",
-                        }
-                    )
-                    error_count += 1
-                    continue
-
-                # Add member
-                db_member_data = member_data.model_dump()
-                member = await repo.add_member(db_member_data)
-
-                if member:
-                    success_count += 1
-                    await repo.add_audit_log(
-                        action="MEMBER_CREATED",
-                        target_type="member",
-                        target_id=member.person_id,
-                        details=f"Bulk add: Member '{member.name}' added to group {member.group_id}",
-                    )
-                else:
-                    errors.append(
-                        {
-                            "person_id": member_data.person_id,
-                            "error": "Failed to add member to database",
-                        }
-                    )
-                    error_count += 1
-
-            except Exception as e:
-                errors.append({"person_id": member_data.person_id, "error": str(e)})
+        for res in bulk_results:
+            if res.get("success", False):
+                success_count += 1
+                member = res["member"]
+                await repo.add_audit_log(
+                    action="MEMBER_CREATED",
+                    target_type="member",
+                    target_id=member.person_id,
+                    details=f"Bulk add: Member '{member.name}' added to group {member.group_id}",
+                )
+            else:
                 error_count += 1
+                errors.append(
+                    {
+                        "person_id": res.get("person_id", "unknown"),
+                        "error": res.get("error", "Failed to add member to database"),
+                    }
+                )
 
         return BulkMemberResponse(
             success_count=success_count, error_count=error_count, errors=errors
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in bulk member add: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

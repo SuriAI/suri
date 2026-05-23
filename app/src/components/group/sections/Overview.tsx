@@ -183,11 +183,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 8, scale: 0.995 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex h-full w-full flex-col px-10 pt-8">
+    <section className="flex h-full w-full flex-col px-10 pt-8">
       {/* Activity Overview */}
       <section className="shrink-0">
         <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-2">
@@ -385,6 +381,6 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
           </AnimatePresence>
         </div>
       </section>
-    </motion.section>
+    </section>
   )
 }

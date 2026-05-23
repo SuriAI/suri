@@ -368,7 +368,7 @@ class DatabaseStatsResponse(BaseModel):
 
 # Bulk Operations Models
 class BulkMemberCreate(BaseModel):
-    members: List[AttendanceMemberCreate] = Field(..., min_length=1, max_length=100)
+    members: List[AttendanceMemberCreate] = Field(..., min_length=1, max_length=1000)
 
 
 class BulkMemberResponse(BaseModel):

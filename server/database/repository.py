@@ -297,6 +297,100 @@ class AttendanceRepository:
         await self.session.refresh(member)
         return member
 
+    async def add_members_bulk(
+        self, members_data: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        # Fetch all existing members at once to avoid N+1 select queries
+        person_ids = [m["person_id"] for m in members_data if m.get("person_id")]
+
+        existing_members_map = {}
+        if person_ids:
+            query = select(AttendanceMember).where(
+                AttendanceMember.person_id.in_(person_ids)
+            )
+            query = self._apply_org_scope(query, AttendanceMember)
+            result = await self.session.execute(query)
+            for m in result.scalars().all():
+                existing_members_map[m.person_id] = m
+
+        results = []
+        for m_data in members_data:
+            person_id = m_data.get("person_id")
+            has_consent = m_data.get("has_consent", False)
+
+            if not person_id:
+                person_id = f"p_{ulid.ulid().lower()}"
+                m_data["person_id"] = person_id
+
+            existing_member = existing_members_map.get(person_id)
+            if existing_member:
+                if existing_member.is_deleted or not existing_member.is_active:
+                    existing_member.group_id = m_data["group_id"]
+                    existing_member.name = m_data["name"]
+                    existing_member.role = m_data.get("role")
+                    existing_member.email = m_data.get("email")
+                    existing_member.has_consent = has_consent
+                    existing_member.consent_granted_at = (
+                        to_storage_local(local_now()) if has_consent else None
+                    )
+                    existing_member.consent_granted_by = (
+                        m_data.get("consent_granted_by", "admin")
+                        if has_consent
+                        else None
+                    )
+                    existing_member.is_active = True
+                    existing_member.is_deleted = False
+                    results.append(
+                        {
+                            "member": existing_member,
+                            "person_id": person_id,
+                            "success": True,
+                        }
+                    )
+                else:
+                    results.append(
+                        {
+                            "person_id": person_id,
+                            "success": False,
+                            "error": f"Person ID '{person_id}' already exists.",
+                        }
+                    )
+            else:
+                new_member = AttendanceMember(
+                    id=ulid.ulid(),
+                    person_id=person_id,
+                    group_id=m_data["group_id"],
+                    name=m_data["name"],
+                    role=m_data.get("role"),
+                    email=m_data.get("email"),
+                    joined_at=to_storage_local(local_now()),
+                    has_consent=has_consent,
+                    consent_granted_at=(
+                        to_storage_local(local_now()) if has_consent else None
+                    ),
+                    consent_granted_by=(
+                        m_data.get("consent_granted_by", "admin")
+                        if has_consent
+                        else None
+                    ),
+                    is_active=True,
+                    is_deleted=False,
+                    organization_id=self.organization_id,
+                )
+                self.session.add(new_member)
+                results.append(
+                    {"member": new_member, "person_id": person_id, "success": True}
+                )
+
+        await self.session.commit()
+
+        # Refresh inserted/updated members
+        for r in results:
+            if r["success"]:
+                await self.session.refresh(r["member"])
+
+        return results
+
     async def get_member(self, person_id: str) -> Optional[AttendanceMember]:
         query = select(AttendanceMember).where(
             AttendanceMember.person_id == person_id,

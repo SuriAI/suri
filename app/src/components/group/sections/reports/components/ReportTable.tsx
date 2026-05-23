@@ -1,4 +1,4 @@
-import { Fragment } from "react"
+import { Fragment, useState, useCallback } from "react"
 import type { RowData, ColumnKey } from "@/components/group/sections/reports/types"
 import { parseLocalDate, formatDuration } from "@/utils"
 
@@ -24,6 +24,27 @@ export function ReportTable({
 }: ReportTableProps) {
   const visibleColDefs = allColumns.filter((c) => visibleColumns.includes(c.key))
 
+  const [displayLimit, setDisplayLimit] = useState(100)
+  const [prevGroupedRows, setPrevGroupedRows] = useState(groupedRows)
+
+  if (groupedRows !== prevGroupedRows) {
+    setPrevGroupedRows(groupedRows)
+    setDisplayLimit(100)
+  }
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+      if (scrollHeight - scrollTop - clientHeight < 300) {
+        const totalRows = Object.values(groupedRows).reduce((acc, r) => acc + r.length, 0)
+        if (displayLimit < totalRows) {
+          setDisplayLimit((prev) => Math.min(prev + 100, totalRows))
+        }
+      }
+    },
+    [groupedRows, displayLimit],
+  )
+
   const getColWidthClass = (key: ColumnKey) => {
     switch (key) {
       case "name":
@@ -48,6 +69,7 @@ export function ReportTable({
   // Standardized responsive horizontal scroll container
   return (
     <div
+      onScroll={handleScroll}
       className="custom-scroll hover-scrollbar reports-scroll w-full max-w-full flex-1 overflow-x-auto overflow-y-auto px-10 pb-10"
       style={{
         maskImage:
@@ -127,185 +149,195 @@ export function ReportTable({
                 </div>
               </td>
             </tr>
-          : Object.entries(groupedRows).map(([groupInfo, rows]) => {
-              if (rows.length === 0) return null
-              return (
-                <Fragment key={groupInfo}>
-                  {groupInfo !== "__all__" && (
-                    <tr>
-                      <td
-                        colSpan={visibleColDefs.length + (onEditRow ? 1 : 0)}
-                        className="border-b border-white/6 bg-[rgba(22,28,36,0.58)] px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold tracking-wide text-cyan-100/90">
-                            {groupInfo}
-                          </span>
-                          <span className="inline-flex items-center rounded-lg border border-white/6 bg-[rgba(12,16,22,0.82)] px-1.5 py-0.5 text-[11px] font-medium text-white/55">
-                            {rows.length} {rows.length === 1 ? "record" : "records"}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  {rows.map((row, rIdx) => (
-                    <tr
-                      key={rIdx}
-                      className="group cursor-default transition-all duration-200 hover:bg-cyan-500/3">
-                      {visibleColDefs.map((c, cIdx) => {
-                        const val = row[c.key]
-                        let content: React.ReactNode = val as string
+          : (() => {
+              let renderedCount = 0
+              return Object.entries(groupedRows).map(([groupInfo, rows]) => {
+                if (rows.length === 0) return null
+                if (renderedCount >= displayLimit) return null
 
-                        if (c.key === "status") {
-                          const s = row.status
-                          let textColor = "text-white/55"
-                          if (s === "present") textColor = "text-cyan-400"
-                          if (s === "late") textColor = "text-orange-400"
-                          if (s === "absent") textColor = "text-red-400"
-                          if (s === "no_records") textColor = "text-white/55"
+                const rowsToRender = rows.slice(0, displayLimit - renderedCount)
+                renderedCount += rowsToRender.length
 
-                          content = (
-                            <div
-                              className={`inline-flex items-center text-[11px] font-semibold ${textColor}`}>
-                              {s === "no_records" ? "N/A" : s}
-                            </div>
-                          )
-                        } else if (c.key === "is_late") {
-                          content =
-                            row.is_late ?
-                              <span className="text-[11px] font-semibold text-orange-400/80">
-                                Late
-                              </span>
-                            : <span className="text-white/10">-</span>
-                        } else if (c.key === "check_in_time") {
-                          if (row.check_in_time) {
-                            content = (
-                              <div className="flex flex-col">
-                                <span className="font-medium text-white/90">
-                                  {new Date(row.check_in_time).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                                {row.is_late && row.late_minutes > 0 && (
-                                  <span className="mt-0.5 text-[10px] font-semibold text-orange-500/75">
-                                    {formatDuration(row.late_minutes)} Late
-                                  </span>
-                                )}
-                              </div>
-                            )
-                          } else {
-                            content = <span className="text-white/10">-</span>
-                          }
-                        } else if (c.key === "check_out_time") {
-                          if (row.check_out_time) {
-                            content = (
-                              <div className="flex flex-col">
-                                <span className="font-medium text-white/90">
-                                  {new Date(row.check_out_time).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </span>
-                              </div>
-                            )
-                          } else {
-                            content = <span className="text-white/10">-</span>
-                          }
-                        } else if (c.key === "total_hours") {
-                          if (row.total_hours) {
-                            const totalMins = Math.round(row.total_hours * 60)
-                            content = (
-                              <span className="font-medium whitespace-nowrap text-cyan-400/80">
-                                {formatDuration(totalMins)}
-                              </span>
-                            )
-                          } else {
-                            content = <span className="text-white/10">-</span>
-                          }
-                        } else if (c.key === "late_minutes") {
-                          content =
-                            row.late_minutes > 0 ?
-                              <span className="font-medium text-orange-400/80">
-                                {formatDuration(row.late_minutes)}
-                              </span>
-                            : <span className="text-white/10">-</span>
-                        } else if (c.key === "date") {
-                          content = (
-                            <span className="font-medium text-white/65">
-                              {parseLocalDate(row.date).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
+                if (rowsToRender.length === 0) return null
+
+                return (
+                  <Fragment key={groupInfo}>
+                    {groupInfo !== "__all__" && (
+                      <tr>
+                        <td
+                          colSpan={visibleColDefs.length + (onEditRow ? 1 : 0)}
+                          className="border-b border-white/6 bg-[rgba(22,28,36,0.58)] px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold tracking-wide text-cyan-100/90">
+                              {groupInfo}
                             </span>
-                          )
-                        } else if (c.key === "name") {
-                          content = (
-                            <span className="font-semibold text-white">{val as string}</span>
-                          )
-                        } else if (c.key === "notes") {
-                          if (val) {
-                            const text = val as string
-                            const hasDivider = text.includes(" — ")
-                            if (hasDivider) {
-                              const [reason, note] = text.split(" — ")
+                            <span className="inline-flex items-center rounded-lg border border-white/6 bg-[rgba(12,16,22,0.82)] px-1.5 py-0.5 text-[11px] font-medium text-white/55">
+                              {rows.length} {rows.length === 1 ? "record" : "records"}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {rowsToRender.map((row, rIdx) => (
+                      <tr
+                        key={rIdx}
+                        className="group cursor-default transition-all duration-200 hover:bg-cyan-500/3">
+                        {visibleColDefs.map((c, cIdx) => {
+                          const val = row[c.key]
+                          let content: React.ReactNode = val as string
+
+                          if (c.key === "status") {
+                            const s = row.status
+                            let textColor = "text-white/55"
+                            if (s === "present") textColor = "text-cyan-400"
+                            if (s === "late") textColor = "text-orange-400"
+                            if (s === "absent") textColor = "text-red-400"
+                            if (s === "no_records") textColor = "text-white/55"
+
+                            content = (
+                              <div
+                                className={`inline-flex items-center text-[11px] font-semibold ${textColor}`}>
+                                {s === "no_records" ? "N/A" : s}
+                              </div>
+                            )
+                          } else if (c.key === "is_late") {
+                            content =
+                              row.is_late ?
+                                <span className="text-[11px] font-semibold text-orange-400/80">
+                                  Late
+                                </span>
+                              : <span className="text-white/10">-</span>
+                          } else if (c.key === "check_in_time") {
+                            if (row.check_in_time) {
                               content = (
-                                <div className="flex max-w-[280px] flex-col gap-0.5 leading-tight">
-                                  <span className="text-[10px] font-bold tracking-wider text-cyan-400/80 uppercase">
-                                    {reason}
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-white/90">
+                                    {new Date(row.check_in_time).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
                                   </span>
-                                  <span className="text-[12px] font-medium break-words whitespace-normal text-white/55">
-                                    {note}
+                                  {row.is_late && row.late_minutes > 0 && (
+                                    <span className="mt-0.5 text-[10px] font-semibold text-orange-500/75">
+                                      {formatDuration(row.late_minutes)} Late
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            } else {
+                              content = <span className="text-white/10">-</span>
+                            }
+                          } else if (c.key === "check_out_time") {
+                            if (row.check_out_time) {
+                              content = (
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-white/90">
+                                    {new Date(row.check_out_time).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
                                   </span>
                                 </div>
                               )
                             } else {
+                              content = <span className="text-white/10">-</span>
+                            }
+                          } else if (c.key === "total_hours") {
+                            if (row.total_hours) {
+                              const totalMins = Math.round(row.total_hours * 60)
                               content = (
-                                <span className="max-w-[280px] text-[12px] leading-relaxed font-medium break-words whitespace-normal text-white/60">
-                                  {text}
+                                <span className="font-medium whitespace-nowrap text-cyan-400/80">
+                                  {formatDuration(totalMins)}
                                 </span>
                               )
+                            } else {
+                              content = <span className="text-white/10">-</span>
                             }
-                          } else {
-                            content = <span className="text-white/10">-</span>
+                          } else if (c.key === "late_minutes") {
+                            content =
+                              row.late_minutes > 0 ?
+                                <span className="font-medium text-orange-400/80">
+                                  {formatDuration(row.late_minutes)}
+                                </span>
+                              : <span className="text-white/10">-</span>
+                          } else if (c.key === "date") {
+                            content = (
+                              <span className="font-medium text-white/65">
+                                {parseLocalDate(row.date).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            )
+                          } else if (c.key === "name") {
+                            content = (
+                              <span className="font-semibold text-white">{val as string}</span>
+                            )
+                          } else if (c.key === "notes") {
+                            if (val) {
+                              const text = val as string
+                              const hasDivider = text.includes(" — ")
+                              if (hasDivider) {
+                                const [reason, note] = text.split(" — ")
+                                content = (
+                                  <div className="flex max-w-[280px] flex-col gap-0.5 leading-tight">
+                                    <span className="text-[10px] font-bold tracking-wider text-cyan-400/80 uppercase">
+                                      {reason}
+                                    </span>
+                                    <span className="text-[12px] font-medium break-words whitespace-normal text-white/55">
+                                      {note}
+                                    </span>
+                                  </div>
+                                )
+                              } else {
+                                content = (
+                                  <span className="max-w-[280px] text-[12px] leading-relaxed font-medium break-words whitespace-normal text-white/60">
+                                    {text}
+                                  </span>
+                                )
+                              }
+                            } else {
+                              content = <span className="text-white/10">-</span>
+                            }
                           }
-                        }
 
-                        // Cell alignment
-                        let alignClass = "text-left"
-                        if (c.align === "center") alignClass = "text-center"
-                        else if (c.align === "right") alignClass = "text-right"
+                          // Cell alignment
+                          let alignClass = "text-left"
+                          if (c.align === "center") alignClass = "text-center"
+                          else if (c.align === "right") alignClass = "text-right"
 
-                        // Notes column should NOT be whitespace-nowrap
-                        const isNotesCol = c.key === "notes"
-                        const widthClass = getColWidthClass(c.key)
+                          // Notes column should NOT be whitespace-nowrap
+                          const isNotesCol = c.key === "notes"
+                          const widthClass = getColWidthClass(c.key)
 
-                        return (
-                          <td
-                            key={c.key}
-                            className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${widthClass} ${cIdx === 0 ? "relative" : ""}`}>
-                            {cIdx === 0 && (
-                              <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
-                            )}
-                            {content}
+                          return (
+                            <td
+                              key={c.key}
+                              className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${widthClass} ${cIdx === 0 ? "relative" : ""}`}>
+                              {cIdx === 0 && (
+                                <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
+                              )}
+                              {content}
+                            </td>
+                          )
+                        })}
+                        {onEditRow && (
+                          <td className="border-b border-white/5 px-3 py-3.5 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => onEditRow(row)}
+                              className="p-1.5 text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-white">
+                              <i className="fa-solid fa-pen text-[12px]" />
+                            </button>
                           </td>
-                        )
-                      })}
-                      {onEditRow && (
-                        <td className="border-b border-white/5 px-3 py-3.5 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => onEditRow(row)}
-                            className="p-1.5 text-white/20 opacity-0 transition-all group-hover:opacity-100 hover:text-white">
-                            <i className="fa-solid fa-pen text-[12px]" />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </Fragment>
-              )
-            })
+                        )}
+                      </tr>
+                    ))}
+                  </Fragment>
+                )
+              })
+            })()
           }
         </tbody>
       </table>

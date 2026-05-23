@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services"
 import { useGroupUIStore } from "@/components/group/stores"
@@ -46,6 +46,8 @@ export function Members({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
+  const [scrollTop, setScrollTop] = useState(0)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const handleSearchFocus = () => {
     setIsSearchFocused(true)
@@ -67,14 +69,14 @@ export function Members({
     }
   }
 
-  const toggleSelect = (personId: string) => {
+  const toggleSelect = useCallback((personId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       if (next.has(personId)) next.delete(personId)
       else next.add(personId)
       return next
     })
-  }
+  }, [])
 
   const toggleSelectAll = () => {
     if (selectedIds.size === filteredMembers.length) {
@@ -113,6 +115,32 @@ export function Members({
     // Then alphabetically
     return a.displayName.localeCompare(b.displayName)
   })
+
+  // Reset scroll state and position when filter or search changes
+  useEffect(() => {
+    setScrollTop(0)
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
+  }, [memberSearch, registrationFilter])
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop)
+  }, [])
+
+  const ITEM_HEIGHT = 60
+
+  // Calculate visible range
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5)
+  const endIndex = Math.min(
+    filteredMembers.length - 1,
+    Math.floor((scrollTop + 800) / ITEM_HEIGHT) + 5,
+  )
+
+  const visibleMembers = filteredMembers.slice(startIndex, endIndex + 1)
+
+  const paddingTop = startIndex * ITEM_HEIGHT
+  const paddingBottom = Math.max(0, (filteredMembers.length - 1 - endIndex) * ITEM_HEIGHT)
 
   const selectedMembersList = (() => {
     if (selectedIds.size === 0) return []
@@ -171,28 +199,31 @@ export function Members({
     }
   }
 
-  const handleResetFace = async (member: AttendanceMember) => {
-    try {
-      const confirmed = await dialog.confirm({
-        title: "Reset Face Data",
-        message: `Are you sure you want to clear the face data for ${member.name}? They will need to re-register to be recognized.`,
-        confirmText: "Reset",
-        confirmVariant: "danger",
-      })
+  const handleResetFace = useCallback(
+    async (member: AttendanceMember) => {
+      try {
+        const confirmed = await dialog.confirm({
+          title: "Reset Face Data",
+          message: `Are you sure you want to clear the face data for ${member.name}? They will need to re-register to be recognized.`,
+          confirmText: "Reset",
+          confirmVariant: "danger",
+        })
 
-      if (confirmed) {
-        const result = await attendanceManager.removeFaceDataForGroupPerson(
-          group.id,
-          member.person_id,
-        )
-        if (result.success) {
-          onMembersChange()
+        if (confirmed) {
+          const result = await attendanceManager.removeFaceDataForGroupPerson(
+            group.id,
+            member.person_id,
+          )
+          if (result.success) {
+            onMembersChange()
+          }
         }
+      } catch (err) {
+        console.error("Error resetting face data:", err)
       }
-    } catch (err) {
-      console.error("Error resetting face data:", err)
-    }
-  }
+    },
+    [dialog, group.id, onMembersChange],
+  )
 
   const isSearchExpanded = memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const dropdownWidthClass =
@@ -210,11 +241,7 @@ export function Members({
     : "max-w-[330px]"
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.995 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="relative flex h-full w-full flex-col overflow-hidden">
+    <div className="relative flex h-full w-full flex-col overflow-hidden">
       {/* BACKGROUND CONTENT: Always render the list or empty state */}
       {members.length === 0 ?
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
@@ -430,55 +457,46 @@ export function Members({
           </div>
 
           <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
             className="custom-scroll hover-scrollbar flex flex-1 flex-col overflow-y-auto px-10 pb-10"
             style={{
               maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
               WebkitMaskImage:
                 "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
             }}>
-            <AnimatePresence mode="wait">
-              {filteredMembers.length === 0 ?
-                <motion.div
-                  key="empty-state"
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
-                  <div className="text-[11px] font-medium tracking-wide text-white/55">
-                    {memberSearch.trim() ?
-                      `No results found for "${memberSearch}"`
-                    : registrationFilter === "registered" ?
-                      "No registered members yet"
-                    : registrationFilter === "non-registered" ?
-                      "All members are registered"
-                    : "No members found in this group"}
-                  </div>
-                </motion.div>
-              : <motion.div
-                  key="members-list"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="flex w-full flex-col gap-1">
-                  <AnimatePresence mode="popLayout">
-                    {filteredMembers.map((member) => (
-                      <MemberRow
-                        key={member.person_id}
-                        member={member}
-                        isSelected={selectedIds.has(member.person_id)}
-                        isSelectionMode={selectedIds.size > 0}
-                        onToggleSelect={toggleSelect}
-                        onEdit={onEdit}
-                        onDelete={setMemberToDelete}
-                        onResetFace={handleResetFace}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-              }
-            </AnimatePresence>
+            {filteredMembers.length === 0 ?
+              <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
+                <div className="text-[11px] font-medium tracking-wide text-white/55">
+                  {memberSearch.trim() ?
+                    `No results found for "${memberSearch}"`
+                  : registrationFilter === "registered" ?
+                    "No registered members yet"
+                  : registrationFilter === "non-registered" ?
+                    "All members are registered"
+                  : "No members found in this group"}
+                </div>
+              </div>
+            : <div
+                className="flex w-full flex-col gap-1"
+                style={{
+                  paddingTop: `${paddingTop}px`,
+                  paddingBottom: `${paddingBottom}px`,
+                }}>
+                {visibleMembers.map((member) => (
+                  <MemberRow
+                    key={member.person_id}
+                    member={member}
+                    isSelected={selectedIds.has(member.person_id)}
+                    isSelectionMode={selectedIds.size > 0}
+                    onToggleSelect={toggleSelect}
+                    onEdit={onEdit}
+                    onDelete={setMemberToDelete}
+                    onResetFace={handleResetFace}
+                  />
+                ))}
+              </div>
+            }
           </div>
 
           {/* Consent banner */}
@@ -561,6 +579,6 @@ export function Members({
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   )
 }
