@@ -207,16 +207,26 @@ export function AddMember({
       let failed = failedPrecheck
 
       if (membersToCreate.length > 0) {
-        setBulkProgress({ current: 0, total: membersToCreate.length })
-        const res = await attendanceManager.addMembersBulk(membersToCreate, group.id)
-        success = res.success_count
-        failed += res.error_count
-        if (res.errors && res.errors.length > 0) {
-          res.errors.forEach((err) => {
-            errors.push(`Failed: ${err.error}`)
-          })
+        const chunkSize = 500
+        const totalItems = membersToCreate.length
+        setBulkProgress({ current: 0, total: totalItems })
+
+        for (let i = 0; i < totalItems; i += chunkSize) {
+          const chunk = membersToCreate.slice(i, i + chunkSize)
+
+          setBulkProgress({ current: i, total: totalItems })
+          const res = await attendanceManager.addMembersBulk(chunk, group.id)
+
+          success += res.success_count
+          failed += res.error_count
+          if (res.errors && res.errors.length > 0) {
+            res.errors.forEach((err) => {
+              errors.push(`Failed: ${err.error}`)
+            })
+          }
         }
-        setBulkProgress({ current: membersToCreate.length, total: membersToCreate.length })
+
+        setBulkProgress({ current: totalItems, total: totalItems })
       }
 
       setBulkResults({ success, failed, errors })
