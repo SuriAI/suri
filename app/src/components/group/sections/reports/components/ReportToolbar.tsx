@@ -145,7 +145,7 @@ export function ReportToolbar({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
                 transition={{ duration: 0.1, ease: "easeOut" }}
-                className="absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md">
+                className="absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl">
                 {finalStatusOptions.map(({ value: st, label }) => (
                   <button
                     key={st}
@@ -187,7 +187,7 @@ export function ReportToolbar({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
                 transition={{ duration: 0.1, ease: "easeOut" }}
-                className="absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl backdrop-blur-md"
+                className="absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0f1319]/95 shadow-xl"
                 style={{ maxHeight: "360px" }}>
                 {/* Columns */}
                 <div className="px-3 pt-3 pb-2">
