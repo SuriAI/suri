@@ -6,6 +6,11 @@ import type { QuickSettings } from "@/components/settings"
 const lowLightOpacityCache = new Map<number, number>()
 const subLabelOpacityCache = new Map<number, number>()
 
+export const clearOverlayRendererCache = () => {
+  lowLightOpacityCache.clear()
+  subLabelOpacityCache.clear()
+}
+
 export const getFaceColor = (
   recognitionResult: ExtendedFaceRecognitionResponse | null,
   recognitionEnabled: boolean,
@@ -462,13 +467,13 @@ export const drawOverlays = ({
         ctx.shadowOffsetY = 1
 
         const subLabelY = Math.min(displayHeight - 8, y2 + 24)
-        
+
         // Draw the micro-animated horizontal scanning dot guide directly above the subtitle
         drawOscillatingScanner(
           ctx,
           x1 + width / 2,
           subLabelY - 14,
-          (face.renderOpacity ?? 1) * subCurrentOpacity
+          (face.renderOpacity ?? 1) * subCurrentOpacity,
         )
 
         ctx.fillText(subLabelText, x1 + width / 2, subLabelY)

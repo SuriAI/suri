@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from "react"
 import type { DetectionResult } from "@/components/main/types"
-import { drawOverlays } from "@/components/main/utils"
+import { drawOverlays, clearOverlayRendererCache } from "@/components/main/utils"
 import {
   getOverlayGuidance,
   updateHoldStillCache,
@@ -346,6 +346,14 @@ export function useOverlayRendering(options: UseOverlayRenderingOptions) {
     nextAnonymousGuidanceKeyRef.current = 0
     verifyingHintCacheRef.current.clear()
     nextAnonymousVerifyingKeyRef.current = 0
+    clearOverlayRendererCache()
+  }, [])
+
+  // Guarantee memory safety: clear LERP maps when hook unmounts (camera session closes)
+  useEffect(() => {
+    return () => {
+      clearOverlayRendererCache()
+    }
   }, [])
 
   return {
