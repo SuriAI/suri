@@ -35,7 +35,9 @@ export interface DetectionResult {
     }
     overlayGuidance?: {
       label: string
+      subLabel?: string
       tone: "warning" | "failure"
+      isLowLight?: boolean
     }
     recognition?: ExtendedFaceRecognitionResponse
   }[]

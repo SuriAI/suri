@@ -2,6 +2,10 @@ import type { DetectionResult } from "@/components/main/types"
 import type { ExtendedFaceRecognitionResponse } from "./recognitionHelpers"
 import type { QuickSettings } from "@/components/settings"
 
+// Module-level cache to track low light opacity per face track_id for smooth transitions
+const lowLightOpacityCache = new Map<number, number>()
+const subLabelOpacityCache = new Map<number, number>()
+
 export const getFaceColor = (
   recognitionResult: ExtendedFaceRecognitionResponse | null,
   recognitionEnabled: boolean,
@@ -19,6 +23,39 @@ export const getFaceColor = (
   }
 
   return "#94a3b8"
+}
+
+const drawOscillatingScanner = (
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  currentOpacity: number,
+) => {
+  ctx.save()
+  ctx.globalAlpha = currentOpacity
+  ctx.shadowBlur = 0
+
+  // 1. Draw a thin, semi-transparent horizontal track line
+  ctx.strokeStyle = "rgba(203, 213, 225, 0.25)" // slate-300 with low opacity
+  ctx.lineWidth = 1.5
+  ctx.lineCap = "round"
+  ctx.beginPath()
+  ctx.moveTo(cx - 18, cy)
+  ctx.lineTo(cx + 18, cy)
+  ctx.stroke()
+
+  // 2. Smoothly calculate the horizontal offset using a sine wave
+  const dotOffset = Math.sin(performance.now() / 280) * 16
+
+  // 3. Draw the gliding dot with a soft white glow
+  ctx.shadowColor = "rgba(255, 255, 255, 0.6)"
+  ctx.shadowBlur = 4
+  ctx.fillStyle = "#cbd5e1" // slate-300
+  ctx.beginPath()
+  ctx.arc(cx + dotOffset, cy, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.restore()
 }
 
 const drawRoundedRect = (
@@ -274,17 +311,15 @@ export const drawOverlays = ({
 
     if (shouldShowLabel) {
       const isShield = labelTone === "recognition" && recognitionResult?.has_consent === false
+      const isLowLight = !!face.overlayGuidance?.isLowLight
 
-      // Premium Micro-interaction: Sequential Smoothly-Fading Ellipsis
-      // The dots appear one-by-one sequentially, but each individual dot fades in smoothly
-      // using a smoothstep interpolation, and then all dots fade out together at the end of the cycle.
+      // Sequential smoothly-fading dots animation loop
       const isVerifyingState = label === "Verifying..."
       const text = label
 
       ctx.font = "bold 12px system-ui, sans-serif"
 
-      // Layout Stability & Bug Fix: Dynamically measure the full label text width
-      // to ensure long labels like 'Move slightly...' never overflow!
+      // Measure text width to prevent layout overflow
       const measureText = isVerifyingState ? "Verifying..." : text
       const textWidth = ctx.measureText(measureText).width
       const paddingH = 10
@@ -293,6 +328,46 @@ export const drawOverlays = ({
 
       const badgeX = x1 + (width - badgeW) / 2
       const badgeY = Math.max(6, y1 - 25)
+
+      // Stacked low-light warning text with smooth opacity LERP
+      const showLowLightBadge = isLowLight && label !== "Poor lighting detected"
+      const targetOpacity = showLowLightBadge ? 1.0 : 0.0
+
+      let currentOpacity = lowLightOpacityCache.get(trackId) ?? 0.0
+
+      // Interpolate opacity towards target (LERP)
+      const lerpFactor = 0.12
+      currentOpacity += (targetOpacity - currentOpacity) * lerpFactor
+
+      if (currentOpacity < 0.001) {
+        lowLightOpacityCache.delete(trackId)
+      } else {
+        lowLightOpacityCache.set(trackId, currentOpacity)
+      }
+
+      if (currentOpacity > 0.01) {
+        ctx.save()
+        ctx.globalAlpha = (face.renderOpacity ?? 1) * currentOpacity
+        ctx.font = "italic 11px system-ui, sans-serif"
+        const warningText = "⚠ Poor lighting detected"
+
+        let warnBadgeY = badgeY - 14
+        if (warnBadgeY < 6) {
+          warnBadgeY = badgeY + 16
+        }
+
+        // Render borderless text with drop shadow
+        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"
+        ctx.shadowBlur = 4
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 1
+
+        ctx.fillStyle = "#f5a623" // desaturated honey-gold for dark mode
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.fillText(warningText, x1 + width / 2, warnBadgeY)
+        ctx.restore()
+      }
 
       // Premium Minimalist Floating Design:
       // All guidance and warning prompts float in a clean, solid white (#f8fafc) to reduce visual clutter.
@@ -357,6 +432,47 @@ export const drawOverlays = ({
         ctx.fillStyle = textColor
         ctx.textAlign = "center"
         ctx.fillText(text, badgeX + badgeW / 2, badgeY + badgeH / 2)
+      }
+
+      // Stacked Sub-label/Helper Hint underneath the primary badge with smooth LERP transition
+      const subLabelText = face.overlayGuidance?.subLabel
+      const subTargetOpacity = subLabelText ? 1.0 : 0.0
+      let subCurrentOpacity = subLabelOpacityCache.get(trackId) ?? 0.0
+
+      subCurrentOpacity += (subTargetOpacity - subCurrentOpacity) * 0.12
+
+      if (subCurrentOpacity < 0.001) {
+        subLabelOpacityCache.delete(trackId)
+      } else {
+        subLabelOpacityCache.set(trackId, subCurrentOpacity)
+      }
+
+      if (subCurrentOpacity > 0.01 && subLabelText) {
+        ctx.save()
+        ctx.globalAlpha = (face.renderOpacity ?? 1) * subCurrentOpacity
+        ctx.font = "normal 10px system-ui, sans-serif"
+        ctx.fillStyle = "#cbd5e1" // slate-300 for premium low-fatigue subtitle
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+
+        // Enforce high-readability drop shadow
+        ctx.shadowColor = "rgba(0, 0, 0, 0.9)"
+        ctx.shadowBlur = 4
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = 1
+
+        const subLabelY = Math.min(displayHeight - 8, y2 + 24)
+        
+        // Draw the micro-animated horizontal scanning dot guide directly above the subtitle
+        drawOscillatingScanner(
+          ctx,
+          x1 + width / 2,
+          subLabelY - 14,
+          (face.renderOpacity ?? 1) * subCurrentOpacity
+        )
+
+        ctx.fillText(subLabelText, x1 + width / 2, subLabelY)
+        ctx.restore()
       }
     }
 

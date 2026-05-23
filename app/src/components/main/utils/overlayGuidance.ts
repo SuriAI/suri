@@ -6,7 +6,9 @@ type FaceBbox = Face["bbox"]
 
 export interface OverlayGuidance {
   label: string
+  subLabel?: string
   tone: "warning" | "failure"
+  isLowLight?: boolean
 }
 
 export interface HoldStillCacheEntry {
@@ -346,39 +348,46 @@ export const getOverlayGuidance = (
   }
 
   if (recognitionEnabled && recognitionResult && !recognitionResult.person_id) {
-    return null
-  }
-
-  if (face.low_light) {
     return {
-      label: "Poor lighting detected",
+      label: "Verifying...",
       tone: "warning",
+      isLowLight: face.low_light,
     }
   }
 
   const status = face.liveness?.status
 
   if (status === "center_face") {
-    return { label: "Center your face", tone: "warning" }
+    return { label: "Center your face", tone: "warning", isLowLight: face.low_light }
   }
 
   if (status === "move_closer") {
-    return { label: "Move closer", tone: "warning" }
+    return { label: "Move closer", tone: "warning", isLowLight: face.low_light }
   }
 
   if (holdStillActive) {
-    return { label: "Hold still", tone: "warning" }
+    return { label: "Hold still", tone: "warning", isLowLight: face.low_light }
   }
 
   if (status === "spoof" || status === "candidate_real" || status === "unknown") {
     if (verifyingHintActive) {
       return {
-        label: "Move slightly, ensure face is clearly visible with proper lighting",
+        label: "Verifying...",
+        subLabel: "Slowly turn head",
         tone: "warning",
+        isLowLight: face.low_light,
       }
     }
 
-    return { label: "Verifying...", tone: "warning" }
+    return { label: "Verifying...", tone: "warning", isLowLight: face.low_light }
+  }
+
+  if (face.low_light) {
+    return {
+      label: "Poor lighting detected",
+      tone: "warning",
+      isLowLight: true,
+    }
   }
 
   return null
