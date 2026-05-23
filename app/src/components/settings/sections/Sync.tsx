@@ -40,7 +40,11 @@ const defaultConfig: RemoteSyncConfig = {
   connected: false,
 }
 
-export function Sync() {
+interface SyncProps {
+  onNavigateToDB?: () => void
+}
+
+export function Sync({ onNavigateToDB }: SyncProps = {}) {
   const setSuccess = useUIStore((state) => state.setSuccess)
   const setError = useUIStore((state) => state.setError)
   const [config, setConfig] = useState<RemoteSyncConfig>(defaultConfig)
@@ -405,8 +409,15 @@ export function Sync() {
                   <span className="font-medium text-cyan-400/90">never</span> recorded or uploaded.
                 </li>
                 <li>
-                  <span className="font-medium text-white/70">Offline Database:</span> Secured
-                  database containing your local attendance records and device configurations.
+                  {onNavigateToDB ?
+                    <button
+                      onClick={onNavigateToDB}
+                      className="font-medium text-white/70 hover:text-cyan-400 hover:underline">
+                      Offline Database:
+                    </button>
+                  : <span className="font-medium text-white/70">Offline Database:</span>}{" "}
+                  Secured database containing your local attendance records and device
+                  configurations.
                 </li>
                 <li>
                   <span className="font-medium text-white/70">Local AI Processing:</span> All face

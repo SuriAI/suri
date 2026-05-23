@@ -158,7 +158,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               onClick={addMemberHandler}
               className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
               <i className="fa-solid fa-user-plus text-[10px]"></i>
-              ADD MEMBER
+              Add Member
             </button>
           </div>
         )
@@ -168,7 +168,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             onClick={resetRegistration}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-arrow-left text-[10px]"></i>
-            BACK TO MEMBERS
+            Back to Members
           </button>
         )
       } else if (groupInitialSection === "overview" && validInitialGroup) {
@@ -177,16 +177,16 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             onClick={openEditGroup}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-pen text-[10px]"></i>
-            EDIT GROUP
+            Edit Group
           </button>
         )
       } else if (groupInitialSection === "reports" && reportsExportHandlers) {
         actions = (
           <button
             onClick={reportsExportHandlers.exportCSV}
-            className="flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.03] px-3.5 py-2 text-[10.5px] font-bold tracking-[0.08em] text-cyan-400 transition-all duration-200 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-[0.97]">
-            <i className="fa-solid fa-file-csv text-[10px] opacity-75"></i>
-            EXPORT CSV
+            className="flex items-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/[0.03] px-3 py-1.5 text-[11px] font-bold tracking-wide text-cyan-400 transition-all duration-200 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-300 active:scale-[0.97]">
+            <i className="fa-solid fa-file-csv text-[10px]" />
+            Export CSV
           </button>
         )
       }
@@ -210,8 +210,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         activeSection === "database" ?
           <button
             onClick={() => setIsAuditLogModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/50 transition-all duration-200 hover:border-white/20 hover:bg-white/5 hover:text-white/70 active:scale-[0.97]">
-            <i className="fa-solid fa-download text-[10px] opacity-60" />
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
+            <i className="fa-solid fa-download text-[10px]" />
             AUDIT LOG
           </button>
         : null,
