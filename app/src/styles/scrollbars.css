@@ -76,8 +76,8 @@
 .custom-scroll::-webkit-scrollbar-thumb:horizontal,
 .hover-scrollbar::-webkit-scrollbar-thumb:horizontal,
 .settings-sidebar-scroll::-webkit-scrollbar-thumb:horizontal {
-  border-top: 4px solid transparent;
-  border-bottom: 2px solid transparent;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
   border-left: 2px solid transparent;
   border-right: 2px solid transparent;
 }
@@ -167,10 +167,39 @@
   margin-top: 41px;
 }
 
-/* Reports Custom Thicker Scrollbar */
+/* Reports Custom Scrollbar matching the vertical one perfectly */
 .reports-scroll::-webkit-scrollbar {
-  height: 10px; /* Standard horizontal scrollbar */
   width: 10px;
+  height: 10px;
+}
+
+.reports-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.reports-scroll::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb) !important;
+  background-clip: padding-box !important;
+  border-radius: 20px !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.reports-scroll::-webkit-scrollbar-thumb:vertical {
+  border-top: 2px solid transparent !important;
+  border-bottom: 2px solid transparent !important;
+  border-left: 3px solid transparent !important;
+  border-right: 3px solid transparent !important;
+}
+
+.reports-scroll::-webkit-scrollbar-thumb:horizontal {
+  border-top: 3px solid transparent !important;
+  border-bottom: 3px solid transparent !important;
+  border-left: 2px solid transparent !important;
+  border-right: 2px solid transparent !important;
+}
+
+.reports-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover) !important;
 }
 
 /* Fix disjointed scrollbar tip UI bug by ending vertical scrollbar track 10px early */

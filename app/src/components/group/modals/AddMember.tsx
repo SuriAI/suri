@@ -142,7 +142,7 @@ export function AddMember({
     return bulkMembersText.split("\n").filter((line) => line.trim()).length
   }, [bulkMembersText])
 
-  const modalSubtitle = isBulkMode ? "Add multiple people to" : "Add a person to"
+  const modalSubtitle = isBulkMode ? "Add multiple members to" : "Add member to"
 
   // Reset confirmation when name changes
   useEffect(() => {
