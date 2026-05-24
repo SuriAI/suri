@@ -194,7 +194,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       return {
         title: sectionLabel || "Overview",
         eyebrow: groupName,
-        eyebrowColor: "text-white/50",
+        eyebrowColor: "text-white/45",
         actions,
         isGroupSection: true,
       }
@@ -205,7 +205,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         generalTitles[activeSection] ||
         activeSection.charAt(0).toUpperCase() + activeSection.slice(1),
       eyebrow: "Preferences",
-      eyebrowColor: "text-white/55",
+      eyebrowColor: "text-white/45",
       actions:
         activeSection === "database" ?
           <button

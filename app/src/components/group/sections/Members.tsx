@@ -502,7 +502,7 @@ export function Members({
           {/* Consent banner */}
           {members.some((m) => !m.has_consent) && (
             <div className="pointer-events-none absolute right-0 bottom-6 left-0 z-40 flex justify-center">
-              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0f1319]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0d1117]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl duration-500">
                 <div className="flex items-center gap-2">
                   <i className="fa-solid fa-triangle-exclamation shrink-0 text-amber-500/80" />
                   <span className="leading-snug whitespace-nowrap">
