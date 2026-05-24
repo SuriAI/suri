@@ -570,6 +570,8 @@ export default function Main() {
     stopCamera,
   ])
 
+  const hasRegisteredFaces = groupMembers.length > 0 && groupMembers.some((m) => m.has_face_data)
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--bg-primary)] text-white">
       {!showSettings && timeHealth?.online_verification_status === "drift_detected" && (
@@ -672,6 +674,7 @@ export default function Main() {
               isStreaming={isStreaming}
               isShellReady={isShellReady}
               hasSelectedGroup={Boolean(currentGroup)}
+              hasRegisteredFaces={hasRegisteredFaces}
               lateTrackingEnabled={!!currentGroup?.settings?.late_threshold_enabled}
               classStartTime={currentGroup?.settings?.class_start_time}
               onStartTimeChange={handleStartTimeChange}
@@ -694,6 +697,7 @@ export default function Main() {
             isShellReady={isShellReady}
             hasGroups={attendanceGroups.length > 0}
             hasSelectedGroup={Boolean(currentGroup)}
+            hasRegisteredFaces={hasRegisteredFaces}
           />
         </div>
 

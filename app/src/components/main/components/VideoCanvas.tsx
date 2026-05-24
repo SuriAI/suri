@@ -12,6 +12,7 @@ interface VideoCanvasProps {
   isStreaming: boolean
   isShellReady: boolean
   hasSelectedGroup: boolean
+  hasRegisteredFaces: boolean
   lateTrackingEnabled?: boolean
   classStartTime?: string
   onStartTimeChange?: (newTime: string) => void
@@ -26,6 +27,7 @@ export const VideoCanvas = memo(function VideoCanvas({
   isStreaming,
   isShellReady,
   hasSelectedGroup,
+  hasRegisteredFaces,
   lateTrackingEnabled,
   classStartTime,
   onStartTimeChange,
@@ -120,23 +122,28 @@ export const VideoCanvas = memo(function VideoCanvas({
                 />
               </svg>
             </div>
-            <div className="relative flex max-w-md flex-col items-center gap-4 text-xs text-white/65">
+            <div className="relative flex max-w-xl flex-col items-center gap-4 text-xs text-white/65">
               <p>
                 {!isShellReady ?
                   "Loading groups and settings..."
                 : hasSelectedGroup ?
-                  "Select a camera, then press Start Scan to begin attendance logging."
-                : "Create a group or choose one to begin attendance logging."}
+                  !hasRegisteredFaces ?
+                    "To start scanning, register at least one member in this group first."
+                  : "Select a camera, then press Start Scan to begin attendance tracking."
+                : "Create a group or choose one to begin attendance tracking."}
               </p>
 
-              {hasSelectedGroup && onStartTimeChange && lateTrackingEnabled && (
-                <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
-                  <StartTimeChip
-                    startTime={classStartTime || "08:00"}
-                    onTimeChange={onStartTimeChange}
-                  />
-                </div>
-              )}
+              {hasSelectedGroup &&
+                hasRegisteredFaces &&
+                onStartTimeChange &&
+                lateTrackingEnabled && (
+                  <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
+                    <StartTimeChip
+                      startTime={classStartTime || "08:00"}
+                      onTimeChange={onStartTimeChange}
+                    />
+                  </div>
+                )}
             </div>
           </div>
         </div>
