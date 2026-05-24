@@ -13,6 +13,7 @@ engine = create_async_engine(
     echo=False,
 )
 
+
 # Enable SQLite WAL (Write-Ahead Logging) mode and optimize synchronous settings.
 # WAL allows concurrent reads and writes, solving common 'database is locked' errors.
 @event.listens_for(engine.sync_engine, "connect")
@@ -21,6 +22,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.close()
+
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
