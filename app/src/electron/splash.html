@@ -9,18 +9,17 @@
 
   <body>
     <div class="splash-container">
-      <div class="ambient ambient-a"></div>
-      <div class="ambient ambient-b"></div>
-
       <div class="splash-content">
-        <div class="logo-wrapper">
-          <div class="logo-glow"></div>
-
+        <div class="logo-pulse-wrapper">
           <img class="logo" id="logo" src="./logo-transparent.png" alt="Facenox" />
         </div>
 
         <div class="brand-block">
-          <div class="brand">Facenox</div>
+          <div class="status-text" id="status-text">
+            Starting<span class="dots"
+              ><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span
+            >
+          </div>
           <div class="progress-track" aria-hidden="true">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
@@ -42,15 +41,49 @@
 
       const progressFill = document.getElementById("progress-fill")
       const progressTrack = document.querySelector(".progress-track")
+      const container = document.querySelector(".splash-container")
+      const statusText = document.getElementById("status-text")
+
       let currentProgress = 0
       let targetProgress = 0
       let animationFrameId = null
       let lastAnimationTime = performance.now()
       let hasShownProgress = false
 
+      const updateStatusText = (progress) => {
+        if (!statusText) return
+
+        let text = "Starting"
+        if (progress >= 100) {
+          text = "Ready"
+        } else if (progress >= 85) {
+          text = "Almost ready"
+        } else if (progress >= 50) {
+          text = "Syncing local assets"
+        } else if (progress >= 20) {
+          text = "Checking databases"
+        } else if (progress > 0) {
+          text = "Starting"
+        }
+
+        const currentText = statusText.childNodes[0]?.textContent?.trim()
+        if (currentText !== text) {
+          if (text === "Ready") {
+            statusText.innerHTML = "Ready"
+          } else {
+            statusText.innerHTML = `${text}<span class="dots"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>`
+          }
+          statusText.style.opacity = 0.5
+          setTimeout(() => {
+            statusText.style.opacity = 1
+          }, 50)
+        }
+      }
+
       const renderProgress = () => {
         if (!progressFill) return
         progressFill.style.width = `${currentProgress}%`
+        updateStatusText(currentProgress)
       }
 
       const animateProgress = (timestamp) => {
@@ -99,11 +132,14 @@
               animationFrameId = null
             }
             renderProgress()
-            window.requestAnimationFrame(() => {
-              window.requestAnimationFrame(() => {
-                window.facenoxElectron?.reportSplashRenderedProgress?.(100)
-              })
-            })
+
+            if (container) {
+              container.classList.add("is-success")
+            }
+
+            setTimeout(() => {
+              window.facenoxElectron?.reportSplashRenderedProgress?.(100)
+            }, 600)
             return
           }
 
@@ -113,6 +149,35 @@
       }
 
       renderProgress()
+
+      // Smooth delayed reveal of status details to prioritize primary logo breathing entrance
+      setTimeout(() => {
+        const brandBlock = document.querySelector(".brand-block")
+        if (brandBlock) {
+          brandBlock.classList.add("is-visible")
+        }
+      }, 500)
+
+      // Enable local browser previewing/testing
+      if (!window.facenoxElectron) {
+        window.facenoxElectron = {
+          reportSplashRenderedProgress: (progress) => {
+            console.log("[Mock IPC] reportSplashRenderedProgress:", progress)
+          },
+          onSplashProgress: (callback) => {
+            let current = 0
+            const interval = setInterval(() => {
+              current += 4
+              if (current > 100) {
+                clearInterval(interval)
+              } else {
+                callback({ progress: current })
+              }
+            }, 180)
+            return () => clearInterval(interval)
+          },
+        }
+      }
 
       if (window.facenoxElectron?.onSplashProgress) {
         window.facenoxElectron.onSplashProgress(({ progress }) => {

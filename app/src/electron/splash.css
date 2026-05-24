@@ -1,5 +1,6 @@
 :root {
-  --accent: #22d3ee;
+  --bg-main: #090c11;
+  --text-muted: rgba(255, 255, 255, 0.65);
 }
 
 * {
@@ -17,140 +18,197 @@ body {
   pointer-events: none;
   user-select: none;
   font-family:
+    "Inter",
     "Segoe UI",
-    Inter,
     system-ui,
     -apple-system,
-    BlinkMacSystemFont,
     sans-serif;
+  background: transparent;
 }
 
 .splash-container {
   position: relative;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   height: 100%;
-  padding: 28px 26px 22px;
-  background:
-    radial-gradient(circle at 50% 28%, rgba(34, 211, 238, 0.08), transparent 34%),
-    linear-gradient(180deg, rgba(8, 13, 20, 0.96), rgba(6, 10, 16, 0.98));
+  padding: 32px;
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
   overflow: hidden;
-}
-
-.ambient {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(36px);
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.ambient-a {
-  top: 12%;
-  left: 18%;
-  width: 126px;
-  height: 126px;
-  background: rgba(34, 211, 238, 0.14);
-}
-
-.ambient-b {
-  right: 14%;
-  bottom: 18%;
-  width: 92px;
-  height: 92px;
-  background: rgba(34, 211, 238, 0.08);
+  transition:
+    border-color 0.5s ease,
+    box-shadow 0.5s ease;
 }
 
 .splash-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 28px;
+  width: 100%;
 }
 
-.logo-wrapper {
+.logo-pulse-wrapper {
   position: relative;
-  width: 114px;
-  height: 114px;
-  animation: logoAppear 0.5s ease-out;
+  width: 82px;
+  height: 82px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation:
+    logoEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    logoBreathing 4s cubic-bezier(0.44, 0.05, 0.55, 0.95) infinite;
 }
 
-@keyframes logoAppear {
+@keyframes logoEntrance {
   from {
     opacity: 0;
-    transform: scale(0.85);
+    transform: scale(0.88);
   }
-
   to {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-.logo-glow {
-  position: absolute;
-  inset: -26px;
-  background: radial-gradient(
-    circle at center,
-    rgba(34, 211, 238, 0.14) 0%,
-    rgba(34, 211, 238, 0.045) 52%,
-    transparent 76%
-  );
-  filter: blur(22px);
-  animation: glowBreath 2.8s ease-in-out infinite;
-}
-
-@keyframes glowBreath {
+@keyframes logoBreathing {
   0%,
   100% {
-    opacity: 0.58;
-    transform: scale(0.98);
+    transform: scale(1);
   }
-
   50% {
-    opacity: 0.92;
-    transform: scale(1.03);
+    transform: scale(1.04);
   }
 }
 
 .logo {
-  position: absolute;
-  inset: 0;
+  position: relative;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 16px rgba(34, 211, 238, 0.18));
-  z-index: 1;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+  z-index: 2;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .brand-block {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 6px;
   text-align: center;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.brand {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  color: rgba(255, 255, 255, 0.8);
+.brand-block.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+  min-height: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dots {
+  display: inline-flex;
+  margin-left: 1.5px;
+}
+
+.dot {
+  opacity: 0;
+  animation-duration: 1.8s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.dot:nth-child(1) {
+  animation-name: dot-fade-1;
+}
+
+.dot:nth-child(2) {
+  animation-name: dot-fade-2;
+}
+
+.dot:nth-child(3) {
+  animation-name: dot-fade-3;
+}
+
+@keyframes dot-fade-1 {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dot-fade-2 {
+  0%,
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dot-fade-3 {
+  0%,
+  50% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .progress-track {
   position: relative;
-  z-index: 1;
-  margin-top: 22px;
-  width: 188px;
+  margin-top: 10px;
+  width: 140px;
   height: 2px;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 999px;
   overflow: hidden;
   opacity: 0;
-  transition: opacity 180ms ease;
+  transition: opacity 0.3s ease;
 }
 
 .progress-track.is-visible {
@@ -160,39 +218,36 @@ body {
 .progress-fill {
   height: 100%;
   width: 0;
-  background-image:
-    linear-gradient(90deg, rgba(34, 211, 238, 0.62), rgba(34, 211, 238, 0.94)),
-    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.24) 45%, transparent 100%);
-  background-size:
-    100% 100%,
-    52px 100%;
-  background-repeat: no-repeat;
-  background-position:
-    0 0,
-    -64px 0;
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.22);
-  animation: progressFillShimmer 1.9s linear infinite;
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  transition: width 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes progressFillShimmer {
-  from {
-    background-position:
-      0 0,
-      -64px 0;
-  }
+.splash-container.is-success {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
 
-  to {
-    background-position:
-      0 0,
-      160px 0;
-  }
+.splash-container.is-success .logo {
+  transform: scale(1.08);
+}
+
+.splash-container.is-success .status-text {
+  color: #ffffff;
+  opacity: 0.95;
+}
+
+.splash-container.is-success .progress-fill {
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-wrapper,
-  .logo-glow,
-  .progress-fill {
+  .logo-pulse-wrapper,
+  .splash-container {
     animation: none !important;
-    transition: none !important;
   }
 }
