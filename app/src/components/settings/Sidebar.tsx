@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[220px] lg:w-[240px]">
       {/* Workspace Switcher Header */}
-      <div className="px-3 pt-6 pb-2">
+      <div className="pt-6 pr-[16px] pb-2 pl-[16px]">
         <div className="flex items-center gap-1">
           <div className="min-w-0 flex-1" key={dropdownGroups.length}>
             <Dropdown
@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <div className="hover-scrollbar settings-sidebar-scroll flex-1 space-y-6 overflow-y-auto pt-4 pr-3 pb-6 pl-3">
+      <div className="hover-scrollbar settings-sidebar-scroll flex-1 space-y-6 overflow-y-auto pt-4 pr-[6px] pb-6 pl-[16px]">
         <section>
           <div className="mb-3 px-3">
             <h2 className="text-[10px] font-bold tracking-[0.15em] text-white/55 uppercase">
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {isActive && (
                       <motion.div
                         layoutId="active-settings-sidebar-pill"
-                        className="absolute left-[-12px] h-5 w-[3px] rounded-r-full bg-cyan-400"
+                        className="absolute left-[-16px] h-5 w-[3px] rounded-r-full bg-cyan-400"
                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                       />
                     )}
@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="active-settings-sidebar-pill"
-                      className="absolute left-[-12px] h-5 w-[3px] rounded-r-full bg-cyan-400"
+                      className="absolute left-[-16px] h-5 w-[3px] rounded-r-full bg-cyan-400"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
