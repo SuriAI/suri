@@ -25,9 +25,19 @@ async def get_group_stats(
     ),
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Get attendance statistics for a group"""
+    """
+    Get attendance statistics for a group.
+
+    Retrieves or dynamically computes daily attendance metrics for members of
+    a specific group on the target date.
+
+    If sessions do not exist in the database yet, or if they are legacy sessions
+    missing active check-in times, this endpoint triggers an on-the-fly recomputation.
+    Recomputation evaluates chronological raw logs against the historical,
+    effective-dated group rules (e.g. tracking late check-in bounds or check-out times)
+    to build precise and up-to-date attendance state before calculating group-wide statistics.
+    """
     try:
-        # Check if group exists
         group = await repo.get_group(group_id)
         if not group:
             raise HTTPException(status_code=404, detail="Group not found")
@@ -36,17 +46,14 @@ async def get_group_stats(
             get_time_authority().current_time_local()
         )
 
-        # Get group members
         members = await repo.get_group_members(group_id)
-
         rule_history = await repo.get_group_rules(group_id)
-
-        # Get existing sessions for the target date
         sessions = await repo.get_sessions(
             group_id=group_id, start_date=target_date, end_date=target_date
         )
 
-        # Check if we need to recompute sessions (missing or outdated)
+        # Trigger self-healing computation if stats are queried for a date with no session states,
+        # or if existing records show inconsistent check-in details due to partial raw logs.
         needs_recompute = not sessions
         if sessions:
             for session in sessions:
@@ -56,7 +63,6 @@ async def get_group_stats(
 
         if needs_recompute:
             start_of_day, end_of_day = local_day_bounds(target_date)
-
             records = await repo.get_records(
                 group_id=group_id, start_date=start_of_day, end_date=end_of_day
             )
@@ -76,12 +82,10 @@ async def get_group_stats(
 
             await repo.upsert_sessions(session_dicts)
 
-        # Re-fetch sessions
         sessions = await repo.get_sessions(
             group_id=group_id, start_date=target_date, end_date=target_date
         )
 
-        # Calculate statistics
         service = AttendanceService(repo)
         stats = service.calculate_group_stats(members, sessions)
 
@@ -98,7 +102,12 @@ async def get_group_stats(
 async def get_database_stats(
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Get database statistics"""
+    """
+    Get database statistics.
+
+    Retrieves high-level metadata from the underlying storage repository,
+    such as total face records and structural layout information.
+    """
     try:
         stats = await repo.get_stats()
         return DatabaseStatsResponse(**stats)
