@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/github/v/release/facenox/facenox?style=flat-square&color=22d3ee" alt="Version">
   <img src="https://img.shields.io/github/stars/facenox/facenox?style=flat-square&color=22d3ee" alt="Stars">
   <img src="https://img.shields.io/github/issues/facenox/facenox?style=flat-square&color=22d3ee" alt="Issues">
+  <a href="https://github.com/sponsors/facenox"><img src="https://img.shields.io/github/sponsors/facenox?style=flat-square&color=22d3ee&labelColor=30363d" alt="Sponsor"></a>
 </p>
 
 <p align="center">
