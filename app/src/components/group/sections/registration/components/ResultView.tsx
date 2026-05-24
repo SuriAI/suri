@@ -29,29 +29,41 @@ export function ResultView({
       ))}
 
       <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1.5">
-        <button
-          onClick={onRetake}
-          className={`min-w-[100px] rounded-lg border px-2 py-2 text-xs font-medium transition-all ${
-            hasError ?
-              "border-red-500/30 bg-red-500/20 text-red-200 hover:bg-red-500/30"
-            : "border-white/10 bg-[rgba(10,13,18,0.78)] text-white/70 hover:bg-[rgba(15,19,25,0.9)] hover:text-white"
-          }`}>
-          Retake
-        </button>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={onRetake}
+              className={`min-w-[100px] rounded-lg border px-2 py-2 text-xs font-medium transition-all ${
+                hasError ?
+                  "border-red-500/30 bg-red-500/20 text-red-200 hover:bg-red-500/30"
+                : "border-white/10 bg-[rgba(10,13,18,0.78)] text-white/70 hover:bg-[rgba(15,19,25,0.9)] hover:text-white"
+              }`}>
+              Retake
+            </button>
 
-        {!hasError && (
-          <button
-            onClick={onRegister}
-            disabled={!framesReady || isRegistering}
-            className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(10,13,18,0.78)] disabled:text-white/55">
-            {isRegistering ?
-              <>
-                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                <span>Saving...</span>
-              </>
-            : "Register"}
-          </button>
-        )}
+            {!hasError && (
+              <button
+                onClick={onRegister}
+                disabled={!framesReady || isRegistering}
+                className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(10,13,18,0.78)] disabled:text-white/55">
+                {isRegistering ?
+                  <>
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                    <span>Saving...</span>
+                  </>
+                : "Register"}
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1 text-[9px] font-semibold tracking-[0.2em] text-white/40 uppercase">
+            <span>R</span>
+            <span>Retake</span>
+            <span className="px-1 text-white/20">|</span>
+            <span>Enter</span>
+            <span>Register</span>
+          </div>
+        </div>
       </div>
     </div>
   )

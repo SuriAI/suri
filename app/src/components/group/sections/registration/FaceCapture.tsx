@@ -36,7 +36,7 @@ export function FaceCapture({
   const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
 
   const [source, setSource] = useState<CaptureSource>(initialSource ?? "live")
-  const [selectedMemberId, setSelectedMemberId] = useState("")
+  const [selectedMemberId, setSelectedMemberId] = useState(preSelectedId ?? "")
   const [memberSearch, setMemberSearch] = useState("")
   const [registrationFilter, setRegistrationFilter] = useState<
     "all" | "registered" | "non-registered"
@@ -49,12 +49,6 @@ export function FaceCapture({
     }
     return status
   }, [members])
-
-  useEffect(() => {
-    if (preSelectedId) {
-      setTimeout(() => setSelectedMemberId(preSelectedId), 0)
-    }
-  }, [preSelectedId])
 
   const {
     videoRef,
@@ -148,6 +142,43 @@ export function FaceCapture({
       startCamera()
     }
   }, [resetFrames, source, startCamera])
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!selectedMemberId) return
+
+      if (e.key === " " || e.key === "Space") {
+        if (source === "live" && isStreaming && isVideoReady && !isProcessing) {
+          e.preventDefault()
+          handleCaptureFromCamera()
+        }
+      } else if (e.key === "r" || e.key === "R") {
+        if (framesReady) {
+          e.preventDefault()
+          resetWorkflow()
+        }
+      } else if (e.key === "Enter") {
+        if (framesReady && !isRegistering) {
+          e.preventDefault()
+          void handleWrapperRegister()
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyPress)
+    return () => window.removeEventListener("keydown", handleKeyPress)
+  }, [
+    selectedMemberId,
+    source,
+    isStreaming,
+    isVideoReady,
+    isProcessing,
+    framesReady,
+    isRegistering,
+    handleCaptureFromCamera,
+    resetWorkflow,
+    handleWrapperRegister,
+  ])
 
   const selectedMemberName = useMemo(() => {
     const m = members.find((m) => m.person_id === selectedMemberId)
@@ -307,7 +338,18 @@ export function FaceCapture({
                   </div>
 
                   {/* Empty div for right side balance */}
-                  <div className="w-32"></div>
+                  <div className="flex w-32 items-center justify-end">
+                    <div className="flex flex-col items-end gap-1 text-[9px] leading-tight font-medium text-white/45">
+                      <div className="flex items-center gap-1">
+                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">Space</kbd>
+                        <span>Capture</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">R</kbd>
+                        <span>Retake</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>
