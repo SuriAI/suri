@@ -21,3 +21,6 @@ ulid==1.1
 
 # Backup encryption
 cryptography==46.0.5
+
+# OS Keyring Access
+keyring==25.1.0
