@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { attendanceManager, backendService } from "@/services"
+import { generateDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
-import { Dropdown, InfoPopover } from "@/components/shared"
 import { dataUrlToBlob } from "@/utils/dataUrl"
 import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed"
 
@@ -38,13 +38,19 @@ export function CameraQueue({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [queueStarted, setQueueStarted] = useState(false)
-  const autoAdvance = true
-  const [memberSearch, setMemberSearch] = useState("")
-  const [registrationFilter, setRegistrationFilter] = useState<
-    "all" | "registered" | "non-registered"
-  >("all")
+  const [showCompletion, setShowCompletion] = useState(false)
+  const [lastBbox, setLastBbox] = useState<{
+    bbox: [number, number, number, number]
+    width: number
+    height: number
+    capturedAt: number
+  } | null>(null)
+  const [bboxStyle, setBboxStyle] = useState<{
+    left: string
+    top: string
+    width: string
+    height: string
+  } | null>(null)
 
   const {
     videoRef,
@@ -59,12 +65,10 @@ export function CameraQueue({
   } = useCamera()
 
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const cameraContainerRef = useRef<HTMLDivElement | null>(null)
 
   const currentMember = memberQueue[currentIndex]
   const totalMembers = memberQueue.length
-  const completedMembers = memberQueue.filter(
-    (m) => m.status === "completed" || m.status === "skipped",
-  ).length
   const isQueueFinished = useMemo(() => {
     return (
       memberQueue.length > 0 &&
@@ -92,58 +96,119 @@ export function CameraQueue({
   }, [])
 
   useEffect(() => {
-    if (isQueueFinished) {
+    if (showCompletion) {
       stopCamera()
     }
-  }, [isQueueFinished, stopCamera])
-  const memberOrderMap = useMemo(
-    () => new Map(members.map((member, index) => [member.person_id, index])),
-    [members],
-  )
-  const filteredMembers = useMemo(() => {
-    let result = members
-    if (memberSearch.trim()) {
-      const query = memberSearch.toLowerCase()
-      result = result.filter(
-        (member) =>
-          member.name.toLowerCase().includes(query) ||
-          member.person_id.toLowerCase().includes(query),
-      )
-    }
-    if (registrationFilter !== "all") {
-      result = result.filter((member) => {
-        const isRegistered = member.has_face_data ?? false
-        return registrationFilter === "registered" ? isRegistered : !isRegistered
-      })
-    }
-    return result
-  }, [members, memberSearch, registrationFilter])
+  }, [showCompletion, stopCamera])
 
-  const setupQueue = useCallback((selectedMembers: AttendanceMember[]) => {
-    const queue: QueuedMember[] = selectedMembers.map((member) => ({
-      personId: member.person_id,
-      name: member.name,
-      role: member.role,
-      status: "pending" as CaptureStatus,
-    }))
-    setMemberQueue(queue)
-    setCurrentIndex(0)
-  }, [])
-
-  // Auto-start if preselectedIds are provided (initial load only)
+  // Prepare the queue from preselectedIds or provide an empty queue if none
   useEffect(() => {
-    if (memberQueue.length === 0 && preselectedIds && preselectedIds.length > 0) {
-      const preselectedMembers = members.filter((m) => preselectedIds.includes(m.person_id))
-      setupQueue(preselectedMembers)
-      setQueueStarted(true)
+    if (memberQueue.length === 0) {
+      const targetIds = preselectedIds || []
+      const membersWithDisplayNames = generateDisplayNames(members)
+      const initialQueue: QueuedMember[] = membersWithDisplayNames
+        .filter((m) => targetIds.includes(m.person_id))
+        .map((member) => ({
+          personId: member.person_id,
+          name: member.displayName,
+          role: member.role,
+          status: "pending" as CaptureStatus,
+        }))
+      setMemberQueue(initialQueue)
     }
-  }, [preselectedIds, members, setupQueue, memberQueue.length])
+  }, [preselectedIds, members, memberQueue.length])
 
   useEffect(() => {
-    if (totalMembers > 0 && completedMembers === totalMembers && !isProcessing) {
-      setSuccessMessage(`All ${totalMembers} members registered successfully!`)
+    if (!isQueueFinished) {
+      setShowCompletion(false)
+      return
     }
-  }, [completedMembers, totalMembers, isProcessing])
+
+    const timer = setTimeout(() => {
+      setShowCompletion(true)
+      if (onRefresh) {
+        void onRefresh()
+      }
+    }, 850)
+
+    return () => clearTimeout(timer)
+  }, [isQueueFinished, onRefresh])
+
+  useEffect(() => {
+    setLastBbox(null)
+    setBboxStyle(null)
+  }, [currentMember?.personId])
+
+  const updateBboxStyle = useCallback(() => {
+    if (!lastBbox || !cameraContainerRef.current) {
+      return
+    }
+
+    const container = cameraContainerRef.current
+    const containerWidth = container.clientWidth
+    const containerHeight = container.clientHeight
+
+    if (containerWidth === 0 || containerHeight === 0) {
+      return
+    }
+
+    const imageAspectRatio = lastBbox.width / lastBbox.height
+    const containerAspectRatio = containerWidth / containerHeight
+
+    let displayedWidth: number
+    let displayedHeight: number
+    let offsetX = 0
+    let offsetY = 0
+
+    if (imageAspectRatio > containerAspectRatio) {
+      displayedWidth = containerWidth
+      displayedHeight = containerWidth / imageAspectRatio
+      offsetY = (containerHeight - displayedHeight) / 2
+    } else {
+      displayedHeight = containerHeight
+      displayedWidth = containerHeight * imageAspectRatio
+      offsetX = (containerWidth - displayedWidth) / 2
+    }
+
+    const [bboxX, bboxY, bboxW, bboxH] = lastBbox.bbox
+    const scaleX = displayedWidth / lastBbox.width
+    const scaleY = displayedHeight / lastBbox.height
+
+    const bboxLeft = bboxX * scaleX + offsetX
+    const bboxTop = bboxY * scaleY + offsetY
+    const bboxWidth = bboxW * scaleX
+    const bboxHeight = bboxH * scaleY
+
+    setBboxStyle({
+      left: `${bboxLeft}px`,
+      top: `${bboxTop}px`,
+      width: `${bboxWidth}px`,
+      height: `${bboxHeight}px`,
+    })
+  }, [lastBbox])
+
+  useEffect(() => {
+    if (!lastBbox) {
+      setBboxStyle(null)
+      return
+    }
+
+    updateBboxStyle()
+    const clearTimer = setTimeout(() => {
+      setBboxStyle(null)
+    }, 900)
+
+    const container = cameraContainerRef.current
+    const resizeObserver = new ResizeObserver(() => updateBboxStyle())
+    if (container) {
+      resizeObserver.observe(container)
+    }
+
+    return () => {
+      clearTimeout(clearTimer)
+      resizeObserver.disconnect()
+    }
+  }, [lastBbox, updateBboxStyle])
 
   const capturePhoto = useCallback(async () => {
     if (!videoRef.current || !currentMember) {
@@ -220,6 +285,13 @@ export function CameraQueue({
         )
       }
 
+      setLastBbox({
+        bbox: bestFace.bbox as [number, number, number, number],
+        width,
+        height,
+        capturedAt: Date.now(),
+      })
+
       setMemberQueue((prev) =>
         prev.map((m, idx) =>
           idx === currentIndex ?
@@ -259,17 +331,9 @@ export function CameraQueue({
       )
       setMemberQueue(updatedQueue)
 
-      if (autoAdvance) {
-        const nextPending = findNextPendingIndex(updatedQueue, currentIndex)
-        if (nextPending !== -1) {
-          setTimeout(() => setCurrentIndex(nextPending), 1000)
-        } else {
-          // All done
-          setSuccessMessage(`All ${totalMembers} members registered successfully!`)
-          if (onRefresh) {
-            await onRefresh()
-          }
-        }
+      const nextPending = findNextPendingIndex(updatedQueue, currentIndex)
+      if (nextPending !== -1) {
+        setTimeout(() => setCurrentIndex(nextPending), 1000)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Capture failed"
@@ -288,22 +352,11 @@ export function CameraQueue({
     } finally {
       setIsProcessing(false)
     }
-  }, [
-    currentMember,
-    currentIndex,
-    memberQueue,
-    group.id,
-    autoAdvance,
-    totalMembers,
-    onRefresh,
-    videoRef,
-    members,
-    findNextPendingIndex,
-  ])
+  }, [currentMember, currentIndex, memberQueue, group.id, videoRef, members, findNextPendingIndex])
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (!queueStarted || !currentMember || isQueueFinished) return
+      if (!currentMember || isQueueFinished) return
 
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault()
@@ -357,7 +410,6 @@ export function CameraQueue({
     window.addEventListener("keydown", handleKeyPress)
     return () => window.removeEventListener("keydown", handleKeyPress)
   }, [
-    queueStarted,
     currentMember,
     isProcessing,
     isVideoReady,
@@ -372,7 +424,7 @@ export function CameraQueue({
   // Automatically start camera in queue mode if queue is started and not already streaming
   useEffect(() => {
     let active = true
-    if (queueStarted && currentMember && !isStreaming && !successMessage && !isQueueFinished) {
+    if (currentMember && !isStreaming && !showCompletion && !isQueueFinished) {
       const timer = setTimeout(() => {
         if (active) {
           startCamera()
@@ -383,13 +435,13 @@ export function CameraQueue({
     return () => {
       active = false
     }
-  }, [queueStarted, currentMember, isStreaming, successMessage, startCamera, isQueueFinished])
+  }, [currentMember, isStreaming, showCompletion, startCamera, isQueueFinished])
 
   useEffect(() => () => stopCamera(), [stopCamera])
 
   return (
     <div className="flex h-full flex-col overflow-hidden text-white">
-      {error && !queueStarted && (
+      {error && (
         <div className="mx-6 mt-4 flex shrink-0 items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           <div className="h-1 w-1 animate-pulse rounded-full bg-red-400" />
           <span className="flex-1">{error}</span>
@@ -401,218 +453,27 @@ export function CameraQueue({
         </div>
       )}
 
-      {successMessage && !queueStarted && (
-        <div className="mx-6 mt-4 flex shrink-0 items-center gap-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">
-          <div className="h-1 w-1 animate-pulse rounded-full bg-cyan-400" />
-          <span className="flex-1">{successMessage}</span>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="rounded-lg border border-cyan-500/30 bg-cyan-500/25 px-3 py-1.5 text-xs font-bold text-cyan-400 transition hover:bg-cyan-500/35">
-              Done
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
-          {!queueStarted ?
+          {memberQueue.length === 0 ?
             <motion.div
-              key="setup"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="absolute inset-0 flex min-h-0 flex-col">
-              <div className="custom-scroll flex-1 overflow-y-auto px-6 py-6">
-                <div className="space-y-6">
-                  <div>
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-white">
-                          Select Members to Register
-                        </h3>
-                        <InfoPopover
-                          title="Privacy & Data Protection"
-                          description="Facial features are converted into encrypted numeric signatures stored strictly on this device. No raw photos are saved, and data is never shared with third parties."
-                          details={[
-                            "100% on-device processing",
-                            "Encrypted face signature database",
-                            "Revokable authorization at any time",
-                          ]}
-                          side="right"
-                        />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {memberQueue.length > 0 && (
-                          <button
-                            onClick={() => setupQueue([])}
-                            className="text-xs text-white/55 transition hover:text-white/70">
-                            Clear
-                          </button>
-                        )}
-                        {memberQueue.length < members.length && (
-                          <button
-                            onClick={() => setupQueue(members)}
-                            className="text-xs text-cyan-300 transition hover:text-cyan-200">
-                            Select All
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        <div className="group/search relative h-9 min-w-55 flex-1">
-                          <svg
-                            className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            />
-                          </svg>
-                          <input
-                            type="search"
-                            value={memberSearch}
-                            onChange={(e) => setMemberSearch(e.target.value)}
-                            placeholder="Search members..."
-                            className="h-full w-full rounded-lg border border-white/5 bg-white/5 pr-3 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
-                          />
-                        </div>
-                        <Dropdown
-                          options={[
-                            { value: "all", label: "Filter: All" },
-                            { value: "non-registered", label: "Not Registered" },
-                            { value: "registered", label: "Registered" },
-                          ]}
-                          value={registrationFilter}
-                          onChange={(value) => {
-                            if (value) {
-                              setRegistrationFilter(
-                                value as "all" | "registered" | "non-registered",
-                              )
-                            }
-                          }}
-                          buttonClassName="!bg-white/5 !border-white/5 py-2.5 px-3 h-full min-w-[130px] rounded-md text-[11px] font-bold tracking-wider text-white hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 focus:!bg-white/[0.08]"
-                          optionClassName="text-[11px] font-bold tracking-wider"
-                          iconClassName="text-[10px]"
-                          showPlaceholderOption={false}
-                          allowClear={false}
-                          className="min-w-42.5"
-                        />
-                      </div>
-
-                      <div className="custom-scroll max-h-64 space-y-1.5 overflow-y-auto">
-                        {members.length === 0 && (
-                          <div className="rounded-lg border border-dashed border-white/5 bg-white/5 px-3 py-8 text-center">
-                            <div className="text-xs text-white/55">No members yet</div>
-                          </div>
-                        )}
-
-                        {members.length > 0 && filteredMembers.length === 0 && (
-                          <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-6 text-center">
-                            <div className="text-xs text-white/55">
-                              {memberSearch.trim() ?
-                                `No results for "${memberSearch}"`
-                              : registrationFilter === "registered" ?
-                                "No registered members"
-                              : registrationFilter === "non-registered" ?
-                                "All members are registered"
-                              : "No members found"}
-                            </div>
-                          </div>
-                        )}
-
-                        {filteredMembers.map((member) => {
-                          const isInQueue = memberQueue.some((m) => m.personId === member.person_id)
-                          const isRegistered = member.has_face_data ?? false
-                          return (
-                            <button
-                              key={member.person_id}
-                              type="button"
-                              onClick={() => {
-                                if (isInQueue) {
-                                  const memberIndex = memberQueue.findIndex(
-                                    (m) => m.personId === member.person_id,
-                                  )
-                                  setMemberQueue((prev) =>
-                                    prev.filter((m) => m.personId !== member.person_id),
-                                  )
-                                  if (memberIndex !== -1 && memberIndex < currentIndex) {
-                                    setCurrentIndex((prev) => Math.max(0, prev - 1))
-                                  }
-                                  return
-                                }
-                                const newMember: QueuedMember = {
-                                  personId: member.person_id,
-                                  name: member.name,
-                                  role: member.role,
-                                  status: "pending",
-                                }
-                                setMemberQueue((prev) => {
-                                  const next = [...prev, newMember]
-                                  return next.sort(
-                                    (a, b) =>
-                                      (memberOrderMap.get(a.personId) ?? 0) -
-                                      (memberOrderMap.get(b.personId) ?? 0),
-                                  )
-                                })
-                              }}
-                              className={`group w-full rounded-lg border px-3 py-2 text-left transition-all ${
-                                isInQueue ?
-                                  "border-cyan-400/50 bg-linear-to-br from-cyan-500/10 to-cyan-500/5"
-                                : "border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/10"
-                              }`}>
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <div className="truncate text-sm font-medium text-white">
-                                    {member.name}
-                                  </div>
-                                  {member.role && (
-                                    <div className="truncate text-xs text-white/55">
-                                      {member.role}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {isRegistered && (
-                                    <span className="text-[11px] font-black tracking-wider text-cyan-400/80">
-                                      Registered
-                                    </span>
-                                  )}
-                                  {isInQueue && (
-                                    <span className="text-xs text-cyan-300">Queued</span>
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {memberQueue.length === 0 && (
-                    <div className="text-xs text-white/55">
-                      Select at least one member to start.
-                    </div>
-                  )}
-
-                  {memberQueue.length > 0 && (
-                    <button
-                      onClick={() => setQueueStarted(true)}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/20 active:scale-95">
-                      Start Queue ({memberQueue.length})
-                    </button>
-                  )}
-                </div>
+              key="no-members"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex h-full flex-col items-center justify-center p-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
+                <i className="fa-solid fa-users-slash text-2xl text-white/20"></i>
               </div>
+              <h3 className="mb-1 text-sm font-semibold text-white">No members selected</h3>
+              <p className="max-w-[200px] text-[11px] leading-relaxed text-white/45">
+                Please select members from the group list before starting the webcam registration.
+              </p>
+              <button
+                onClick={onClose}
+                className="mt-6 rounded-lg border border-white/10 bg-white/5 px-6 py-2 text-[11px] font-bold text-white/70 transition-all hover:bg-white/10 hover:text-white">
+                Back to list
+              </button>
             </motion.div>
           : <motion.div
               key="queue-active"
@@ -621,8 +482,10 @@ export function CameraQueue({
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-hidden p-6">
-              <div className="relative aspect-video min-h-0 w-full max-w-4xl shrink overflow-hidden rounded-xl">
-                {isQueueFinished ?
+              <div
+                ref={cameraContainerRef}
+                className="relative aspect-video min-h-0 w-full max-w-4xl shrink overflow-hidden rounded-xl">
+                {showCompletion ?
                   <div className="animate-in fade-in absolute inset-0 z-30 flex flex-col items-center justify-center p-8 duration-300">
                     <h3 className="mb-1 text-xl font-bold text-white">Queue Completed</h3>
                     <p className="mb-6 max-w-xs text-center text-[11px] text-white/55">
@@ -649,14 +512,6 @@ export function CameraQueue({
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-center">
-                      <button
-                        onClick={onClose}
-                        className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-8 py-2.5 text-[11px] font-bold tracking-wider text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all hover:bg-cyan-500/30 active:scale-95">
-                        Close Queue
-                      </button>
-                    </div>
                   </div>
                 : <>
                     <CameraFeed
@@ -671,6 +526,15 @@ export function CameraQueue({
                       selectedCamera={selectedCamera}
                       setSelectedCamera={setSelectedCamera}
                     />
+
+                    {bboxStyle && (
+                      <div className="pointer-events-none absolute inset-0 z-10">
+                        <div
+                          className="absolute border-2 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.45)]"
+                          style={bboxStyle}
+                        />
+                      </div>
+                    )}
 
                     {/* Privacy Shield Overlay */}
                     {(() => {
@@ -796,21 +660,9 @@ export function CameraQueue({
                                 {currentMember.status === "completed" && "Registered"}
                                 {currentMember.status === "skipped" && "Skipped"}
                               </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setMemberQueue((prev) =>
-                                    prev.map((m, idx) =>
-                                      idx === currentIndex ?
-                                        { ...m, status: "pending" as CaptureStatus }
-                                      : m,
-                                    ),
-                                  )
-                                  setError(null)
-                                }}
-                                className="pointer-events-auto mt-4 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[9px] font-bold tracking-wider text-white/60 transition-all hover:bg-white/10 hover:text-white">
-                                Register Again
-                              </button>
+                              <div className="mt-3 text-[9px] font-semibold tracking-[0.2em] text-white/40 uppercase">
+                                Retake: Press R
+                              </div>
                             </motion.div>
                           </motion.div>
                         )}
@@ -894,22 +746,44 @@ export function CameraQueue({
 
                   {/* Right: Controls & Shortcuts Cluster */}
                   <div className="flex w-40 items-center justify-end gap-3">
-                    {/* Keyboard shortcuts - Compact guide on the right side */}
-                    <div className="flex shrink-0 flex-col items-end gap-1 text-[9px] leading-tight font-medium text-white/45">
-                      <div className="flex items-center gap-1">
-                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">Space</kbd>
-                        <span>Capture</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">←</kbd>
-                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">→</kbd>
-                        <span>Navigate</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">S</kbd>
-                        <span>Skip</span>
-                        <kbd className="ml-1 rounded bg-white/10 px-1 py-0.5 text-white/65">R</kbd>
-                        <span>Reset</span>
+                    <div className="flex flex-col items-end gap-1">
+                      {currentMember &&
+                        currentMember.status !== "pending" &&
+                        currentMember.status !== "capturing" && (
+                          <button
+                            onClick={() => {
+                              setMemberQueue((prev) =>
+                                prev.map((m, idx) =>
+                                  idx === currentIndex ?
+                                    { ...m, status: "pending" as CaptureStatus }
+                                  : m,
+                                ),
+                              )
+                              setError(null)
+                            }}
+                            className="text-[9px] font-semibold tracking-[0.2em] text-white/55 uppercase transition-colors hover:text-white">
+                            Retake
+                          </button>
+                        )}
+                      {/* Keyboard shortcuts - Compact guide on the right side */}
+                      <div className="flex shrink-0 flex-col items-end gap-1 text-[9px] leading-tight font-medium text-white/45">
+                        <div className="flex items-center gap-1">
+                          <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">Space</kbd>
+                          <span>Capture</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">←</kbd>
+                          <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">→</kbd>
+                          <span>Navigate</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <kbd className="rounded bg-white/10 px-1 py-0.5 text-white/65">S</kbd>
+                          <span>Skip</span>
+                          <kbd className="ml-1 rounded bg-white/10 px-1 py-0.5 text-white/65">
+                            R
+                          </kbd>
+                          <span>Reset</span>
+                        </div>
                       </div>
                     </div>
                   </div>
