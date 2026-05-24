@@ -1,8 +1,8 @@
 <a id="readme-top"></a>
 
-<p align="center">
-  <img src="app/public/assets/header.png" alt="Facenox Banner" width="100%">
-</p>
+<h1 align="center">
+  <img src="app/public/assets/header.png" alt="Facenox - Offline-first Face Recognition Software" width="100%">
+</h1>
 
 <p align="center">
   <img src="https://img.shields.io/github/license/facenox/facenox?style=flat-square&color=22d3ee" alt="License">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <strong>Facenox is an offline-first face recognition system for attendance.</strong><br>
+  <strong>Facenox is offline-first face recognition software for real-time attendance tracking.</strong><br>
   Built for privacy. It handles detection, matching, and liveness checks entirely on your local hardware so your biometric data never leaves your device.
 </p>
 
