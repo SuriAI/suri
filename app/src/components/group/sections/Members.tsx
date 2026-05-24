@@ -400,8 +400,24 @@ export function Members({
                         <div>
                           <Dropdown
                             options={[
-                              { value: "camera", label: "📸 via Webcam" },
-                              { value: "upload", label: "📁 via File Upload" },
+                              {
+                                value: "camera",
+                                label: (
+                                  <div className="flex items-center gap-2">
+                                    <i className="fa-solid fa-video w-3 text-center text-xs text-white/55" />
+                                    <span>via Webcam</span>
+                                  </div>
+                                ),
+                              },
+                              {
+                                value: "upload",
+                                label: (
+                                  <div className="flex items-center gap-2">
+                                    <i className="fa-solid fa-folder-open w-3 text-center text-xs text-white/55" />
+                                    <span>via File Upload</span>
+                                  </div>
+                                ),
+                              },
                             ]}
                             value={null}
                             onChange={(val) => {

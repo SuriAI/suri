@@ -5,7 +5,7 @@ import { Tooltip } from "@/components/shared/Tooltip"
 
 export interface DropdownOption<T = string> {
   value: T
-  label: string
+  label: React.ReactNode
   disabled?: boolean
 }
 
@@ -86,7 +86,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
 
     const selectedOption = options.find((opt) => opt.value === value)
     const displayText = selectedOption?.label || placeholder
-    const shouldShowCustomTooltip = (text: string) => text.length > 24
+    const shouldShowCustomTooltip = (text: unknown) => typeof text === "string" && text.length > 24
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
