@@ -207,15 +207,17 @@ const AttendanceRecordItem = memo(
         onMouseLeave={() => setIsHovered(false)}
         className={`group relative border-b border-l-2 border-white/5 py-2.5 pr-3 pl-4 transition-colors hover:bg-[rgba(22,28,36,0.52)] ${timeStatus?.borderColor || "border-l-transparent"}`}>
         <div className="flex items-center gap-3 py-0.5">
-          <MemberTooltip
-            member={member}
-            position="top"
-            showRegistration={false}
-            role={record.event_type === "check_out" ? "Exiting" : "Present"}>
-            <span className="min-w-0 flex-1 cursor-help truncate text-[13px] font-medium text-white/90 hover:text-white">
-              {displayName}
-            </span>
-          </MemberTooltip>
+          <div className="min-w-0 flex-1 truncate">
+            <MemberTooltip
+              member={member}
+              position="top"
+              showRegistration={false}
+              role={record.event_type === "check_out" ? "Exiting" : "Present"}>
+              <span className="cursor-help text-[13px] font-medium text-white/90 hover:text-white">
+                {displayName}
+              </span>
+            </MemberTooltip>
+          </div>
 
           <div className="flex shrink-0 items-center gap-2">
             {timeStatus?.label && (
