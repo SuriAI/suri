@@ -53,8 +53,8 @@
   background-clip: padding-box;
   border-top: 2px solid transparent;
   border-bottom: 2px solid transparent;
-  border-left: 4px solid transparent;
-  border-right: 2px solid transparent;
+  border-left: 1px solid transparent;
+  border-right: 5px solid transparent;
   border-radius: 20px;
   transition: background-color 0.15s ease;
 }

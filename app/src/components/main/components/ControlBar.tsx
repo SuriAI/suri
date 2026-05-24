@@ -75,7 +75,7 @@ export function ControlBar({
     }
 
     const cyanStyle =
-      "bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:shadow-[0_0_15px_rgba(6,182,212,0.22)] tracking-wider"
+      "bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 hover:text-cyan-200 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.35)] tracking-wider"
 
     const standardTooltip = hasCameraDevices ? "Start attendance logging" : "No camera detected"
 

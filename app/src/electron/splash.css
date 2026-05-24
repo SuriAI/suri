@@ -1,5 +1,5 @@
 :root {
-  --bg-main: #090c11;
+  --bg-main: #06080c;
   --text-muted: rgba(255, 255, 255, 0.65);
 }
 
@@ -36,7 +36,7 @@ body {
   height: 100%;
   padding: 32px;
   background: var(--bg-main);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.8),

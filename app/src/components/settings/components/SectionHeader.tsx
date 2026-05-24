@@ -15,7 +15,7 @@ export function SectionHeader({
   actions,
 }: SectionHeaderProps) {
   return (
-    <div className="sticky top-0 z-20 flex h-[57px] items-center border-b border-white/[0.04] bg-[rgba(15,19,25,0.7)] pr-16 pl-10">
+    <div className="sticky top-0 z-20 flex h-[57px] items-center border-b border-white/[0.04] bg-[#06080c] pr-16 pl-10">
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center">
           <div className="flex items-center gap-2 text-[13px] font-medium">
