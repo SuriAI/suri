@@ -1,14 +1,25 @@
 /**
- * Member cache helper functions to eliminate code duplication
+ * Helper utilities for managing local state caching of attendance members
+ * to optimize rendering cycles and avoid redundant IPC/API database roundtrips.
  */
 
 import { attendanceManager } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 /**
- * Gets a member from cache or fetches it if not cached
- * Returns null if member doesn't exist or doesn't belong to the group (when group is specified)
- * When no group is specified, returns member name if available, otherwise uses personId
+ * Retrieves a member's metadata from cache, falling back to a database lookup if not yet loaded.
+ *
+ * @param personId The unique identifier of the member to search.
+ * @param currentGroup The group context to validate membership against. If provided,
+ *   the returned member must match the group ID, otherwise `null` is returned.
+ * @param memberCacheRef A reference to the Map caching the member lookups.
+ * @returns A promise resolving to the member object and their computed display name,
+ *   or `null` if the member is invalid or not in the target group.
+ *
+ * @remarks
+ * In multi-camera or high-throughput recognition scenarios, this helper mitigates
+ * database lock issues and IPC bottleneck overhead by caching lookup results locally
+ * (including negative caching as `null` to avoid constant lookups for missing records).
  */
 export async function getMemberFromCache(
   personId: string,
@@ -23,7 +34,6 @@ export async function getMemberFromCache(
       memberCacheRef.current.set(personId, member || null)
     }
 
-    // If we have a current group, validate that the member exists and belongs to it
     if (currentGroup) {
       if (!member) {
         return null
@@ -34,9 +44,6 @@ export async function getMemberFromCache(
       }
       return { member, memberName }
     } else {
-      // No current group - just get the member name if available (matches original behavior)
-      // Note: This branch should never execute in practice due to early return in performFaceRecognition
-      // but kept for defensive programming and to match original code structure
       const memberName = member?.name || personId
       return { member: member || null, memberName }
     }
@@ -44,9 +51,6 @@ export async function getMemberFromCache(
     if (memberCacheRef.current) {
       memberCacheRef.current.set(personId, null)
     }
-    // In original, when no group, catch doesn't return null - it just sets cache to null
-    // But since we're in a try-catch, we need to return something
-    // Match original: if no group, return with personId as name; if group, return null
     if (currentGroup) {
       return null
     } else {
