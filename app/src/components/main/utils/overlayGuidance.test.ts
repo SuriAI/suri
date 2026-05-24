@@ -130,8 +130,10 @@ describe("overlayGuidance", () => {
         verifyingHintActive: true,
       }),
     ).toEqual({
-      label: "Move slightly, ensure face is clearly visible with proper lighting",
+      label: "Verifying...",
+      subLabel: "Slowly turn head",
       tone: "warning",
+      isLowLight: undefined,
     })
   })
 
@@ -153,8 +155,9 @@ describe("overlayGuidance", () => {
         verifyingHintActive: false,
       }),
     ).toEqual({
-      label: "Poor lighting detected",
+      label: "Verifying...",
       tone: "warning",
+      isLowLight: true,
     })
   })
 
@@ -176,8 +179,34 @@ describe("overlayGuidance", () => {
         verifyingHintActive: true,
       }),
     ).toEqual({
+      label: "Verifying...",
+      subLabel: "Slowly turn head",
+      tone: "warning",
+      isLowLight: true,
+    })
+  })
+
+  it("shows Poor lighting detected when low-light is true and status is neutral", () => {
+    const face = baseFace({
+      low_light: true,
+      liveness: {
+        is_real: null,
+        status: "real",
+      },
+    })
+
+    expect(
+      getOverlayGuidance(face, {
+        enableSpoofDetection: true,
+        recognitionEnabled: true,
+        recognitionResult: null,
+        holdStillActive: false,
+        verifyingHintActive: false,
+      }),
+    ).toEqual({
       label: "Poor lighting detected",
       tone: "warning",
+      isLowLight: true,
     })
   })
 
@@ -315,6 +344,10 @@ describe("overlayGuidance", () => {
         holdStillActive: false,
         verifyingHintActive: false,
       }),
-    ).toBeNull()
+    ).toEqual({
+      label: "Verifying...",
+      tone: "warning",
+      isLowLight: undefined,
+    })
   })
 })
