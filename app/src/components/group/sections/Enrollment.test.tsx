@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { Registration } from "@/components/group/sections/Registration"
+import { Enrollment } from "@/components/group/sections/Enrollment"
 import { useGroupUIStore } from "@/components/group/stores"
 import { createAttendanceGroup, createAttendanceMember } from "@/test/fixtures"
 import { renderWithProviders } from "@/test/utils/renderWithProviders"
@@ -15,12 +15,12 @@ vi.mock("framer-motion", () => ({
   },
 }))
 
-vi.mock("@/components/group/sections/registration/CameraQueue", () => ({
+vi.mock("@/components/group/sections/enrollment/CameraQueue", () => ({
   CameraQueue: () => <div>Mock Camera Queue</div>,
 }))
 
-vi.mock("@/components/group/sections/registration/BulkRegistration", () => ({
-  BulkRegistration: () => <div>Mock Bulk Registration</div>,
+vi.mock("@/components/group/sections/enrollment/BulkEnrollment", () => ({
+  BulkEnrollment: () => <div>Mock Bulk Enrollment</div>,
 }))
 
 vi.mock("@/components/group/sections", async () => {
@@ -46,19 +46,19 @@ function resetGroupUIStore() {
     showEditGroupModal: false,
     editingMember: null,
     preSelectedMemberId: null,
-    lastRegistrationSource: null,
-    lastRegistrationMode: null,
+    lastEnrollmentSource: null,
+    lastEnrollmentMode: null,
   })
 }
 
-describe("Registration", () => {
+describe("Enrollment", () => {
   beforeEach(() => {
     resetGroupUIStore()
   })
 
   it("shows the empty state when the group has no members", () => {
     renderWithProviders(
-      <Registration
+      <Enrollment
         group={createAttendanceGroup()}
         members={[]}
         onRefresh={vi.fn()}
@@ -71,9 +71,9 @@ describe("Registration", () => {
     expect(screen.getByRole("button", { name: "Add Member" })).toBeInTheDocument()
   })
 
-  it("lets the user choose a registration source", async () => {
+  it("lets the user choose an enrollment source", async () => {
     const { user } = renderWithProviders(
-      <Registration
+      <Enrollment
         group={createAttendanceGroup()}
         members={[createAttendanceMember({ person_id: "member-1", name: "Alice" })]}
         onRefresh={vi.fn()}
@@ -82,18 +82,18 @@ describe("Registration", () => {
     )
 
     await user.click(screen.getByRole("button", { name: /Camera/i }))
-    expect(useGroupUIStore.getState().lastRegistrationSource).toBe("camera")
-    expect(useGroupUIStore.getState().lastRegistrationMode).toBeNull()
+    expect(useGroupUIStore.getState().lastEnrollmentSource).toBe("camera")
+    expect(useGroupUIStore.getState().lastEnrollmentMode).toBeNull()
   })
 
   it("renders the bulk upload path for upload + bulk mode", () => {
     useGroupUIStore.setState({
-      lastRegistrationSource: "upload",
-      lastRegistrationMode: "bulk",
+      lastEnrollmentSource: "upload",
+      lastEnrollmentMode: "bulk",
     })
 
     renderWithProviders(
-      <Registration
+      <Enrollment
         group={createAttendanceGroup()}
         members={[createAttendanceMember({ person_id: "member-1", name: "Alice" })]}
         onRefresh={vi.fn()}
@@ -101,17 +101,17 @@ describe("Registration", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("Mock Bulk Registration")).toBeInTheDocument()
+    expect(screen.getByText("Mock Bulk Enrollment")).toBeInTheDocument()
   })
 
   it("renders the camera queue path for camera + queue mode", () => {
     useGroupUIStore.setState({
-      lastRegistrationSource: "camera",
-      lastRegistrationMode: "queue",
+      lastEnrollmentSource: "camera",
+      lastEnrollmentMode: "queue",
     })
 
     renderWithProviders(
-      <Registration
+      <Enrollment
         group={createAttendanceGroup()}
         members={[createAttendanceMember({ person_id: "member-1", name: "Alice" })]}
         onRefresh={vi.fn()}
@@ -124,12 +124,12 @@ describe("Registration", () => {
 
   it("renders the face capture path for single mode and maps camera to live", () => {
     useGroupUIStore.setState({
-      lastRegistrationSource: "camera",
-      lastRegistrationMode: "single",
+      lastEnrollmentSource: "camera",
+      lastEnrollmentMode: "single",
     })
 
     renderWithProviders(
-      <Registration
+      <Enrollment
         group={createAttendanceGroup()}
         members={[createAttendanceMember({ person_id: "member-1", name: "Alice" })]}
         onRefresh={vi.fn()}

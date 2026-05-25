@@ -176,11 +176,11 @@ export const ManualEntryModal = ({
               <div className="flex items-center gap-1">
                 <span className="text-white/55">
                   <strong className="font-semibold text-white/70">{noFaceCount}</strong> Not
-                  Registered
+                  Enrolled
                 </span>
                 <InfoPopover
-                  title="Not Registered"
-                  description='Members marked "Not Registered" weren&apos;t registered yet or were imported from another device. They must be enrolled on this device to be recognized by the camera.'
+                  title="Not Enrolled"
+                  description='Members marked "Not Enrolled" weren&apos;t enrolled yet or were imported from another device. They must be enrolled on this device to be recognized by the camera.'
                   side="top"
                 />
               </div>
@@ -251,7 +251,7 @@ export const ManualEntryModal = ({
                           </div>
                           {!isPresent && hasFace === false && (
                             <div className="block px-2 py-1 text-[11px] font-bold tracking-tight text-white/30 transition-opacity group-hover/item:hidden">
-                              Not Registered
+                              Not Enrolled
                             </div>
                           )}
                         </>

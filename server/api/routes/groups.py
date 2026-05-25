@@ -166,7 +166,7 @@ async def delete_group(
 async def get_group_persons(
     group_id: str, repo: AttendanceRepository = Depends(get_repository)
 ):
-    """Get all registered persons for a specific group"""
+    """Get all enrolled persons for a specific group"""
     try:
         from core.lifespan import face_recognizer
 
@@ -220,15 +220,15 @@ async def get_group_persons(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/{group_id}/persons/{person_id}/register-face")
-async def register_face_for_group_person(
+@router.post("/{group_id}/persons/{person_id}/enroll-face")
+async def enroll_member_for_group_person(
     group_id: str,
     person_id: str,
     image: UploadFile = File(...),
     metadata: str = Form(...),
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Register face data for a specific person in a group with anti-duplicate protection.
+    """Enroll member for recognition in a group with anti-duplicate protection.
     Supports multipart/form-data for consistent, high-performance binary transfer.
     """
     try:
@@ -261,12 +261,12 @@ async def register_face_for_group_person(
 
         if img is None:
             raise HTTPException(
-                status_code=400, detail="Failed to decode registration image"
+                status_code=400, detail="Failed to decode enrollment image"
             )
 
         service = AttendanceService(repo, face_recognizer=face_recognizer)
         try:
-            return await service.register_face(
+            return await service.enroll_member(
                 group_id, person_id, img, bbox, landmarks_5, enable_liveness
             )
         except PermissionError as e:
@@ -280,7 +280,7 @@ async def register_face_for_group_person(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error registering face for group person: {e}")
+        logger.error(f"Error enrolling face for group person: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
@@ -333,14 +333,14 @@ async def bulk_detect_faces(
             raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/{group_id}/bulk-register-faces")
-async def bulk_register_faces(
+@router.post("/{group_id}/bulk-enroll-faces")
+async def bulk_enroll_members(
     group_id: str,
     metadata: str = Form(...),
     images: List[UploadFile] = File(...),
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Register multiple faces in bulk (Multipart)"""
+    """Enroll multiple faces in bulk (Multipart)"""
     try:
         from core.lifespan import face_recognizer
         import json
@@ -351,12 +351,10 @@ async def bulk_register_faces(
             raise HTTPException(status_code=400, detail=f"Invalid metadata format: {e}")
 
         if not regs or not images:
-            raise HTTPException(
-                status_code=400, detail="Missing registrations or images"
-            )
+            raise HTTPException(status_code=400, detail="Missing enrollments or images")
 
         service = AttendanceService(repo, face_recognizer=face_recognizer)
-        return await service.bulk_register_with_files(group_id, regs, images)
+        return await service.bulk_enroll_with_files(group_id, regs, images)
 
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
@@ -366,5 +364,5 @@ async def bulk_register_faces(
         else:
             raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error in bulk face registration: {e}")
+        logger.error(f"Error in bulk face enrollment: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

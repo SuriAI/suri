@@ -64,9 +64,9 @@ export const useSettings = ({
   const [addMemberHandler, setAddMemberHandler] = useState<(() => void) | null>(null)
   const [isGroupExpanded, setIsGroupExpanded] = useState(true)
 
-  const registrationSource = useGroupUIStore((state) => state.lastRegistrationSource)
-  const registrationMode = useGroupUIStore((state) => state.lastRegistrationMode)
-  const setRegistrationState = useGroupUIStore((state) => state.setRegistrationState)
+  const enrollmentSource = useGroupUIStore((state) => state.lastEnrollmentSource)
+  const enrollmentMode = useGroupUIStore((state) => state.lastEnrollmentMode)
+  const setEnrollmentState = useGroupUIStore((state) => state.setEnrollmentState)
 
   const toggleQuickSetting = (key: keyof QuickSettings) => {
     const newSettings = { ...quickSettings, [key]: !quickSettings[key] }
@@ -136,7 +136,7 @@ export const useSettings = ({
       const ok = await dialog.confirm({
         title: "Clear all face data",
         message:
-          "Clear ALL face recognition data? This will delete all registered faces and embeddings. This cannot be undone.",
+          "Clear ALL face recognition data? This will delete all enrolled faces and embeddings. This cannot be undone.",
         confirmText: "Clear data",
         cancelText: "Cancel",
         confirmVariant: "danger",
@@ -234,8 +234,8 @@ export const useSettings = ({
     validInitialGroup,
     loadSystemData,
     forceLiveness,
-    registrationSource,
-    registrationMode,
-    setRegistrationState,
+    enrollmentSource,
+    enrollmentMode,
+    setEnrollmentState,
   }
 }

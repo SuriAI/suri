@@ -1,12 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { EmptyState } from "@/components/group/shared/EmptyState"
-import { CameraQueue } from "@/components/group/sections/registration/CameraQueue"
-import { BulkRegistration } from "@/components/group/sections/registration/BulkRegistration"
+import { CameraQueue } from "@/components/group/sections/enrollment/CameraQueue"
+import { BulkEnrollment } from "@/components/group/sections/enrollment/BulkEnrollment"
 import { FaceCapture } from "@/components/group/sections"
 import { useGroupUIStore } from "@/components/group/stores"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
-interface RegistrationProps {
+interface EnrollmentProps {
   group: AttendanceGroup
   members: AttendanceMember[]
   onRefresh: () => void
@@ -15,19 +15,19 @@ interface RegistrationProps {
   onAddMember?: () => void
 }
 
-export function Registration({
+export function Enrollment({
   group,
   members,
   onRefresh,
   deselectMemberTrigger,
   onHasSelectedMemberChange,
   onAddMember,
-}: RegistrationProps) {
-  const source = useGroupUIStore((state) => state.lastRegistrationSource)
-  const mode = useGroupUIStore((state) => state.lastRegistrationMode)
-  const setRegistrationState = useGroupUIStore((state) => state.setRegistrationState)
-  const handleBack = useGroupUIStore((state) => state.handleRegistrationBack)
-  const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
+}: EnrollmentProps) {
+  const source = useGroupUIStore((state) => state.lastEnrollmentSource)
+  const mode = useGroupUIStore((state) => state.lastEnrollmentMode)
+  const setEnrollmentState = useGroupUIStore((state) => state.setEnrollmentState)
+  const handleBack = useGroupUIStore((state) => state.handleEnrollmentBack)
+  const resetEnrollment = useGroupUIStore((state) => state.resetEnrollment)
 
   const animationProps = {
     initial: { opacity: 0, scale: 0.995 },
@@ -42,11 +42,11 @@ export function Registration({
     <AnimatePresence mode="wait">
       {mode === "bulk" && source === "upload" ?
         <motion.div key="bulk-upload" {...animationProps}>
-          <BulkRegistration
+          <BulkEnrollment
             group={group}
             members={members}
             onRefresh={onRefresh}
-            onClose={resetRegistration}
+            onClose={resetEnrollment}
           />
         </motion.div>
       : mode === "queue" && source === "camera" ?
@@ -55,7 +55,7 @@ export function Registration({
             group={group}
             members={members}
             onRefresh={onRefresh}
-            onClose={resetRegistration}
+            onClose={resetEnrollment}
           />
         </motion.div>
       : mode === "single" && source ?
@@ -93,7 +93,7 @@ export function Registration({
             <div className="mb-12 flex items-start justify-between">
               <div className="space-y-1">
                 <h2 className="text-center text-2xl font-black tracking-tighter text-white/90">
-                  How would you like to register members for{" "}
+                  How would you like to enroll members for{" "}
                   <span className="text-cyan-400/80">{group.name}</span>?
                 </h2>
               </div>
@@ -110,7 +110,7 @@ export function Registration({
 
             <div className="grid grid-cols-2 gap-6">
               <button
-                onClick={() => setRegistrationState("camera", null)}
+                onClick={() => setEnrollmentState("camera", null)}
                 className="group relative flex flex-col items-center gap-6 rounded-[2.5rem] border border-white/5 bg-transparent p-10 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/10">
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/5 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]">
                   <i className="fa-solid fa-camera-retro text-4xl text-white/55 transition-colors group-hover:text-cyan-400"></i>
@@ -126,7 +126,7 @@ export function Registration({
               </button>
 
               <button
-                onClick={() => setRegistrationState("upload", null)}
+                onClick={() => setEnrollmentState("upload", null)}
                 className="group relative flex flex-col items-center gap-6 rounded-[2.5rem] border border-white/5 bg-transparent p-10 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/10">
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/5 transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]">
                   <i className="fa-solid fa-upload text-4xl text-white/55 transition-colors group-hover:text-cyan-400"></i>
@@ -150,7 +150,7 @@ export function Registration({
           <div className="w-full max-w-lg space-y-8">
             <div className="relative space-y-2 text-center">
               <h2 className="text-2xl font-black tracking-tight text-white/90">
-                Registration Method
+                Enrollment Method
               </h2>
               <p className="mx-auto max-w-xs text-xs leading-relaxed font-medium text-white/20">
                 Selected Source:{" "}
@@ -162,7 +162,7 @@ export function Registration({
 
             <div className="grid gap-4">
               <button
-                onClick={() => setRegistrationState(source, "single")}
+                onClick={() => setEnrollmentState(source, "single")}
                 className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-transparent p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/10">
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-transparent">
                   <i className="fa-solid fa-user text-xl text-white/55 group-hover:text-cyan-400"></i>
@@ -179,7 +179,7 @@ export function Registration({
 
               {source === "upload" && (
                 <button
-                  onClick={() => setRegistrationState(source, "bulk")}
+                  onClick={() => setEnrollmentState(source, "bulk")}
                   className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-transparent p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/10">
                   <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-transparent">
                     <i className="fa-solid fa-layer-group text-xl text-white/55 group-hover:text-cyan-400"></i>
@@ -197,7 +197,7 @@ export function Registration({
 
               {source === "camera" && (
                 <button
-                  onClick={() => setRegistrationState(source, "queue")}
+                  onClick={() => setEnrollmentState(source, "queue")}
                   className="group flex items-center gap-6 rounded-4xl border border-white/5 bg-transparent p-6 transition-all duration-300 hover:border-cyan-500/30 hover:bg-cyan-500/10">
                   <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 transition-colors group-hover:bg-transparent">
                     <i className="fa-solid fa-users-viewfinder text-xl text-white/55 group-hover:text-cyan-400"></i>

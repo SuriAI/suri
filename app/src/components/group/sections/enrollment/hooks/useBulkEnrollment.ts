@@ -3,9 +3,9 @@ import { useState, useCallback, useMemo } from "react"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import type {
   DetectedFace,
-  BulkRegistrationResult,
-  BulkRegisterResponseItem,
-} from "@/components/group/sections/registration/types"
+  BulkEnrollmentResult,
+  BulkEnrollResponseItem,
+} from "@/components/group/sections/enrollment/types"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { makeId, readFileAsDataUrl } from "@/utils/imageHelpers"
 
@@ -14,7 +14,7 @@ export interface PendingDuplicateFiles {
   newFiles: File[]
 }
 
-export function useBulkRegistration(
+export function useBulkEnrollment(
   group: AttendanceGroup,
   members: AttendanceMember[],
   onRefresh?: () => Promise<void> | void,
@@ -22,11 +22,9 @@ export function useBulkRegistration(
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [detectedFaces, setDetectedFaces] = useState<DetectedFace[]>([])
   const [isDetecting, setIsDetecting] = useState(false)
-  const [isRegistering, setIsRegistering] = useState(false)
+  const [isEnrolling, setIsEnrolling] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [registrationResults, setRegistrationResults] = useState<BulkRegistrationResult[] | null>(
-    null,
-  )
+  const [enrollmentResults, setEnrollmentResults] = useState<BulkEnrollmentResult[] | null>(null)
 
   const [pendingDuplicates, setPendingDuplicates] = useState<PendingDuplicateFiles | null>(null)
 
@@ -225,7 +223,7 @@ export function useBulkRegistration(
     setUploadedFiles([])
     setDetectedFaces([])
     setError(null)
-    setRegistrationResults(null)
+    setEnrollmentResults(null)
     setPendingDuplicates(null)
   }, [])
 
@@ -241,19 +239,19 @@ export function useBulkRegistration(
     )
   }, [])
 
-  const handleBulkRegister = useCallback(async () => {
+  const handleBulkEnroll = useCallback(async () => {
     const assignedFaces = detectedFaces.filter((f) => f.assignedPersonId)
     if (assignedFaces.length === 0) {
       setError("Please assign at least one face to a member")
       return
     }
 
-    setIsRegistering(true)
+    setIsEnrolling(true)
     setError(null)
-    setRegistrationResults(null)
+    setEnrollmentResults(null)
 
     try {
-      const registrations = assignedFaces.map((face) => {
+      const enrollments = assignedFaces.map((face) => {
         const imageIdx = parseInt(face.imageId.replace("image_", ""))
         const file = uploadedFiles[imageIdx]
         return {
@@ -265,9 +263,9 @@ export function useBulkRegistration(
         }
       })
 
-      const result = await attendanceManager.bulkRegisterFaces(
+      const result = await attendanceManager.bulkEnrollFaces(
         group.id,
-        registrations,
+        enrollments,
         uploadedFiles
           .filter((_, i) =>
             assignedFaces.some((f) => parseInt(f.imageId.replace("image_", "")) === i),
@@ -277,25 +275,23 @@ export function useBulkRegistration(
             filename: file.name,
           })),
       )
-      const results: BulkRegistrationResult[] = result.results.map(
-        (r: BulkRegisterResponseItem) => ({
-          personId: r.person_id,
-          memberName: r.member_name || "",
-          success: r.success,
-          error: r.error,
-          qualityWarning: r.quality_warning,
-        }),
-      )
+      const results: BulkEnrollmentResult[] = result.results.map((r: BulkEnrollResponseItem) => ({
+        personId: r.person_id,
+        memberName: r.member_name || "",
+        success: r.success,
+        error: r.error,
+        qualityWarning: r.quality_warning,
+      }))
 
-      setRegistrationResults(results)
+      setEnrollmentResults(results)
       if (result.success_count > 0 && onRefresh) {
         await onRefresh()
       }
     } catch (err) {
-      console.error("Bulk registration error:", err)
-      setError(err instanceof Error ? err.message : "Failed to register faces")
+      console.error("Bulk enrollment error:", err)
+      setError(err instanceof Error ? err.message : "Failed to enroll members")
     } finally {
-      setIsRegistering(false)
+      setIsEnrolling(false)
     }
   }, [detectedFaces, uploadedFiles, group.id, onRefresh])
 
@@ -303,10 +299,10 @@ export function useBulkRegistration(
     uploadedFiles,
     detectedFaces,
     isDetecting,
-    isRegistering,
+    isEnrolling,
     error,
     setError,
-    registrationResults,
+    enrollmentResults,
     availableMembers,
     pendingDuplicates,
     handleFilesSelected,
@@ -315,7 +311,7 @@ export function useBulkRegistration(
     handleDismissDuplicates,
     handleAssignMember,
     handleUnassign,
-    handleBulkRegister,
+    handleBulkEnroll,
     handleClearFiles,
   }
 }

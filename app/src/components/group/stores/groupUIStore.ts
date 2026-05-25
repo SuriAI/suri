@@ -21,8 +21,8 @@ interface GroupUIState {
   // Modal data
   editingMember: AttendanceMember | null
   preSelectedMemberId: string | null
-  lastRegistrationSource: "upload" | "camera" | null
-  lastRegistrationMode: "single" | "bulk" | "queue" | null
+  lastEnrollmentSource: "upload" | "camera" | null
+  lastEnrollmentMode: "single" | "bulk" | "queue" | null
 
   // Actions - Navigation
   setActiveSection: (section: GroupSection) => void
@@ -44,13 +44,13 @@ interface GroupUIState {
   closeEditGroup: () => void
 
   // Audit 5.0 Deep Linking
-  jumpToRegistration: (memberId: string, source?: "upload" | "camera") => void
-  setRegistrationState: (
+  jumpToEnrollment: (memberId: string, source?: "upload" | "camera") => void
+  setEnrollmentState: (
     source: "upload" | "camera" | null,
     mode: "single" | "bulk" | "queue" | null,
   ) => void
-  handleRegistrationBack: () => void
-  resetRegistration: () => void
+  handleEnrollmentBack: () => void
+  resetEnrollment: () => void
 }
 
 const initialState = {
@@ -64,8 +64,8 @@ const initialState = {
   showEditGroupModal: false,
   editingMember: null as AttendanceMember | null,
   preSelectedMemberId: null as string | null,
-  lastRegistrationSource: null as "upload" | "camera" | null,
-  lastRegistrationMode: null as "single" | "bulk" | "queue" | null,
+  lastEnrollmentSource: null as "upload" | "camera" | null,
+  lastEnrollmentMode: null as "single" | "bulk" | "queue" | null,
 }
 
 const MODAL_EXIT_DURATION_MS = 260
@@ -125,39 +125,39 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
 
   reset: () => set(initialState),
 
-  jumpToRegistration: (memberId: string, source: "upload" | "camera" = "camera") => {
+  jumpToEnrollment: (memberId: string, source: "upload" | "camera" = "camera") => {
     set({
       preSelectedMemberId: memberId,
-      lastRegistrationSource: source,
-      lastRegistrationMode: "single",
+      lastEnrollmentSource: source,
+      lastEnrollmentMode: "single",
     })
   },
 
-  setRegistrationState: (source, mode) => {
+  setEnrollmentState: (source, mode) => {
     set({
-      lastRegistrationSource: source,
-      lastRegistrationMode: mode,
+      lastEnrollmentSource: source,
+      lastEnrollmentMode: mode,
     })
     persistentSettings
       .setUIState({
-        lastRegistrationSource: source,
-        lastRegistrationMode: mode,
+        lastEnrollmentSource: source,
+        lastEnrollmentMode: mode,
       })
       .catch(console.error)
   },
 
-  handleRegistrationBack: () => {
-    const { lastRegistrationSource, lastRegistrationMode } = get()
-    if (lastRegistrationMode) {
-      get().setRegistrationState(lastRegistrationSource, null)
-    } else if (lastRegistrationSource) {
-      get().setRegistrationState(null, null)
+  handleEnrollmentBack: () => {
+    const { lastEnrollmentSource, lastEnrollmentMode } = get()
+    if (lastEnrollmentMode) {
+      get().setEnrollmentState(lastEnrollmentSource, null)
+    } else if (lastEnrollmentSource) {
+      get().setEnrollmentState(null, null)
     }
     set({ preSelectedMemberId: null })
   },
 
-  resetRegistration: () => {
-    get().setRegistrationState(null, null)
+  resetEnrollment: () => {
+    get().setEnrollmentState(null, null)
     set({ preSelectedMemberId: null })
   },
 }))
@@ -168,8 +168,8 @@ if (typeof window !== "undefined") {
     useGroupUIStore.setState({
       isSidebarCollapsed: uiState.groupSidebarCollapsed,
       activeSection: (uiState.activeGroupSection as GroupSection) || "overview",
-      lastRegistrationSource: uiState.lastRegistrationSource as "upload" | "camera" | null,
-      lastRegistrationMode: uiState.lastRegistrationMode as "single" | "bulk" | "queue" | null,
+      lastEnrollmentSource: uiState.lastEnrollmentSource as "upload" | "camera" | null,
+      lastEnrollmentMode: uiState.lastEnrollmentMode as "single" | "bulk" | "queue" | null,
     })
   })
 }

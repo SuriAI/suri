@@ -11,32 +11,32 @@ from hooks import face_processing
 
 class DummyFaceRecognizer:
     def __init__(self) -> None:
-        self.registered: dict[str | None, dict[str, dict]] = defaultdict(dict)
+        self.enrolled: dict[str | None, dict[str, dict]] = defaultdict(dict)
         self.threshold = 0.5
 
-    async def register_person(
+    async def enroll_person(
         self,
         person_id: str,
         image: np.ndarray,
         landmarks_5: list,
         organization_id: str | None,
     ) -> dict:
-        self.registered[organization_id][person_id] = {
+        self.enrolled[organization_id][person_id] = {
             "shape": image.shape,
             "landmarks_5": landmarks_5,
         }
         return {
             "success": True,
             "person_id": person_id,
-            "total_persons": len(self.registered[organization_id]),
+            "total_persons": len(self.enrolled[organization_id]),
         }
 
     async def get_all_persons(self, organization_id: str | None) -> list[str]:
-        return sorted(self.registered[organization_id].keys())
+        return sorted(self.enrolled[organization_id].keys())
 
     async def get_stats(self, organization_id: str | None) -> dict:
         return {
-            "total_persons": len(self.registered[organization_id]),
+            "total_persons": len(self.enrolled[organization_id]),
             "threshold": self.threshold,
         }
 
@@ -48,7 +48,7 @@ class DummyFaceRecognizer:
         organization_id: str | None,
     ) -> dict:
         for person_id in allowed_person_ids:
-            if person_id in self.registered[organization_id]:
+            if person_id in self.enrolled[organization_id]:
                 return {
                     "success": True,
                     "person_id": person_id,
@@ -74,24 +74,24 @@ class DummyFaceRecognizer:
         ]
 
     async def remove_person(self, person_id: str, organization_id: str | None) -> dict:
-        removed = self.registered[organization_id].pop(person_id, None)
+        removed = self.enrolled[organization_id].pop(person_id, None)
         return {
             "success": removed is not None,
-            "total_persons": len(self.registered[organization_id]),
+            "total_persons": len(self.enrolled[organization_id]),
             "error": None if removed is not None else "Person not found",
         }
 
     async def update_person_id(
         self, old_person_id: str, new_person_id: str, organization_id: str | None
     ) -> dict:
-        existing = self.registered[organization_id].pop(old_person_id, None)
+        existing = self.enrolled[organization_id].pop(old_person_id, None)
         if existing is None:
             return {"success": False, "message": "No biometric data for person"}
-        self.registered[organization_id][new_person_id] = existing
+        self.enrolled[organization_id][new_person_id] = existing
         return {"success": True, "updated_records": 1}
 
     async def clear_database(self, organization_id: str | None) -> dict:
-        self.registered[organization_id].clear()
+        self.enrolled[organization_id].clear()
         return {"success": True}
 
     def invalidate_cache(self, organization_id: str | None) -> None:
@@ -296,7 +296,7 @@ def _create_member(
     assert response.status_code == 200, response.text
 
 
-def _register_metadata(enable_liveness_detection: bool = False) -> str:
+def _enroll_metadata(enable_liveness_detection: bool = False) -> str:
     return json.dumps(
         {
             "bbox": [8, 12, 42, 36],
@@ -306,7 +306,7 @@ def _register_metadata(enable_liveness_detection: bool = False) -> str:
     )
 
 
-def test_register_and_list_face_data_stays_org_scoped(biometrics_env) -> None:
+def test_enroll_and_list_face_data_stays_org_scoped(biometrics_env) -> None:
     client = biometrics_env["client"]
     org_one_headers = _headers("org-one")
     org_two_headers = _headers("org-two")
@@ -331,22 +331,22 @@ def test_register_and_list_face_data_stays_org_scoped(biometrics_env) -> None:
     )
 
     image_bytes = _make_image_bytes()
-    metadata = _register_metadata()
+    metadata = _enroll_metadata()
 
-    register_one = client.post(
-        f"/attendance/groups/{group_one_id}/persons/shared-person/register-face",
+    enroll_one = client.post(
+        f"/attendance/groups/{group_one_id}/persons/shared-person/enroll-face",
         headers=org_one_headers,
         data={"metadata": metadata},
         files={"image": ("face-one.jpg", image_bytes, "image/jpeg")},
     )
-    register_two = client.post(
-        f"/attendance/groups/{group_two_id}/persons/shared-person/register-face",
+    enroll_two = client.post(
+        f"/attendance/groups/{group_two_id}/persons/shared-person/enroll-face",
         headers=org_two_headers,
         data={"metadata": metadata},
         files={"image": ("face-two.jpg", image_bytes, "image/jpeg")},
     )
-    assert register_one.status_code == 200, register_one.text
-    assert register_two.status_code == 200, register_two.text
+    assert enroll_one.status_code == 200, enroll_one.text
+    assert enroll_two.status_code == 200, enroll_two.text
 
     persons_one = client.get("/face/persons", headers=org_one_headers)
     persons_two = client.get("/face/persons", headers=org_two_headers)
@@ -399,16 +399,16 @@ def test_recognition_is_org_scoped_and_masks_nonconsenting_member(
     )
 
     image_bytes = _make_image_bytes()
-    register_metadata = _register_metadata()
+    enroll_metadata = _enroll_metadata()
 
     for group_id, headers in (
         (group_one_id, org_one_headers),
         (group_two_id, org_two_headers),
     ):
         response = client.post(
-            f"/attendance/groups/{group_id}/persons/shared-person/register-face",
+            f"/attendance/groups/{group_id}/persons/shared-person/enroll-face",
             headers=headers,
-            data={"metadata": register_metadata},
+            data={"metadata": enroll_metadata},
             files={"image": ("face.jpg", image_bytes, "image/jpeg")},
         )
         if headers is org_one_headers:
@@ -416,7 +416,7 @@ def test_recognition_is_org_scoped_and_masks_nonconsenting_member(
         else:
             assert response.status_code == 403, response.text
 
-    fake_recognizer.registered["org-two"]["shared-person"] = {"shape": (48, 48, 3)}
+    fake_recognizer.enrolled["org-two"]["shared-person"] = {"shape": (48, 48, 3)}
 
     recognize_metadata_one = json.dumps(
         {
@@ -503,13 +503,13 @@ def test_detection_websocket_live_pipeline_embeds_recognition_and_logs_once(
     )
 
     image_bytes = _make_image_bytes()
-    register = client.post(
-        f"/attendance/groups/{group_id}/persons/live-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{group_id}/persons/live-person/enroll-face",
         headers=org_headers,
-        data={"metadata": _register_metadata()},
+        data={"metadata": _enroll_metadata()},
         files={"image": ("face.jpg", image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 200, register.text
+    assert enroll.status_code == 200, enroll.text
 
     from utils.websocket_manager import manager
 
@@ -573,13 +573,13 @@ def test_detection_websocket_group_switch_refreshes_live_recognition_context(
     )
 
     image_bytes = _make_image_bytes()
-    register = client.post(
-        f"/attendance/groups/{second_group_id}/persons/switch-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{second_group_id}/persons/switch-person/enroll-face",
         headers=headers,
-        data={"metadata": _register_metadata()},
+        data={"metadata": _enroll_metadata()},
         files={"image": ("face.jpg", image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 200, register.text
+    assert enroll.status_code == 200, enroll.text
 
     from utils.websocket_manager import manager
 
@@ -622,13 +622,13 @@ def test_detection_websocket_requires_real_liveness_for_identity_when_enabled(
     )
 
     image_bytes = _make_image_bytes()
-    register = client.post(
-        f"/attendance/groups/{group_id}/persons/strict-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{group_id}/persons/strict-person/enroll-face",
         headers=headers,
-        data={"metadata": _register_metadata()},
+        data={"metadata": _enroll_metadata()},
         files={"image": ("face.jpg", image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 200, register.text
+    assert enroll.status_code == 200, enroll.text
 
     suspicious_liveness = SuspiciousLivenessDetector()
     monkeypatch.setattr(core.lifespan, "liveness_detector", suspicious_liveness)
@@ -683,13 +683,13 @@ def test_detection_websocket_blocks_identity_when_face_must_be_centered(
     )
 
     image_bytes = _make_image_bytes()
-    register = client.post(
-        f"/attendance/groups/{group_id}/persons/center-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{group_id}/persons/center-person/enroll-face",
         headers=headers,
-        data={"metadata": _register_metadata()},
+        data={"metadata": _enroll_metadata()},
         files={"image": ("face.jpg", image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 200, register.text
+    assert enroll.status_code == 200, enroll.text
 
     center_face_detector = CenterFaceDetector()
     preserve_guidance_liveness = PreserveGuidanceLivenessDetector()
@@ -748,13 +748,13 @@ def test_detection_websocket_logs_attendance_when_liveness_is_disabled(
     )
 
     image_bytes = _make_image_bytes()
-    register = client.post(
-        f"/attendance/groups/{group_id}/persons/no-live-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{group_id}/persons/no-live-person/enroll-face",
         headers=headers,
-        data={"metadata": _register_metadata()},
+        data={"metadata": _enroll_metadata()},
         files={"image": ("face.jpg", image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 200, register.text
+    assert enroll.status_code == 200, enroll.text
 
     from utils.websocket_manager import manager
 
@@ -815,16 +815,16 @@ def test_biometric_endpoints_reject_images_without_detectable_face(
     )
 
     blank_image_bytes = _make_blank_image_bytes()
-    metadata = _register_metadata()
+    metadata = _enroll_metadata()
 
-    register = client.post(
-        f"/attendance/groups/{group_id}/persons/hardening-person/register-face",
+    enroll = client.post(
+        f"/attendance/groups/{group_id}/persons/hardening-person/enroll-face",
         headers=org_headers,
         data={"metadata": metadata},
         files={"image": ("blank.jpg", blank_image_bytes, "image/jpeg")},
     )
-    assert register.status_code == 400, register.text
-    assert "no detectable face found" in register.json()["detail"].lower()
+    assert enroll.status_code == 400, enroll.text
+    assert "no detectable face found" in enroll.json()["detail"].lower()
 
     recognize = client.post(
         "/face/recognize",
@@ -852,7 +852,7 @@ def test_biometric_endpoints_reject_images_without_detectable_face(
     assert "no detectable face found" in recognize.json()["error"].lower()
 
     bulk = client.post(
-        f"/attendance/groups/{group_id}/bulk-register-faces",
+        f"/attendance/groups/{group_id}/bulk-enroll-faces",
         headers=org_headers,
         data={
             "metadata": json.dumps(

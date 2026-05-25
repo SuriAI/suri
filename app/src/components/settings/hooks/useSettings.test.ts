@@ -50,8 +50,8 @@ function resetGroupUIStore() {
     showEditGroupModal: false,
     editingMember: null,
     preSelectedMemberId: null,
-    lastRegistrationSource: null,
-    lastRegistrationMode: null,
+    lastEnrollmentSource: null,
+    lastEnrollmentMode: null,
   })
 }
 

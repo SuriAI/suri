@@ -1,4 +1,4 @@
-import type { CaptureSource } from "@/components/group/sections/registration/types"
+import type { CaptureSource } from "@/components/group/sections/enrollment/types"
 
 interface CaptureControlsProps {
   source: CaptureSource

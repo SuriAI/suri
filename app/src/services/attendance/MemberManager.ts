@@ -142,13 +142,13 @@ export class MemberManager {
     }
   }
 
-  async registerFaceForGroupPerson(
+  async enrollFaceForGroupPerson(
     groupId: string,
     personId: string,
     imageData: Blob | string,
     bbox: number[],
     landmarks_5: number[][],
-    enableLiveness: boolean = false, // liveness is an attendance-time check, not registration
+    enableLiveness: boolean = false, // liveness is an attendance-time check, not enrollment
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
       let imageBlob: Blob
@@ -171,7 +171,7 @@ export class MemberManager {
         }),
       )
 
-      const url = `${this.apiEndpoints.groups}/${groupId}/persons/${personId}/register-face`
+      const url = `${this.apiEndpoints.groups}/${groupId}/persons/${personId}/enroll-face`
       const result = await this.httpClient.postMultipart<{
         success: boolean
         message: string
@@ -179,10 +179,10 @@ export class MemberManager {
 
       return { success: true, message: result.message }
     } catch (error) {
-      console.error("Error registering face for group person:", error)
+      console.error("Error enrolling face for group person:", error)
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to register face",
+        error: error instanceof Error ? error.message : "Failed to enroll member",
       }
     }
   }

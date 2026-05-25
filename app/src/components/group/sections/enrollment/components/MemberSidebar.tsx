@@ -8,8 +8,8 @@ interface MemberSidebarProps {
   onSelectMember: (id: string) => void
   memberSearch: string
   setMemberSearch: (val: string) => void
-  registrationFilter: "all" | "registered" | "non-registered"
-  setRegistrationFilter: (val: "all" | "registered" | "non-registered") => void
+  enrollmentFilter: "all" | "enrolled" | "non-enrolled"
+  setEnrollmentFilter: (val: "all" | "enrolled" | "non-enrolled") => void
   memberStatus: Map<string, boolean>
   onRemoveFaceData: (member: AttendanceMember & { displayName: string }) => void
 }
@@ -20,8 +20,8 @@ export function MemberSidebar({
   onSelectMember,
   memberSearch,
   setMemberSearch,
-  registrationFilter,
-  setRegistrationFilter,
+  enrollmentFilter,
+  setEnrollmentFilter,
   memberStatus,
   onRemoveFaceData,
 }: MemberSidebarProps) {
@@ -42,24 +42,24 @@ export function MemberSidebar({
       )
     }
 
-    if (registrationFilter !== "all") {
+    if (enrollmentFilter !== "all") {
       result = result.filter((member) => {
-        const isRegistered = memberStatus.get(member.person_id) ?? false
-        return registrationFilter === "registered" ? isRegistered : !isRegistered
+        const isEnrolled = memberStatus.get(member.person_id) ?? false
+        return enrollmentFilter === "enrolled" ? isEnrolled : !isEnrolled
       })
     }
 
     result = [...result].sort((a, b) => {
-      const aRegistered = memberStatus.get(a.person_id) ?? false
-      const bRegistered = memberStatus.get(b.person_id) ?? false
+      const aEnrolled = memberStatus.get(a.person_id) ?? false
+      const bEnrolled = memberStatus.get(b.person_id) ?? false
 
-      if (aRegistered && !bRegistered) return -1
-      if (!aRegistered && bRegistered) return 1
+      if (aEnrolled && !bEnrolled) return -1
+      if (!aEnrolled && bEnrolled) return 1
       return 0
     })
 
     return result
-  }, [memberSearch, membersWithDisplayNames, registrationFilter, memberStatus])
+  }, [memberSearch, membersWithDisplayNames, enrollmentFilter, memberStatus])
 
   return (
     <div className="flex h-full min-h-0 flex-col space-y-3 overflow-hidden p-6">
@@ -92,40 +92,40 @@ export function MemberSidebar({
           <div className="text-[11px] font-medium text-white/55">
             Showing {filteredMembers.length} of {members.length} member
             {members.length !== 1 ? "s" : ""}
-            {registrationFilter !== "all" && (
+            {enrollmentFilter !== "all" && (
               <span className="ml-1 text-white/55">
-                ({registrationFilter === "registered" ? "registered" : "needs registration"})
+                ({enrollmentFilter === "enrolled" ? "enrolled" : "needs enrollment"})
               </span>
             )}
           </div>
         )}
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={() => setRegistrationFilter("all")}
+            onClick={() => setEnrollmentFilter("all")}
             className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
-              registrationFilter === "all" ?
+              enrollmentFilter === "all" ?
                 "border border-cyan-500/30 bg-cyan-500/10 text-cyan-400"
               : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
             All
           </button>
           <button
-            onClick={() => setRegistrationFilter("non-registered")}
+            onClick={() => setEnrollmentFilter("non-enrolled")}
             className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
-              registrationFilter === "non-registered" ?
+              enrollmentFilter === "non-enrolled" ?
                 "border border-amber-500/30 bg-amber-500/20 text-amber-200"
               : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
-            Not Registered
+            Not Enrolled
           </button>
           <button
-            onClick={() => setRegistrationFilter("registered")}
+            onClick={() => setEnrollmentFilter("enrolled")}
             className={`rounded-lg px-3 py-1.5 text-[11px] font-bold tracking-wide transition-all ${
-              registrationFilter === "registered" ?
+              enrollmentFilter === "enrolled" ?
                 "border border-cyan-500/30 bg-cyan-500/20 text-cyan-200"
               : "border border-white/5 bg-white/5 text-white/55 hover:border-white/10 hover:bg-white/[0.08] hover:text-white"
             }`}>
-            Registered
+            Enrolled
           </button>
         </div>
       </div>
@@ -142,10 +142,10 @@ export function MemberSidebar({
             <div className="mx-auto max-w-[200px] text-xs leading-relaxed font-medium text-white/55">
               {memberSearch.trim() ?
                 `No results for "${memberSearch}"`
-              : registrationFilter === "registered" ?
-                "No registered members yet"
-              : registrationFilter === "non-registered" ?
-                "All members are already registered"
+              : enrollmentFilter === "enrolled" ?
+                "No enrolled members yet"
+              : enrollmentFilter === "non-enrolled" ?
+                "All members are already enrolled"
               : "No members found"}
             </div>
           </div>
@@ -153,7 +153,7 @@ export function MemberSidebar({
 
         {filteredMembers.map((member) => {
           const isSelected = selectedMemberId === member.person_id
-          const isRegistered = memberStatus.get(member.person_id) ?? false
+          const isEnrolled = memberStatus.get(member.person_id) ?? false
           return (
             <div
               key={member.person_id}
@@ -190,11 +190,11 @@ export function MemberSidebar({
               </div>
 
               <div className="relative z-10 flex shrink-0 items-center gap-3">
-                {!isRegistered ?
+                {!isEnrolled ?
                   <button
                     onClick={() => onSelectMember(member.person_id)}
                     className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-xs font-medium text-cyan-400 transition-all hover:border-cyan-500/40 hover:bg-cyan-500/20 active:scale-95">
-                    Register
+                    Enroll
                   </button>
                 : <button
                     onClick={() => onSelectMember(member.person_id)}
@@ -202,16 +202,16 @@ export function MemberSidebar({
                     <i className="fa-solid fa-check text-[10px] transition-all duration-300 group-hover/btn:absolute group-hover/btn:scale-75 group-hover/btn:opacity-0"></i>
                     <i className="fa-solid fa-rotate-right absolute scale-75 text-[11px] opacity-0 transition-all duration-300 group-hover/btn:relative group-hover/btn:scale-100 group-hover/btn:opacity-100"></i>
                     <span className="transition-all duration-300 group-hover/btn:hidden">
-                      Registered
+                      Enrolled
                     </span>
                     <span className="hidden transition-all duration-300 group-hover/btn:inline">
-                      Re-register
+                      Re-enroll
                     </span>
                   </button>
                 }
               </div>
 
-              {isRegistered && isSelected && (
+              {isEnrolled && isSelected && (
                 <div
                   onClick={(e) => {
                     e.stopPropagation()

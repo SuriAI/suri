@@ -10,7 +10,7 @@ interface ControlBarProps {
   isShellReady: boolean
   hasGroups: boolean
   hasSelectedGroup: boolean
-  hasRegisteredFaces: boolean
+  hasEnrolledFaces: boolean
 }
 
 export function ControlBar({
@@ -23,7 +23,7 @@ export function ControlBar({
   isShellReady,
   hasGroups,
   hasSelectedGroup,
-  hasRegisteredFaces,
+  hasEnrolledFaces,
 }: ControlBarProps) {
   const hasCameraDevices = cameraDevices.length > 0
 
@@ -76,12 +76,12 @@ export function ControlBar({
       }
     }
 
-    if (!hasRegisteredFaces) {
+    if (!hasEnrolledFaces) {
       return {
         label: "Start Scan",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/40 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/40",
-        tooltip: "Register at least one member's face to start scanning",
+        tooltip: "Enroll at least one member's face to start scanning",
         enabled: false,
       }
     }

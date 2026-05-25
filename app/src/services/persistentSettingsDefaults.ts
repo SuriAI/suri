@@ -21,8 +21,8 @@ export interface PersistentSettingsSchema {
     groupSidebarCollapsed: boolean
     selectedCamera: string
     selectedCameraLabel: string | null
-    lastRegistrationSource: string | null
-    lastRegistrationMode: string | null
+    lastEnrollmentSource: string | null
+    lastEnrollmentMode: string | null
     hasSeenIntro: boolean
     activeGroupSection: string | null
     closeToTrayNoticeDismissed: boolean
@@ -84,8 +84,8 @@ export const defaultSettings: PersistentSettingsSchema = {
     groupSidebarCollapsed: false,
     selectedCamera: "",
     selectedCameraLabel: null,
-    lastRegistrationSource: null,
-    lastRegistrationMode: null,
+    lastEnrollmentSource: null,
+    lastEnrollmentMode: null,
     hasSeenIntro: false,
     activeGroupSection: null,
     closeToTrayNoticeDismissed: false,

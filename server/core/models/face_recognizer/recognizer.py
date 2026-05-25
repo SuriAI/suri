@@ -276,7 +276,7 @@ class FaceRecognizer:
                 for _ in faces
             ]
 
-    async def register_person(
+    async def enroll_person(
         self,
         person_id: str,
         image: np.ndarray,
@@ -310,7 +310,7 @@ class FaceRecognizer:
             else:
                 save_success = False
                 total_persons = 0
-                logger.warning("No database manager available for registration")
+                logger.warning("No database manager available for enrollment")
 
             return {
                 "success": True,
@@ -320,7 +320,7 @@ class FaceRecognizer:
             }
 
         except Exception as e:
-            logger.error(f"Person registration failed: {e}")
+            logger.error(f"Person enrollment failed: {e}")
             return {"success": False, "error": str(e), "person_id": person_id}
 
     async def remove_person(
@@ -361,7 +361,7 @@ class FaceRecognizer:
             return {"success": False, "error": str(e), "person_id": person_id}
 
     async def get_all_persons(self, organization_id: Optional[str] = None) -> List[str]:
-        """Get list of all registered person IDs"""
+        """Get list of all enrolled person IDs"""
         db_manager = self._get_db_manager(organization_id)
         if db_manager:
             all_persons = await db_manager.get_all_persons()

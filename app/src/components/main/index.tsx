@@ -546,10 +546,10 @@ export default function Main() {
   const hasBlockingGroupModalOpen =
     showAddMemberModal || showEditMemberModal || showCreateGroupModal || showEditGroupModal
 
-  const lastRegistrationMode = useGroupUIStore((state) => state.lastRegistrationMode)
+  const lastEnrollmentMode = useGroupUIStore((state) => state.lastEnrollmentMode)
 
   useEffect(() => {
-    const isBlockingActive = (hasBlockingGroupModalOpen || !!lastRegistrationMode) && showSettings
+    const isBlockingActive = (hasBlockingGroupModalOpen || !!lastEnrollmentMode) && showSettings
 
     if (isBlockingActive) {
       if (isStreamingRef.current) {
@@ -562,15 +562,9 @@ export default function Main() {
         wasStreamingBeforeBlockingGroupModal.current = false
       }
     }
-  }, [
-    hasBlockingGroupModalOpen,
-    lastRegistrationMode,
-    showSettings,
-    startCameraGuarded,
-    stopCamera,
-  ])
+  }, [hasBlockingGroupModalOpen, lastEnrollmentMode, showSettings, startCameraGuarded, stopCamera])
 
-  const hasRegisteredFaces = groupMembers.length > 0 && groupMembers.some((m) => m.has_face_data)
+  const hasEnrolledFaces = groupMembers.length > 0 && groupMembers.some((m) => m.has_face_data)
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--bg-primary)] text-white">
@@ -674,7 +668,7 @@ export default function Main() {
               isStreaming={isStreaming}
               isShellReady={isShellReady}
               hasSelectedGroup={Boolean(currentGroup)}
-              hasRegisteredFaces={hasRegisteredFaces}
+              hasEnrolledFaces={hasEnrolledFaces}
               lateTrackingEnabled={!!currentGroup?.settings?.late_threshold_enabled}
               classStartTime={currentGroup?.settings?.class_start_time}
               onStartTimeChange={handleStartTimeChange}
@@ -697,7 +691,7 @@ export default function Main() {
             isShellReady={isShellReady}
             hasGroups={attendanceGroups.length > 0}
             hasSelectedGroup={Boolean(currentGroup)}
-            hasRegisteredFaces={hasRegisteredFaces}
+            hasEnrolledFaces={hasEnrolledFaces}
           />
         </div>
 
@@ -729,7 +723,7 @@ export default function Main() {
               setShowSettings(false)
               setGroupInitialSection(undefined)
               setSettingsInitialSection(undefined)
-              useGroupUIStore.getState().resetRegistration()
+              useGroupUIStore.getState().resetEnrollment()
               loadAttendanceDataRef.current()
             }}
             isModal={true}

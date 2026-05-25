@@ -211,7 +211,7 @@ const AttendanceRecordItem = memo(
             <MemberTooltip
               member={member}
               position="top"
-              showRegistration={false}
+              showEnrollment={false}
               role={record.event_type === "check_out" ? "Exiting" : "Present"}>
               <span className="cursor-help text-[13px] font-medium text-white/90 hover:text-white">
                 {displayName}
@@ -327,7 +327,7 @@ export const AttendancePanel = memo(function AttendancePanel({
     }
   }, [currentGroup])
 
-  const handleOpenSettingsForRegistration = useCallback(() => {
+  const handleOpenSettingsForEnrollment = useCallback(() => {
     setGroupInitialSection("members")
     setShowSettings(true)
   }, [setGroupInitialSection, setShowSettings])
@@ -580,7 +580,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                     No members in this group yet
                   </div>
                   <button
-                    onClick={handleOpenSettingsForRegistration}
+                    onClick={handleOpenSettingsForEnrollment}
                     className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
                     Add Member
@@ -590,12 +590,12 @@ export const AttendancePanel = memo(function AttendancePanel({
             : !groupMembers.some((m) => m.has_face_data) ?
               <ScrollCenteredEmptyState>
                 <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
-                  <div className="text-xs text-white/55">No face data added yet</div>
+                  <div className="text-xs text-white/55">No enrolled members in this group yet</div>
                   <button
-                    onClick={handleOpenSettingsForRegistration}
+                    onClick={handleOpenSettingsForEnrollment}
                     className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
                     <i className="fa-solid fa-user-plus text-xs"></i>
-                    Register Face
+                    Enroll Member
                   </button>
                 </div>
               </ScrollCenteredEmptyState>
@@ -610,7 +610,7 @@ export const AttendancePanel = memo(function AttendancePanel({
         onSuccess={refreshAttendanceData}
         members={groupMembers}
         presentPersonIds={todayPresentPersonIds}
-        onAddMember={handleOpenSettingsForRegistration}
+        onAddMember={handleOpenSettingsForEnrollment}
         currentGroup={currentGroup}
       />
       {recordToVoid && (

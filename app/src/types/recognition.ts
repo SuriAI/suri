@@ -15,7 +15,7 @@ export interface FaceRecognitionResponse {
   error: string | null
 }
 
-export interface FaceRegistrationRequest {
+export interface FaceEnrollmentRequest {
   image: string
   person_id: string
   bbox: number[]
@@ -24,7 +24,7 @@ export interface FaceRegistrationRequest {
   enable_liveness_detection: boolean
 }
 
-export interface FaceRegistrationResponse {
+export interface FaceEnrollmentResponse {
   success: boolean
   person_id: string
   total_persons: number
@@ -280,7 +280,7 @@ export interface BulkDetectResponse {
   results: BulkDetectResultItem[]
 }
 
-export interface BulkRegisterResultItem {
+export interface BulkEnrollResultItem {
   index: number
   person_id: string
   member_name?: string
@@ -289,10 +289,10 @@ export interface BulkRegisterResultItem {
   quality_warning?: string
 }
 
-export interface BulkRegisterResponse {
+export interface BulkEnrollResponse {
   success: boolean
   group_id: string
   success_count: number
   failed_count: number
-  results: BulkRegisterResultItem[]
+  results: BulkEnrollResultItem[]
 }

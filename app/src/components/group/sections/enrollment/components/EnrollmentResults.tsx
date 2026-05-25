@@ -1,25 +1,25 @@
-import type { BulkRegistrationResult } from "@/components/group/sections/registration/types"
+import type { BulkEnrollmentResult } from "@/components/group/sections/enrollment/types"
 
-interface RegistrationResultsProps {
-  results: BulkRegistrationResult[]
+interface EnrollmentResultsProps {
+  results: BulkEnrollmentResult[]
   successCount: number
   failedCount: number
   onClose: () => void
 }
 
-export function RegistrationResults({
+export function EnrollmentResults({
   results,
   successCount,
   failedCount,
   onClose,
-}: RegistrationResultsProps) {
+}: EnrollmentResultsProps) {
   return (
     <div className="flex flex-col gap-8">
       {/* Summary row — plain numbers, no cards */}
       <div className="flex items-baseline gap-6">
         <div>
           <div className="text-4xl font-light text-white tabular-nums">{successCount}</div>
-          <div className="mt-0.5 text-[11px] font-medium text-white/35">registered</div>
+          <div className="mt-0.5 text-[11px] font-medium text-white/35">enrolled</div>
         </div>
         {failedCount > 0 && (
           <>

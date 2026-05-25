@@ -27,8 +27,8 @@ export function DeleteMemberModal({ isOpen, member, onClose, onConfirm }: Delete
         </p>
         <div className="rounded-lg border border-red-500/40 bg-red-900/30 p-3">
           <p className="text-sm text-red-300">
-            <strong>Warning:</strong> This will also wipe their attendance records and registered
-            face data for this group.
+            <strong>Warning:</strong> This will also wipe their attendance records and enrolled face
+            data for this group.
           </p>
         </div>
       </div>

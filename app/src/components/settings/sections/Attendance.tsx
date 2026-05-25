@@ -391,11 +391,11 @@ export function Attendance({
                 <div className="text-sm font-medium text-white/90">Global Group Consent</div>
                 <InfoPopover
                   title="Global Group Consent"
-                  description="Certify that explicit biometric consent forms have been signed off-system (e.g. in employment contracts) by all members of this group. Enabling this will remove repetitive consent checkboxes from manual registration and edit flows."
+                  description="Certify that explicit biometric consent forms have been signed off-system (e.g. in employment contracts) by all members of this group. Enabling this will remove repetitive consent checkboxes from manual enrollment and edit flows."
                   details={[
                     "Certifies that consent is managed off-system.",
                     "Removes manual checkbox prompts on member add/edit.",
-                    "Enables immediate one-click registration.",
+                    "Enables immediate one-click enrollment.",
                   ]}
                   side="right"
                 />
@@ -412,7 +412,7 @@ export function Attendance({
                     {!hasSelectedGroup ?
                       "Select a group to enable this feature"
                     : attendanceSettings.biometricConsentCertified ?
-                      "Bypass manual consent checkboxes during member registration."
+                      "Bypass manual consent checkboxes during member enrollment."
                     : "Require manual consent checkbox certification for each member."}
                   </motion.div>
                 </AnimatePresence>

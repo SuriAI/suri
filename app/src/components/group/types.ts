@@ -1,6 +1,6 @@
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
-export type GroupSection = "overview" | "members" | "reports" | "settings"
+export type GroupSection = "overview" | "members" | "reports" | "settings" | "enrollment"
 
 export interface GroupPanelProps {
   onBack: () => void

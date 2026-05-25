@@ -22,8 +22,8 @@ describe("groupUIStore", () => {
     mockPersistentSettings.getUIState.mockResolvedValue({
       groupSidebarCollapsed: false,
       activeGroupSection: "overview",
-      lastRegistrationSource: null,
-      lastRegistrationMode: null,
+      lastEnrollmentSource: null,
+      lastEnrollmentMode: null,
     })
   })
 
@@ -58,34 +58,34 @@ describe("groupUIStore", () => {
     })
   })
 
-  it("supports registration deep-linking and back navigation", async () => {
+  it("supports enrollment deep-linking and back navigation", async () => {
     const useGroupUIStore = await loadStore()
 
-    useGroupUIStore.getState().jumpToRegistration("member-1", "upload")
+    useGroupUIStore.getState().jumpToEnrollment("member-1", "upload")
     expect(useGroupUIStore.getState()).toMatchObject({
       preSelectedMemberId: "member-1",
-      lastRegistrationSource: "upload",
-      lastRegistrationMode: "single",
+      lastEnrollmentSource: "upload",
+      lastEnrollmentMode: "single",
     })
 
-    useGroupUIStore.getState().handleRegistrationBack()
+    useGroupUIStore.getState().handleEnrollmentBack()
 
     await waitFor(() => {
       expect(useGroupUIStore.getState().preSelectedMemberId).toBeNull()
-      expect(useGroupUIStore.getState().lastRegistrationMode).toBeNull()
+      expect(useGroupUIStore.getState().lastEnrollmentMode).toBeNull()
       expect(mockPersistentSettings.setUIState).toHaveBeenCalledWith({
-        lastRegistrationSource: "upload",
-        lastRegistrationMode: null,
+        lastEnrollmentSource: "upload",
+        lastEnrollmentMode: null,
       })
     })
 
-    useGroupUIStore.getState().handleRegistrationBack()
+    useGroupUIStore.getState().handleEnrollmentBack()
 
     await waitFor(() => {
-      expect(useGroupUIStore.getState().lastRegistrationSource).toBeNull()
+      expect(useGroupUIStore.getState().lastEnrollmentSource).toBeNull()
       expect(mockPersistentSettings.setUIState).toHaveBeenCalledWith({
-        lastRegistrationSource: null,
-        lastRegistrationMode: null,
+        lastEnrollmentSource: null,
+        lastEnrollmentMode: null,
       })
     })
   })

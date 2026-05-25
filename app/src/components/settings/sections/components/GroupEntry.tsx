@@ -52,7 +52,7 @@ export function GroupEntry({
   onDeleteMember,
 }: GroupEntryProps) {
   const memberCount = group.members.length
-  const registeredCount = group.members.filter((m) => m.has_face_data).length
+  const enrolledCount = group.members.filter((m) => m.has_face_data).length
 
   const [scrollTop, setScrollTop] = useState(0)
   const [prevExpanded, setPrevExpanded] = useState(isExpanded)
@@ -134,11 +134,11 @@ export function GroupEntry({
           <span className="text-[11px] font-medium text-white/55">
             {memberCount} {memberCount === 1 ? "member" : "members"}
           </span>
-          {registeredCount > 0 && (
+          {enrolledCount > 0 && (
             <>
               <span className="text-[11px] font-medium text-white/20">•</span>
               <span className="text-[11px] font-medium text-cyan-400/80">
-                {registeredCount} Registered
+                {enrolledCount} Enrolled
               </span>
             </>
           )}

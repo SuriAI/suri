@@ -11,7 +11,7 @@ export interface DetectedFace {
   previewUrl: string
 }
 
-export interface BulkRegistrationResult {
+export interface BulkEnrollmentResult {
   personId: string
   memberName: string
   success: boolean
@@ -19,7 +19,7 @@ export interface BulkRegistrationResult {
   qualityWarning?: string
 }
 
-export interface BulkRegisterResponseItem {
+export interface BulkEnrollResponseItem {
   person_id: string
   member_name?: string
   success: boolean
@@ -34,7 +34,7 @@ export interface CapturedFrame {
   height: number
   bbox?: [number, number, number, number]
   landmarks_5?: number[][]
-  status: "processing" | "success" | "error" | "ready" | "registered"
+  status: "processing" | "success" | "error" | "ready" | "enrolled"
   error?: string
   label?: string
   file?: File
