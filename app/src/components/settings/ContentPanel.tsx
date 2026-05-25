@@ -191,10 +191,13 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         )
       }
 
+      const isOverview = !groupInitialSection || groupInitialSection === "overview"
+
       return {
-        title: sectionLabel || "Overview",
-        eyebrow: groupName,
+        title: isOverview ? groupName : sectionLabel || "Overview",
+        eyebrow: isOverview ? undefined : groupName,
         eyebrowColor: "text-white/45",
+        onEyebrowClick: isOverview ? undefined : () => setGroupInitialSection("overview"),
         actions,
         isGroupSection: true,
       }
@@ -228,6 +231,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     resetEnrollment,
     openEditGroup,
     reportsExportHandlers,
+    setGroupInitialSection,
   ])
 
   const handleSpoofDetectionToggle = (enabled: boolean) => {
