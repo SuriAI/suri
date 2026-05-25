@@ -5,6 +5,7 @@ interface SectionHeaderProps {
   title: string
   eyebrow?: string
   eyebrowColor?: string
+  onEyebrowClick?: () => void
   actions?: React.ReactNode
 }
 
@@ -12,6 +13,7 @@ export function SectionHeader({
   title,
   eyebrow,
   eyebrowColor = "text-white/50",
+  onEyebrowClick,
   actions,
 }: SectionHeaderProps) {
   return (
@@ -21,7 +23,13 @@ export function SectionHeader({
           <div className="flex items-center gap-2 text-[13px] font-medium">
             {eyebrow && (
               <>
-                <span className={`${eyebrowColor} tracking-wide`}>{eyebrow}</span>
+                {onEyebrowClick ?
+                  <button
+                    onClick={onEyebrowClick}
+                    className={`${eyebrowColor} cursor-pointer border-none bg-transparent p-0 tracking-wide transition-colors hover:text-white focus:outline-none`}>
+                    {eyebrow}
+                  </button>
+                : <span className={`${eyebrowColor} tracking-wide`}>{eyebrow}</span>}
                 <span className="font-light text-white/15 select-none">/</span>
               </>
             )}

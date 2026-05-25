@@ -95,7 +95,7 @@ export function GroupEntry({
       <div className="flex w-full items-center justify-between px-2 py-3.5 transition-colors">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-5 w-5 shrink-0 items-center justify-center text-white/55 transition-colors group-hover/row:text-white/65">
-            <i className="fa-solid fa-users text-[13px]"></i>
+            <i className="fa-solid fa-layer-group text-[12px]"></i>
           </div>
 
           <div className="flex min-w-0 flex-col">
