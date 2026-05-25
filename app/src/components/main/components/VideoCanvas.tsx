@@ -12,7 +12,7 @@ interface VideoCanvasProps {
   isStreaming: boolean
   isShellReady: boolean
   hasSelectedGroup: boolean
-  hasRegisteredFaces: boolean
+  hasEnrolledFaces: boolean
   lateTrackingEnabled?: boolean
   classStartTime?: string
   onStartTimeChange?: (newTime: string) => void
@@ -27,7 +27,7 @@ export const VideoCanvas = memo(function VideoCanvas({
   isStreaming,
   isShellReady,
   hasSelectedGroup,
-  hasRegisteredFaces,
+  hasEnrolledFaces,
   lateTrackingEnabled,
   classStartTime,
   onStartTimeChange,
@@ -127,23 +127,20 @@ export const VideoCanvas = memo(function VideoCanvas({
                 {!isShellReady ?
                   "Loading groups and settings..."
                 : hasSelectedGroup ?
-                  !hasRegisteredFaces ?
-                    "To start scanning, register at least one member in this group first."
+                  !hasEnrolledFaces ?
+                    "To start scanning, enroll at least one member in this group first."
                   : "Select a camera, then press Start Scan to begin attendance tracking."
                 : "Create a group or choose one to begin attendance tracking."}
               </p>
 
-              {hasSelectedGroup &&
-                hasRegisteredFaces &&
-                onStartTimeChange &&
-                lateTrackingEnabled && (
-                  <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
-                    <StartTimeChip
-                      startTime={classStartTime || "08:00"}
-                      onTimeChange={onStartTimeChange}
-                    />
-                  </div>
-                )}
+              {hasSelectedGroup && hasEnrolledFaces && onStartTimeChange && lateTrackingEnabled && (
+                <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
+                  <StartTimeChip
+                    startTime={classStartTime || "08:00"}
+                    onTimeChange={onStartTimeChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ interface MemberTooltipProps {
   children: React.ReactElement
   position?: "top" | "bottom" | "left" | "right"
   role?: string
-  showRegistration?: boolean
+  showEnrollment?: boolean
 }
 
 export function MemberTooltip({
@@ -14,21 +14,21 @@ export function MemberTooltip({
   children,
   position = "right",
   role,
-  showRegistration = true,
+  showEnrollment = true,
 }: MemberTooltipProps) {
-  const isRegistered = member?.has_face_data ?? false
+  const isEnrolled = member?.has_face_data ?? false
   const memberRole = role || member?.role || "Member"
 
-  const hasMultipleLines = showRegistration || !!member?.email
+  const hasMultipleLines = showEnrollment || !!member?.email
 
   const content =
     hasMultipleLines ?
       <div className="flex flex-col items-center gap-0.5 text-center">
         <span className="text-[10px] font-medium text-white/90">{memberRole}</span>
-        {showRegistration && (
+        {showEnrollment && (
           <span
-            className={`text-[10px] font-semibold ${isRegistered ? "text-cyan-400" : "text-white/45"}`}>
-            {isRegistered ? "Registered" : "Not Registered"}
+            className={`text-[10px] font-semibold ${isEnrolled ? "text-cyan-400" : "text-white/45"}`}>
+            {isEnrolled ? "Enrolled" : "Not Enrolled"}
           </span>
         )}
 

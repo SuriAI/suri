@@ -1,20 +1,20 @@
-import type { CapturedFrame } from "@/components/group/sections/registration/types"
-import { ImagePreviewWithBbox } from "@/components/group/sections/registration/components/ImagePreviewWithBbox"
+import type { CapturedFrame } from "@/components/group/sections/enrollment/types"
+import { ImagePreviewWithBbox } from "@/components/group/sections/enrollment/components/ImagePreviewWithBbox"
 
 interface ResultViewProps {
   frames: CapturedFrame[]
   selectedMemberName: string
   onRetake: () => void
-  onRegister: () => void
-  isRegistering: boolean
+  onEnroll: () => void
+  isEnrolling: boolean
   framesReady: boolean
 }
 
 export function ResultView({
   frames,
   onRetake,
-  onRegister,
-  isRegistering,
+  onEnroll,
+  isEnrolling,
   framesReady,
 }: ResultViewProps) {
   const relevantFrames = frames.filter((f) => f.angle === "Front")
@@ -43,15 +43,15 @@ export function ResultView({
 
             {!hasError && (
               <button
-                onClick={onRegister}
-                disabled={!framesReady || isRegistering}
+                onClick={onEnroll}
+                disabled={!framesReady || isEnrolling}
                 className="flex min-w-[100px] items-center justify-center gap-2 rounded-lg border border-cyan-400/50 bg-cyan-500/40 px-2 py-2 text-xs font-medium text-cyan-100 transition-all hover:bg-cyan-500/50 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[rgba(10,13,18,0.78)] disabled:text-white/55">
-                {isRegistering ?
+                {isEnrolling ?
                   <>
                     <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/20 border-t-white" />
                     <span>Saving...</span>
                   </>
-                : "Register"}
+                : "Enroll"}
               </button>
             )}
           </div>
@@ -61,7 +61,7 @@ export function ResultView({
             <span>Retake</span>
             <span className="px-1 text-white/20">|</span>
             <span>Enter</span>
-            <span>Register</span>
+            <span>Enroll</span>
           </div>
         </div>
       </div>

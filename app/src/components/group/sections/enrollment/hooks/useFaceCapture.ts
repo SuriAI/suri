@@ -2,8 +2,8 @@ import { useState, useCallback } from "react"
 import { attendanceManager, backendService } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import type { DialogAPI } from "@/components/shared"
-import type { CapturedFrame } from "@/components/group/sections/registration/types"
-import { makeId } from "@/components/group/sections/registration/hooks/useImageProcessing"
+import type { CapturedFrame } from "@/components/group/sections/enrollment/types"
+import { makeId } from "@/components/group/sections/enrollment/hooks/useImageProcessing"
 import { dataUrlToBlob } from "@/utils/dataUrl"
 
 export function useFaceCapture(
@@ -15,7 +15,7 @@ export function useFaceCapture(
   const [frames, setFrames] = useState<CapturedFrame[]>([])
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [isRegistering, setIsRegistering] = useState(false)
+  const [isEnrolling, setIsEnrolling] = useState(false)
 
   const resetFrames = useCallback(() => {
     setFrames([])
@@ -54,7 +54,7 @@ export function useFaceCapture(
 
         const detection = await backendService.detectFaces(blob, {
           model_type: "face_detector",
-          enableLiveness: false, // Registration should not enforce liveness
+          enableLiveness: false, // Enrollment should not enforce liveness
         })
 
         if (!detection.faces || detection.faces.length === 0) {
@@ -94,7 +94,7 @@ export function useFaceCapture(
     [updateFrame],
   )
 
-  const handleRegister = useCallback(
+  const handleEnroll = useCallback(
     async (
       selectedMemberId: string,
       loadMemberStatus: () => Promise<void>,
@@ -112,7 +112,7 @@ export function useFaceCapture(
         return
       }
 
-      setIsRegistering(true)
+      setIsEnrolling(true)
       setGlobalError(null)
       setSuccessMessage(null)
 
@@ -120,45 +120,45 @@ export function useFaceCapture(
         const blob = dataUrlToBlob(frame.dataUrl)
 
         if (frame.landmarks_5?.length !== 5) {
-          throw new Error("Cannot register: landmarks missing. Please re-capture the face.")
+          throw new Error("Cannot enroll: landmarks missing. Please re-capture the face.")
         }
 
-        const result = await attendanceManager.registerFaceForGroupPerson(
+        const result = await attendanceManager.enrollFaceForGroupPerson(
           group.id,
           selectedMemberId,
           blob,
           frame.bbox,
           frame.landmarks_5,
-          false, // Registration should not enforce liveness
+          false, // Enrollment should not enforce liveness
         )
 
         if (!result.success) {
-          throw new Error(result.error || "Registration failed.")
+          throw new Error(result.error || "Enrollment failed.")
         }
 
         updateFrame(frame.id, (current) => ({
           ...current,
-          status: "registered",
+          status: "enrolled",
         }))
 
-        const isAlreadyRegistered = memberStatus.get(selectedMemberId) ?? false
+        const isAlreadyEnrolled = memberStatus.get(selectedMemberId) ?? false
         const member = members.find((m) => m.person_id === selectedMemberId)
         const memberName = member?.name || "Member"
 
         setSuccessMessage(
-          isAlreadyRegistered ?
-            `${memberName} Re-registered successfully!`
-          : `${memberName} Registered successfully!`,
+          isAlreadyEnrolled ?
+            `${memberName} Re-enrolled successfully!`
+          : `${memberName} Enrolled successfully!`,
         )
 
         await loadMemberStatus()
         if (onRefresh) await onRefresh()
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Registration failed. Please try again."
+          error instanceof Error ? error.message : "Enrollment failed. Please try again."
         setGlobalError(message)
       } finally {
-        setIsRegistering(false)
+        setIsEnrolling(false)
       }
     },
     [group, frames, members, updateFrame, onRefresh],
@@ -210,12 +210,12 @@ export function useFaceCapture(
     frames,
     globalError,
     successMessage,
-    isRegistering,
+    isEnrolling,
     setGlobalError,
     setSuccessMessage,
     resetFrames,
     captureProcessedFrame,
-    handleRegister,
+    handleEnroll,
     handleRemoveFaceData,
   }
 }

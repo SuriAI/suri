@@ -14,7 +14,7 @@ interface AddMemberProps {
   isOpen: boolean
   /** The attendance group to add the member to */
   group: AttendanceGroup
-  /** Array of existing group members to prevent duplicate registrations */
+  /** Array of existing group members to prevent duplicate enrollments */
   existingMembers?: AttendanceMember[]
   /** Callback function when the modal is closed */
   onClose: () => void
@@ -28,7 +28,7 @@ const waitForNextPaint = () =>
   })
 
 /**
- * A modal dialog that allows registration of a single new member
+ * A modal dialog that allows enrollment of a single new member
  * or multiple new members in bulk via a comma-separated list or file import.
  * Includes biometric consent verification and duplicate warnings.
  */

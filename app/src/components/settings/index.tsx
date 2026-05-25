@@ -69,7 +69,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
         dropdownValue={settings.dropdownValue}
         onGroupSelect={props.onGroupSelect}
         setTriggerCreateGroup={settings.setTriggerCreateGroup}
-        setRegistrationState={settings.setRegistrationState}
+        setEnrollmentState={settings.setEnrollmentState}
         sections={sections}
         groupSections={groupSections}
       />

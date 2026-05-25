@@ -543,7 +543,7 @@ class AttendanceService:
             time_health=time_health_payload,
         )
 
-    async def register_face(
+    async def enroll_member(
         self,
         group_id: str,
         person_id: str,
@@ -552,7 +552,7 @@ class AttendanceService:
         landmarks_5: List[List[float]],
         enable_liveness: bool = False,  # liveness is enforcement at attendance-time, not enrollment
     ) -> Dict[str, Any]:
-        """Register face for a person"""
+        """Enroll member for recognition in a group."""
         if not self.face_recognizer:
             raise ValueError("Face recognition system not available")
 
@@ -569,7 +569,7 @@ class AttendanceService:
 
         if not member.has_consent:
             raise PermissionError(
-                "Biometric consent is required before face registration"
+                "Biometric consent is required before face enrollment"
             )
 
         from hooks import process_face_detection, process_liveness_for_face_operation
@@ -585,33 +585,33 @@ class AttendanceService:
             error_msg,
             liveness_status,
         ) = await process_liveness_for_face_operation(
-            image, bbox, enable_liveness, "Registration"
+            image, bbox, enable_liveness, "Enrollment"
         )
         if should_block:
             raise ValueError(error_msg)
 
-        logger.info(f"Registering face for {person_id} in group {group_id}")
+        logger.info(f"Enrolling face for {person_id} in group {group_id}")
 
-        result = await self.face_recognizer.register_person(
+        result = await self.face_recognizer.enroll_person(
             person_id, image, landmarks_5, self.repo.organization_id
         )
 
         if result["success"]:
             logger.info(
-                f"Face registered successfully for {person_id}. Total persons: {result.get('total_persons', 0)}"
+                f"Face enrolled successfully for {person_id}. Total persons: {result.get('total_persons', 0)}"
             )
             return {
                 "success": True,
-                "message": f"Face registered successfully for {person_id} in group {group.name}",
+                "message": f"Face enrolled successfully for {person_id} in group {group.name}",
                 "person_id": person_id,
                 "group_id": group_id,
                 "total_persons": result.get("total_persons", 0),
             }
         else:
             logger.error(
-                f"Face registration failed for {person_id}: {result.get('error', 'Unknown error')}"
+                f"Face enrollment failed for {person_id}: {result.get('error', 'Unknown error')}"
             )
-            raise ValueError(result.get("error", "Face registration failed"))
+            raise ValueError(result.get("error", "Face enrollment failed"))
 
     async def remove_face_data(self, group_id: str, person_id: str) -> Dict[str, Any]:
         """Remove face data for a person"""
@@ -718,10 +718,10 @@ class AttendanceService:
             "results": results,
         }
 
-    async def bulk_register_with_files(
+    async def bulk_enroll_with_files(
         self, group_id: str, registrations: list, files: list
     ) -> Dict[str, Any]:
-        """Bulk register faces from uploaded binary files (Multipart)"""
+        """Bulk enroll members for recognition from uploaded binary files (Multipart)"""
         if not self.face_recognizer:
             raise ValueError("Face recognition system not available")
 
@@ -825,7 +825,7 @@ class AttendanceService:
                     )
                     continue
 
-                result = await self.face_recognizer.register_person(
+                result = await self.face_recognizer.enroll_person(
                     person_id, image, landmarks_5, self.repo.organization_id
                 )
 
@@ -846,7 +846,7 @@ class AttendanceService:
                     )
 
             except Exception as e:
-                logger.error(f"Error in bulk register item {idx}: {e}")
+                logger.error(f"Error in bulk enroll item {idx}: {e}")
                 failed_count += 1
                 results.append(
                     {

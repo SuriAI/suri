@@ -1,7 +1,7 @@
 import React from "react"
 import { Tooltip } from "@/components/shared"
 import type { AttendanceMember } from "@/types/recognition"
-import { RegistrationAction } from "./RegistrationAction"
+import { EnrollmentAction } from "./EnrollmentAction"
 
 interface MemberRowProps {
   member: AttendanceMember & { displayName: string }
@@ -23,7 +23,7 @@ export const MemberRow = React.memo(
     onDelete,
     onResetFace,
   }: MemberRowProps) {
-    const isRegistered = !!member.has_face_data
+    const isEnrolled = !!member.has_face_data
 
     return (
       <div
@@ -54,10 +54,10 @@ export const MemberRow = React.memo(
           <div className="min-w-0 flex-1">
             <div
               className={`mb-0.5 flex min-w-0 items-center gap-2 text-sm font-semibold transition-colors duration-200 ${
-                isRegistered ? "text-cyan-400" : "text-white"
+                isEnrolled ? "text-cyan-400" : "text-white"
               }`}>
-              {isRegistered ?
-                <Tooltip content="Registered" position="top">
+              {isEnrolled ?
+                <Tooltip content="Enrolled" position="top">
                   <span className="block truncate">{member.displayName}</span>
                 </Tooltip>
               : <span className="block truncate">{member.displayName}</span>}
@@ -96,7 +96,7 @@ export const MemberRow = React.memo(
                   </button>
                 </Tooltip>
 
-                {isRegistered && (
+                {isEnrolled && (
                   <Tooltip content="Clear face data">
                     <button
                       onClick={(e) => {
@@ -122,7 +122,7 @@ export const MemberRow = React.memo(
               </div>
 
               <div onClick={(e) => e.stopPropagation()}>
-                <RegistrationAction memberId={member.person_id} isRegistered={isRegistered} />
+                <EnrollmentAction memberId={member.person_id} isEnrolled={isEnrolled} />
               </div>
             </>
           )}

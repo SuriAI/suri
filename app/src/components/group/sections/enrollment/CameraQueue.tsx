@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { attendanceManager, backendService } from "@/services"
 import { generateDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
-import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
+import { useCamera } from "@/components/group/sections/enrollment/hooks/useCamera"
 import { dataUrlToBlob } from "@/utils/dataUrl"
-import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed"
+import { CameraFeed } from "@/components/group/sections/enrollment/components/CameraFeed"
 
 type CaptureStatus = "pending" | "capturing" | "processing" | "completed" | "skipped" | "error"
 
@@ -304,17 +304,17 @@ export function CameraQueue({
         ),
       )
 
-      const result = await attendanceManager.registerFaceForGroupPerson(
+      const result = await attendanceManager.enrollFaceForGroupPerson(
         group.id,
         currentMember.personId,
         blob,
         bestFace.bbox,
         bestFace.landmarks_5,
-        false, // liveness check is NOT needed during registration
+        false, // liveness check is NOT needed during enrollment
       )
 
       if (!result.success) {
-        throw new Error(result.error || "Registration failed")
+        throw new Error(result.error || "Enrollment failed")
       }
 
       const updatedQueue = memberQueue.map((m, idx) =>
@@ -467,7 +467,7 @@ export function CameraQueue({
               </div>
               <h3 className="mb-1 text-sm font-semibold text-white">No members selected</h3>
               <p className="max-w-[200px] text-[11px] leading-relaxed text-white/45">
-                Please select members from the group list before starting the webcam registration.
+                Please select members from the group list before starting the webcam enrollment.
               </p>
               <button
                 onClick={onClose}
@@ -499,7 +499,7 @@ export function CameraQueue({
                           {memberQueue.filter((m) => m.status === "completed").length}
                         </div>
                         <div className="mt-0.5 text-[9px] font-bold tracking-wider text-white/40 uppercase">
-                          Registered
+                          Enrolled
                         </div>
                       </div>
                       <div className="h-8 w-px bg-white/10" />
@@ -657,7 +657,7 @@ export function CameraQueue({
                                 )}
                               </div>
                               <div className="text-xs font-black tracking-[0.2em] text-white uppercase">
-                                {currentMember.status === "completed" && "Registered"}
+                                {currentMember.status === "completed" && "Enrolled"}
                                 {currentMember.status === "skipped" && "Skipped"}
                               </div>
                               <div className="mt-3 text-[9px] font-semibold tracking-[0.2em] text-white/40 uppercase">

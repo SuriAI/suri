@@ -443,8 +443,8 @@ export function Database({
                       Reset Biometric Data
                     </h4>
                     <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
-                      Wipes all face recognition signatures. Registered members will need to
-                      re-register their biometric profiles.
+                      Wipes all face recognition signatures. Enrolled members will need to re-enroll
+                      their biometric profiles.
                     </p>
                   </div>
                   <button

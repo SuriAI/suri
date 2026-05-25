@@ -1,10 +1,10 @@
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
-import { useBulkRegistration } from "@/components/group/sections/registration/hooks/useBulkRegistration"
+import { useBulkEnrollment } from "@/components/group/sections/enrollment/hooks/useBulkEnrollment"
 import { BulkUploadArea } from "@/components/group/shared"
-import { FaceAssignmentGrid } from "@/components/group/sections/registration/components/FaceAssignmentGrid"
-import { RegistrationResults } from "@/components/group/sections/registration/components/RegistrationResults"
+import { FaceAssignmentGrid } from "@/components/group/sections/enrollment/components/FaceAssignmentGrid"
+import { EnrollmentResults } from "@/components/group/sections/enrollment/components/EnrollmentResults"
 
-interface BulkRegistrationProps {
+interface BulkEnrollmentProps {
   group: AttendanceGroup
   members: AttendanceMember[]
   onRefresh?: () => Promise<void> | void
@@ -12,21 +12,21 @@ interface BulkRegistrationProps {
   className?: string
 }
 
-export function BulkRegistration({
+export function BulkEnrollment({
   group,
   members,
   onRefresh,
   onClose,
   className,
-}: BulkRegistrationProps) {
+}: BulkEnrollmentProps) {
   const {
     uploadedFiles,
     detectedFaces,
     isDetecting,
-    isRegistering,
+    isEnrolling,
     error,
     setError,
-    registrationResults,
+    enrollmentResults,
     availableMembers,
     pendingDuplicates,
     handleFilesSelected,
@@ -35,13 +35,13 @@ export function BulkRegistration({
     handleDismissDuplicates,
     handleAssignMember,
     handleUnassign,
-    handleBulkRegister,
+    handleBulkEnroll,
     handleClearFiles,
-  } = useBulkRegistration(group, members, onRefresh)
+  } = useBulkEnrollment(group, members, onRefresh)
 
   const assignedCount = detectedFaces.filter((f) => f.assignedPersonId).length
-  const successCount = registrationResults?.filter((r) => r.success).length || 0
-  const failedCount = registrationResults?.filter((r) => !r.success).length || 0
+  const successCount = enrollmentResults?.filter((r) => r.success).length || 0
+  const failedCount = enrollmentResults?.filter((r) => !r.success).length || 0
 
   return (
     <div className={`relative flex h-full flex-col overflow-hidden ${className ?? ""}`}>
@@ -114,9 +114,9 @@ export function BulkRegistration({
       {/* Main scroll area */}
       <div
         className={`custom-scroll flex-1 overflow-y-auto px-8 py-8 ${
-          !registrationResults && uploadedFiles.length === 0 ? "flex flex-col justify-center" : ""
+          !enrollmentResults && uploadedFiles.length === 0 ? "flex flex-col justify-center" : ""
         }`}>
-        {!registrationResults && (
+        {!enrollmentResults && (
           <BulkUploadArea
             uploadedCount={uploadedFiles.length}
             isDetecting={isDetecting}
@@ -125,7 +125,7 @@ export function BulkRegistration({
           />
         )}
 
-        {detectedFaces.length > 0 && !registrationResults && (
+        {detectedFaces.length > 0 && !enrollmentResults && (
           <FaceAssignmentGrid
             detectedFaces={detectedFaces}
             members={members}
@@ -136,9 +136,9 @@ export function BulkRegistration({
           />
         )}
 
-        {registrationResults && (
-          <RegistrationResults
-            results={registrationResults}
+        {enrollmentResults && (
+          <EnrollmentResults
+            results={enrollmentResults}
             successCount={successCount}
             failedCount={failedCount}
             onClose={onClose}
@@ -146,22 +146,22 @@ export function BulkRegistration({
         )}
       </div>
 
-      {/* Sticky bottom — register CTA, only when faces are assigned */}
-      {assignedCount > 0 && !registrationResults && (
+      {/* Sticky bottom — enroll CTA, only when faces are assigned */}
+      {assignedCount > 0 && !enrollmentResults && (
         <div className="shrink-0 px-8 py-4">
           <button
-            onClick={handleBulkRegister}
-            disabled={isRegistering}
+            onClick={handleBulkEnroll}
+            disabled={isEnrolling}
             className="flex w-full items-center justify-center gap-2.5 py-2.5 text-[13px] font-semibold text-cyan-400 transition-all hover:text-cyan-300 disabled:text-white/20">
-            {isRegistering ?
+            {isEnrolling ?
               <>
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-400/60" />
                 <span>
-                  Registering {assignedCount} {assignedCount === 1 ? "face" : "faces"}…
+                  Enrolling {assignedCount} {assignedCount === 1 ? "face" : "faces"}…
                 </span>
               </>
             : <span>
-                Register {assignedCount} {assignedCount === 1 ? "Face" : "Faces"}
+                Enroll {assignedCount} {assignedCount === 1 ? "Face" : "Faces"}
               </span>
             }
           </button>

@@ -3,13 +3,13 @@ import { useGroupUIStore } from "@/components/group/stores"
 import { Modal } from "@/components/common"
 import { motion, AnimatePresence } from "framer-motion"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
-import { useCamera } from "@/components/group/sections/registration/hooks/useCamera"
-import { useFaceCapture } from "@/components/group/sections/registration/hooks/useFaceCapture"
+import { useCamera } from "@/components/group/sections/enrollment/hooks/useCamera"
+import { useFaceCapture } from "@/components/group/sections/enrollment/hooks/useFaceCapture"
 import { useDialog } from "@/components/shared"
-import { CameraFeed } from "@/components/group/sections/registration/components/CameraFeed"
-import { UploadArea } from "@/components/group/sections/registration/components/UploadArea"
-import { MemberSidebar } from "@/components/group/sections/registration/components/MemberSidebar"
-import { ResultView } from "@/components/group/sections/registration/components/ResultView"
+import { CameraFeed } from "@/components/group/sections/enrollment/components/CameraFeed"
+import { UploadArea } from "@/components/group/sections/enrollment/components/UploadArea"
+import { MemberSidebar } from "@/components/group/sections/enrollment/components/MemberSidebar"
+import { ResultView } from "@/components/group/sections/enrollment/components/ResultView"
 
 interface FaceCaptureProps {
   group: AttendanceGroup
@@ -33,14 +33,14 @@ export function FaceCapture({
   const dialog = useDialog()
 
   const preSelectedId = useGroupUIStore((state) => state.preSelectedMemberId)
-  const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
+  const resetEnrollment = useGroupUIStore((state) => state.resetEnrollment)
 
   const [source, setSource] = useState<CaptureSource>(initialSource ?? "live")
   const [selectedMemberId, setSelectedMemberId] = useState(preSelectedId ?? "")
   const [memberSearch, setMemberSearch] = useState("")
-  const [registrationFilter, setRegistrationFilter] = useState<
-    "all" | "registered" | "non-registered"
-  >("all")
+  const [enrollmentFilter, setEnrollmentFilter] = useState<"all" | "enrolled" | "non-enrolled">(
+    "all",
+  )
 
   const memberStatus = useMemo(() => {
     const status = new Map<string, boolean>()
@@ -64,18 +64,18 @@ export function FaceCapture({
 
   const {
     frames,
-    isRegistering,
+    isEnrolling,
     successMessage,
     globalError,
     setSuccessMessage,
     setGlobalError,
     captureProcessedFrame,
-    handleRegister,
+    handleEnroll,
     handleRemoveFaceData,
     resetFrames,
   } = useFaceCapture(group, members, onRefresh, dialog)
 
-  const framesReady = frames.some((f) => f.status === "ready" || f.status === "registered")
+  const framesReady = frames.some((f) => f.status === "ready" || f.status === "enrolled")
   const isProcessing = frames.some((f) => f.status === "processing")
 
   useEffect(() => {
@@ -124,10 +124,10 @@ export function FaceCapture({
     captureProcessedFrame("Front", url, canvas.width, canvas.height)
   }, [videoRef, selectedMemberId, captureProcessedFrame])
 
-  const handleWrapperRegister = useCallback(async () => {
+  const handleWrapperEnroll = useCallback(async () => {
     if (!selectedMemberId) return
-    await handleRegister(selectedMemberId, async () => {}, memberStatus)
-  }, [selectedMemberId, handleRegister, memberStatus])
+    await handleEnroll(selectedMemberId, async () => {}, memberStatus)
+  }, [selectedMemberId, handleEnroll, memberStatus])
 
   const handleWrapperRemoveData = useCallback(
     async (member: AttendanceMember) => {
@@ -158,9 +158,9 @@ export function FaceCapture({
           resetWorkflow()
         }
       } else if (e.key === "Enter") {
-        if (framesReady && !isRegistering) {
+        if (framesReady && !isEnrolling) {
           e.preventDefault()
-          void handleWrapperRegister()
+          void handleWrapperEnroll()
         }
       }
     }
@@ -174,10 +174,10 @@ export function FaceCapture({
     isVideoReady,
     isProcessing,
     framesReady,
-    isRegistering,
+    isEnrolling,
     handleCaptureFromCamera,
     resetWorkflow,
-    handleWrapperRegister,
+    handleWrapperEnroll,
   ])
 
   const selectedMemberName = useMemo(() => {
@@ -194,7 +194,7 @@ export function FaceCapture({
           setSelectedMemberId("")
           resetFrames()
           // Close the overlay entirely — go back to the main members list
-          resetRegistration()
+          resetEnrollment()
         }}
         title="Success"
         maxWidth="sm"
@@ -212,7 +212,7 @@ export function FaceCapture({
                 setSelectedMemberId("")
                 resetFrames()
                 // Close the overlay entirely — go back to the main members list
-                resetRegistration()
+                resetEnrollment()
               }}
               className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/30">
               Done
@@ -238,8 +238,8 @@ export function FaceCapture({
                 onSelectMember={setSelectedMemberId}
                 memberSearch={memberSearch}
                 setMemberSearch={setMemberSearch}
-                registrationFilter={registrationFilter}
-                setRegistrationFilter={setRegistrationFilter}
+                enrollmentFilter={enrollmentFilter}
+                setEnrollmentFilter={setEnrollmentFilter}
                 onRemoveFaceData={handleWrapperRemoveData}
               />
             </motion.div>
@@ -286,8 +286,8 @@ export function FaceCapture({
                     frames={frames}
                     selectedMemberName={selectedMemberName}
                     onRetake={resetWorkflow}
-                    onRegister={handleWrapperRegister}
-                    isRegistering={isRegistering}
+                    onEnroll={handleWrapperEnroll}
+                    isEnrolling={isEnrolling}
                     framesReady={!!framesReady}
                   />
                 }

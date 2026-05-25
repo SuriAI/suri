@@ -228,7 +228,7 @@ async def get_all_persons(
     face_recognizer=Depends(get_face_recognizer),
 ):
     """
-    Get list of all registered persons
+    Get list of all enrolled persons
     """
     try:
         persons = await face_recognizer.get_all_persons(repo.organization_id)

@@ -1,5 +1,5 @@
 import { Dropdown } from "@/components/shared"
-import type { CaptureSource } from "@/components/group/sections/registration/types"
+import type { CaptureSource } from "@/components/group/sections/enrollment/types"
 
 interface CameraFeedProps {
   videoRef: React.RefObject<HTMLVideoElement | null>

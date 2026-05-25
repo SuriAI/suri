@@ -8,9 +8,9 @@ import { EmptyState } from "@/components/group/shared/EmptyState"
 import { Dropdown, useDialog, Tooltip } from "@/components/shared"
 import { DeleteMemberModal } from "./DeleteMemberModal"
 import { BulkConsentModal } from "./BulkConsentModal"
-import { FaceCapture } from "./registration/FaceCapture"
-import { CameraQueue } from "./registration/CameraQueue"
-import { BulkRegistration } from "./registration/BulkRegistration"
+import { FaceCapture } from "./enrollment/FaceCapture"
+import { CameraQueue } from "./enrollment/CameraQueue"
+import { BulkEnrollment } from "./enrollment/BulkEnrollment"
 import { MemberRow } from "./members/MemberRow"
 
 interface MembersProps {
@@ -32,17 +32,17 @@ export function Members({
   deselectMemberTrigger,
   onHasSelectedMemberChange,
 }: MembersProps) {
-  const mode = useGroupUIStore((state) => state.lastRegistrationMode)
-  const source = useGroupUIStore((state) => state.lastRegistrationSource)
-  const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
-  const setRegistrationState = useGroupUIStore((state) => state.setRegistrationState)
-  const jumpToRegistration = useGroupUIStore((state) => state.jumpToRegistration)
+  const mode = useGroupUIStore((state) => state.lastEnrollmentMode)
+  const source = useGroupUIStore((state) => state.lastEnrollmentSource)
+  const resetEnrollment = useGroupUIStore((state) => state.resetEnrollment)
+  const setEnrollmentState = useGroupUIStore((state) => state.setEnrollmentState)
+  const jumpToEnrollment = useGroupUIStore((state) => state.jumpToEnrollment)
   const dialog = useDialog()
 
   const [memberSearch, setMemberSearch] = useState("")
-  const [registrationFilter, setRegistrationFilter] = useState<
-    "all" | "registered" | "non-registered"
-  >("all")
+  const [enrollmentFilter, setEnrollmentFilter] = useState<"all" | "enrolled" | "non-enrolled">(
+    "all",
+  )
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
@@ -101,15 +101,15 @@ export function Members({
     )
   }
 
-  if (registrationFilter !== "all") {
+  if (enrollmentFilter !== "all") {
     filteredMembers = filteredMembers.filter((member) => {
-      const isRegistered = member.has_face_data
-      return registrationFilter === "registered" ? isRegistered : !isRegistered
+      const isEnrolled = member.has_face_data
+      return enrollmentFilter === "enrolled" ? isEnrolled : !isEnrolled
     })
   }
 
   filteredMembers = [...filteredMembers].sort((a, b) => {
-    // Sort by registration status first (Not Registered first)
+    // Sort by enrollment status first (Not Enrolled first)
     if (!a.has_face_data && b.has_face_data) return -1
     if (a.has_face_data && !b.has_face_data) return 1
     // Then alphabetically
@@ -122,7 +122,7 @@ export function Members({
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0
     }
-  }, [memberSearch, registrationFilter])
+  }, [memberSearch, enrollmentFilter])
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop)
@@ -150,19 +150,19 @@ export function Members({
   const selectedStats = (() => {
     let ready = 0
     let noConsent = 0
-    let registered = 0
+    let enrolled = 0
 
     selectedMembersList.forEach((m) => {
       if (!m.has_consent) noConsent++
-      else if (m.has_face_data) registered++
+      else if (m.has_face_data) enrolled++
       else ready++
     })
     return {
       ready,
       noConsent,
-      registered,
+      enrolled,
       total: selectedMembersList.length,
-      eligible: ready + registered,
+      eligible: ready + enrolled,
     }
   })()
 
@@ -204,7 +204,7 @@ export function Members({
       try {
         const confirmed = await dialog.confirm({
           title: "Reset Face Data",
-          message: `Are you sure you want to clear the face data for ${member.name}? They will need to re-register to be recognized.`,
+          message: `Are you sure you want to clear the face data for ${member.name}? They will need to re-enroll to be recognized.`,
           confirmText: "Reset",
           confirmVariant: "danger",
         })
@@ -227,17 +227,17 @@ export function Members({
 
   const isSearchExpanded = memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const dropdownWidthClass =
-    registrationFilter === "all" ? "w-[68px]"
-    : registrationFilter === "registered" ? "w-[112px]"
+    enrollmentFilter === "all" ? "w-[68px]"
+    : enrollmentFilter === "enrolled" ? "w-[112px]"
     : "w-[138px]"
 
   const searchBarMaxWidthClass =
     isSearchExpanded ?
-      registrationFilter === "all" ? "max-w-[420px]"
-      : registrationFilter === "registered" ? "max-w-[464px]"
+      enrollmentFilter === "all" ? "max-w-[420px]"
+      : enrollmentFilter === "enrolled" ? "max-w-[464px]"
       : "max-w-[490px]"
-    : registrationFilter === "all" ? "max-w-[260px]"
-    : registrationFilter === "registered" ? "max-w-[304px]"
+    : enrollmentFilter === "all" ? "max-w-[260px]"
+    : enrollmentFilter === "enrolled" ? "max-w-[304px]"
     : "max-w-[330px]"
 
   return (
@@ -295,13 +295,13 @@ export function Members({
                   <Dropdown
                     options={[
                       { value: "all", label: "All" },
-                      { value: "registered", label: "Registered" },
-                      { value: "non-registered", label: "Not Registered" },
+                      { value: "enrolled", label: "Enrolled" },
+                      { value: "non-enrolled", label: "Not Enrolled" },
                     ]}
-                    value={registrationFilter}
+                    value={enrollmentFilter}
                     onChange={(val) => {
                       if (val) {
-                        setRegistrationFilter(val as "all" | "registered" | "non-registered")
+                        setEnrollmentFilter(val as "all" | "enrolled" | "non-enrolled")
                       }
                     }}
                     allowClear={false}
@@ -328,13 +328,11 @@ export function Members({
                       <div className="flex gap-2 text-[10px] font-medium">
                         {selectedStats.ready > 0 && (
                           <span className="text-cyan-400">
-                            {selectedStats.ready} not registered yet
+                            {selectedStats.ready} not enrolled yet
                           </span>
                         )}
-                        {selectedStats.registered > 0 && (
-                          <span className="text-white/55">
-                            {selectedStats.registered} registered
-                          </span>
+                        {selectedStats.enrolled > 0 && (
+                          <span className="text-white/55">{selectedStats.enrolled} enrolled</span>
                         )}
                         {selectedStats.noConsent > 0 && (
                           <span className="text-amber-400">
@@ -366,24 +364,24 @@ export function Members({
                   {selectedStats.eligible === 1 && (
                     <Tooltip
                       content={
-                        selectedStats.registered > 0 ?
-                          "This member is already registered. Proceed to re-register."
-                        : "Proceed to register member"
+                        selectedStats.enrolled > 0 ?
+                          "This member is already enrolled. Proceed to re-enroll."
+                        : "Proceed to enroll member"
                       }>
                       <motion.button
                         initial={{ opacity: 0, scale: 0.95, x: 10 }}
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         onClick={() =>
-                          jumpToRegistration(
+                          jumpToEnrollment(
                             selectedMembersList.find((m) => m.has_consent)!.person_id,
                           )
                         }
                         className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                          selectedStats.registered > 0 ?
+                          selectedStats.enrolled > 0 ?
                             "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
                           : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
                         }`}>
-                        {selectedStats.registered > 0 ? "RE-REGISTER (1)" : "REGISTER (1)"}
+                        {selectedStats.enrolled > 0 ? "RE-ENROLL (1)" : "ENROLL (1)"}
                       </motion.button>
                     </Tooltip>
                   )}
@@ -393,9 +391,9 @@ export function Members({
                       animate={{ opacity: 1, scale: 1, x: 0 }}>
                       <Tooltip
                         content={
-                          selectedStats.registered > 0 ?
-                            `Includes ${selectedStats.registered} already registered member${selectedStats.registered > 1 ? "s" : ""}`
-                          : "Proceed to register members"
+                          selectedStats.enrolled > 0 ?
+                            `Includes ${selectedStats.enrolled} already enrolled member${selectedStats.enrolled > 1 ? "s" : ""}`
+                          : "Proceed to enroll members"
                         }>
                         <div>
                           <Dropdown
@@ -421,21 +419,21 @@ export function Members({
                             ]}
                             value={null}
                             onChange={(val) => {
-                              if (val === "camera") setRegistrationState("camera", "queue")
-                              if (val === "upload") setRegistrationState("upload", "bulk")
+                              if (val === "camera") setEnrollmentState("camera", "queue")
+                              if (val === "upload") setEnrollmentState("upload", "bulk")
                             }}
                             allowClear={false}
                             showPlaceholderOption={false}
                             trigger={
                               <button
                                 className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                                  selectedStats.registered > 0 && selectedStats.ready === 0 ?
+                                  selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
                                     "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
                                   : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
                                 }`}>
-                                {selectedStats.registered > 0 && selectedStats.ready === 0 ?
-                                  "RE-REGISTER"
-                                : "REGISTER"}{" "}
+                                {selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
+                                  "RE-ENROLL"
+                                : "ENROLL"}{" "}
                                 ({selectedStats.eligible})
                                 <i className="fa-solid fa-chevron-down ml-0.5 text-[9px] opacity-60"></i>
                               </button>
@@ -486,10 +484,10 @@ export function Members({
                 <div className="text-[11px] font-medium tracking-wide text-white/55">
                   {memberSearch.trim() ?
                     `No results found for "${memberSearch}"`
-                  : registrationFilter === "registered" ?
-                    "No registered members yet"
-                  : registrationFilter === "non-registered" ?
-                    "All members are registered"
+                  : enrollmentFilter === "enrolled" ?
+                    "No enrolled members yet"
+                  : enrollmentFilter === "non-enrolled" ?
+                    "All members are enrolled"
                   : "No members found in this group"}
                 </div>
               </div>
@@ -553,7 +551,7 @@ export function Members({
         </motion.div>
       }
 
-      {/* OVERLAY CONTENT: Registration tasks */}
+      {/* OVERLAY CONTENT: Enrollment tasks */}
       <AnimatePresence>
         {mode && (
           <motion.div
@@ -563,11 +561,11 @@ export function Members({
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="absolute inset-0 z-50 flex flex-col bg-[#0b0e14]">
             {mode === "bulk" && source === "upload" && (
-              <BulkRegistration
+              <BulkEnrollment
                 group={group}
                 members={selectedMembersList.filter((m) => m.has_consent)}
                 onRefresh={onMembersChange}
-                onClose={resetRegistration}
+                onClose={resetEnrollment}
                 className="flex-1"
               />
             )}
@@ -579,7 +577,7 @@ export function Members({
                   .filter((m) => m.has_consent)
                   .map((m) => m.person_id)}
                 onRefresh={onMembersChange}
-                onClose={resetRegistration}
+                onClose={resetEnrollment}
               />
             )}
             {mode === "single" && source && (

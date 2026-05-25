@@ -1,5 +1,5 @@
 import type { AttendanceMember } from "@/types/recognition"
-import type { DetectedFace } from "@/components/group/sections/registration/types"
+import type { DetectedFace } from "@/components/group/sections/enrollment/types"
 import { Dropdown } from "@/components/shared"
 
 interface FaceAssignmentGridProps {

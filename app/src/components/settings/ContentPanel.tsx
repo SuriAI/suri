@@ -96,8 +96,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   setActiveSection,
 }) => {
   const { openEditGroup } = useGroupModals()
-  const registrationMode = useGroupUIStore((state) => state.lastRegistrationMode)
-  const resetRegistration = useGroupUIStore((state) => state.resetRegistration)
+  const enrollmentMode = useGroupUIStore((state) => state.lastEnrollmentMode)
+  const resetEnrollment = useGroupUIStore((state) => state.resetEnrollment)
   const antiSpoofDetectionInfoDismissed = useUIStore(
     (state) => state.antiSpoofDetectionInfoDismissed,
   )
@@ -150,7 +150,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         validInitialGroup &&
         addMemberHandler &&
         members.length > 0 &&
-        !registrationMode
+        !enrollmentMode
       ) {
         actions = (
           <div className="flex items-center gap-2">
@@ -162,10 +162,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             </button>
           </div>
         )
-      } else if (groupInitialSection === "members" && registrationMode) {
+      } else if (groupInitialSection === "members" && enrollmentMode) {
         actions = (
           <button
-            onClick={resetRegistration}
+            onClick={resetEnrollment}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-arrow-left text-[10px]"></i>
             Back to Members
@@ -224,8 +224,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     validInitialGroup,
     addMemberHandler,
     members.length,
-    registrationMode,
-    resetRegistration,
+    enrollmentMode,
+    resetEnrollment,
     openEditGroup,
     reportsExportHandlers,
   ])

@@ -9,7 +9,7 @@ import type {
   AttendanceEvent,
   AttendanceTimeHealth,
   BulkDetectResponse,
-  BulkRegisterResponse,
+  BulkEnrollResponse,
 } from "../types/recognition"
 
 import { HttpClient } from "./attendance/HttpClient"
@@ -139,15 +139,15 @@ export class AttendanceManager {
     return this.groupManager.getGroupMembers(groupId)
   }
 
-  async registerFaceForGroupPerson(
+  async enrollFaceForGroupPerson(
     groupId: string,
     personId: string,
     imageData: Blob | string,
     bbox: number[],
     landmarks_5: number[][],
-    enableLiveness: boolean = false, // liveness is an attendance-time check, not registration
+    enableLiveness: boolean = false, // liveness is an attendance-time check, not enrollment
   ): Promise<{ success: boolean; message?: string; error?: string }> {
-    return this.memberManager.registerFaceForGroupPerson(
+    return this.memberManager.enrollFaceForGroupPerson(
       groupId,
       personId,
       imageData,
@@ -168,17 +168,17 @@ export class AttendanceManager {
     return this.groupManager.bulkDetectFaces(groupId, images)
   }
 
-  async bulkRegisterFaces(
+  async bulkEnrollFaces(
     groupId: string,
-    registrations: {
+    enrollments: {
       person_id: string
       bbox: number[] | { x: number; y: number; width: number; height: number }
       landmarks_5: number[][]
       filename?: string
     }[],
     images: { file: File; filename: string }[],
-  ): Promise<BulkRegisterResponse> {
-    return this.groupManager.bulkRegisterFaces(groupId, registrations, images)
+  ): Promise<BulkEnrollResponse> {
+    return this.groupManager.bulkEnrollFaces(groupId, enrollments, images)
   }
 
   async processAttendanceEvent(

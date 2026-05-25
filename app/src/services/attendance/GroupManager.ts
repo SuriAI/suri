@@ -3,7 +3,7 @@ import type {
   AttendanceMember,
   AttendanceSettings,
   BulkDetectResponse,
-  BulkRegisterResponse,
+  BulkEnrollResponse,
 } from "../../types/recognition"
 import type { HttpClient } from "./HttpClient"
 
@@ -130,22 +130,22 @@ export class GroupManager {
     )
   }
 
-  async bulkRegisterFaces(
+  async bulkEnrollFaces(
     groupId: string,
-    registrations: {
+    enrollments: {
       person_id: string
       bbox: number[] | { x: number; y: number; width: number; height: number }
       landmarks_5: number[][]
       filename?: string
     }[],
     images: { file: File; filename: string }[],
-  ): Promise<BulkRegisterResponse> {
+  ): Promise<BulkEnrollResponse> {
     const formData = new FormData()
     images.forEach((item) => formData.append("images", item.file, item.filename))
-    formData.append("metadata", JSON.stringify(registrations))
+    formData.append("metadata", JSON.stringify(enrollments))
 
     return this.httpClient.postMultipart(
-      `${this.apiEndpoints.groups}/${groupId}/bulk-register-faces`,
+      `${this.apiEndpoints.groups}/${groupId}/bulk-enroll-faces`,
       formData,
     )
   }

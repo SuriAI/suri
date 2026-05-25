@@ -12,9 +12,9 @@ vi.mock("@/components/group/hooks", () => ({
 vi.mock("@/components/group/stores", () => ({
   useGroupUIStore: vi.fn((selector: (state: Record<string, unknown>) => unknown) =>
     selector({
-      lastRegistrationSource: null,
-      lastRegistrationMode: null,
-      handleRegistrationBack: vi.fn(),
+      lastEnrollmentSource: null,
+      lastEnrollmentMode: null,
+      handleEnrollmentBack: vi.fn(),
     }),
   ),
 }))

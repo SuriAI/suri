@@ -33,7 +33,7 @@ export function DatabaseStats({ groupsCount, totalMembers, totalPersons }: Datab
 
       <div className="flex flex-col items-center gap-1.5">
         <p className="text-[12px] font-medium tracking-wider text-white/65 uppercase">
-          Registered Faces
+          Enrolled Members
         </p>
         <div className="flex min-h-10 items-baseline">{renderStatValue(totalPersons)}</div>
       </div>

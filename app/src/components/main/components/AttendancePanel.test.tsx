@@ -192,7 +192,7 @@ describe("AttendancePanel", () => {
     expect(screen.queryByRole("button", { name: /Load More/ })).not.toBeInTheDocument()
   })
 
-  it("routes the no-members empty state to settings registration", async () => {
+  it("routes the no-members empty state to settings enrollment", async () => {
     const group = createAttendanceGroup()
     useAttendanceStore.setState({
       attendanceGroups: [group],
@@ -217,7 +217,7 @@ describe("AttendancePanel", () => {
     expect(useUIStore.getState().groupInitialSection).toBe("members")
   })
 
-  it("routes the no-face-data empty state to settings registration", async () => {
+  it("routes the no-face-data empty state to settings enrollment", async () => {
     const group = createAttendanceGroup()
     useAttendanceStore.setState({
       attendanceGroups: [group],
@@ -234,9 +234,9 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No face data added yet")).toBeInTheDocument()
+    expect(screen.getByText("No enrolled members in this group yet")).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "Register Face" }))
+    await user.click(screen.getByRole("button", { name: "Enroll Member" }))
 
     expect(useUIStore.getState().showSettings).toBe(true)
     expect(useUIStore.getState().groupInitialSection).toBe("members")
