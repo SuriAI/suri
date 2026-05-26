@@ -228,17 +228,17 @@ export function Members({
   const isSearchExpanded = memberSearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const dropdownWidthClass =
     enrollmentFilter === "all" ? "w-[68px]"
-    : enrollmentFilter === "enrolled" ? "w-[112px]"
-    : "w-[138px]"
+      : enrollmentFilter === "enrolled" ? "w-[112px]"
+        : "w-[138px]"
 
   const searchBarMaxWidthClass =
     isSearchExpanded ?
       enrollmentFilter === "all" ? "max-w-[420px]"
-      : enrollmentFilter === "enrolled" ? "max-w-[464px]"
-      : "max-w-[490px]"
-    : enrollmentFilter === "all" ? "max-w-[260px]"
-    : enrollmentFilter === "enrolled" ? "max-w-[304px]"
-    : "max-w-[330px]"
+        : enrollmentFilter === "enrolled" ? "max-w-[464px]"
+          : "max-w-[490px]"
+      : enrollmentFilter === "all" ? "max-w-[260px]"
+        : enrollmentFilter === "enrolled" ? "max-w-[304px]"
+          : "max-w-[330px]"
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden">
@@ -246,7 +246,7 @@ export function Members({
       {members.length === 0 ?
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
           <EmptyState
-            title="This group has no members."
+            title="This group has no members"
             description="Add, edit, and remove members to manage profiles and enrollment status."
             action={
               onAdd ?
@@ -255,11 +255,11 @@ export function Members({
                   onClick: onAdd,
                   iconClass: "fa-solid fa-user-plus text-[10px]",
                 }
-              : undefined
+                : undefined
             }
           />
         </motion.div>
-      : <motion.div
+        : <motion.div
           key="members-list"
           className="relative flex h-full w-full flex-col overflow-hidden">
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
@@ -342,7 +342,7 @@ export function Members({
                         )}
                       </div>
                     </div>
-                  : <span>
+                    : <span>
                       Showing {filteredMembers.length} of {members.length} member
                       {members.length !== 1 ? "s" : ""}
                     </span>
@@ -367,7 +367,7 @@ export function Members({
                       content={
                         selectedStats.enrolled > 0 ?
                           "This member is already enrolled. Proceed to re-enroll."
-                        : "Proceed to enroll member"
+                          : "Proceed to enroll member"
                       }>
                       <motion.button
                         initial={{ opacity: 0, scale: 0.95, x: 10 }}
@@ -377,11 +377,10 @@ export function Members({
                             selectedMembersList.find((m) => m.has_consent)!.person_id,
                           )
                         }
-                        className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                          selectedStats.enrolled > 0 ?
+                        className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${selectedStats.enrolled > 0 ?
                             "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
-                          : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
-                        }`}>
+                            : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                          }`}>
                         {selectedStats.enrolled > 0 ? "RE-ENROLL (1)" : "ENROLL (1)"}
                       </motion.button>
                     </Tooltip>
@@ -394,7 +393,7 @@ export function Members({
                         content={
                           selectedStats.enrolled > 0 ?
                             `Includes ${selectedStats.enrolled} already enrolled member${selectedStats.enrolled > 1 ? "s" : ""}`
-                          : "Proceed to enroll members"
+                            : "Proceed to enroll members"
                         }>
                         <div>
                           <Dropdown
@@ -427,14 +426,13 @@ export function Members({
                             showPlaceholderOption={false}
                             trigger={
                               <button
-                                className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                                  selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
+                                className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
                                     "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
-                                  : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
-                                }`}>
+                                    : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                                  }`}>
                                 {selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
                                   "RE-ENROLL"
-                                : "ENROLL"}{" "}
+                                  : "ENROLL"}{" "}
                                 ({selectedStats.eligible})
                                 <i className="fa-solid fa-chevron-down ml-0.5 text-[9px] opacity-60"></i>
                               </button>
@@ -459,11 +457,10 @@ export function Members({
                       selectedIds.size === filteredMembers.length ? undefined : toggleSelectAll
                     }
                     disabled={selectedIds.size === filteredMembers.length}
-                    className={`flex items-center gap-2 text-[11px] font-bold transition-all ${
-                      selectedIds.size === filteredMembers.length ?
+                    className={`flex items-center gap-2 text-[11px] font-bold transition-all ${selectedIds.size === filteredMembers.length ?
                         "cursor-default text-white/20"
-                      : "text-cyan-400/80 hover:text-cyan-400"
-                    }`}>
+                        : "text-cyan-400/80 hover:text-cyan-400"
+                      }`}>
                     Select All
                   </button>
                 </div>
@@ -485,14 +482,14 @@ export function Members({
                 <div className="text-[11px] font-medium tracking-wide text-white/55">
                   {memberSearch.trim() ?
                     `No results found for "${memberSearch}"`
-                  : enrollmentFilter === "enrolled" ?
-                    "No enrolled members"
-                  : enrollmentFilter === "non-enrolled" ?
-                    "All members are enrolled"
-                  : "No members found in this group"}
+                    : enrollmentFilter === "enrolled" ?
+                      "No enrolled members"
+                      : enrollmentFilter === "non-enrolled" ?
+                        "All members are enrolled"
+                        : "No members found in this group"}
                 </div>
               </div>
-            : <div
+              : <div
                 className="flex w-full flex-col gap-1"
                 style={{
                   paddingTop: `${paddingTop}px`,
