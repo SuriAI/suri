@@ -265,7 +265,59 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   return (
     <>
       <div className="flex flex-1 flex-col overflow-hidden bg-[var(--bg-secondary)]">
-        <SectionHeader {...headerProps} />
+        <SectionHeader>
+          <SectionHeader.Breadcrumbs>
+            {headerProps.isGroupSection ?
+              <>
+                <SectionHeader.Breadcrumb
+                  active={!groupInitialSection || groupInitialSection === "overview"}
+                  onClick={
+                    !groupInitialSection || groupInitialSection === "overview" ?
+                      undefined
+                    : () => setGroupInitialSection("overview")
+                  }>
+                  {validInitialGroup?.name || "Group Management"}
+                </SectionHeader.Breadcrumb>
+                <AnimatePresence mode="popLayout">
+                  {groupInitialSection && groupInitialSection !== "overview" && (
+                    <motion.div
+                      key={groupInitialSection}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      style={{ display: "inline-flex", alignItems: "center" }}
+                      className="gap-2">
+                      <SectionHeader.Separator />
+                      <SectionHeader.Breadcrumb active>
+                        {groupSections.find((s) => s.id === groupInitialSection)?.label ||
+                          "Overview"}
+                      </SectionHeader.Breadcrumb>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            : <>
+                <SectionHeader.Breadcrumb>Preferences</SectionHeader.Breadcrumb>
+                <SectionHeader.Separator />
+                <SectionHeader.Breadcrumb active>{headerProps.title}</SectionHeader.Breadcrumb>
+              </>
+            }
+          </SectionHeader.Breadcrumbs>
+
+          <SectionHeader.Actions>
+            {headerProps.actions && (
+              <motion.div
+                key={headerProps.title + "-actions"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15 }}>
+                {headerProps.actions}
+              </motion.div>
+            )}
+          </SectionHeader.Actions>
+        </SectionHeader>
 
         {/* Section Content */}
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
