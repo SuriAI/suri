@@ -107,7 +107,7 @@ class AttendanceRepository:
         query = select(AttendanceGroup).where(AttendanceGroup.is_deleted.is_(False))
         query = self._apply_org_scope(query, AttendanceGroup)
 
-        query = query.order_by(AttendanceGroup.name)
+        query = query.order_by(AttendanceGroup.name.collate("NOCASE"))
         if active_only:
             query = query.where(AttendanceGroup.is_active)
         result = await self.session.execute(query)
@@ -413,7 +413,7 @@ class AttendanceRepository:
         )
         query = self._apply_org_scope(query, AttendanceMember)
 
-        query = query.order_by(AttendanceMember.name)
+        query = query.order_by(AttendanceMember.name.collate("NOCASE"))
         result = await self.session.execute(query)
         return result.scalars().all()
 
