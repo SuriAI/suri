@@ -17,16 +17,16 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
         <div>
           <h2 className="text-xl font-semibold text-white">Privacy & Data Handling</h2>
           <p className="mt-1 text-sm font-normal text-white/65">
-            How your information is stored and used
+            How information is stored and used
           </p>
         </div>
       }
       maxWidth="md">
       <div className="custom-scroll mt-2 -mr-2 max-h-[70vh] space-y-6 overflow-y-auto pr-2 pb-10">
         <section>
-          <h3 className="mb-2 text-sm font-medium text-white">Your data stays local</h3>
+          <h3 className="mb-2 text-sm font-medium text-white">Data remains local</h3>
           <p className="text-xs leading-relaxed text-white/65">
-            Facenox stores biometric profiles, attendance records, and settings locally on your
+            Facenox stores biometric profiles, attendance records, and settings locally on this
             device by default. The desktop app performs face detection, recognition, and liveness
             checks locally and does not depend on a hosted biometric service.
           </p>
@@ -63,7 +63,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <h3 className="mb-2 text-sm font-medium text-white">Regulatory compliance</h3>
           <p className="text-xs leading-relaxed text-white/65">
             Facenox includes local storage, consent tracking, export, and deletion controls that can
-            help support privacy-conscious deployments. Compliance still depends on your operational
+            help support privacy-conscious deployments. Compliance still depends on operational
             policies and legal notices.
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">

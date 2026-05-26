@@ -317,7 +317,7 @@ export function useDatabaseManagement(
   const handleClearAllGroups = useCallback(
     async (skipConfirmation = false) => {
       const groupCount = groups.length
-      const confirmMessage = `Delete ALL ${groupCount} groups and member profiles? This will permanently wipe out your entire local directory structure and soft-delete member accounts. This cannot be undone.`
+      const confirmMessage = `Delete ALL ${groupCount} groups and member profiles? This will permanently wipe out the entire local directory structure and soft-delete member accounts. This cannot be undone.`
 
       if (!skipConfirmation) {
         if (dialog) {

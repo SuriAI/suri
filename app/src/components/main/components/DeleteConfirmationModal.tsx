@@ -37,7 +37,7 @@ export function DeleteConfirmationModal({
         <>
           <div className="mb-6">
             <p className="mb-4 text-sm text-white/80">
-              Are you sure you want to delete the group{" "}
+              Confirm deletion of the group{" "}
               <strong className="text-white">&quot;{groupSnapshot.name}&quot;</strong>?
             </p>
             <div className="mb-4 rounded-lg border border-red-500/30 bg-red-900/20 p-3">
@@ -49,8 +49,8 @@ export function DeleteConfirmationModal({
             {currentGroup?.id === groupSnapshot.id && (
               <div className="rounded-lg border border-amber-500/30 bg-amber-900/20 p-3">
                 <p className="text-xs text-amber-300">
-                  <strong>Note:</strong> This is your currently active group. Deleting it will clear
-                  your current selection.
+                  <strong>Note:</strong> This is the currently active group. Deleting it will clear
+                  the current selection.
                 </p>
               </div>
             )}

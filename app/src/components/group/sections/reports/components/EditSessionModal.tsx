@@ -138,7 +138,7 @@ export function EditSessionModal({
       return
     }
     if (trackCheckout && status === "present" && !checkOutTime) {
-      setError("Time Out is required — your group has checkout tracking enabled.")
+      setError("Time Out is required — the group has checkout tracking enabled.")
       return
     }
 

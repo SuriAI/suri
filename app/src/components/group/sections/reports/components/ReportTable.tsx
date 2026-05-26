@@ -116,7 +116,7 @@ export function ReportTable({
 
                   <p className="mb-8 max-w-70 text-xs leading-relaxed font-medium text-white/55">
                     {search ?
-                      "We couldn't find anything matching your search. Try a different keyword."
+                      "No matching records found. Try a different search query."
                     : statusFilter !== "all" ?
                       `None of the records currently match the "${statusFilter}" filter.`
                     : "There are no attendance records for this period."}

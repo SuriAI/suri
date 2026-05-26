@@ -22,7 +22,7 @@ export function IntroModal() {
       ),
     },
     {
-      title: "We don't save photos",
+      title: "No Photos Stored",
       content: (
         <div className="space-y-4">
           <div className="rounded-xl border border-white/10 bg-[rgba(22,28,36,0.62)] p-4">
