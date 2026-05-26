@@ -133,7 +133,7 @@ export function MemberSidebar({
       <div className="custom-scroll min-h-0 flex-1 space-y-1.5 overflow-x-hidden overflow-y-auto">
         {members.length === 0 && (
           <div className="w-full rounded-lg border border-dashed border-white/10 bg-[rgba(22,28,36,0.44)] px-3 py-12 text-center">
-            <div className="text-xs text-white/55">No members yet</div>
+            <div className="text-xs text-white/55">No members</div>
           </div>
         )}
 
@@ -143,7 +143,7 @@ export function MemberSidebar({
               {memberSearch.trim() ?
                 `No results for "${memberSearch}"`
               : enrollmentFilter === "enrolled" ?
-                "No enrolled members yet"
+                "No enrolled members"
               : enrollmentFilter === "non-enrolled" ?
                 "All members are already enrolled"
               : "No members found"}

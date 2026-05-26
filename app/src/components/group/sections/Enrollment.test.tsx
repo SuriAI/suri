@@ -67,7 +67,7 @@ describe("Enrollment", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No members in this group yet")).toBeInTheDocument()
+    expect(screen.getByText("This group has no members.")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Add Member" })).toBeInTheDocument()
   })
 

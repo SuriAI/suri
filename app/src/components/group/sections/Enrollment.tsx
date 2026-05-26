@@ -72,7 +72,8 @@ export function Enrollment({
       : members.length === 0 ?
         <motion.div key="empty-state" {...animationProps}>
           <EmptyState
-            title="No members in this group yet"
+            title="This group has no members."
+            description="Biometric enrollment and photo uploads require members."
             action={
               onAddMember ?
                 {

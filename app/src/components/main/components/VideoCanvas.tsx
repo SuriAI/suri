@@ -128,9 +128,9 @@ export const VideoCanvas = memo(function VideoCanvas({
                   "Loading groups and settings..."
                 : hasSelectedGroup ?
                   !hasEnrolledFaces ?
-                    "To start scanning, enroll at least one member in this group first."
+                    "To start scanning, enroll at least one member in this group."
                   : "Select a camera, then press Start Scan to begin attendance tracking."
-                : "Create a group or choose one to begin attendance tracking."}
+                : "Create or select a group to begin attendance tracking."}
               </p>
 
               {hasSelectedGroup && hasEnrolledFaces && onStartTimeChange && lateTrackingEnabled && (

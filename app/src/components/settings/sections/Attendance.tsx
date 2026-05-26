@@ -47,7 +47,7 @@ export function Attendance({
                   <div className="text-sm font-medium text-white/90">Entry & Exit Tracking</div>
                   <InfoPopover
                     title="Entry & Exit Tracking"
-                    description="Record two events per person per day: the first scan as arrival (Time In) and the most recent scan as departure (Time Out)."
+                    description="Records arrival (Time In) on the first scan, and departure (Time Out) on the most recent scan of the day."
                     details={[
                       "Single scans count as arrival only.",
                       "Subsequent scans update the departure time.",
@@ -93,7 +93,7 @@ export function Attendance({
                   <div className="text-sm font-medium text-white/90">Late Tracking</div>
                   <InfoPopover
                     title="Late Tracking"
-                    description="Automatically mark members as late if their arrival occurs after the scheduled start time plus the late threshold."
+                    description="Marks members as late if they arrive after the scheduled start time plus the specified threshold."
                     details={["If enabled, late status will be reflected in Overview and Reports."]}
                     side="right"
                   />
@@ -341,7 +341,7 @@ export function Attendance({
                     {attendanceSettings.forceLiveness ?
                       "Enforced by central administration."
                     : attendanceSettings.enableSpoofDetection ?
-                      "Prevent spoofing attempts using printed photos, video playback, or digital screens."
+                      "Prevents bypass attempts using printed photos, video playback, or other spoofing methods."
                     : "Skip liveness verification."}
                   </motion.div>
                 </AnimatePresence>
@@ -367,7 +367,7 @@ export function Attendance({
                 <div className="text-sm font-medium text-white/90">Global Group Consent</div>
                 <InfoPopover
                   title="Global Group Consent"
-                  description="Certify that explicit biometric consent forms have been signed off-system (e.g. in employment contracts) by all members of this group. Enabling this will remove repetitive consent checkboxes from manual enrollment and edit flows."
+                  description="Certifies that biometric consent is managed off-system. Enabling this bypasses manual consent confirmation checkboxes during member enrollment."
                   details={[
                     "Certifies that consent is managed off-system.",
                     "Removes manual checkbox prompts on member add/edit.",

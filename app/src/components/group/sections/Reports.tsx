@@ -151,7 +151,8 @@ export function Reports({
               transition={{ duration: 0.2 }}
               className="flex flex-1 items-center justify-center">
               <EmptyState
-                title="No members in this group yet"
+                title="This group has no members."
+                description="Generate custom attendance reports and export detailed member attendance data."
                 action={
                   onAddMember ?
                     {

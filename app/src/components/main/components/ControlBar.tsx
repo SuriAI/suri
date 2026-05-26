@@ -81,7 +81,7 @@ export function ControlBar({
         label: "Start Scan",
         className:
           "bg-[rgba(22,28,36,0.68)] border border-white/10 text-white/40 hover:bg-[rgba(22,28,36,0.68)] hover:text-white/40",
-        tooltip: "Enroll at least one member's face to start scanning",
+        tooltip: "Enroll a group member to begin scanning",
         enabled: false,
       }
     }
