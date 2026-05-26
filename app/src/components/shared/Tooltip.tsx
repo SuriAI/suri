@@ -18,6 +18,7 @@ interface TooltipProps {
   delay?: number
   disabled?: boolean
   offset?: number
+  className?: string
 }
 
 interface TooltipCoords {
@@ -195,6 +196,7 @@ export function Tooltip({
   delay = 200,
   disabled = false,
   offset = TOOLTIP_OFFSET,
+  className = "",
 }: TooltipProps) {
   const [visible, setVisible] = useState(false)
   const [coords, setCoords] = useState<TooltipCoords | null>(null)
@@ -350,7 +352,8 @@ export function Tooltip({
                 left: coords?.left ?? -9999,
                 visibility: coords ? "visible" : "hidden",
               }}>
-              <div className="relative max-w-[240px] rounded-md border border-white/10 bg-[rgba(15,19,25,0.98)] px-2 py-1 text-[10px] leading-snug font-medium whitespace-normal text-white/90">
+              <div
+                className={`relative max-w-[240px] rounded-md border border-white/10 bg-[rgba(15,19,25,0.98)] px-2 py-1 text-[10px] leading-snug font-medium whitespace-normal text-white/90 ${className}`}>
                 {content}
                 {coords && <div style={coords.arrowStyle} />}
               </div>
