@@ -17,6 +17,9 @@ interface UIState {
   showSettings: boolean
   groupInitialSection: GroupSection | undefined
   settingsInitialSection: string | undefined
+  lastSettingsSection: string
+  lastGroupInitialSection: GroupSection
+  lastGroupId: string | null
   hasSeenIntro: boolean
   antiSpoofDetectionInfoDismissed: boolean
   isHydrated: boolean
@@ -38,6 +41,9 @@ interface UIState {
   setShowSettings: (show: boolean) => void
   setGroupInitialSection: (section: GroupSection | undefined) => void
   setSettingsInitialSection: (section: string | undefined) => void
+  setLastSettingsSection: (section: string) => void
+  setLastGroupInitialSection: (section: GroupSection) => void
+  setLastGroupId: (id: string | null) => void
   setHasSeenIntro: (seen: boolean) => void
   setAntiSpoofDetectionInfoDismissed: (dismissed: boolean) => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -74,6 +80,9 @@ export const useUIStore = create<UIState>((set) => ({
   showSettings: false,
   groupInitialSection: undefined,
   settingsInitialSection: undefined,
+  lastSettingsSection: "group",
+  lastGroupInitialSection: "overview" as GroupSection,
+  lastGroupId: null,
   hasSeenIntro: false, // Default to false
   antiSpoofDetectionInfoDismissed: false,
   isHydrated: false, // Wait for hydration before rendering decisions
@@ -99,6 +108,9 @@ export const useUIStore = create<UIState>((set) => ({
   setShowSettings: (show) => set({ showSettings: show }),
   setGroupInitialSection: (section) => set({ groupInitialSection: section }),
   setSettingsInitialSection: (section) => set({ settingsInitialSection: section }),
+  setLastSettingsSection: (section) => set({ lastSettingsSection: section }),
+  setLastGroupInitialSection: (section) => set({ lastGroupInitialSection: section }),
+  setLastGroupId: (id) => set({ lastGroupId: id }),
 
   setHasSeenIntro: (seen) => set({ hasSeenIntro: seen }),
   setAntiSpoofDetectionInfoDismissed: (dismissed) =>

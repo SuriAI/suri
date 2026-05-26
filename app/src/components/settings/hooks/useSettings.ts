@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { backendService, attendanceManager, persistentSettings } from "@/services"
 import { useDialog } from "@/components/shared"
 import { useGroupUIStore } from "@/components/group/stores"
+import { useUIStore } from "@/components/main/stores"
 import type { GroupSection } from "@/components/group"
 import type {
   QuickSettings,
@@ -45,10 +46,42 @@ export const useSettings = ({
   quickSettings,
 }: UseSettingsProps) => {
   const dialog = useDialog()
-  const [activeSection, setActiveSection] = useState<string>(initialSection || "group")
-  const [groupInitialSection, setGroupInitialSection] = useState<GroupSection | undefined>(
-    initialGroupSection || "overview",
+  const uiStore = useUIStore()
+
+  const [activeSection, setActiveSectionState] = useState<string>(
+    initialSection || uiStore.lastSettingsSection || "group",
   )
+  const [groupInitialSection, setGroupInitialSectionState] = useState<GroupSection | undefined>(
+    initialGroupSection || uiStore.lastGroupInitialSection || "overview",
+  )
+
+  const setActiveSection = useCallback((section: string) => {
+    setActiveSectionState(section)
+    useUIStore.getState().setLastSettingsSection(section)
+  }, [])
+
+  const setGroupInitialSection = useCallback((section: GroupSection) => {
+    setGroupInitialSectionState(section)
+    useUIStore.getState().setLastGroupInitialSection(section)
+  }, [])
+
+  // Reset settings tabs to default when active group changes to avoid editing settings/members of the wrong group
+  useEffect(() => {
+    if (currentGroup?.id) {
+      const store = useUIStore.getState()
+
+      // Only reset active sections if switching to a completely different group context during this session!
+      if (store.lastGroupId && store.lastGroupId !== currentGroup.id) {
+        store.setLastSettingsSection("group")
+        store.setLastGroupInitialSection("overview")
+        setActiveSectionState("group")
+        setGroupInitialSectionState("overview")
+      }
+
+      // Keep track of the active group ID to distinguish real group switches from component remounts
+      store.setLastGroupId(currentGroup.id)
+    }
+  }, [currentGroup?.id])
   const [systemData, setSystemData] = useState<SettingsOverview>({
     totalPersons: null,
     totalMembers: null,
