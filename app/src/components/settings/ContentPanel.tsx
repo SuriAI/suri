@@ -194,8 +194,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       const isOverview = !groupInitialSection || groupInitialSection === "overview"
 
       return {
-        title: isOverview ? groupName : sectionLabel || "Overview",
-        eyebrow: isOverview ? undefined : groupName,
+        title: sectionLabel || "Overview",
+        eyebrow: groupName,
         eyebrowColor: "text-white/45",
         onEyebrowClick: isOverview ? undefined : () => setGroupInitialSection("overview"),
         actions,
