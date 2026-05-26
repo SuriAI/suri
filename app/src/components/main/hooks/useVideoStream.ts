@@ -152,7 +152,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
       setCameraDevices(videoDevices)
       return videoDevices
     } catch {
-      setError("Unable to detect cameras. Please make sure your camera is connected.")
+      setError("Unable to detect cameras. Ensure a camera is connected.")
       return []
     }
   }, [setError, setCameraDevices])
@@ -170,9 +170,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
       if (isStreaming && activeCameraId) {
         const stillExists = refreshedDevices.some((device) => device.deviceId === activeCameraId)
         if (!stillExists) {
-          setError(
-            "Your active camera was disconnected. Please select a different camera or reconnect the device.",
-          )
+          setError("Active camera disconnected. Select a different camera or reconnect the device.")
 
           if (onDeviceDisconnected) {
             onDeviceDisconnected()

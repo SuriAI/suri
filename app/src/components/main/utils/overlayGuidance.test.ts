@@ -42,7 +42,7 @@ describe("overlayGuidance", () => {
         verifyingHintActive: false,
       }),
     ).toEqual({
-      label: "Center your face",
+      label: "Center face",
       tone: "warning",
     })
   })
