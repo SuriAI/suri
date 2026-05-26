@@ -34,7 +34,7 @@ export function useCamera() {
       setCameraDevices(videoDevices)
       return videoDevices
     } catch {
-      setCameraError("Unable to detect cameras. Please make sure your camera is connected.")
+      setCameraError("Unable to detect cameras. Ensure a camera is connected.")
       return []
     }
   }, [])
@@ -71,9 +71,7 @@ export function useCamera() {
         const videoDevices = await getCameraDevices()
 
         if (videoDevices.length === 0) {
-          throw new Error(
-            "No camera detected. Please make sure your camera is connected and try again.",
-          )
+          throw new Error("No camera detected. Ensure a camera is connected and try again.")
         }
 
         let deviceIdToUse: string | undefined = undefined
@@ -163,8 +161,7 @@ export function useCamera() {
       } catch (err) {
         console.error("Error starting camera:", err)
 
-        let errorMessage =
-          "Unable to access your camera. Please make sure your camera is connected and try again."
+        let errorMessage = "Unable to access camera. Ensure a camera is connected and try again."
 
         if (err instanceof Error) {
           const errorName = err.name

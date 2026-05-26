@@ -58,7 +58,7 @@ export function useFaceCapture(
         })
 
         if (!detection.faces || detection.faces.length === 0) {
-          throw new Error("No face detected. Make sure your face is visible and in the frame.")
+          throw new Error("No face detected. Ensure face is clearly visible and in the frame.")
         }
 
         const bestFace = detection.faces.reduce(

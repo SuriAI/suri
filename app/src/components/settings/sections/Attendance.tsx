@@ -322,7 +322,7 @@ export function Attendance({
                   description="Requires a live face before showing identity or recording attendance, helping block photo and screen replay attempts."
                   details={[
                     "Uses liveness detection under the hood.",
-                    "Can show guidance like Center your face, Move closer, or Verifying....",
+                    "Can show guidance like Center face, Move closer, or Verifying....",
                     "Works best with balanced lighting and a clear front-facing view.",
                     "May slightly reduce recognition speed when enabled.",
                   ]}

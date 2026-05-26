@@ -13,10 +13,10 @@ export function IntroModal() {
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-white/80">
             Facenox is a <strong>real-time</strong> attendance system built for privacy. Everything
-            is processed on this device to keep your data secure and under your control.
+            is processed on this device to keep data secure and under local control.
           </p>
           <p className="text-xs text-white/65">
-            Here is a quick overview of how we protect your information.
+            Here is a quick overview of how information is protected.
           </p>
         </div>
       ),
@@ -49,7 +49,7 @@ export function IntroModal() {
           </div>
           <p className="text-xs leading-relaxed text-white/65">
             No data is sent to the internet or any remote services unless you explicitly choose to
-            sync it with your dashboard later.
+            sync it with the dashboard later.
           </p>
         </div>
       ),
@@ -71,7 +71,7 @@ export function IntroModal() {
               className="text-cyan-400/80 underline decoration-cyan-400/30 underline-offset-4 transition-colors hover:text-cyan-400">
               open-source project
             </a>
-            , our code is transparent so you can be sure your data is handled correctly.
+            , the source code is transparent to ensure data is handled correctly.
           </p>
 
           <div className="border-t border-white/5 pt-2 text-center">
@@ -85,7 +85,7 @@ export function IntroModal() {
           </div>
 
           <p className="pt-1 text-center text-[11px] text-white/55 italic">
-            By clicking &quot;Finish&quot;, you agree that you understand how your data is handled
+            By clicking &quot;Finish&quot;, you agree that you understand how data is handled
             locally.
           </p>
         </div>

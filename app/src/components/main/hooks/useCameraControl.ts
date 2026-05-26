@@ -153,9 +153,7 @@ export function useCameraControl({
       }
 
       if (cameraDevices.length === 0) {
-        throw new Error(
-          "No camera detected. Please make sure your camera is connected and try again.",
-        )
+        throw new Error("No camera detected. Ensure a camera is connected and try again.")
       }
 
       const constraints = buildCameraConstraints(deviceIdToUse)
@@ -209,8 +207,7 @@ export function useCameraControl({
     } catch (err) {
       console.error("Error starting camera:", err)
 
-      let errorMessage =
-        "Unable to access your camera. Please make sure your camera is connected and try again."
+      let errorMessage = "Unable to access camera. Ensure a camera is connected and try again."
       if (err instanceof Error) {
         const errorName = err.name
         if (errorName === "NotAllowedError" || errorName === "PermissionDeniedError") {
@@ -218,27 +215,26 @@ export function useCameraControl({
           let instructions: string
           if (userAgent.includes("win")) {
             instructions =
-              "Please check your Windows Privacy settings: Go to Settings → Privacy → Camera and ensure 'Allow apps to access your camera' is turned ON."
+              "Check Windows Privacy settings: Go to Settings → Privacy → Camera and ensure 'Allow apps to access the camera' is turned ON."
           } else if (userAgent.includes("mac")) {
             instructions =
-              "Please check your macOS Privacy settings: Go to System Settings → Privacy & Security → Camera and ensure Facenox is allowed to access your camera."
+              "Check macOS Privacy settings: Go to System Settings → Privacy & Security → Camera and ensure Facenox is allowed to access the camera."
           } else {
-            instructions =
-              "Please ensure you have granted camera permissions in your system settings."
+            instructions = "Ensure camera permissions are granted in system settings."
           }
           errorMessage = `Camera access was denied. ${instructions}`
         } else if (errorName === "NotFoundError" || errorName === "DevicesNotFoundError") {
           errorMessage =
-            "No camera was found. Please check if your camera is properly connected to your computer."
+            "No camera found. Check if the camera is properly connected to the computer."
         } else if (errorName === "NotReadableError" || errorName === "TrackStartError") {
           const otherCameras = cameraDevices.filter(
             (d) => d.deviceId !== deviceIdToUse && d.deviceId !== "",
           )
           if (otherCameras.length > 0) {
-            errorMessage = `Your camera is currently in use by another application. Since you have ${otherCameras.length} other ${otherCameras.length === 1 ? "camera" : "cameras"} available, try selecting a different one from the dropdown.`
+            errorMessage = `Camera is currently in use by another application. Since ${otherCameras.length} other ${otherCameras.length === 1 ? "camera is" : "cameras are"} available, try selecting a different one from the dropdown.`
           } else {
             errorMessage =
-              "Your camera is currently in use by another application (Zoom, Discord, or a web browser). Please close those apps and try starting the camera again."
+              "Camera is currently in use by another application (Zoom, Discord, or a web browser). Close those apps and try starting the camera again."
           }
         } else if (
           errorName === "OverconstrainedError" ||
@@ -249,7 +245,7 @@ export function useCameraControl({
               "The selected camera could not be started with its current settings. Please reselect a camera or reconnect the device."
           } else {
             errorMessage =
-              "Your camera doesn't support the requested settings. Trying to start with default settings..."
+              "Camera does not support requested settings. Trying to start with default settings..."
             try {
               const fallbackConstraints = buildCameraConstraints()
               const fallbackStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints)
@@ -270,12 +266,12 @@ export function useCameraControl({
             } catch (fallbackErr) {
               console.error("Fallback camera start also failed:", fallbackErr)
               errorMessage =
-                "The camera could not be started. This usually happens if the hardware is busy or malfunctioning. Please try re-plugging your camera."
+                "The camera could not be started. This usually happens if the hardware is busy or malfunctioning. Try re-plugging the camera."
             }
           }
         } else {
           errorMessage =
-            "An unexpected error occurred while starting the camera. Please check your connection or try another camera device."
+            "An unexpected error occurred while starting the camera. Check connection or try another camera device."
         }
       }
 

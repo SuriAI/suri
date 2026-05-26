@@ -358,7 +358,7 @@ export const getOverlayGuidance = (
   const status = face.liveness?.status
 
   if (status === "center_face") {
-    return { label: "Center your face", tone: "warning", isLowLight: face.low_light }
+    return { label: "Center face", tone: "warning", isLowLight: face.low_light }
   }
 
   if (status === "move_closer") {
