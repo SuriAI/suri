@@ -128,7 +128,7 @@ describe("Reports", () => {
   it("shows the empty members state", () => {
     renderWithProviders(<Reports group={createAttendanceGroup()} onAddMember={vi.fn()} />)
 
-    expect(screen.getByText("This group has no members.")).toBeInTheDocument()
+    expect(screen.getByText("This group has no members")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Add Member" })).toBeInTheDocument()
   })
 

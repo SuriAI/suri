@@ -209,7 +209,7 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("This group has no members.")).toBeInTheDocument()
+    expect(screen.getByText("This group has no members")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Add Member" }))
 

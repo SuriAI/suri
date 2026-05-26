@@ -292,7 +292,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                               : option.disabled ? "cursor-not-allowed text-white/55"
                               : "text-white/70 hover:bg-white/5 hover:text-white"
                             } ${optionClassName}`}>
-                            <Tooltip content={option.label}>
+                            <Tooltip content={option.label} disabled={!shouldShowCustomTooltip(option.label)}>
                               <span className="block truncate">{option.label}</span>
                             </Tooltip>
                           </button>
