@@ -90,7 +90,11 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (internalRef.current && !internalRef.current.contains(event.target as Node)) {
+        const isClickInsideTrigger =
+          internalRef.current && internalRef.current.contains(event.target as Node)
+        const isClickInsideMenu = menuRef.current && menuRef.current.contains(event.target as Node)
+
+        if (!isClickInsideTrigger && !isClickInsideMenu) {
           setIsOpen(false)
         }
       }
@@ -220,16 +224,6 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
           <AnimatePresence>
             {isOpen && !disabled && (
               <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="fixed inset-0 z-9998"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={() => setIsOpen(false)}
-                />
-
                 <motion.div
                   ref={menuRef}
                   initial={{ opacity: 0, scale: 0.95, y: -5 }}
