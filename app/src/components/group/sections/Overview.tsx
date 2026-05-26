@@ -156,7 +156,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
               onClick: onAddMember,
               iconClass: "fa-solid fa-user-plus text-[10px]",
             }
-            : undefined
+          : undefined
         }
       />
     )
@@ -205,7 +205,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
             {(() => {
               const absent = Math.max(0, (stats.total_members ?? 0) - (stats.present_today ?? 0))
               return absent > 0 ?
-                <p className="mt-1.5 text-[11px] text-white/55">{absent} absent</p>
+                  <p className="mt-1.5 text-[11px] text-white/55">{absent} absent</p>
                 : null
             })()}
           </div>
@@ -288,10 +288,11 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                           setActivitySearch("")
                           setFilterDropdownOpen(false)
                         }}
-                        className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${dateFilter === filter ?
+                        className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
+                          dateFilter === filter ?
                             "bg-cyan-500/10 font-semibold text-cyan-400"
-                            : "text-white/65 hover:bg-white/5 hover:text-white"
-                          }`}>
+                          : "text-white/65 hover:bg-white/5 hover:text-white"
+                        }`}>
                         {DATE_FILTER_LABELS[filter]}
                       </button>
                     ))}
@@ -320,7 +321,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 className="flex items-center justify-center py-12 text-white/20">
                 <Spinner size="sm" color="muted" />
               </motion.div>
-              : <motion.div
+            : <motion.div
                 key={dateFilter}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -334,48 +335,48 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                       No activity logged{" "}
                       {dateFilter === "today" ?
                         "today"
-                        : dateFilter === "yesterday" ?
-                          "yesterday"
-                          : "this week"}
+                      : dateFilter === "yesterday" ?
+                        "yesterday"
+                      : "this week"}
                     </div>
                   </div>
-                  : filteredRecords.length === 0 ?
-                    <div className="flex flex-1 flex-col items-center justify-center text-white/55">
-                      <i className="fa-solid fa-ghost mb-3 text-2xl" />
-                      <div className="text-[12px] font-medium">No results found</div>
-                      <div className="mt-1 text-[11px]">
-                        No activity matched &quot;{activitySearch}&quot;
-                      </div>
+                : filteredRecords.length === 0 ?
+                  <div className="flex flex-1 flex-col items-center justify-center text-white/55">
+                    <i className="fa-solid fa-ghost mb-3 text-2xl" />
+                    <div className="text-[12px] font-medium">No results found</div>
+                    <div className="mt-1 text-[11px]">
+                      No activity matched &quot;{activitySearch}&quot;
                     </div>
-                    : <div className="space-y-1">
-                      {filteredRecords.slice(0, 50).map((record) => {
-                        const displayName = displayNameMap.get(record.person_id) || "Unknown"
+                  </div>
+                : <div className="space-y-1">
+                    {filteredRecords.slice(0, 50).map((record) => {
+                      const displayName = displayNameMap.get(record.person_id) || "Unknown"
 
-                        return (
-                          <div
-                            key={record.id}
-                            className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
-                            <div className="flex items-center gap-4">
-                              <div className="flex flex-col">
-                                <span className="text-[13px] font-medium text-white transition-colors">
-                                  {displayName}
-                                </span>
-                                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
-                                  <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
-                                  <span>{formatTime(record.timestamp)}</span>
-                                </div>
+                      return (
+                        <div
+                          key={record.id}
+                          className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
+                          <div className="flex items-center gap-4">
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-medium text-white transition-colors">
+                                {displayName}
+                              </span>
+                              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
+                                <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
+                                <span>{formatTime(record.timestamp)}</span>
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-4">
-                              <span className="text-[12px] font-medium text-white/55">
-                                {getRelativeTime(record.timestamp)}
-                              </span>
-                            </div>
                           </div>
-                        )
-                      })}
-                    </div>
+
+                          <div className="flex items-center gap-4">
+                            <span className="text-[12px] font-medium text-white/55">
+                              {getRelativeTime(record.timestamp)}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 }
               </motion.div>
             }

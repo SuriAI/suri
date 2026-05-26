@@ -142,63 +142,63 @@ export function Reports({
                 <span className="text-sm font-medium text-white/65">Generating Report</span>
               </div>
             </motion.div>
-            : !loading && members.length === 0 ?
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-1 items-center justify-center">
-                <EmptyState
-                  title="This group has no members"
-                  description="Generate custom attendance reports and export attendance data."
-                  action={
-                    onAddMember ?
-                      {
-                        label: "Add Member",
-                        onClick: onAddMember,
-                        iconClass: "fa-solid fa-user-plus text-[10px]",
-                      }
-                      : undefined
-                  }
-                />
-              </motion.div>
-              : <motion.div
-                key="table"
-                initial={{ opacity: 0, scale: 0.998 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
-                <div className="shrink-0 px-10 pt-8 pb-4">
-                  <ReportToolbar
-                    startDate={reportStartDate}
-                    endDate={reportEndDate}
-                    onStartDateChange={setReportStartDate}
-                    onEndDateChange={setReportEndDate}
-                    visibleColumns={visibleColumns}
-                    setVisibleColumns={setVisibleColumns}
-                    groupBy={groupBy}
-                    setGroupBy={setGroupBy}
-                    statusFilter={statusFilter}
-                    setStatusFilter={setStatusFilter}
-                    search={search}
-                    setSearch={setSearch}
-                    allColumns={allColumns}
-                  />
-                </div>
-
-                <ReportTable
-                  groupedRows={groupedRows}
+          : !loading && members.length === 0 ?
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-1 items-center justify-center">
+              <EmptyState
+                title="This group has no members"
+                description="Generate custom attendance reports and export attendance data."
+                action={
+                  onAddMember ?
+                    {
+                      label: "Add Member",
+                      onClick: onAddMember,
+                      iconClass: "fa-solid fa-user-plus text-[10px]",
+                    }
+                  : undefined
+                }
+              />
+            </motion.div>
+          : <motion.div
+              key="table"
+              initial={{ opacity: 0, scale: 0.998 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
+              <div className="shrink-0 px-10 pt-8 pb-4">
+                <ReportToolbar
+                  startDate={reportStartDate}
+                  endDate={reportEndDate}
+                  onStartDateChange={setReportStartDate}
+                  onEndDateChange={setReportEndDate}
                   visibleColumns={visibleColumns}
-                  allColumns={allColumns}
-                  search={search}
+                  setVisibleColumns={setVisibleColumns}
+                  groupBy={groupBy}
+                  setGroupBy={setGroupBy}
                   statusFilter={statusFilter}
-                  onResetSearch={() => setSearch("")}
-                  onResetFilter={() => setStatusFilter("all")}
-                  onEditRow={setEditingRow}
+                  setStatusFilter={setStatusFilter}
+                  search={search}
+                  setSearch={setSearch}
+                  allColumns={allColumns}
                 />
-              </motion.div>
+              </div>
+
+              <ReportTable
+                groupedRows={groupedRows}
+                visibleColumns={visibleColumns}
+                allColumns={allColumns}
+                search={search}
+                statusFilter={statusFilter}
+                onResetSearch={() => setSearch("")}
+                onResetFilter={() => setStatusFilter("all")}
+                onEditRow={setEditingRow}
+              />
+            </motion.div>
           }
         </AnimatePresence>
       </div>
@@ -250,7 +250,7 @@ export function Reports({
                       status:
                         orig.status === "no_records" ?
                           "absent"
-                          : (orig.status as "present" | "absent"),
+                        : (orig.status as "present" | "absent"),
                       notes: orig.notes || "Reverted by admin",
                       check_in_time: orig.check_in_time ? new Date(orig.check_in_time) : undefined,
                       check_out_time:

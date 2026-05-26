@@ -149,15 +149,36 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
     }, [allowClear, maxHeight, options.length, showPlaceholderOption])
 
     useLayoutEffect(() => {
-      if (!isOpen) return
+      if ((!isOpen && !menuRef.current) || !buttonRef.current) return
 
       updateMenuPosition()
+
+      // High-performance animation frame synchronizer to track fluid layout shifts/transitions
+      let animFrameId: number
+      let lastRect = { left: 0, top: 0, width: 0 }
+
+      const checkPosition = () => {
+        if (!buttonRef.current) return
+        const rect = buttonRef.current.getBoundingClientRect()
+        if (
+          rect.left !== lastRect.left ||
+          rect.top !== lastRect.top ||
+          rect.width !== lastRect.width
+        ) {
+          lastRect = { left: rect.left, top: rect.top, width: rect.width }
+          updateMenuPosition()
+        }
+        animFrameId = requestAnimationFrame(checkPosition)
+      }
+
+      animFrameId = requestAnimationFrame(checkPosition)
 
       const handleViewportChange = () => updateMenuPosition()
       window.addEventListener("resize", handleViewportChange)
       window.addEventListener("scroll", handleViewportChange, true)
 
       return () => {
+        cancelAnimationFrame(animFrameId)
         window.removeEventListener("resize", handleViewportChange)
         window.removeEventListener("scroll", handleViewportChange, true)
       }
@@ -208,15 +229,17 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                 (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
               ) ?
                 "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
-              : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+              : "dropdown-trigger w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-colors hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
             } ${buttonClassName} `}>
             <Tooltip content={displayText} disabled={!shouldShowCustomTooltip(displayText)}>
               <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
             </Tooltip>
-            <i
-              className={`fa-solid fa-chevron-down ms-2 shrink-0 text-xs text-white/65 transition-transform duration-200 ${
-                isOpen ? "rotate-180" : ""
-              } ${iconClassName}`}></i>
+            <span className="ms-2 flex h-4 w-[10px] shrink-0 items-center justify-center">
+              <i
+                className={`fa-solid fa-chevron-down text-xs text-white/65 transition-transform duration-200 ${
+                  isOpen ? "rotate-180" : ""
+                } ${iconClassName}`}></i>
+            </span>
           </button>
         }
 
@@ -251,7 +274,13 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                         : menuWidth
                       : menuPosition ? `${menuPosition.width}px`
                       : undefined,
-                    transformOrigin: menuPosition?.opensUp ? "bottom right" : "top right",
+                    transformOrigin:
+                      menuPosition?.opensUp ?
+                        align === "left" || (!align && !menuWidth) ?
+                          "bottom left"
+                        : "bottom right"
+                      : align === "left" || (!align && !menuWidth) ? "top left"
+                      : "top right",
                     visibility: menuPosition ? "visible" : "hidden",
                   }}>
                   <div
@@ -292,7 +321,9 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                               : option.disabled ? "cursor-not-allowed text-white/55"
                               : "text-white/70 hover:bg-white/5 hover:text-white"
                             } ${optionClassName}`}>
-                            <Tooltip content={option.label} disabled={!shouldShowCustomTooltip(option.label)}>
+                            <Tooltip
+                              content={option.label}
+                              disabled={!shouldShowCustomTooltip(option.label)}>
                               <span className="block truncate">{option.label}</span>
                             </Tooltip>
                           </button>
