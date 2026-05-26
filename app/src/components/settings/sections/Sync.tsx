@@ -206,7 +206,7 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-white/90">Link Device</div>
                     <p className="mt-0.5 text-xs text-white/65">
-                      Generate a code in your{" "}
+                      Generate a code in the{" "}
                       <a
                         href="https://app.facenox.com"
                         onClick={(e) => {
@@ -375,7 +375,7 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
               <ul className="space-y-3 text-[12px] text-white/45">
                 <li>
                   <span className="font-medium text-white/70">Member Profiles:</span> Names, email
-                  addresses, roles, and group memberships synced with your dashboard.
+                  addresses, roles, and group memberships synced with the dashboard.
                 </li>
                 <li>
                   <span className="font-medium text-white/70">Attendance History:</span> Time-in and
@@ -416,8 +416,7 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
                       Offline Database:
                     </button>
                   : <span className="font-medium text-white/70">Offline Database:</span>}{" "}
-                  Secured database containing your local attendance records and device
-                  configurations.
+                  Secured database containing local attendance records and device configurations.
                 </li>
                 <li>
                   <span className="font-medium text-white/70">Local AI Processing:</span> All face

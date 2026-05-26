@@ -177,7 +177,7 @@ export function Attendance({
                 <div className="text-sm font-medium text-white/90">Duplicate Prevention</div>
                 <InfoPopover
                   title="Duplicate Prevention"
-                  description="Automatically filters out repeated scans from the same person to keep your reports clean."
+                  description="Automatically filters out repeated scans from the same person to keep reports clean."
                   details={[
                     "Always active to ensure accurate attendance and reporting.",
                     "Short Window: Best for high-traffic areas or tracking movement.",
@@ -419,7 +419,7 @@ export function Attendance({
                 <div className="text-sm font-medium text-white/90">Retention Policy</div>
                 <InfoPopover
                   title="Data Retention"
-                  description="Controls how long attendance logs and biometric signatures are stored in your local database."
+                  description="Controls how long attendance logs and biometric signatures are stored in the local database."
                   detailsNode={[
                     <div key="how-it-works" className="space-y-1.5">
                       <div className="font-semibold text-white/90">How it works:</div>

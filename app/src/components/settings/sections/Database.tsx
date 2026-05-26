@@ -184,9 +184,9 @@ export function Database({
   const timeHealthDetails =
     timeHealthState.loading ? "Verifying clock accuracy..."
     : timeHealthStatus === "verified" ?
-      "Verifies your system clock is correct to prevent attendance tampering."
+      "Verifies system clock is correct to prevent attendance tampering."
     : timeHealthStatus === "drift_detected" ?
-      "Device clock is out of sync. Adjust your date and time settings to prevent logging errors."
+      "Device clock is out of sync. Adjust date and time settings to prevent logging errors."
     : timeHealthStatus === "offline" ? "Cannot verify time online."
     : "Could not read the current time authority status."
 
@@ -301,7 +301,7 @@ export function Database({
             <div className="min-w-0 flex-1">
               <h4 className="text-[15px] font-semibold text-white/90">Restore Backup</h4>
               <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
-                Restore your database from a backup file using its original encryption password.
+                Restore database from a backup file using its original encryption password.
               </p>
             </div>
             <button
@@ -423,7 +423,7 @@ export function Database({
                       Clear Group Directory
                     </h4>
                     <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
-                      Permanently deletes all groups and member profiles. This wipes out your entire
+                      Permanently deletes all groups and member profiles. This wipes out the entire
                       local directory structure.
                     </p>
                   </div>
@@ -500,10 +500,10 @@ export function Database({
         <div className="space-y-4">
           <p className="text-xs leading-relaxed text-white/65">
             {passwordModal.action === "export" ?
-              "Choose a strong password to encrypt your backup. You will need this password to restore your data later."
+              "Choose a strong password to encrypt backups. This password is required to restore data later."
             : `Enter the password for ${
                 importFilePath?.split(/[\\/]/).pop() || "this backup"
-              } to decrypt and restore your data.`
+              } to decrypt and restore data.`
             }
           </p>
           <div className="space-y-1.5">
@@ -542,8 +542,8 @@ export function Database({
               <div className="flex items-start gap-1.5 pt-1 text-[11px] leading-tight text-amber-500/80">
                 <i className="fa-solid fa-triangle-exclamation mt-0.5 shrink-0" />
                 <span>
-                  Save this password securely. It is required to restore your data and cannot be
-                  reset if forgotten.
+                  Save this password securely. It is required to restore data and cannot be reset if
+                  forgotten.
                 </span>
               </div>
             )}
