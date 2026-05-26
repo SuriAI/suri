@@ -55,6 +55,8 @@ describe("ContentPanel anti-spoof prompt", () => {
       dataRetentionDays: 0,
     },
     updateAttendanceSetting: vi.fn(),
+    updateAudioSetting: vi.fn(),
+    setActiveSection: vi.fn(),
     dropdownValue: "group-1",
     systemData: {
       totalPersons: null,
@@ -76,7 +78,7 @@ describe("ContentPanel anti-spoof prompt", () => {
     hasSelectedMember: false,
     dropdownGroups: [],
     groupSections: [],
-  } as const
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -91,7 +93,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     render(<ContentPanel {...baseProps} updateAttendanceSetting={updateAttendanceSetting} />)
 
-    fireEvent.click(screen.getByLabelText("Toggle anti-spoof detection"))
+    fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
 
     expect(screen.getByText("Before Enabling Anti-Spoof")).toBeInTheDocument()
     expect(screen.getByText("Use balanced lighting")).toBeInTheDocument()
@@ -107,7 +109,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     render(<ContentPanel {...baseProps} updateAttendanceSetting={updateAttendanceSetting} />)
 
-    fireEvent.click(screen.getByLabelText("Toggle anti-spoof detection"))
+    fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
 
     expect(screen.getByText("Use balanced lighting")).toBeInTheDocument()
 
@@ -139,7 +141,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     render(<ContentPanel {...baseProps} updateAttendanceSetting={updateAttendanceSetting} />)
 
-    fireEvent.click(screen.getByLabelText("Toggle anti-spoof detection"))
+    fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
     fireEvent.click(screen.getByLabelText("Don't show this again"))
     fireEvent.click(screen.getByRole("button", { name: "Enable" }))
 
@@ -153,7 +155,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     render(<ContentPanel {...baseProps} updateAttendanceSetting={updateAttendanceSetting} />)
 
-    fireEvent.click(screen.getByLabelText("Toggle anti-spoof detection"))
+    fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
 
     expect(screen.queryByText("Before Enabling Anti-Spoof")).not.toBeInTheDocument()
     expect(updateAttendanceSetting).toHaveBeenCalledWith({ enableSpoofDetection: true })

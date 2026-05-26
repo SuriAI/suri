@@ -3,6 +3,7 @@ import { motion } from "framer-motion"
 import { useSettings } from "./hooks/useSettings"
 import { Sidebar } from "./Sidebar"
 import { ContentPanel } from "./ContentPanel"
+import { useGroupUIStore } from "@/components/group/stores"
 import type { QuickSettings, AttendanceSettings, AudioSettings } from "./types"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import type { GroupSection } from "@/components/group"
@@ -38,6 +39,33 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
     currentGroupMembers: props.currentGroupMembers || [],
     currentGroup: props.currentGroup || null,
   })
+
+  React.useEffect(() => {
+    if (!props.isModal) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return
+
+      const groupUIState = useGroupUIStore.getState()
+      const isZustandSubModalOpen =
+        groupUIState.showAddMemberModal ||
+        groupUIState.showEditMemberModal ||
+        groupUIState.showCreateGroupModal ||
+        groupUIState.showEditGroupModal ||
+        !!groupUIState.lastEnrollmentMode
+
+      const isDomSubModalOpen =
+        !!document.querySelector(".z-100:not(.pointer-events-none)") ||
+        !!document.querySelector('[role="dialog"]')
+
+      if (isZustandSubModalOpen || isDomSubModalOpen) return
+
+      props.onBack()
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [props.isModal, props.onBack])
 
   const groupSections: {
     id: GroupSection
