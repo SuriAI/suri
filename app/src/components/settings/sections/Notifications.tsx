@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
 import type { AudioSettings } from "@/components/settings/types"
+import { Switch } from "@/components/shared"
 
 interface NotificationsProps {
   audioSettings: AudioSettings
@@ -33,16 +34,15 @@ export function Notifications({ audioSettings, onAudioSettingsChange }: Notifica
             </div>
           </div>
 
-          <button
-            onClick={() =>
+          <Switch
+            checked={audioSettings.recognitionSoundEnabled}
+            onChange={(checked) =>
               onAudioSettingsChange({
-                recognitionSoundEnabled: !audioSettings.recognitionSoundEnabled,
+                recognitionSoundEnabled: checked,
               })
             }
-            className={`premium-switch ${audioSettings.recognitionSoundEnabled ? "premium-switch-on" : "premium-switch-off"}`}>
-            <div
-              className={`premium-switch-thumb ${audioSettings.recognitionSoundEnabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-          </button>
+            ariaLabel="Audio Feedback"
+          />
         </div>
       </div>
     </div>

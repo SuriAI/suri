@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
 import type { AttendanceSettings } from "@/components/settings/types"
-import { InfoPopover } from "@/components/shared"
+import { InfoPopover, Switch } from "@/components/shared"
 
 interface AttendanceProps {
   attendanceSettings: AttendanceSettings
@@ -75,13 +75,12 @@ export function Attendance({
                 </div>
               </div>
 
-              <button
-                onClick={() => onTrackCheckoutToggle(!attendanceSettings.trackCheckout)}
+              <Switch
+                checked={attendanceSettings.trackCheckout}
+                onChange={onTrackCheckoutToggle}
                 disabled={!hasSelectedGroup}
-                className={`premium-switch ${attendanceSettings.trackCheckout ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
-                <div
-                  className={`premium-switch-thumb ${attendanceSettings.trackCheckout ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-              </button>
+                ariaLabel="Entry & Exit Tracking"
+              />
             </div>
           </div>
 
@@ -118,13 +117,12 @@ export function Attendance({
                 </div>
               </div>
 
-              <button
-                onClick={() => onLateThresholdToggle(!attendanceSettings.lateThresholdEnabled)}
+              <Switch
+                checked={attendanceSettings.lateThresholdEnabled}
+                onChange={onLateThresholdToggle}
                 disabled={!hasSelectedGroup}
-                className={`premium-switch ${attendanceSettings.lateThresholdEnabled ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
-                <div
-                  className={`premium-switch-thumb ${attendanceSettings.lateThresholdEnabled ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-              </button>
+                ariaLabel="Late Tracking"
+              />
             </div>
 
             <AnimatePresence>
@@ -254,27 +252,11 @@ export function Attendance({
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  if (attendanceSettings.maxRecognitionFacesPerFrame === 0) {
-                    onMaxRecognitionFacesChange(6)
-                  } else {
-                    onMaxRecognitionFacesChange(0)
-                  }
-                }}
-                className={`premium-switch ${
-                  attendanceSettings.maxRecognitionFacesPerFrame > 0 ?
-                    "premium-switch-on"
-                  : "premium-switch-off"
-                }`}>
-                <div
-                  className={`premium-switch-thumb ${
-                    attendanceSettings.maxRecognitionFacesPerFrame > 0 ?
-                      "premium-switch-thumb-on"
-                    : "premium-switch-thumb-off"
-                  }`}
-                />
-              </button>
+              <Switch
+                checked={attendanceSettings.maxRecognitionFacesPerFrame > 0}
+                onChange={(checked) => onMaxRecognitionFacesChange(checked ? 6 : 0)}
+                ariaLabel="Multi-Face Recognition"
+              />
             </div>
 
             <AnimatePresence>
@@ -366,21 +348,15 @@ export function Attendance({
               </div>
             </div>
 
-            <button
-              onClick={() =>
-                !attendanceSettings.forceLiveness &&
-                onSpoofDetectionToggle(!attendanceSettings.enableSpoofDetection)
-              }
+            <Switch
+              checked={attendanceSettings.enableSpoofDetection || attendanceSettings.forceLiveness}
+              onChange={onSpoofDetectionToggle}
               disabled={attendanceSettings.forceLiveness}
-              aria-label="Toggle anti-spoof detection"
-              className={`premium-switch ${attendanceSettings.enableSpoofDetection || attendanceSettings.forceLiveness ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed`}>
-              <div
-                className={`premium-switch-thumb ${attendanceSettings.enableSpoofDetection || attendanceSettings.forceLiveness ? "premium-switch-thumb-on" : "premium-switch-thumb-off"} flex items-center justify-center`}>
-                {attendanceSettings.forceLiveness && (
-                  <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />
-                )}
-              </div>
-            </button>
+              ariaLabel="Liveness Verification (Anti-Spoof)">
+              {attendanceSettings.forceLiveness && (
+                <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />
+              )}
+            </Switch>
           </div>
 
           <div className="h-px w-full bg-white/8" />
@@ -419,15 +395,12 @@ export function Attendance({
               </div>
             </div>
 
-            <button
-              onClick={() =>
-                onBiometricConsentToggle?.(!attendanceSettings.biometricConsentCertified)
-              }
+            <Switch
+              checked={attendanceSettings.biometricConsentCertified}
+              onChange={(checked) => onBiometricConsentToggle?.(checked)}
               disabled={!hasSelectedGroup}
-              className={`premium-switch ${attendanceSettings.biometricConsentCertified ? "premium-switch-on" : "premium-switch-off"} group/toggle disabled:cursor-not-allowed disabled:opacity-50`}>
-              <div
-                className={`premium-switch-thumb ${attendanceSettings.biometricConsentCertified ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-            </button>
+              ariaLabel="Global Group Consent"
+            />
           </div>
         </div>
       </div>

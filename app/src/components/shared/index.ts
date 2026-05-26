@@ -1,4 +1,5 @@
 export { Dropdown } from "@/components/shared/Dropdown"
+export { Switch, type SwitchProps } from "@/components/shared/Switch"
 export { Tooltip } from "@/components/shared/Tooltip"
 export { InfoPopover } from "@/components/shared/InfoPopover"
 export { MemberTooltip } from "@/components/shared/MemberTooltip"

@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion"
 import type { QuickSettings } from "@/components/settings/types"
+import { Switch } from "@/components/shared"
 
 interface DisplayProps {
   quickSettings: QuickSettings
@@ -49,12 +50,11 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
             </div>
           </div>
 
-          <button
-            onClick={() => toggleQuickSetting(key)}
-            className={`premium-switch ${quickSettings[key] ? "premium-switch-on" : "premium-switch-off"}`}>
-            <div
-              className={`premium-switch-thumb ${quickSettings[key] ? "premium-switch-thumb-on" : "premium-switch-thumb-off"}`}></div>
-          </button>
+          <Switch
+            checked={quickSettings[key]}
+            onChange={() => toggleQuickSetting(key)}
+            ariaLabel={label}
+          />
         </div>
       ))}
     </div>
