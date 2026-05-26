@@ -119,7 +119,7 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No groups created yet")).toBeInTheDocument()
+    expect(screen.getByText("No groups created")).toBeInTheDocument()
   })
 
   it("shows a no results state after an unmatched search", async () => {
@@ -209,7 +209,7 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No members in this group yet")).toBeInTheDocument()
+    expect(screen.getByText("This group has no members.")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Add Member" }))
 
@@ -234,7 +234,7 @@ describe("AttendancePanel", () => {
       { withDialogProvider: false },
     )
 
-    expect(screen.getByText("No enrolled members in this group yet")).toBeInTheDocument()
+    expect(screen.getByText("No enrolled members")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Enroll Member" }))
 

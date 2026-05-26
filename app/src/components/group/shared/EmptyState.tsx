@@ -1,5 +1,6 @@
 interface EmptyStateProps {
   title: string
+  description?: string
   action?: {
     label: string
     onClick: () => void
@@ -8,7 +9,7 @@ interface EmptyStateProps {
   className?: string
 }
 
-export function EmptyState({ title, action, className = "" }: EmptyStateProps) {
+export function EmptyState({ title, description, action, className = "" }: EmptyStateProps) {
   return (
     <div
       className={`flex h-full min-h-0 w-full flex-1 items-center justify-center p-8 ${className}`}>
@@ -19,6 +20,11 @@ export function EmptyState({ title, action, className = "" }: EmptyStateProps) {
 
         <div className="space-y-1">
           <div className="text-[13px] font-bold text-white/70">{title}</div>
+          {description && (
+            <div className="mx-auto max-w-xl text-[11px] leading-relaxed font-normal text-white/45">
+              {description}
+            </div>
+          )}
         </div>
 
         {action && (

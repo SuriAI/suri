@@ -15,7 +15,7 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
       key: "cameraMirrored" as keyof QuickSettings,
       label: "Mirror View",
       descriptions: {
-        on: "Flip the camera horizontally.",
+        on: "Flips camera feed horizontally.",
         off: "Standard camera view.",
       },
     },
@@ -23,7 +23,7 @@ export function Display({ quickSettings, toggleQuickSetting }: DisplayProps) {
       key: "showRecognitionNames" as keyof QuickSettings,
       label: "Show Names",
       descriptions: {
-        on: "Show recognized names on the camera view.",
+        on: "Displays recognized member names overlaying the camera feed.",
         off: "Hide names, showing only face tracking boxes.",
       },
     },

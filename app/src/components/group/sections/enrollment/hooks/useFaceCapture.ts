@@ -72,7 +72,7 @@ export function useFaceCapture(
 
         if (bestFace.landmarks_5?.length !== 5) {
           throw new Error(
-            "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
+            "Biometric signature detected, but facial features are missing. Ensure the subject is clearly visible and try again.",
           )
         }
 
@@ -86,7 +86,7 @@ export function useFaceCapture(
         }))
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Face analysis failed. Please try again."
+          error instanceof Error ? error.message : "Biometric analysis failed. Try again."
         setFrames((prev) => prev.filter((frame) => frame.id !== id))
         setGlobalError(message)
       }
@@ -108,7 +108,7 @@ export function useFaceCapture(
       const frame = frames.find((f) => f.angle === "Front")
 
       if (frame?.status !== "ready" || !frame.bbox) {
-        setGlobalError("Please capture a valid face image first.")
+        setGlobalError("Capture a valid enrollment image to proceed.")
         return
       }
 
@@ -120,7 +120,7 @@ export function useFaceCapture(
         const blob = dataUrlToBlob(frame.dataUrl)
 
         if (frame.landmarks_5?.length !== 5) {
-          throw new Error("Cannot enroll: landmarks missing. Please re-capture the face.")
+          throw new Error("Cannot enroll: facial features are missing. Capture a new image.")
         }
 
         const result = await attendanceManager.enrollFaceForGroupPerson(
@@ -154,8 +154,7 @@ export function useFaceCapture(
         await loadMemberStatus()
         if (onRefresh) await onRefresh()
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Enrollment failed. Please try again."
+        const message = error instanceof Error ? error.message : "Enrollment failed. Try again."
         setGlobalError(message)
       } finally {
         setIsEnrolling(false)

@@ -246,7 +246,8 @@ export function Members({
       {members.length === 0 ?
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
           <EmptyState
-            title="No members in this group yet"
+            title="This group has no members."
+            description="Add, edit, and remove members to manage profiles and enrollment status."
             action={
               onAdd ?
                 {
@@ -485,7 +486,7 @@ export function Members({
                   {memberSearch.trim() ?
                     `No results found for "${memberSearch}"`
                   : enrollmentFilter === "enrolled" ?
-                    "No enrolled members yet"
+                    "No enrolled members"
                   : enrollmentFilter === "non-enrolled" ?
                     "All members are enrolled"
                   : "No members found in this group"}

@@ -267,7 +267,9 @@ export function CameraQueue({
       })
 
       if (!detection.faces || detection.faces.length === 0) {
-        throw new Error("No face detected. Please face the camera directly with good lighting.")
+        throw new Error(
+          "No biometric signature detected. Position yourself directly in front of the camera with adequate lighting.",
+        )
       }
 
       const bestFace = detection.faces.reduce(
@@ -281,7 +283,7 @@ export function CameraQueue({
 
       if (bestFace.landmarks_5?.length !== 5) {
         throw new Error(
-          "Face detected but landmarks are missing. Please ensure the face is clearly visible and try again.",
+          "Biometric signature detected, but facial features are missing. Ensure the subject is clearly visible and try again.",
         )
       }
 
@@ -467,7 +469,7 @@ export function CameraQueue({
               </div>
               <h3 className="mb-1 text-sm font-semibold text-white">No members selected</h3>
               <p className="max-w-[200px] text-[11px] leading-relaxed text-white/45">
-                Please select members from the group list before starting the webcam enrollment.
+                Select group members from the list before starting the webcam enrollment.
               </p>
               <button
                 onClick={onClose}

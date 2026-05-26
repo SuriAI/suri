@@ -56,9 +56,9 @@ function GroupContentComponent({
     return (
       <div className="h-full px-6 pt-6">
         <EmptyState
-          title={hasGroups ? "Select a group to continue" : "No groups yet"}
+          title={hasGroups ? "Select a group to continue" : "No groups created"}
           action={{
-            label: hasGroups ? "Create Group" : "Create first group",
+            label: hasGroups ? "Create Group" : "Create Group",
             onClick: openCreateGroup,
             iconClass: "fa-solid fa-folder-plus text-[10px]",
           }}
