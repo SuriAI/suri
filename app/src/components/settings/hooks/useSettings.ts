@@ -224,7 +224,7 @@ export const useSettings = ({
 
   const handleGroupBack = useCallback(() => {
     setActiveSection("attendance")
-  }, [])
+  }, [setActiveSection])
 
   const handleExportHandlersReady = useCallback((handlers: { exportCSV: () => void }) => {
     setReportsExportHandlers(handlers)

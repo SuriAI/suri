@@ -33,6 +33,7 @@ interface SettingsProps {
 }
 
 export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, ref) => {
+  const { isModal, onBack } = props
   const settings = useSettings({
     ...props,
     initialGroups: props.initialGroups || [],
@@ -41,7 +42,7 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
   })
 
   React.useEffect(() => {
-    if (!props.isModal) return
+    if (!isModal) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return
@@ -60,12 +61,12 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
 
       if (isZustandSubModalOpen || isDomSubModalOpen) return
 
-      props.onBack()
+      onBack()
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [props.isModal, props.onBack])
+  }, [isModal, onBack])
 
   const groupSections: {
     id: GroupSection

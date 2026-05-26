@@ -37,6 +37,8 @@ import type { DetectionResult } from "@/components/main/types"
 import { soundEffects } from "@/services/SoundEffectsService"
 import type { AttendanceTimeHealth } from "@/types/recognition"
 
+let globalStopCamera: ((forceCleanup: boolean) => void) | null = null
+
 export default function Main() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -195,6 +197,9 @@ export default function Main() {
     videoRectRef,
     lastVideoRectUpdateRef,
     isStartingRef,
+    onDeviceDisconnected: useCallback(() => {
+      globalStopCamera?.(false)
+    }, []),
   })
 
   useFaceDetection({
@@ -283,6 +288,13 @@ export default function Main() {
     getCameraDevices,
   })
 
+  useEffect(() => {
+    globalStopCamera = stopCamera
+    return () => {
+      globalStopCamera = null
+    }
+  }, [stopCamera])
+
   const requestGroupSelection = useCallback(() => {
     setSidebarCollapsed(false)
 
@@ -342,11 +354,6 @@ export default function Main() {
     },
     [currentGroup, syncUpdatedGroupLocally],
   )
-
-  // Set the ref after stopCamera is defined
-  useEffect(() => {
-    stopCameraRef.current = stopCamera
-  }, [stopCamera])
 
   const cleanupOnUnload = useCallback(() => {
     try {

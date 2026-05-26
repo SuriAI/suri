@@ -9,6 +9,7 @@ interface UseVideoStreamOptions {
   videoRectRef: React.MutableRefObject<DOMRect | null>
   lastVideoRectUpdateRef: React.MutableRefObject<number>
   isStartingRef: React.MutableRefObject<boolean>
+  onDeviceDisconnected?: () => void
 }
 
 export function useVideoStream(options: UseVideoStreamOptions) {
@@ -20,6 +21,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
     videoRectRef,
     lastVideoRectUpdateRef,
     isStartingRef,
+    onDeviceDisconnected,
   } = options
 
   const {
@@ -159,15 +161,33 @@ export function useVideoStream(options: UseVideoStreamOptions) {
     getCameraDevices()
 
     // Respond to hardware changes (plugging/unplugging extra cameras)
-    const handleDeviceChange = () => {
-      getCameraDevices()
+    const handleDeviceChange = async () => {
+      const refreshedDevices = await getCameraDevices()
+
+      const activeCameraId = useCameraStore.getState().selectedCamera
+      const isStreaming = useCameraStore.getState().isStreaming
+
+      if (isStreaming && activeCameraId) {
+        const stillExists = refreshedDevices.some((device) => device.deviceId === activeCameraId)
+        if (!stillExists) {
+          setError(
+            "Your active camera was disconnected. Please select a different camera or reconnect the device.",
+          )
+
+          if (onDeviceDisconnected) {
+            onDeviceDisconnected()
+          } else {
+            useCameraStore.setState({ isStreaming: false, cameraActive: false })
+          }
+        }
+      }
     }
 
     navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange)
     return () => {
       navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange)
     }
-  }, [getCameraDevices])
+  }, [getCameraDevices, onDeviceDisconnected, setError])
 
   return {
     cameraDevices,
