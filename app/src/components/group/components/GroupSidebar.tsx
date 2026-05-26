@@ -42,6 +42,8 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
                 maxHeight={256}
                 buttonClassName="h-10"
                 allowClear={true}
+                menuWidth={220}
+                align="left"
               />
             </div>
             <Tooltip content="New Group" position="top">

@@ -14,7 +14,7 @@
     letter-spacing: normal;
   }
 
-  button:active {
+  button:active:not(.dropdown-trigger) {
     transform: scale(0.98);
   }
 
@@ -177,7 +177,7 @@
 }
 
 @layer base {
-  button:active {
+  button:active:not(.dropdown-trigger) {
     transform: scale(0.98);
   }
 

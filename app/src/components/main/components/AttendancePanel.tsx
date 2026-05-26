@@ -154,13 +154,13 @@ const AttendanceRecordItem = memo(
               pillColor:
                 minutesLate > severeLateThreshold ?
                   "bg-red-500/10 text-red-400/90"
-                  : "bg-orange-500/10 text-orange-400/90",
+                : "bg-orange-500/10 text-orange-400/90",
               borderColor:
                 minutesLate > severeLateThreshold ? "border-l-red-500" : "border-l-orange-500",
               avatarColor:
                 minutesLate > severeLateThreshold ?
                   "bg-red-500/10 text-red-500/70"
-                  : "bg-orange-500/10 text-orange-500/70",
+                : "bg-orange-500/10 text-orange-500/70",
             }
           }
 
@@ -183,8 +183,8 @@ const AttendanceRecordItem = memo(
           minutes: 0,
           label:
             trackCheckoutEnabled ? "TIME IN"
-              : lateThresholdEnabled ? "ON TIME"
-                : "",
+            : lateThresholdEnabled ? "ON TIME"
+            : "",
           color: "text-white/55",
           pillColor: "bg-white/5 text-white/45",
           borderColor: "border-l-transparent",
@@ -248,7 +248,7 @@ const AttendanceRecordItem = memo(
                       <i className="fa-regular fa-trash-can text-[12px]"></i>
                     </button>
                   </motion.div>
-                  : <motion.span
+                : <motion.span
                     key="time-text"
                     initial={{ opacity: 0, scale: 0.95, y: -8 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -407,7 +407,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                 value={
                   currentGroup && attendanceGroups.some((g) => g.id === currentGroup.id) ?
                     currentGroup.id
-                    : null
+                  : null
                 }
                 onChange={(groupId) => {
                   if (groupId) {
@@ -441,7 +441,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             </Tooltip>
           </div>
         </div>
-        : <div className="flex min-h-0 flex-1 items-center justify-center">
+      : <div className="flex min-h-0 flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center space-y-3">
             <div className="text-center text-xs text-white/55">No groups created</div>
             <button
@@ -471,11 +471,12 @@ export const AttendancePanel = memo(function AttendancePanel({
 
               <div className="shrink-0">
                 <Tooltip
-                  content={`Show: ${recordScope === "today" ? "Today"
-                      : recordScope === "yesterday" ? "Yesterday"
-                        : recordScope === "week" ? "This Week"
-                          : "All records"
-                    }`}
+                  content={`Show: ${
+                    recordScope === "today" ? "Today"
+                    : recordScope === "yesterday" ? "Yesterday"
+                    : recordScope === "week" ? "This Week"
+                    : "All records"
+                  }`}
                   position="top">
                   <Dropdown
                     className="w-9"
@@ -506,103 +507,101 @@ export const AttendancePanel = memo(function AttendancePanel({
 
       {attendanceGroups.length > 0 &&
         (isPanelLoading ? <AttendanceListSkeleton showSearch={Boolean(currentGroup)} />
-          : isPanelSwitchPending ? <div className="flex min-h-0 flex-1" />
-            : <div
-              className="hover-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto"
-              style={{
-                maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
-              }}>
-              {visibleRecords.length > 0 ?
-                <>
-                  {(() => {
-                    const recordCheckInStatus = buildRecordCheckInStatusMap(processedRecords)
+        : isPanelSwitchPending ? <div className="flex min-h-0 flex-1" />
+        : <div
+            className="hover-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto"
+            style={{
+              maskImage: "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
+            }}>
+            {visibleRecords.length > 0 ?
+              <>
+                {(() => {
+                  const recordCheckInStatus = buildRecordCheckInStatusMap(processedRecords)
 
-                    return visibleRecords.map((record) => {
-                      const displayName = displayNameMap.get(record.person_id) || "Unknown"
-                      const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false
-                      const member = memberMap.get(record.person_id)
+                  return visibleRecords.map((record) => {
+                    const displayName = displayNameMap.get(record.person_id) || "Unknown"
+                    const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false
+                    const member = memberMap.get(record.person_id)
 
-                      return (
-                        <AttendanceRecordItem
-                          key={record.id}
-                          record={record}
-                          displayName={displayName}
-                          member={member}
-                          classStartTime={lateTrackingSettings.classStartTime}
-                          lateThresholdMinutes={lateTrackingSettings.lateThresholdMinutes}
-                          lateThresholdEnabled={lateTrackingSettings.lateThresholdEnabled}
-                          trackCheckoutEnabled={currentGroup?.settings?.track_checkout ?? false}
-                          hasCheckedInEarlier={hasCheckedInEarlier}
-                          onVoidManual={(record) => {
-                            setRecordToVoid(record)
-                            setIsManualCorrectionOpen(true)
-                          }}
-                        />
-                      )
-                    })
-                  })()}
+                    return (
+                      <AttendanceRecordItem
+                        key={record.id}
+                        record={record}
+                        displayName={displayName}
+                        member={member}
+                        classStartTime={lateTrackingSettings.classStartTime}
+                        lateThresholdMinutes={lateTrackingSettings.lateThresholdMinutes}
+                        lateThresholdEnabled={lateTrackingSettings.lateThresholdEnabled}
+                        trackCheckoutEnabled={currentGroup?.settings?.track_checkout ?? false}
+                        hasCheckedInEarlier={hasCheckedInEarlier}
+                        onVoidManual={(record) => {
+                          setRecordToVoid(record)
+                          setIsManualCorrectionOpen(true)
+                        }}
+                      />
+                    )
+                  })
+                })()}
 
-                  {hasMore && (
-                    <div className="px-2 py-2">
-                      <button
-                        onClick={handleLoadMore}
-                        className="w-full rounded-lg border border-white/5 bg-white/5 py-2 text-xs font-semibold text-white/80 transition-all hover:border-white/10 hover:bg-white/[0.08] active:scale-[0.99]">
-                        Load More ({processedRecords.length - displayLimit} remaining)
-                      </button>
-                    </div>
-                  )}
-                </>
-                : searchQuery ?
-                  <ScrollCenteredEmptyState>
-                    <div className="text-center text-sm text-white/65">
-                      No results for &quot;{searchQuery}&quot;
-                    </div>
-                  </ScrollCenteredEmptyState>
-                  : !currentGroup ?
-                    <ScrollCenteredEmptyState>
-                      <div className="text-center text-xs text-white/55">
-                        Select a group to view today&apos;s attendance logs
-                      </div>
-                    </ScrollCenteredEmptyState>
-                    : effectiveRecordScope === "today" ?
-                      <ScrollCenteredEmptyState>
-                        <div className="text-center text-xs text-white/55">
-                          No attendance logs recorded today
-                        </div>
-                      </ScrollCenteredEmptyState>
-                      : groupMembers.length === 0 ?
-                        <ScrollCenteredEmptyState>
-                          <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="text-center text-xs text-white/55">
-                              This group has no members
-                            </div>
-                            <button
-                              onClick={handleOpenSettingsForEnrollment}
-                              className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
-                              <i className="fa-solid fa-user-plus text-xs"></i>
-                              Add Member
-                            </button>
-                          </div>
-                        </ScrollCenteredEmptyState>
-                        : !groupMembers.some((m) => m.has_face_data) ?
-                          <ScrollCenteredEmptyState>
-                            <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
-                              <div className="text-xs text-white/55">No enrolled members</div>
-                              <button
-                                onClick={handleOpenSettingsForEnrollment}
-                                className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
-                                <i className="fa-solid fa-user-plus text-xs"></i>
-                                Enroll Member
-                              </button>
-                            </div>
-                          </ScrollCenteredEmptyState>
-                          : <ScrollCenteredEmptyState>
-                            <div className="text-center text-xs text-white/55">No attendance logs yet</div>
-                          </ScrollCenteredEmptyState>
-              }
-            </div>)}
+                {hasMore && (
+                  <div className="px-2 py-2">
+                    <button
+                      onClick={handleLoadMore}
+                      className="w-full rounded-lg border border-white/5 bg-white/5 py-2 text-xs font-semibold text-white/80 transition-all hover:border-white/10 hover:bg-white/[0.08] active:scale-[0.99]">
+                      Load More ({processedRecords.length - displayLimit} remaining)
+                    </button>
+                  </div>
+                )}
+              </>
+            : searchQuery ?
+              <ScrollCenteredEmptyState>
+                <div className="text-center text-sm text-white/65">
+                  No results for &quot;{searchQuery}&quot;
+                </div>
+              </ScrollCenteredEmptyState>
+            : !currentGroup ?
+              <ScrollCenteredEmptyState>
+                <div className="text-center text-xs text-white/55">
+                  Select a group to view today&apos;s attendance logs
+                </div>
+              </ScrollCenteredEmptyState>
+            : effectiveRecordScope === "today" ?
+              <ScrollCenteredEmptyState>
+                <div className="text-center text-xs text-white/55">
+                  No attendance logs recorded today
+                </div>
+              </ScrollCenteredEmptyState>
+            : groupMembers.length === 0 ?
+              <ScrollCenteredEmptyState>
+                <div className="flex flex-col items-center justify-center space-y-3">
+                  <div className="text-center text-xs text-white/55">This group has no members</div>
+                  <button
+                    onClick={handleOpenSettingsForEnrollment}
+                    className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
+                    <i className="fa-solid fa-user-plus text-xs"></i>
+                    Add Member
+                  </button>
+                </div>
+              </ScrollCenteredEmptyState>
+            : !groupMembers.some((m) => m.has_face_data) ?
+              <ScrollCenteredEmptyState>
+                <div className="flex flex-col items-center justify-center space-y-3 p-4 text-center">
+                  <div className="text-xs text-white/55">No enrolled members</div>
+                  <button
+                    onClick={handleOpenSettingsForEnrollment}
+                    className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
+                    <i className="fa-solid fa-user-plus text-xs"></i>
+                    Enroll Member
+                  </button>
+                </div>
+              </ScrollCenteredEmptyState>
+            : <ScrollCenteredEmptyState>
+                <div className="text-center text-xs text-white/55">No attendance logs yet</div>
+              </ScrollCenteredEmptyState>
+            }
+          </div>)}
       <ManualEntryModal
         isOpen={showManualEntry}
         onClose={() => setShowManualEntry(false)}
