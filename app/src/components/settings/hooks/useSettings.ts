@@ -26,6 +26,11 @@ interface UseSettingsProps {
   quickSettings: QuickSettings
 }
 
+/**
+ * Custom React hook to orchestrate preferences, state synchronizations,
+ * anti-spoofing modal triggers, audit logs, and group selections.
+ * Decouples raw setting layouts from the global state coordinate system.
+ */
 export const useSettings = ({
   initialGroupSection,
   initialSection,
@@ -168,7 +173,17 @@ export const useSettings = ({
     }
   }
 
-  const dropdownGroups = useMemo(() => initialGroups, [initialGroups])
+  // Prevent visual stuttering (flickering placeholder/empty-states) during group
+  // selection/creation transitions by declaring a virtual self-healing options array.
+  // Ensures the newly selected group is instantly recognized by consumers even before
+  // background network synchronizations complete.
+  const dropdownGroups = useMemo(() => {
+    const list = [...initialGroups]
+    if (currentGroup && !list.some((g) => g.id === currentGroup.id)) {
+      list.push(currentGroup)
+    }
+    return list
+  }, [initialGroups, currentGroup])
 
   const validInitialGroup = useMemo(() => {
     return currentGroup
