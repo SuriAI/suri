@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react"
+import React, { useState, useMemo, useCallback, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Display } from "@/components/settings/sections/Display"
 import { Notifications } from "@/components/settings/sections/Notifications"
@@ -14,6 +14,7 @@ import { useGroupModals } from "@/components/group/hooks"
 import { useGroupUIStore } from "@/components/group/stores"
 import { useUIStore } from "@/components/main/stores"
 import { attendanceManager } from "@/services"
+import { Tooltip } from "@/components/shared"
 import type {
   QuickSettings,
   AttendanceSettings,
@@ -109,6 +110,20 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   const [isAntiSpoofModalOpen, setIsAntiSpoofModalOpen] = useState(false)
   const [dontShowAntiSpoofInfoAgain, setDontShowAntiSpoofInfoAgain] = useState(false)
   const [isAuditLogModalOpen, setIsAuditLogModalOpen] = useState(false)
+  const [syncConfig, setSyncConfig] = useState<{
+    connected: boolean
+    organizationName: string
+    siteName: string
+  } | null>(null)
+
+  useEffect(() => {
+    if (activeSection === "remote-sync") {
+      window.electronAPI.sync.getConfig().then((cfg) => {
+        const data = cfg as { connected: boolean; organizationName: string; siteName: string }
+        setSyncConfig(data)
+      })
+    }
+  }, [activeSection])
 
   /** Audit log export — owned here so the page header can surface the action. */
   const handleExportAuditLog = useCallback(
@@ -217,6 +232,23 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             <i className="fa-solid fa-download text-[10px]" />
             AUDIT LOG
           </button>
+        : activeSection === "remote-sync" && syncConfig ?
+          <Tooltip
+            content={
+              syncConfig.connected ?
+                `Linked to ${syncConfig.organizationName || "Remote Server"} • Site Location: ${syncConfig.siteName || "Default Site"}`
+              : "Operating locally. Remote syncing is disabled."
+            }
+            position="bottom">
+            <div
+              className={`cursor-help rounded border px-2 py-0.5 text-[9px] font-extrabold tracking-widest uppercase transition-all duration-200 ${
+                syncConfig.connected ?
+                  "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
+                : "border-white/5 bg-white/5 text-white/50"
+              }`}>
+              {syncConfig.connected ? "Online" : "Offline"}
+            </div>
+          </Tooltip>
         : null,
       isGroupSection: false,
     }
@@ -232,6 +264,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     openEditGroup,
     reportsExportHandlers,
     setGroupInitialSection,
+    syncConfig,
   ])
 
   const handleSpoofDetectionToggle = (enabled: boolean) => {
@@ -427,7 +460,10 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 key="remote-sync"
                 {...motionProps}
                 className="custom-scroll relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto">
-                <Sync onNavigateToDB={() => setActiveSection("database")} />
+                <Sync
+                  onNavigateToDB={() => setActiveSection("database")}
+                  onStatusChange={setSyncConfig}
+                />
               </motion.div>
             )}
 

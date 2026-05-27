@@ -31,10 +31,22 @@ describe("Sync", () => {
     const electronAPI = getElectronAPIMock()
     electronAPI.sync.getConfig.mockResolvedValueOnce(createSyncConfig())
 
-    const { unmount } = renderWithProviders(<Sync />)
+    let syncConfig: {
+      connected: boolean
+      organizationName?: string
+      siteName?: string
+    } | null = null
+    const { unmount } = renderWithProviders(
+      <Sync
+        onStatusChange={(cfg) => {
+          syncConfig = cfg
+        }}
+      />,
+    )
 
     await waitFor(() => {
-      expect(screen.getByText("Offline")).toBeInTheDocument()
+      expect(syncConfig).not.toBeNull()
+      expect(syncConfig?.connected).toBe(false)
     })
 
     electronAPI.sync.getConfig.mockResolvedValueOnce(
@@ -47,13 +59,19 @@ describe("Sync", () => {
     )
 
     unmount()
-    renderWithProviders(<Sync />)
+    renderWithProviders(
+      <Sync
+        onStatusChange={(cfg) => {
+          syncConfig = cfg
+        }}
+      />,
+    )
 
     await waitFor(() => {
-      expect(screen.getByText("Online")).toBeInTheDocument()
-      expect(
-        screen.getByText(/Linked to Facenox Org • Site Location: Main Campus/i),
-      ).toBeInTheDocument()
+      expect(syncConfig).not.toBeNull()
+      expect(syncConfig?.connected).toBe(true)
+      expect(syncConfig?.organizationName).toBe("Facenox Org")
+      expect(syncConfig?.siteName).toBe("Main Campus")
     })
   })
 
