@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { attendanceManager } from "@/services"
 import { persistentSettings } from "@/services/PersistentSettingsService"
+import { useAttendanceStore } from "@/components/main/stores/attendanceStore"
 import { getLocalDateString } from "@/utils"
 import type {
   AttendanceGroup,
@@ -40,19 +41,22 @@ interface GroupState {
   reset: () => void
 }
 
-const initialState = {
-  selectedGroup: null,
-  groups: [],
-  members: [],
-  overviewStats: {},
-  overviewRecords: {},
-  loading: false,
-  error: null,
-  lastDeletedGroupId: null,
+const getInitialState = () => {
+  const attendanceState = useAttendanceStore.getState()
+  return {
+    selectedGroup: attendanceState.currentGroup,
+    groups: attendanceState.attendanceGroups,
+    members: attendanceState.groupMembers,
+    overviewStats: {},
+    overviewRecords: {},
+    loading: false,
+    error: null,
+    lastDeletedGroupId: null,
+  }
 }
 
 export const useGroupStore = create<GroupState>((set, get) => ({
-  ...initialState,
+  ...getInitialState(),
 
   setSelectedGroup: (group) => {
     set({ selectedGroup: group })

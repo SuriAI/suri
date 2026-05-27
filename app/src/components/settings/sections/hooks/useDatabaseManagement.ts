@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { attendanceManager, backendService } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useAttendanceStore } from "@/components/main/stores"
@@ -11,6 +11,11 @@ import type {
   GroupField,
 } from "@/components/settings/sections/types"
 
+/**
+ * Orchestrates member directory operations, database/history purging,
+ * caching invalidation, and UI sync workflows for the database management view.
+ * Decouples interactive dialog prompts and state updates from component markup.
+ */
 export function useDatabaseManagement(
   groups: AttendanceGroup[],
   onGroupsChanged?: () => void,
@@ -18,8 +23,19 @@ export function useDatabaseManagement(
 ) {
   const { setGroupToDelete, setShowDeleteConfirmation, showDeleteConfirmation, groupToDelete } =
     useAttendanceStore()
-  const [groupsWithMembers, setGroupsWithMembers] = useState<GroupWithMembers[]>([])
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+
+  // Initialize with groups if available to prevent "No results found" flash
+  const [groupsWithMembers, setGroupsWithMembers] = useState<GroupWithMembers[]>(() =>
+    groups.map((g) => ({ ...g, members: [], isLoading: true })),
+  )
+
+  // Ref to keep track of groupsWithMembers to avoid stale closures in useEffect
+  const groupsWithMembersRef = useRef(groupsWithMembers)
+  useEffect(() => {
+    groupsWithMembersRef.current = groupsWithMembers
+  }, [groupsWithMembers])
+
+  const [isInitialLoad, setIsInitialLoad] = useState(() => groups.length === 0)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
   const [editingMember, setEditingMember] = useState<EditingMember | null>(null)
@@ -39,10 +55,20 @@ export function useDatabaseManagement(
   // Load members for all groups
   useEffect(() => {
     const loadMembers = async () => {
-      setIsInitialLoad(true)
+      // If we already have some data, don't show the full page loader
+      if (groupsWithMembersRef.current.length === 0) {
+        setIsInitialLoad(true)
+      }
+
       const groupsData: GroupWithMembers[] = await Promise.all(
         groups.map(async (group) => {
           try {
+            // Check if we already have members for this group in our local state to avoid flicker
+            const existing = groupsWithMembersRef.current.find((g) => g.id === group.id)
+            if (existing && existing.members.length > 0) {
+              return existing
+            }
+
             const members = await attendanceManager.getGroupMembers(group.id)
             return { ...group, members, isLoading: false }
           } catch (error) {

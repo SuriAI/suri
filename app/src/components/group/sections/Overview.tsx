@@ -92,16 +92,12 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
   const recordsLoading = useGroupStore((state) => state.loading)
 
   useEffect(() => {
-    if (stats) return
-
-    const timer = setTimeout(() => {
-      setShowSpinner(true)
-    }, 200)
-
-    return () => {
-      clearTimeout(timer)
+    if (stats) {
       setShowSpinner(false)
+      return
     }
+
+    setShowSpinner(true)
   }, [stats])
 
   useEffect(() => {

@@ -1,7 +1,13 @@
 import { create } from "zustand"
 import { subscribeWithSelector } from "zustand/middleware"
-import type { AttendanceGroup, AttendanceMember, AttendanceRecord } from "@/types/recognition"
+import type {
+  AttendanceGroup,
+  AttendanceMember,
+  AttendanceRecord,
+  AttendanceTimeHealth,
+} from "@/types/recognition"
 import type { CooldownInfo } from "@/components/main/types"
+import type { SettingsOverview } from "@/components/settings/types"
 import { persistentSettings } from "@/services/PersistentSettingsService"
 import { attendanceManager } from "@/services/AttendanceManager"
 
@@ -16,6 +22,10 @@ interface AttendanceState {
   isPanelLoading: boolean
   isPanelRefreshing: boolean
   isPanelSwitchPending: boolean
+
+  systemStats: SettingsOverview
+  timeHealth: AttendanceTimeHealth | null
+  isStatsLoading: boolean
 
   showGroupManagement: boolean
   showDeleteConfirmation: boolean
@@ -38,6 +48,9 @@ interface AttendanceState {
   setShellBootstrapError: (error: string | null) => void
   setPanelLoading: (loading: boolean) => void
   setPanelRefreshing: (refreshing: boolean) => void
+  setSystemStats: (stats: SettingsOverview) => void
+  setTimeHealth: (health: AttendanceTimeHealth | null) => void
+  setStatsLoading: (loading: boolean) => void
   setShowGroupManagement: (show: boolean) => void
   setShowDeleteConfirmation: (show: boolean) => void
   setGroupToDelete: (group: AttendanceGroup | null) => void
@@ -65,6 +78,15 @@ export const useAttendanceStore = create<AttendanceState>()(
     isPanelLoading: false,
     isPanelRefreshing: false,
     isPanelSwitchPending: false,
+
+    systemStats: {
+      totalPersons: null,
+      totalMembers: null,
+      lastUpdated: new Date().toISOString(),
+    },
+    timeHealth: null,
+    isStatsLoading: false,
+
     showGroupManagement: false,
     showDeleteConfirmation: false,
     groupToDelete: null,
@@ -92,6 +114,9 @@ export const useAttendanceStore = create<AttendanceState>()(
     setShellBootstrapError: (error) => set({ shellBootstrapError: error }),
     setPanelLoading: (loading) => set({ isPanelLoading: loading }),
     setPanelRefreshing: (refreshing) => set({ isPanelRefreshing: refreshing }),
+    setSystemStats: (stats) => set({ systemStats: stats }),
+    setTimeHealth: (health) => set({ timeHealth: health }),
+    setStatsLoading: (loading) => set({ isStatsLoading: loading }),
     setShowGroupManagement: (show) => set({ showGroupManagement: show }),
     setShowDeleteConfirmation: (show) => set({ showDeleteConfirmation: show }),
     setGroupToDelete: (group) => set({ groupToDelete: group }),
