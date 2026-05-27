@@ -2,7 +2,9 @@ import { renderHook, act } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { useSettings } from "@/components/settings/hooks/useSettings"
 import { useGroupUIStore } from "@/components/group/stores"
+import { useAttendanceStore, useUIStore } from "@/components/main/stores"
 import { createAttendanceGroup, createAttendanceMember } from "@/test/fixtures"
+
 
 const {
   mockBackendService,
@@ -55,6 +57,29 @@ function resetGroupUIStore() {
   })
 }
 
+/**
+ * Resets global Zustand stores to their default initial values between tests.
+ * This is necessary to prevent test pollution since the store is a singleton
+ * in the JS environment and carries state across test boundaries.
+ */
+function resetGlobalStores() {
+  useAttendanceStore.setState({
+    systemStats: {
+      totalPersons: null,
+      totalMembers: null,
+      lastUpdated: new Date().toISOString(),
+    },
+    timeHealth: null,
+    isStatsLoading: false,
+  })
+  useUIStore.setState({
+    lastSettingsSection: "group",
+    lastGroupInitialSection: "overview",
+    lastGroupId: null,
+  })
+}
+
+
 function createProps(overrides: Partial<Parameters<typeof useSettings>[0]> = {}) {
   const currentGroup = createAttendanceGroup()
   return {
@@ -89,6 +114,7 @@ describe("useSettings", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     resetGroupUIStore()
+    resetGlobalStores()
     mockPersistentSettings.get.mockReset().mockResolvedValue(false)
     mockBackendService.getDatabaseStats.mockReset().mockResolvedValue({ total_persons: 12 })
     mockBackendService.clearDatabase.mockReset().mockResolvedValue({
@@ -117,7 +143,7 @@ describe("useSettings", () => {
     const { result } = renderHook(() => useSettings(createProps()))
 
     expect(result.current.systemData.totalPersons).toBeNull()
-    expect(result.current.timeHealthState.loading).toBe(false)
+    expect(result.current.timeHealthState.loading).toBe(true)
 
     await flushInitialLoad()
 
