@@ -52,16 +52,15 @@ export function useDatabaseManagement(
       setGroupsWithMembers(groupsData)
     }
 
-    if (getGroupsLength(groups) > 0) {
+    if (groups.length > 0) {
       loadMembers()
     } else {
-      setGroupsWithMembers([])
+      // Defer state update to avoid synchronous cascading renders inside useEffect
+      Promise.resolve().then(() => {
+        setGroupsWithMembers([])
+      })
     }
   }, [groups])
-
-  function getGroupsLength(g: AttendanceGroup[]) {
-    return g.length
-  }
 
   // Filter groups and members based on search
   const filteredData = useMemo(() => {
