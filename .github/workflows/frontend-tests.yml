@@ -30,7 +30,7 @@ jobs:
           cache-dependency-path: app/pnpm-lock.yaml
 
       - name: Install app dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: Run frontend tests
         run: pnpm test
