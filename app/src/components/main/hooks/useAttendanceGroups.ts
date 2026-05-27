@@ -1,8 +1,9 @@
 import { useRef, useCallback, useEffect } from "react"
-import { attendanceManager } from "@/services"
+import { attendanceManager, backendService } from "@/services"
 import { persistentSettings } from "@/services/PersistentSettingsService"
 import type { AttendanceGroup, AttendanceMember, AttendanceRecord } from "@/types/recognition"
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
+import { useGroupStore } from "@/components/group/stores"
 
 const PANEL_SWITCH_SKELETON_DELAY_MS = 120
 const MODAL_EXIT_DURATION_MS = 260
@@ -25,10 +26,13 @@ const resolveSelectedGroup = (
 }
 
 export async function bootstrapShellData(): Promise<void> {
-  const [settings, groups, uiState] = await Promise.all([
+  const [settings, groups, uiState, faceStats, attendanceStats, timeHealth] = await Promise.all([
     attendanceManager.getSettings(),
     attendanceManager.getGroups(),
     persistentSettings.getUIState(),
+    backendService.getDatabaseStats().catch(() => ({ total_persons: 0 })),
+    attendanceManager.getAttendanceStats().catch(() => ({ total_members: 0 })),
+    attendanceManager.getTimeHealth().catch(() => null),
   ])
 
   const resolvedGroup = resolveSelectedGroup(groups, uiState.selectedGroupId)
@@ -44,6 +48,18 @@ export async function bootstrapShellData(): Promise<void> {
     isPanelLoading: Boolean(resolvedGroup),
     isPanelRefreshing: false,
     isPanelSwitchPending: false,
+    systemStats: {
+      totalPersons: faceStats.total_persons,
+      totalMembers: attendanceStats.total_members,
+      lastUpdated: new Date().toISOString(),
+    },
+    timeHealth,
+  })
+
+  // Synchronize with group management store to ensure "instant" feel when opening settings
+  useGroupStore.setState({
+    groups,
+    selectedGroup: resolvedGroup,
   })
 
   useAttendanceStore.getState().setCurrentGroup(resolvedGroup)
@@ -106,6 +122,11 @@ export async function loadSelectedGroupData(
         limit: 100,
       }),
     ])
+
+    // Sync with group store too
+    useGroupStore.setState({
+      members,
+    })
 
     if (skeletonDelayTimer) {
       clearTimeout(skeletonDelayTimer)

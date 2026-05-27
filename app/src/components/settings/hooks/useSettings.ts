@@ -2,15 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { backendService, attendanceManager, persistentSettings } from "@/services"
 import { useDialog } from "@/components/shared"
 import { useGroupUIStore } from "@/components/group/stores"
-import { useUIStore } from "@/components/main/stores"
+import { useUIStore, useAttendanceStore } from "@/components/main/stores"
 import type { GroupSection } from "@/components/group"
-import type {
-  QuickSettings,
-  AttendanceSettings,
-  AudioSettings,
-  SettingsOverview,
-  TimeHealthOverview,
-} from "@/components/settings/types"
+import type { QuickSettings, AttendanceSettings, AudioSettings } from "@/components/settings/types"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface UseSettingsProps {
@@ -82,15 +76,19 @@ export const useSettings = ({
       store.setLastGroupId(currentGroup.id)
     }
   }, [currentGroup?.id])
-  const [systemData, setSystemData] = useState<SettingsOverview>({
-    totalPersons: null,
-    totalMembers: null,
-    lastUpdated: new Date().toISOString(),
-  })
-  const [timeHealthState, setTimeHealthState] = useState<TimeHealthOverview>({
-    timeHealth: null,
-    loading: false,
-  })
+
+  const systemData = useAttendanceStore((state) => state.systemStats)
+  const timeHealth = useAttendanceStore((state) => state.timeHealth)
+  const isStatsLoading = useAttendanceStore((state) => state.isStatsLoading)
+
+  const timeHealthState = useMemo(
+    () => ({
+      timeHealth,
+      loading: isStatsLoading,
+    }),
+    [timeHealth, isStatsLoading],
+  )
+
   const [isLoading, setIsLoading] = useState(false)
   const [forceLiveness, setForceLiveness] = useState(false)
   const [triggerCreateGroup, setTriggerCreateGroup] = useState(0)
@@ -121,30 +119,33 @@ export const useSettings = ({
 
   const loadSystemData = useCallback(async () => {
     try {
-      setTimeHealthState((prev) => ({ ...prev, loading: true }))
-      const [faceStats, attendanceStats, timeHealth] = await Promise.all([
+      useAttendanceStore.getState().setStatsLoading(true)
+      const [faceStats, attendanceStats, timeHealthData] = await Promise.all([
         backendService.getDatabaseStats(),
         attendanceManager.getAttendanceStats(),
         attendanceManager.getTimeHealth().catch(() => null),
       ])
-      setSystemData({
+      useAttendanceStore.getState().setSystemStats({
         totalPersons: faceStats.total_persons,
         totalMembers: attendanceStats.total_members,
         lastUpdated: new Date().toISOString(),
       })
-      setTimeHealthState({
-        timeHealth,
-        loading: false,
-      })
+      useAttendanceStore.getState().setTimeHealth(timeHealthData)
     } catch (error) {
       console.error("Failed to load system data:", error)
-      setTimeHealthState((prev) => ({ ...prev, loading: false }))
+    } finally {
+      useAttendanceStore.getState().setStatsLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    // Run immediately to maximize snappiness
-    loadSystemData()
+    // Only fetch if data is null or extremely old
+    const stats = useAttendanceStore.getState().systemStats
+    const isInitial = stats.totalPersons === null
+
+    if (isInitial) {
+      loadSystemData()
+    }
   }, [loadSystemData])
 
   useEffect(() => {

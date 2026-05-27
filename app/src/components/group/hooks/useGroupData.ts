@@ -38,7 +38,10 @@ export function useGroupData(
   useEffect(() => {
     if (!isEmbedded) return
     setGroups(embeddedGroups)
-  }, [isEmbedded, embeddedGroups, setGroups])
+    if (embeddedMembers.length > 0) {
+      setMembers(embeddedMembers)
+    }
+  }, [isEmbedded, embeddedGroups, embeddedMembers, setGroups, setMembers])
 
   // Sync initialGroup with store, but skip if it doesn't exist in groups (was deleted)
   useEffect(() => {
