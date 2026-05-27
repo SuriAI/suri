@@ -61,27 +61,34 @@ class AttendanceRepository:
             "group_id": group_id,
             "effective_from": effective_from or to_storage_local(local_now()),
             "late_threshold_minutes": settings.get("late_threshold_minutes"),
-            "late_threshold_enabled": settings.get("late_threshold_enabled", False),
-            "class_start_time": settings.get(
-                "class_start_time", local_now().strftime("%H:%M")
-            ),
-            "track_checkout": settings.get("track_checkout", False),
+            "late_threshold_enabled": settings.get("late_threshold_enabled") or False,
+            "class_start_time": settings.get("class_start_time")
+            or local_now().strftime("%H:%M"),
+            "track_checkout": settings.get("track_checkout") or False,
             "organization_id": self.organization_id,
         }
 
     # Group Methods
     async def create_group(self, group_data: Dict[str, Any]) -> AttendanceGroup:
-        settings = group_data.get("settings", {})
+        settings = group_data.get("settings") or {}
+        late_threshold_enabled = settings.get("late_threshold_enabled")
+        if late_threshold_enabled is None:
+            late_threshold_enabled = False
+        class_start_time = settings.get("class_start_time") or local_now().strftime(
+            "%H:%M"
+        )
+        track_checkout = settings.get("track_checkout")
+        if track_checkout is None:
+            track_checkout = False
+
         group = AttendanceGroup(
             id=group_data["id"],
             name=group_data["name"],
             created_at=to_storage_local(local_now()),
             late_threshold_minutes=settings.get("late_threshold_minutes"),
-            late_threshold_enabled=settings.get("late_threshold_enabled", False),
-            class_start_time=settings.get(
-                "class_start_time", local_now().strftime("%H:%M")
-            ),
-            track_checkout=settings.get("track_checkout", False),
+            late_threshold_enabled=late_threshold_enabled,
+            class_start_time=class_start_time,
+            track_checkout=track_checkout,
             organization_id=self.organization_id,
             is_active=True,
             is_deleted=False,
