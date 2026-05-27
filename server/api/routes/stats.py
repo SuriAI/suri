@@ -46,10 +46,17 @@ async def get_group_stats(
             get_time_authority().current_time_local()
         )
 
-        members = await repo.get_group_members(group_id)
-        rule_history = await repo.get_group_rules(group_id)
-        sessions = await repo.get_sessions(
+        # Parallelize data fetching to reduce latency
+        import asyncio
+
+        members_task = repo.get_group_members(group_id)
+        rules_task = repo.get_group_rules(group_id)
+        sessions_task = repo.get_sessions(
             group_id=group_id, start_date=target_date, end_date=target_date
+        )
+
+        members, rule_history, sessions = await asyncio.gather(
+            members_task, rules_task, sessions_task
         )
 
         # Trigger self-healing computation if stats are queried for a date with no session states,
@@ -81,6 +88,7 @@ async def get_group_stats(
             )
 
             await repo.upsert_sessions(session_dicts)
+            await repo.session.commit()
 
         sessions = await repo.get_sessions(
             group_id=group_id, start_date=target_date, end_date=target_date

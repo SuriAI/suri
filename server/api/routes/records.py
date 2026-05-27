@@ -12,7 +12,7 @@ from api.schemas import (
     AttendanceEventCreate,
     AttendanceEventResponse,
 )
-from api.deps import get_repository
+from api.deps import get_repository, get_face_detector, get_face_recognizer
 from database.repository import AttendanceRepository
 from services.attendance_service import AttendanceService
 from services.time_authority_service import get_time_authority
@@ -76,6 +76,10 @@ async def add_record(
                     f"created_by={created_record.created_by or 'desktop_admin'}"
                 ),
             )
+
+        await repo.session.commit()
+        await repo.session.refresh(created_record)
+
         return created_record
 
     except HTTPException:
@@ -157,6 +161,10 @@ async def void_record(
                 f"reason={payload.reason.strip()}"
             ),
         )
+
+        await repo.session.commit()
+        await repo.session.refresh(voided_record)
+
         return voided_record
 
     except HTTPException:
@@ -223,6 +231,7 @@ async def get_sessions(
                 )
 
                 await repo.upsert_sessions(day_sessions)
+                await repo.session.commit()
 
                 computed_sessions.extend(day_sessions)
                 current_date += timedelta(days=1)
@@ -315,9 +324,6 @@ async def update_session(
             if payload.late_minutes is not None:
                 session_obj.late_minutes = payload.late_minutes
 
-            await repo.session.commit()
-            await repo.session.refresh(session_obj)
-
         await repo.add_audit_log(
             action="ATTENDANCE_SESSION_OVERRIDDEN",
             target_type="attendance_session",
@@ -329,6 +335,10 @@ async def update_session(
                 f"notes={session_obj.notes}"
             ),
         )
+
+        await repo.session.commit()
+        await repo.session.refresh(session_obj)
+
         return session_obj
 
     except Exception as e:
@@ -340,10 +350,11 @@ async def update_session(
 async def process_attendance_event(
     event_data: AttendanceEventCreate,
     repo: AttendanceRepository = Depends(get_repository),
+    face_detector=Depends(get_face_detector),
+    face_recognizer=Depends(get_face_recognizer),
 ):
     """Process an attendance event"""
     try:
-        from core.lifespan import face_detector, face_recognizer
         from utils.websocket_manager import notification_manager as ws_manager
 
         # Check if member exists
@@ -361,7 +372,10 @@ async def process_attendance_event(
             ws_manager=ws_manager,
         )
 
-        return await service.process_event(event_data, member, settings)
+        result = await service.process_event(event_data, member, settings)
+        if result.processed:
+            await repo.session.commit()
+        return result
 
     except HTTPException:
         raise

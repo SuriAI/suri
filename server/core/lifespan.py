@@ -116,6 +116,7 @@ async def lifespan(app: FastAPI):
 
                 if not settings_rows:
                     settings_rows = [await AttendanceRepository(session).get_settings()]
+                    await session.commit()
 
                 for settings in settings_rows:
                     if settings.data_retention_days <= 0:

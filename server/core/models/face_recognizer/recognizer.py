@@ -374,12 +374,9 @@ class FaceRecognizer:
             return {"success": False, "error": str(e), "person_id": person_id}
 
     async def get_all_persons(self, organization_id: Optional[str] = None) -> List[str]:
-        """Get list of all enrolled person IDs"""
-        db_manager = self._get_db_manager(organization_id)
-        if db_manager:
-            all_persons = await db_manager.get_all_persons()
-            return list(all_persons.keys())
-        return []
+        """Get list of all enrolled person IDs using the high-performance cache."""
+        database = await self._get_database(organization_id)
+        return list(database.keys())
 
     async def update_person_id(
         self,

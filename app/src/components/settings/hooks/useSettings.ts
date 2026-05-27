@@ -143,10 +143,8 @@ export const useSettings = ({
   }, [])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      loadSystemData()
-    }, 250)
-    return () => clearTimeout(timer)
+    // Run immediately to maximize snappiness
+    loadSystemData()
   }, [loadSystemData])
 
   useEffect(() => {

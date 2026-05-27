@@ -71,6 +71,9 @@ async def update_settings(
             details=f"Fields updated: {', '.join(update_data.keys())}",
         )
 
+        await repo.session.commit()
+        await repo.session.refresh(updated_settings)
+
         return updated_settings
 
     except HTTPException:

@@ -87,8 +87,8 @@ class AttendanceRepository:
             is_deleted=False,
         )
         self.session.add(group)
-        await self.session.commit()
-        await self.session.refresh(group)
+        # Removed individual commit to favor caller-level transactional control
+
         await self.add_group_rule(
             self._group_rule_payload(
                 group.id,
@@ -124,8 +124,6 @@ class AttendanceRepository:
     async def add_group_rule(self, rule_data: Dict[str, Any]) -> AttendanceGroupRule:
         rule = AttendanceGroupRule(**rule_data)
         self.session.add(rule)
-        await self.session.commit()
-        await self.session.refresh(rule)
         return rule
 
     async def get_group_rule(self, rule_id: str) -> Optional[AttendanceGroupRule]:
@@ -202,9 +200,6 @@ class AttendanceRepository:
             elif hasattr(group, key):
                 setattr(group, key, value)
 
-        await self.session.commit()
-        await self.session.refresh(group)
-
         tracked_after = {
             "late_threshold_minutes": group.late_threshold_minutes,
             "late_threshold_enabled": group.late_threshold_enabled,
@@ -239,7 +234,6 @@ class AttendanceRepository:
             if face:
                 await self.session.delete(face)
 
-        await self.session.commit()
         return True
 
     # Member Methods
@@ -296,8 +290,6 @@ class AttendanceRepository:
                 organization_id=self.organization_id,
             )
             self.session.add(member)
-        await self.session.commit()
-        await self.session.refresh(member)
         return member
 
     async def add_members_bulk(
@@ -385,13 +377,6 @@ class AttendanceRepository:
                     {"member": new_member, "person_id": person_id, "success": True}
                 )
 
-        await self.session.commit()
-
-        # Refresh inserted/updated members
-        for r in results:
-            if r["success"]:
-                await self.session.refresh(r["member"])
-
         return results
 
     async def get_member(self, person_id: str) -> Optional[AttendanceMember]:
@@ -448,8 +433,6 @@ class AttendanceRepository:
             if hasattr(member, key):
                 setattr(member, key, value)
 
-        await self.session.commit()
-        await self.session.refresh(member)
         return member
 
     async def remove_member(self, person_id: str) -> bool:
@@ -466,7 +449,6 @@ class AttendanceRepository:
         if face:
             await self.session.delete(face)
 
-        await self.session.commit()
         return True
 
     async def rename_person_id(self, old_person_id: str, new_person_id: str) -> bool:
@@ -494,8 +476,6 @@ class AttendanceRepository:
             .where(AttendanceSession.member_id == member.id)
             .values(person_id=new_person_id)
         )
-        await self.session.commit()
-        await self.session.refresh(member)
         return True
 
     # Record Methods
@@ -522,8 +502,6 @@ class AttendanceRepository:
             organization_id=self.organization_id,
         )
         self.session.add(record)
-        await self.session.commit()
-        await self.session.refresh(record)
         return record
 
     async def get_record(
@@ -591,8 +569,6 @@ class AttendanceRepository:
         record.voided_by = voided_by
         record.void_reason = void_reason
 
-        await self.session.commit()
-        await self.session.refresh(record)
         return record
 
     # Session Methods
@@ -636,8 +612,6 @@ class AttendanceRepository:
                 organization_id=self.organization_id,
             )
             self.session.add(session_obj)
-        await self.session.commit()
-        await self.session.refresh(session_obj)
         return session_obj
 
     async def upsert_sessions(
@@ -714,7 +688,6 @@ class AttendanceRepository:
         )
 
         await self.session.execute(upsert_stmt)
-        await self.session.commit()
 
         return []
 
@@ -779,8 +752,6 @@ class AttendanceRepository:
             template = template_result.scalars().first()
             settings = AttendanceSettings(**self._settings_payload(template))
             self.session.add(settings)
-            await self.session.commit()
-            await self.session.refresh(settings)
         return settings
 
     async def update_settings(self, settings_data: Dict[str, Any]) -> bool:
@@ -790,7 +761,6 @@ class AttendanceRepository:
             if hasattr(settings, key) and key != "id":
                 setattr(settings, key, value)
 
-        await self.session.commit()
         return True
 
     # Audit Log Methods
@@ -812,7 +782,6 @@ class AttendanceRepository:
             organization_id=self.organization_id,
         )
         self.session.add(log)
-        await self.session.commit()
         return log
 
     async def get_audit_logs(
@@ -1024,8 +993,6 @@ class FaceRepository:
                 is_deleted=False,  # Ensure it's active if re-added
             )
             self.session.add(face)
-        await self.session.commit()
-        await self.session.refresh(face)
         return face
 
     async def get_face(self, person_id: str) -> Optional[Face]:
@@ -1049,7 +1016,6 @@ class FaceRepository:
         if not face:
             return False
         await self.session.delete(face)
-        await self.session.commit()
         return True
 
     async def update_person_id(self, old_id: str, new_id: str) -> bool:
@@ -1069,7 +1035,6 @@ class FaceRepository:
             return False
 
         face.person_id = new_id
-        await self.session.commit()
         return True
 
     async def clear_faces(self) -> bool:
@@ -1080,7 +1045,6 @@ class FaceRepository:
         faces = result.scalars().all()
         for f in faces:
             await self.session.delete(f)
-        await self.session.commit()
         return True
 
     async def get_stats(self) -> Dict[str, Any]:

@@ -34,6 +34,8 @@ async def create_group(
         }
 
         created_group = await repo.create_group(db_group_data)
+        await repo.session.commit()
+        await repo.session.refresh(created_group)
 
         await repo.add_audit_log(
             action="GROUP_CREATED",
@@ -121,6 +123,9 @@ async def update_group(
             details=f"Fields updated: {', '.join(update_data.keys())}",
         )
 
+        await repo.session.commit()
+        await repo.session.refresh(updated_group)
+
         return updated_group
 
     except HTTPException:
@@ -153,6 +158,8 @@ async def delete_group(
             details="Group deleted (soft delete)",
         )
 
+        await repo.session.commit()
+
         return SuccessResponse(message=f"Group {group_id} deleted successfully")
 
     except HTTPException:
@@ -174,7 +181,17 @@ async def get_group_persons(
         if not group:
             raise HTTPException(status_code=404, detail="Group not found")
 
-        members = await repo.get_group_members(group_id)
+        import asyncio
+
+        # Parallelize relationship fetching and face data indexing
+        members_task = repo.get_group_members(group_id)
+
+        if face_recognizer:
+            all_persons_task = face_recognizer.get_all_persons(repo.organization_id)
+            members, all_persons = await asyncio.gather(members_task, all_persons_task)
+        else:
+            members = await members_task
+            all_persons = []
 
         if not face_recognizer:
             return [
@@ -193,7 +210,6 @@ async def get_group_persons(
             ]
 
         persons_with_face_data = []
-        all_persons = await face_recognizer.get_all_persons(repo.organization_id)
 
         for member in members:
             has_face_data = member.person_id in all_persons
