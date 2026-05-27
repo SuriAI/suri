@@ -72,7 +72,7 @@ jobs:
             arch: x64
           - os: macos-14
             arch: arm64
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             arch: x64
     steps:
       - uses: actions/checkout@v4
@@ -114,7 +114,7 @@ jobs:
             arch: x64
           - os: macos-14
             arch: arm64
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             arch: x64
     steps:
       - uses: actions/checkout@v4
@@ -148,7 +148,7 @@ jobs:
       - name: Package App
         run: |
           cd app
-          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-20.04" ]; then
             npx electron-builder --linux deb AppImage --publish never
           elif [ "${{ matrix.os }}" == "macos-14" ]; then
             npx electron-builder --mac --arm64 --publish never
@@ -210,8 +210,8 @@ jobs:
             original-artifacts/unsigned-app-windows-latest-x64/*.exe
             original-artifacts/unsigned-app-macos-latest-x64/*.dmg
             original-artifacts/unsigned-app-macos-14-arm64/*.dmg
-            original-artifacts/unsigned-app-ubuntu-latest-x64/*.AppImage
-            original-artifacts/unsigned-app-ubuntu-latest-x64/*.deb
+            original-artifacts/unsigned-app-ubuntu-20.04-x64/*.AppImage
+            original-artifacts/unsigned-app-ubuntu-20.04-x64/*.deb
           generate_release_notes: true
           draft: false
           prerelease: false
