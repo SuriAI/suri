@@ -44,6 +44,7 @@ export function Database({
     deletingGroup,
     deletingMember,
     filteredData,
+    isInitialLoad,
     toggleGroup,
     startEditing,
     startEditingGroup,
@@ -348,8 +349,13 @@ export function Database({
 
         <div className="border-y border-white/5">
           <div
-            className={`${filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
-            {filteredData.length === 0 ?
+            className={`${isInitialLoad || filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
+            {isInitialLoad ?
+              <div className="flex flex-col items-center justify-center py-12 text-white/20">
+                <i className="fa-solid fa-circle-notch fa-spin mb-3 text-2xl opacity-30" />
+                <div className="text-[12px] font-medium tracking-wide">Syncing directory...</div>
+              </div>
+            : filteredData.length === 0 ?
               <div className="flex flex-col items-center justify-center py-12 text-white/20">
                 <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
                 <div className="text-[12px] font-medium tracking-wide">No results found</div>

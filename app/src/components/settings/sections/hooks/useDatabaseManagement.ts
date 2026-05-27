@@ -19,6 +19,7 @@ export function useDatabaseManagement(
   const { setGroupToDelete, setShowDeleteConfirmation, showDeleteConfirmation, groupToDelete } =
     useAttendanceStore()
   const [groupsWithMembers, setGroupsWithMembers] = useState<GroupWithMembers[]>([])
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
   const [editingMember, setEditingMember] = useState<EditingMember | null>(null)
@@ -38,6 +39,7 @@ export function useDatabaseManagement(
   // Load members for all groups
   useEffect(() => {
     const loadMembers = async () => {
+      setIsInitialLoad(true)
       const groupsData: GroupWithMembers[] = await Promise.all(
         groups.map(async (group) => {
           try {
@@ -50,6 +52,7 @@ export function useDatabaseManagement(
         }),
       )
       setGroupsWithMembers(groupsData)
+      setIsInitialLoad(false)
     }
 
     if (groups.length > 0) {
@@ -58,6 +61,7 @@ export function useDatabaseManagement(
       // Defer state update to avoid synchronous cascading renders inside useEffect
       Promise.resolve().then(() => {
         setGroupsWithMembers([])
+        setIsInitialLoad(false)
       })
     }
   }, [groups])
@@ -449,6 +453,7 @@ export function useDatabaseManagement(
     deletingGroup,
     deletingMember,
     filteredData,
+    isInitialLoad,
     toggleGroup,
     startEditing,
     startEditingGroup,
