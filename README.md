@@ -42,7 +42,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 ## Features
 
-- **Local Biometrics:** Face detection, recognition, subject tracking, and liveness checks via [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx).
+- **Local Biometrics:** Face detection and recognition, subject tracking (via ByteTrack), and liveness checks (via [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx)).
 - **Cross-Platform:** Native support for Windows, macOS, and Linux.
 - **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
 - **Subject Management:** Full control over group and member directories.
@@ -77,7 +77,7 @@ Everything is stored in a local SQLite database on your machine. Biometric templ
 No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% locally. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
 
 ### What hardware do I need?
-It's designed for standard CPUs and has been tested on hardware as old as 2nd-gen Intel i5 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops. No dedicated GPU or CUDA setup is required.
+It's designed for standard CPUs and has been tested on hardware as old as 2nd-gen Intel i7 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops. No dedicated GPU or CUDA setup is required.
 
 ### How do I protect my data?
 Since Facenox operates 100% locally, we cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive. We recommend regular backups to external storage or a secure organizational cloud.
@@ -85,10 +85,9 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 ## Roadmap
 
 - [x] Support for cross-platform native installers (Windows, macOS, Linux).
-- [ ] Organization-level code signing and notarization.
-- [ ] Multi-device biometric profile synchronization.
+- [x] Attendance trends and site-level reporting in Facenox Dashboard.
+- [ ] Software Signing.
 - [ ] Mobile companion application for remote monitoring.
-- [ ] Attendance trends and site-level reporting in Facenox Dashboard.
 
 ---
 
