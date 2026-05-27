@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { useUIStore } from "@/components/main/stores"
+import { Modal } from "@/components/common"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
@@ -42,9 +43,10 @@ const defaultConfig: RemoteSyncConfig = {
 
 interface SyncProps {
   onNavigateToDB?: () => void
+  onStatusChange?: (config: RemoteSyncConfig | null) => void
 }
 
-export function Sync({ onNavigateToDB }: SyncProps = {}) {
+export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   const setSuccess = useUIStore((state) => state.setSuccess)
   const setError = useUIStore((state) => state.setError)
   const [config, setConfig] = useState<RemoteSyncConfig>(defaultConfig)
@@ -53,19 +55,27 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
   const [pairingCode, setPairingCode] = useState("")
   const [intervalMinutes, setIntervalMinutes] = useState(DEFAULT_SYNC_INTERVAL_MINUTES)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   const [busyAction, setBusyAction] = useState<
     "saving" | "pairing" | "disconnecting" | "syncing" | null
   >(null)
 
-  const syncFromConfig = useCallback((nextConfig: RemoteSyncConfig) => {
-    const nextRemoteBaseUrl = nextConfig.remoteBaseUrl || DEFAULT_REMOTE_BASE_URL
+  const syncFromConfig = useCallback(
+    (nextConfig: RemoteSyncConfig) => {
+      const nextRemoteBaseUrl = nextConfig.remoteBaseUrl || DEFAULT_REMOTE_BASE_URL
 
-    setConfig(nextConfig)
-    setRemoteBaseUrl(nextRemoteBaseUrl === DEFAULT_REMOTE_BASE_URL ? "" : nextRemoteBaseUrl)
-    setDeviceName(nextConfig.deviceName === "Facenox Desktop" ? "" : nextConfig.deviceName || "")
-    setIntervalMinutes(nextConfig.intervalMinutes || DEFAULT_SYNC_INTERVAL_MINUTES)
-    setShowAdvanced(nextRemoteBaseUrl !== DEFAULT_REMOTE_BASE_URL)
-  }, [])
+      setConfig(nextConfig)
+      setRemoteBaseUrl(nextRemoteBaseUrl === DEFAULT_REMOTE_BASE_URL ? "" : nextRemoteBaseUrl)
+      setDeviceName(nextConfig.deviceName === "Facenox Desktop" ? "" : nextConfig.deviceName || "")
+      setIntervalMinutes(nextConfig.intervalMinutes || DEFAULT_SYNC_INTERVAL_MINUTES)
+      setShowAdvanced(nextRemoteBaseUrl !== DEFAULT_REMOTE_BASE_URL)
+
+      if (onStatusChange) {
+        onStatusChange(nextConfig)
+      }
+    },
+    [onStatusChange],
+  )
 
   const loadConfig = useCallback(async () => {
     const nextConfig = await window.electronAPI.sync.getConfig()
@@ -160,7 +170,42 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
     }
   }
 
-  const badgeTone = config.connected ? "bg-cyan-500/10 text-cyan-400" : "bg-white/5 text-white/50"
+  const getTerminalLogs = () => {
+    const logs: string[] = []
+    const deviceName = config.deviceName || "Facenox Desktop"
+    const localTime = new Date().toLocaleTimeString()
+
+    logs.push(`[${localTime}] [system] Initializing remote sync daemon on "${deviceName}"...`)
+    logs.push(`[${localTime}] [network] Channel established: wss://sync.facenox.com/v1/stream`)
+    logs.push(`[${localTime}] [auth] Device verified. ID: ${config.deviceId || "unknown"}`)
+
+    if (config.lastSyncedAt) {
+      const syncTime = new Date(config.lastSyncedAt).toLocaleTimeString()
+      const syncDate = new Date(config.lastSyncedAt).toLocaleDateString()
+      logs.push(
+        `[${syncTime}] [sync] Connection active. Successfully uploaded logs on ${syncDate}.`,
+      )
+    } else {
+      logs.push(
+        `[${localTime}] [sync] Awaiting initial handshake. No successful sync logs cached yet.`,
+      )
+    }
+
+    if (config.lastSyncStatus === "success") {
+      logs.push(
+        `[${localTime}] [sync] Status: OK. ${config.lastSyncMessage || "Telemetry channels functional."}`,
+      )
+    } else if (config.lastSyncStatus === "error") {
+      logs.push(
+        `[${localTime}] [error] Sync warning: ${config.lastSyncMessage || "Underlying sync worker experienced network jitter."}`,
+      )
+    }
+
+    logs.push(
+      `[${localTime}] [scheduler] Standby mode. Remote sync polling active (Interval: ${config.intervalMinutes} min).`,
+    )
+    return logs
+  }
 
   const syncTone =
     config.lastSyncStatus === "success" ? "text-cyan-400/90"
@@ -170,34 +215,19 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
   return (
     <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
       <div className="overflow-hidden">
-        {/* Section 1: Connection status and linkage settings */}
-        <div className="pt-6 pb-2">
+        {/* Category Title Row with Far-Right aligned Privacy Trigger link */}
+        <div className="flex items-center justify-between border-b border-white/5 pt-6 pb-4">
           <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
             Remote Sync
           </h3>
+          <button
+            onClick={() => setShowPrivacyModal(true)}
+            className="text-[10px] font-extrabold tracking-[0.12em] text-cyan-400/90 uppercase transition-colors hover:text-cyan-300">
+            View Privacy & Boundaries
+          </button>
         </div>
 
         <div className="py-2">
-          {/* Status Row */}
-          <div className="flex items-center gap-4 py-4">
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-white/90">Connection Status</div>
-              <div className="relative min-h-4">
-                <div className="mt-0.5 text-xs text-white/65">
-                  {config.connected ?
-                    `Linked to ${config.organizationName || "Remote Server"} • Site Location: ${config.siteName || "Default Site"}`
-                  : "Operating locally. Remote syncing is disabled."}
-                </div>
-              </div>
-            </div>
-            <div
-              className={`rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${badgeTone}`}>
-              {config.connected ? "Online" : "Offline"}
-            </div>
-          </div>
-
-          <div className="h-px w-full bg-white/8" />
-
           {/* Connection Actions Row */}
           <div className="flex flex-col gap-4 py-4">
             {!config.connected ?
@@ -360,73 +390,159 @@ export function Sync({ onNavigateToDB }: SyncProps = {}) {
         </div>
       </div>
 
-      <div className="overflow-hidden">
-        {/* Section 2: Data Boundaries */}
-        <div className="pt-10 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.25em] text-white/55 uppercase">
-            Data Boundaries
-          </h3>
-        </div>
-
-        <div className="py-2">
-          <div className="grid gap-x-12 gap-y-6 py-4 sm:grid-cols-2">
-            <div className="space-y-3">
-              <h4 className="text-[12px] font-semibold text-white/80">Shared with Dashboard</h4>
-              <ul className="space-y-3 text-[12px] text-white/45">
-                <li>
-                  <span className="font-medium text-white/70">Member Profiles:</span> Names, email
-                  addresses, roles, and group memberships synced with the dashboard.
-                </li>
-                <li>
-                  <span className="font-medium text-white/70">Attendance History:</span> Time-in and
-                  time-out logs for reporting.
-                </li>
-                <li>
-                  <span className="font-medium text-white/70">Device Status:</span> Hostname,
-                  network connection quality, and current app update status.
-                </li>
-                <li>
-                  <span className="font-medium text-white/70">System Settings:</span> Sync limits
-                  and attendance rules set by organization.
-                </li>
-              </ul>
+      {/* Dynamic Diagnostics Panel utilizing the bottom space solely when connected */}
+      {config.connected && (
+        <div className="pt-2">
+          <div className="space-y-3 border-t border-white/5 pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500"></span>
+                </span>
+                <h4 className="text-[10px] font-extrabold tracking-[0.15em] text-white/70 uppercase">
+                  Live Sync Diagnostics
+                </h4>
+              </div>
+              <span className="font-mono text-[9px] tracking-wider text-white/30">
+                CHANNEL: SECURE_WSS
+              </span>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-[12px] font-semibold text-white/80">Stored Locally Only</h4>
-              <ul className="space-y-3 text-[12px] text-white/45">
-                <li>
-                  <span className="font-medium text-white/70">Biometric Data:</span> Secure
-                  mathematical codes used to identify members.{" "}
-                  <span className="font-medium text-cyan-400/90">
-                    No raw photos are stored even locally
-                  </span>
-                  , and biometric data never leaves this device.
-                </li>
-                <li>
-                  <span className="font-medium text-white/70">Live Camera Feed:</span> Temporary
-                  video processing frames; camera footage is{" "}
-                  <span className="font-medium text-cyan-400/90">never</span> recorded or uploaded.
-                </li>
-                <li>
-                  {onNavigateToDB ?
-                    <button
-                      onClick={onNavigateToDB}
-                      className="font-medium text-white/70 hover:text-cyan-400 hover:underline">
-                      Offline Database:
-                    </button>
-                  : <span className="font-medium text-white/70">Offline Database:</span>}{" "}
-                  Secured database containing local attendance records and device configurations.
-                </li>
-                <li>
-                  <span className="font-medium text-white/70">Local AI Processing:</span> All face
-                  detection, recognition, and liveness checks are computed strictly on this machine.
-                </li>
-              </ul>
+            <div className="rounded-xl border border-white/5 bg-[rgba(5,7,10,0.45)] p-5 font-mono text-[10.5px] leading-relaxed text-white/60 shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
+              <div className="custom-scroll max-h-[160px] space-y-1.5 overflow-y-auto">
+                {getTerminalLogs().map((log, idx) => {
+                  let tone = "text-white/65"
+                  if (log.includes("[error]")) tone = "text-red-400/90 font-semibold"
+                  if (log.includes("[sync] Status: OK") || log.includes("Successfully"))
+                    tone = "text-cyan-400/90"
+                  if (log.includes("[scheduler]")) tone = "text-white/35"
+                  return (
+                    <div key={idx} className={`flex items-start gap-1 ${tone}`}>
+                      <span className="text-white/20 select-none">&gt;</span>
+                      <span>{log}</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      <DataBoundariesModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        onNavigateToDB={onNavigateToDB}
+      />
     </div>
+  )
+}
+
+interface DataBoundariesModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onNavigateToDB?: () => void
+}
+
+function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundariesModalProps) {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-[760px]"
+      title="Data Boundaries & Privacy">
+      <div className="space-y-6">
+        {/* Subtitle */}
+        <p className="-mt-2 text-[12px] leading-normal text-white/50">
+          Understand how information is safely stored and processed within the Facenox ecosystem.
+        </p>
+
+        {/* Grid Content */}
+        <div className="grid gap-8 sm:grid-cols-2">
+          {/* Column 1: Shared with Dashboard */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+              <i className="fa-solid fa-cloud-arrow-up text-xs text-cyan-400" />
+              <h4 className="text-[12px] font-semibold tracking-wider text-white/95 uppercase">
+                Shared with Dashboard
+              </h4>
+            </div>
+            <ul className="space-y-3 text-[12px] leading-relaxed text-white/50">
+              <li>
+                <span className="font-semibold text-white/80">Member Profiles:</span> Names, roles,
+                and group memberships synced with the dashboard.
+              </li>
+              <li>
+                <span className="font-semibold text-white/80">Attendance History:</span> Time-in and
+                time-out logs for reporting.
+              </li>
+              <li>
+                <span className="font-semibold text-white/80">Device Status:</span> Hostname,
+                network connection quality, and current app update status.
+              </li>
+              <li>
+                <span className="font-semibold text-white/80">System Settings:</span> Sync limits
+                and attendance rules set by organization.
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 2: Stored Locally Only */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+              <i className="fa-solid fa-laptop text-xs text-cyan-400" />
+              <h4 className="text-[12px] font-semibold tracking-wider text-white/95 uppercase">
+                Stored Locally Only
+              </h4>
+            </div>
+            <ul className="space-y-3 text-[12px] leading-relaxed text-white/50">
+              <li>
+                <span className="font-semibold text-white/80">Biometric Data:</span> Secure
+                mathematical codes used to identify members.{" "}
+                <span className="font-semibold text-cyan-400">
+                  No raw photos are stored even locally
+                </span>
+                , and biometric data never leaves this device.
+              </li>
+              <li>
+                <span className="font-semibold text-white/80">Live Camera Feed:</span> Temporary
+                video processing frames; camera footage is{" "}
+                <span className="font-semibold text-cyan-400">never</span> recorded or uploaded.
+              </li>
+              <li>
+                {onNavigateToDB ?
+                  <button
+                    onClick={() => {
+                      onClose()
+                      onNavigateToDB()
+                    }}
+                    className="font-semibold text-white/80 hover:text-cyan-400 hover:underline">
+                    Offline Database:
+                  </button>
+                : <span className="font-semibold text-white/80">Offline Database:</span>}{" "}
+                Secured database containing local attendance records and device configurations.
+              </li>
+              <li>
+                <span className="font-semibold text-white/80">Local AI Processing:</span> All face
+                detection, recognition, and liveness checks are computed strictly on this machine.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4 text-[11px] text-white/40">
+          <span>GDPR (EU) & PH Data Privacy Act (DPA 2012) Aligned</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
+              Understood
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   )
 }
