@@ -617,6 +617,12 @@ class AttendanceRepository:
     async def upsert_sessions(
         self, sessions_data: List[Dict[str, Any]]
     ) -> List[AttendanceSession]:
+        """
+        Perform a bulk upsert of attendance sessions for a collection of members.
+        
+        This method chunks the payload to respect SQLite's variable binding limit (999),
+        preventing operational errors during large scale synchronization updates.
+        """
         if not sessions_data:
             return []
 
@@ -649,7 +655,7 @@ class AttendanceRepository:
             member = members_map.get(pid)
             if not member:
                 logger.warning(
-                    f"Member with person_id {pid} not found during bulk upsert"
+                     f"Member with person_id {pid} not found during bulk upsert"
                 )
                 continue
 
@@ -673,21 +679,25 @@ class AttendanceRepository:
 
         from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
-        stmt = sqlite_insert(AttendanceSession).values(values_to_insert)
-
         # Exclude primary keys and conflict target columns from update clause
         non_update_cols = {"id", "member_id", "date"}
         update_cols = {col for col in session_columns if col not in non_update_cols}
 
-        # Build dynamic upsert set parameters using reflection attribute getters
-        dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
+        # Chunk the values to insert to avoid SQLite's maximum bound parameter limit (typically 999).
+        # We use a conservative threshold of 950 to ensure perfect safety on all SQLite versions.
+        max_vars_per_batch = 950
+        row_vars_count = len(session_columns) if session_columns else 1
+        batch_size = max(1, max_vars_per_batch // row_vars_count)
 
-        upsert_stmt = stmt.on_conflict_do_update(
-            index_elements=["member_id", "date"],
-            set_=dynamic_set,
-        )
-
-        await self.session.execute(upsert_stmt)
+        for i in range(0, len(values_to_insert), batch_size):
+            batch = values_to_insert[i : i + batch_size]
+            stmt = sqlite_insert(AttendanceSession).values(batch)
+            dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
+            upsert_stmt = stmt.on_conflict_do_update(
+                index_elements=["member_id", "date"],
+                set_=dynamic_set,
+            )
+            await self.session.execute(upsert_stmt)
 
         return []
 
