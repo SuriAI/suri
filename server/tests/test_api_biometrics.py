@@ -62,6 +62,7 @@ class DummyFaceRecognizer:
         faces: list[dict],
         allowed_person_ids: list[str],
         organization_id: str | None,
+        **kwargs,
     ) -> list[dict]:
         return [
             await self.recognize_face(

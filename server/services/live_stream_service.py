@@ -19,10 +19,12 @@ PROTECTED_IDENTITY = "PROTECTED_IDENTITY"
 class LiveGroupContext:
     group_id: Optional[str] = None
     group_exists: bool = False
-    allowed_person_ids: list[str] = field(default_factory=list)
+    allowed_person_ids: set[str] = field(default_factory=set)
     members_by_person_id: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     attendance_cooldown_seconds: int = 300
     max_recognition_faces_per_frame: int = 6
+    group_matrix: Optional[np.ndarray] = None
+    person_index_map: list[str] = field(default_factory=list)
     loaded_at: float = 0.0
 
 
@@ -246,7 +248,10 @@ class LiveStreamService:
             if group:
                 members = await repo.get_group_members(config.active_group_id)
                 group_context.group_exists = True
-                group_context.allowed_person_ids = [m.person_id for m in members]
+
+                # Use a set for O(1) membership checks to prevent O(G*M) bottlenecks
+                group_context.allowed_person_ids = {m.person_id for m in members}
+
                 group_context.members_by_person_id = {
                     member.person_id: {
                         "name": member.name,
@@ -255,6 +260,28 @@ class LiveStreamService:
                     }
                     for member in members
                 }
+
+                # Pre-build high-performance NumPy matrix for batch recognition
+                from core.lifespan import face_recognizer
+
+                if face_recognizer:
+                    # Get the global decrypted cache for this organization
+                    full_db = await face_recognizer.export_embeddings(
+                        organization_id=self.organization_id
+                    )
+
+                    # Filter and stack embeddings once, rather than every frame
+                    valid_embeddings = []
+                    valid_person_ids = []
+
+                    for person_id in group_context.allowed_person_ids:
+                        if person_id in full_db:
+                            valid_embeddings.append(full_db[person_id])
+                            valid_person_ids.append(person_id)
+
+                    if valid_embeddings:
+                        group_context.group_matrix = np.stack(valid_embeddings)
+                        group_context.person_index_map = valid_person_ids
 
         config.group_context = group_context
         return group_context
@@ -305,8 +332,10 @@ class LiveStreamService:
         recognition_results = await face_recognizer.recognize_faces(
             image,
             recognition_candidates,
-            allowed_person_ids=group_context.allowed_person_ids,
+            allowed_person_ids=list(group_context.allowed_person_ids),
             organization_id=self.organization_id,
+            prebuilt_matrix=group_context.group_matrix,
+            person_index_map=group_context.person_index_map,
         )
 
         from core.lifespan import liveness_detector

@@ -157,6 +157,8 @@ class FaceRecognizer:
         embedding: np.ndarray,
         allowed_person_ids: Optional[List[str]] = None,
         organization_id: Optional[str] = None,
+        prebuilt_matrix: Optional[np.ndarray] = None,
+        person_index_map: Optional[List[str]] = None,
     ) -> Tuple[Optional[str], float]:
         """
         Find best matching person using cached database.
@@ -168,11 +170,16 @@ class FaceRecognizer:
 
         database = await self._get_database(organization_id)
 
-        if not database:
+        if not database and prebuilt_matrix is None:
             return None, 0.0
 
         return find_best_match(
-            embedding, database, self.similarity_threshold, allowed_person_ids
+            embedding,
+            database,
+            self.similarity_threshold,
+            allowed_person_ids,
+            prebuilt_matrix=prebuilt_matrix,
+            person_index_map=person_index_map,
         )
 
     async def _refresh_cache(self, organization_id: Optional[str] = None):
@@ -242,6 +249,8 @@ class FaceRecognizer:
         faces: List[Dict],
         allowed_person_ids: Optional[List[str]] = None,
         organization_id: Optional[str] = None,
+        prebuilt_matrix: Optional[np.ndarray] = None,
+        person_index_map: Optional[List[str]] = None,
     ) -> List[Dict]:
         try:
             if not faces:
@@ -254,7 +263,11 @@ class FaceRecognizer:
             results: List[Dict] = []
             for embedding in embeddings:
                 person_id, similarity = await self._find_best_match(
-                    embedding, allowed_person_ids, organization_id
+                    embedding,
+                    allowed_person_ids,
+                    organization_id,
+                    prebuilt_matrix=prebuilt_matrix,
+                    person_index_map=person_index_map,
                 )
                 results.append(
                     {

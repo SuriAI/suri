@@ -23,6 +23,8 @@ def find_best_match(
     database: Dict[str, np.ndarray],
     similarity_threshold: float,
     allowed_person_ids: Optional[List[str]] = None,
+    prebuilt_matrix: Optional[np.ndarray] = None,
+    person_index_map: Optional[List[str]] = None,
 ) -> Tuple[Optional[str], float]:
     """
     Find best matching person in database using vectorized operations.
@@ -32,24 +34,30 @@ def find_best_match(
         database: Dictionary mapping person_id to embedding
         similarity_threshold: Minimum similarity threshold for recognition
         allowed_person_ids: Optional list of allowed person IDs for filtering
+        prebuilt_matrix: Pre-stacked NumPy matrix for faster matching
+        person_index_map: List of person IDs corresponding to matrix rows
 
     Returns:
         Tuple of (best_person_id, best_similarity)
     """
-    if not database:
-        return None, 0.0
-
-    if allowed_person_ids is not None:
-        filtered_db = {
-            pid: emb for pid, emb in database.items() if pid in allowed_person_ids
-        }
-        if not filtered_db:
-            return None, 0.0
+    if prebuilt_matrix is not None and person_index_map is not None:
+        db_matrix = prebuilt_matrix
+        person_ids = person_index_map
     else:
-        filtered_db = database
+        if not database:
+            return None, 0.0
 
-    person_ids = list(filtered_db.keys())
-    db_matrix = np.stack(list(filtered_db.values()))  # Shape: (N, 512)
+        if allowed_person_ids is not None:
+            filtered_db = {
+                pid: emb for pid, emb in database.items() if pid in allowed_person_ids
+            }
+            if not filtered_db:
+                return None, 0.0
+        else:
+            filtered_db = database
+
+        person_ids = list(filtered_db.keys())
+        db_matrix = np.stack(list(filtered_db.values()))  # Shape: (N, 512)
 
     # Compute cosine similarities in parallel: (1, 512) @ (512, N) -> (1, N)
     similarities = np.dot(query_embedding, db_matrix.T)
