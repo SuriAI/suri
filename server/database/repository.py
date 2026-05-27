@@ -620,8 +620,8 @@ class AttendanceRepository:
         """
         Perform a bulk upsert of attendance sessions for a collection of members.
         
-        This method chunks the payload to respect SQLite's variable binding limit (999),
-        preventing operational errors during large scale synchronization updates.
+        Uses a single-statement executemany pattern to naturally bypass SQLite's 
+        variable binding limits and optimize database write performance.
         """
         if not sessions_data:
             return []
@@ -683,21 +683,14 @@ class AttendanceRepository:
         non_update_cols = {"id", "member_id", "date"}
         update_cols = {col for col in session_columns if col not in non_update_cols}
 
-        # Chunk the values to insert to avoid SQLite's maximum bound parameter limit (typically 999).
-        # We use a conservative threshold of 950 to ensure perfect safety on all SQLite versions.
-        max_vars_per_batch = 950
-        row_vars_count = len(session_columns) if session_columns else 1
-        batch_size = max(1, max_vars_per_batch // row_vars_count)
+        stmt = sqlite_insert(AttendanceSession)
+        dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
+        upsert_stmt = stmt.on_conflict_do_update(
+            index_elements=["member_id", "date"],
+            set_=dynamic_set,
+        )
 
-        for i in range(0, len(values_to_insert), batch_size):
-            batch = values_to_insert[i : i + batch_size]
-            stmt = sqlite_insert(AttendanceSession).values(batch)
-            dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
-            upsert_stmt = stmt.on_conflict_do_update(
-                index_elements=["member_id", "date"],
-                set_=dynamic_set,
-            )
-            await self.session.execute(upsert_stmt)
+        await self.session.execute(upsert_stmt, values_to_insert)
 
         return []
 
