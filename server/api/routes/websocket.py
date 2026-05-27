@@ -246,10 +246,6 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 logger.info(
                     f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
                 )
-                # Cleanup liveness memory to prevent leaks
-                if lifespan.liveness_detector:
-                    lifespan.liveness_detector.clear_namespace(client_id)
-                manager.remove_face_tracker(client_id)
                 break
             except Exception as e:
                 error_str = str(e).lower()
@@ -297,7 +293,6 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
     finally:
         if lifespan.liveness_detector:
             lifespan.liveness_detector.clear_namespace(client_id)
-        manager.remove_face_tracker(client_id)
         if manager.active_connections.get(client_id) is websocket:
             await manager.disconnect(client_id)
         logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")

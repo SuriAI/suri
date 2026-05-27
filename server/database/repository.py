@@ -619,8 +619,8 @@ class AttendanceRepository:
     ) -> List[AttendanceSession]:
         """
         Perform a bulk upsert of attendance sessions for a collection of members.
-        
-        Uses a single-statement executemany pattern to naturally bypass SQLite's 
+
+        Uses a single-statement executemany pattern to naturally bypass SQLite's
         variable binding limits and optimize database write performance.
         """
         if not sessions_data:
@@ -655,7 +655,7 @@ class AttendanceRepository:
             member = members_map.get(pid)
             if not member:
                 logger.warning(
-                     f"Member with person_id {pid} not found during bulk upsert"
+                    f"Member with person_id {pid} not found during bulk upsert"
                 )
                 continue
 
