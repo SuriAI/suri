@@ -405,6 +405,8 @@ class LiveStreamService:
                         member,
                         settings,
                     )
+                    if event_result.processed:
+                        await session.commit()
 
                 if event_result.processed:
                     config.attendance_cooldowns[cooldown_key] = now

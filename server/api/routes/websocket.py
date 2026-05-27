@@ -295,6 +295,9 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 f"[WebSocket] Client {client_id} disconnected due to exception: {e}"
             )
     finally:
+        if lifespan.liveness_detector:
+            lifespan.liveness_detector.clear_namespace(client_id)
+        manager.remove_face_tracker(client_id)
         if manager.active_connections.get(client_id) is websocket:
             await manager.disconnect(client_id)
         logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")

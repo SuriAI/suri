@@ -88,10 +88,8 @@ export function Reports({
   )
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      generateReport()
-    }, 300)
-    return () => clearTimeout(timer)
+    // Execute immediately on mount/change, no need for artificial delay
+    generateReport()
   }, [generateReport])
 
   useEffect(() => {

@@ -75,6 +75,9 @@ async def add_member(
             details=f"Member '{added_member.name}' added to group {added_member.group_id}",
         )
 
+        await repo.session.commit()
+        await repo.session.refresh(added_member)
+
         return added_member
 
     except HTTPException:
@@ -124,6 +127,13 @@ async def add_members_bulk(
                         "error": res.get("error", "Failed to add member to database"),
                     }
                 )
+
+        await repo.session.commit()
+
+        # Refresh successful members
+        for res in bulk_results:
+            if res.get("success", False):
+                await repo.session.refresh(res["member"])
 
         return BulkMemberResponse(
             success_count=success_count, error_count=error_count, errors=errors
@@ -215,7 +225,6 @@ async def update_member(
                         )
                     else:
                         await repo.session.delete(face)
-                        await repo.session.commit()
                     logger.info(
                         f"Biometric data erased for {person_id} after consent revocation"
                     )
@@ -237,6 +246,9 @@ async def update_member(
                 target_id=person_id,
                 details=f"Fields updated: {', '.join(non_audit_fields)}",
             )
+
+        await repo.session.commit()
+        await repo.session.refresh(updated_member)
 
         return updated_member
 
@@ -268,6 +280,8 @@ async def remove_member(
             target_type="member",
             target_id=person_id,
         )
+
+        await repo.session.commit()
 
         return SuccessResponse(message=f"Member {person_id} removed successfully")
 

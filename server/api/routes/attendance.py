@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 
+from sqlalchemy.orm import selectinload
 from api.deps import get_repository
 from api.schemas import (
     AttendanceGroupResponse,
@@ -49,8 +50,10 @@ async def export_attendance_data(
         groups_orm = await repo.get_groups(active_only=False)
         settings_orm = await repo.get_settings()
 
-        members_query = select(AttendanceMember).where(
-            AttendanceMember.is_deleted.is_(False)
+        members_query = (
+            select(AttendanceMember)
+            .where(AttendanceMember.is_deleted.is_(False))
+            .options(selectinload(AttendanceMember.group))
         )
         if repo.organization_id:
             members_query = members_query.where(

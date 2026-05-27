@@ -3,8 +3,9 @@ import time
 
 import cv2
 import numpy as np
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 
+from api.deps import get_face_detector, get_liveness_detector
 from api.schemas import (
     DetectionResponse,
     OptimizationRequest,
@@ -24,9 +25,11 @@ router = APIRouter()
 
 
 @router.post("/optimize/liveness")
-async def configure_liveness_optimization(request: OptimizationRequest):
+async def configure_liveness_optimization(
+    request: OptimizationRequest,
+    liveness_detector=Depends(get_liveness_detector),
+):
     """Configure liveness detection optimization settings"""
-    from core.lifespan import liveness_detector
 
     if not liveness_detector:
         raise HTTPException(status_code=500, detail="Liveness detector not available")
@@ -41,9 +44,11 @@ async def configure_liveness_optimization(request: OptimizationRequest):
 
 
 @router.post("/optimize/face_detector")
-async def configure_face_detector_optimization(request: dict):
+async def configure_face_detector_optimization(
+    request: dict,
+    face_detector=Depends(get_face_detector),
+):
     """Configure face detector optimization settings including minimum face size"""
-    from core.lifespan import face_detector
 
     try:
         if face_detector:

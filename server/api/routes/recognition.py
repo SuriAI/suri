@@ -205,6 +205,7 @@ async def update_person(
         )
 
         if result["success"]:
+            await repo.session.commit()
             return result
         return {
             "success": True,

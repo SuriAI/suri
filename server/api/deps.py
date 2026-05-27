@@ -1,8 +1,9 @@
 from typing import AsyncGenerator, Annotated, Optional
-from fastapi import Depends, Header
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.session import AsyncSessionLocal
 from database.repository import AttendanceRepository
+import core.lifespan
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -26,6 +27,24 @@ async def get_organization_id(
     ] = None,
 ) -> Optional[str]:
     return normalize_organization_id(x_facenox_organization)
+
+
+def get_face_detector():
+    if not core.lifespan.face_detector:
+        raise HTTPException(status_code=500, detail="Face detector not initialized")
+    return core.lifespan.face_detector
+
+
+def get_liveness_detector():
+    if not core.lifespan.liveness_detector:
+        raise HTTPException(status_code=500, detail="Liveness detector not initialized")
+    return core.lifespan.liveness_detector
+
+
+def get_face_recognizer():
+    if not core.lifespan.face_recognizer:
+        raise HTTPException(status_code=500, detail="Face recognizer not initialized")
+    return core.lifespan.face_recognizer
 
 
 async def get_repository(

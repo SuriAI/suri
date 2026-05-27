@@ -61,6 +61,7 @@ class FaceDatabaseManager:
                 await repo.upsert_face(
                     person_id, encrypted_blob, len(embedding), image_hash
                 )
+                await session.commit()
                 return True
         except Exception as e:
             logger.error(f"Failed to add person {person_id}: {e}")
@@ -85,7 +86,10 @@ class FaceDatabaseManager:
         try:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
-                return await repo.remove_face(person_id)
+                success = await repo.remove_face(person_id)
+                if success:
+                    await session.commit()
+                return success
         except Exception as e:
             logger.error(f"Failed to remove person {person_id}: {e}")
             return False
@@ -122,7 +126,10 @@ class FaceDatabaseManager:
         try:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
-                return await repo.clear_faces()
+                success = await repo.clear_faces()
+                if success:
+                    await session.commit()
+                return success
         except Exception as e:
             logger.error(f"Failed to clear database: {e}")
             return False
@@ -169,6 +176,8 @@ class FaceDatabaseManager:
             async with AsyncSessionLocal() as session:
                 repo = FaceRepository(session, self.organization_id)
                 success = await repo.update_person_id(old_person_id, new_person_id)
+                if success:
+                    await session.commit()
                 return 1 if success else 0
         except Exception as e:
             logger.error(f"Failed to update person ID: {e}")
@@ -201,6 +210,7 @@ class FaceDatabaseManager:
                         row["person_id"], encrypted_blob, row["embedding_dimension"]
                     )
                     migrated_count += 1
+                await session.commit()
 
             conn.close()
 
