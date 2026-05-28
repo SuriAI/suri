@@ -676,6 +676,8 @@ export default function Main() {
               isShellReady={isShellReady}
               hasSelectedGroup={Boolean(currentGroup)}
               hasEnrolledFaces={hasEnrolledFaces}
+              hasGroups={attendanceGroups.length > 0}
+              hasMembers={groupMembers.length > 0}
               lateTrackingEnabled={!!currentGroup?.settings?.late_threshold_enabled}
               classStartTime={currentGroup?.settings?.class_start_time}
               onStartTimeChange={handleStartTimeChange}
