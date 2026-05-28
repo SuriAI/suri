@@ -1,4 +1,5 @@
 import { memo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import type { RefObject } from "react"
 import { StartTimeChip } from "./StartTimeChip"
 import type { QuickSettings } from "@/components/settings"
@@ -13,6 +14,8 @@ interface VideoCanvasProps {
   isShellReady: boolean
   hasSelectedGroup: boolean
   hasEnrolledFaces: boolean
+  hasGroups?: boolean
+  hasMembers?: boolean
   lateTrackingEnabled?: boolean
   classStartTime?: string
   onStartTimeChange?: (newTime: string) => void
@@ -28,6 +31,8 @@ export const VideoCanvas = memo(function VideoCanvas({
   isShellReady,
   hasSelectedGroup,
   hasEnrolledFaces,
+  hasGroups = false,
+  hasMembers = false,
   lateTrackingEnabled,
   classStartTime,
   onStartTimeChange,
@@ -49,6 +54,15 @@ export const VideoCanvas = memo(function VideoCanvas({
   }
 
   const outdated = isTimeOutdated()
+
+  const emptyStateText =
+    !isShellReady ? "Loading groups and settings..."
+    : hasSelectedGroup ?
+      !hasMembers ? "To start scanning, add and enroll at least one member."
+      : !hasEnrolledFaces ? "To start scanning, enroll at least one member."
+      : "Select a camera, then press Start Scan to begin attendance tracking."
+    : hasGroups ? "Select a group to begin attendance tracking."
+    : "Create a group to begin attendance tracking."
 
   return (
     <div className="relative h-full min-h-65 w-full overflow-hidden rounded-lg border border-white/10 bg-[var(--bg-canvas)]">
@@ -122,16 +136,18 @@ export const VideoCanvas = memo(function VideoCanvas({
                 />
               </svg>
             </div>
-            <div className="relative flex max-w-xl flex-col items-center gap-4 text-xs text-white/65">
-              <p>
-                {!isShellReady ?
-                  "Loading groups and settings..."
-                : hasSelectedGroup ?
-                  !hasEnrolledFaces ?
-                    "To start scanning, enroll at least one member in this group."
-                  : "Select a camera, then press Start Scan to begin attendance tracking."
-                : "Create or select a group to begin attendance tracking."}
-              </p>
+            <div className="relative flex min-h-[32px] max-w-xl flex-col items-center justify-center text-xs text-white/65">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={emptyStateText}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  style={{ willChange: "opacity, transform" }}>
+                  {emptyStateText}
+                </motion.p>
+              </AnimatePresence>
 
               {hasSelectedGroup && hasEnrolledFaces && onStartTimeChange && lateTrackingEnabled && (
                 <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
