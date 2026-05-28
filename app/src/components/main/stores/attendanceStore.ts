@@ -95,7 +95,7 @@ export const useAttendanceStore = create<AttendanceState>()(
 
     attendanceCooldownSeconds: 8,
     enableSpoofDetection: false,
-    maxRecognitionFacesPerFrame: 6,
+    maxRecognitionFacesPerFrame: 5,
     dataRetentionDays: 0,
 
     setCurrentGroup: (group) => {

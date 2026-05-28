@@ -30,6 +30,12 @@ export function Attendance({
   onBiometricConsentToggle,
   hasSelectedGroup = false,
 }: AttendanceProps) {
+  const allowedChoices = [1, 2, 5, 10, 15, 20] as const
+  const activeLimit =
+    (allowedChoices as readonly number[]).includes(attendanceSettings.maxRecognitionFacesPerFrame) ?
+      attendanceSettings.maxRecognitionFacesPerFrame
+    : 5
+
   return (
     <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
       <div className="overflow-hidden">
@@ -276,18 +282,18 @@ export function Attendance({
                     </div>
 
                     <div className="ml-auto flex shrink-0 items-center gap-4">
-                      {([1, 2, 3, 5, 8, 10, 15, 20] as const).map((faces) => (
+                      {allowedChoices.map((faces) => (
                         <button
                           key={faces}
                           type="button"
                           onClick={() => onMaxRecognitionFacesChange(faces)}
                           className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
-                            attendanceSettings.maxRecognitionFacesPerFrame === faces ?
-                              "text-cyan-400"
-                            : "text-white/40 hover:text-white/70"
+                            activeLimit === faces ? "text-cyan-400" : (
+                              "text-white/40 hover:text-white/70"
+                            )
                           }`}>
                           {faces}
-                          {attendanceSettings.maxRecognitionFacesPerFrame === faces && (
+                          {activeLimit === faces && (
                             <motion.div
                               layoutId="facesUnderline"
                               className="absolute right-1.5 bottom-[-3px] left-1.5 h-[2px] rounded-full bg-cyan-400"
