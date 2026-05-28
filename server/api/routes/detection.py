@@ -21,6 +21,8 @@ if not logging.getLogger().handlers:
     logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+MAX_IMAGE_SIZE = 20 * 1024 * 1024  # 20 MB
+
 router = APIRouter()
 
 
@@ -85,6 +87,11 @@ async def detect_faces(
 
     try:
         contents = await image.read()
+        if len(contents) > MAX_IMAGE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image too large ({len(contents)} bytes). Max {MAX_IMAGE_SIZE} bytes.",
+            )
         nparr = np.frombuffer(contents, np.uint8)
         image_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 

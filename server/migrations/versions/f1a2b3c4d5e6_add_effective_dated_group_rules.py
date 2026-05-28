@@ -94,7 +94,8 @@ def upgrade() -> None:
         )
 
     bind = op.get_bind()
-    groups = bind.execute(sa.text("""
+    groups = bind.execute(
+        sa.text("""
             SELECT
                 id,
                 created_at,
@@ -107,7 +108,8 @@ def upgrade() -> None:
                 version,
                 last_modified_at
             FROM attendance_groups
-            """)).mappings()
+            """)
+    ).mappings()
 
     for group in groups:
         rule_id = ulid.ulid()

@@ -128,9 +128,9 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
 
                     if message.get("type") == "ping":
                         if client_id in manager.connection_metadata:
-                            manager.connection_metadata[client_id][
-                                "last_activity"
-                            ] = local_now()
+                            manager.connection_metadata[client_id]["last_activity"] = (
+                                local_now()
+                            )
                         await websocket.send_text(
                             json.dumps(
                                 {
@@ -167,9 +167,9 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
 
                 elif "bytes" in message_data:
                     if client_id in manager.connection_metadata:
-                        manager.connection_metadata[client_id][
-                            "last_activity"
-                        ] = local_now()
+                        manager.connection_metadata[client_id]["last_activity"] = (
+                            local_now()
+                        )
                     start_time = time.time()
                     frame_bytes = message_data["bytes"]
 

@@ -14,6 +14,8 @@ from services.attendance_service import AttendanceService
 
 logger = logging.getLogger(__name__)
 
+MAX_IMAGE_SIZE = 20 * 1024 * 1024  # 20 MB
+
 router = APIRouter(prefix="/groups", tags=["groups"])
 
 
@@ -272,6 +274,11 @@ async def enroll_member_for_group_person(
 
         # Read and decode image binary
         contents = await image.read()
+        if len(contents) > MAX_IMAGE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image too large ({len(contents)} bytes). Max {MAX_IMAGE_SIZE} bytes.",
+            )
         nparr = np.frombuffer(contents, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 

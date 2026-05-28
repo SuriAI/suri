@@ -120,7 +120,8 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
 
-    op.execute(sa.text(f"""
+    op.execute(
+        sa.text(f"""
             INSERT INTO attendance_members_v2 (
                 id, person_id, group_id, name, role, email, joined_at, is_active,
                 has_consent, consent_granted_at, consent_granted_by, organization_id,
@@ -144,7 +145,8 @@ def upgrade() -> None:
                 m.last_modified_at,
                 m.is_deleted
             FROM attendance_members AS m
-            """))
+            """)
+    )
 
     op.rename_table("attendance_members", "attendance_members_old")
     op.rename_table("attendance_members_v2", "attendance_members")
@@ -209,7 +211,8 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["member_id"], ["attendance_members.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.execute(sa.text(f"""
+    op.execute(
+        sa.text(f"""
             INSERT INTO attendance_records_v2 (
                 id, person_id, member_id, group_id, timestamp, confidence, location,
                 notes, is_manual, created_by, organization_id, cloud_id, version,
@@ -238,7 +241,8 @@ def upgrade() -> None:
                   (m.organization_id = r.organization_id)
                   OR (m.organization_id IS NULL AND r.organization_id IS NULL)
              )
-            """))
+            """)
+    )
     op.drop_table("attendance_records")
     op.rename_table("attendance_records_v2", "attendance_records")
     op.create_index(
@@ -304,7 +308,8 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["member_id"], ["attendance_members.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.execute(sa.text(f"""
+    op.execute(
+        sa.text(f"""
             WITH ranked_sessions AS (
                 SELECT
                     s.*,
@@ -379,7 +384,8 @@ def upgrade() -> None:
                   OR (m.organization_id IS NULL AND s.organization_id IS NULL)
              )
             WHERE s.rn = 1
-            """))
+            """)
+    )
     op.drop_table("attendance_sessions")
     op.rename_table("attendance_sessions_v2", "attendance_sessions")
     op.create_index(
@@ -444,7 +450,8 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.execute(sa.text(f"""
+    op.execute(
+        sa.text(f"""
             INSERT INTO faces_v2 (
                 id, person_id, embedding, embedding_dimension, hash, created_at,
                 organization_id, cloud_id, version, last_modified_at, is_deleted
@@ -462,7 +469,8 @@ def upgrade() -> None:
                 f.last_modified_at,
                 f.is_deleted
             FROM faces AS f
-            """))
+            """)
+    )
     op.drop_table("faces")
     op.rename_table("faces_v2", "faces")
     op.create_index("ix_face_person_id", "faces", ["person_id"], unique=False)

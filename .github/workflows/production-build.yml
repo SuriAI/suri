@@ -17,13 +17,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          
+          node-version: "22"
+
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 9
-          
+          version: 10
+
       - name: Install App Dependencies
         run: |
           cd app
@@ -33,21 +33,21 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          
+
       - name: Install Server Dependencies
         run: |
           cd server
           pip install -r requirements-dev.txt
-        
+
       - name: Lint App
         run: |
           cd app
           pnpm run lint
-          
+
       - name: Lint Server
         run: |
           cd server
-          npm run lint
+          ruff check
 
       - name: Test App
         run: |
@@ -72,29 +72,29 @@ jobs:
             arch: x64
           - os: macos-14
             arch: arm64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             arch: x64
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
-          
+
       - name: Install Dependencies
         run: |
           cd server
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-build.txt
-          
+
       - name: Build Executable
         run: |
           cd server
           python build_backend.py
-          
+
       - name: Upload Backend Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -114,41 +114,41 @@ jobs:
             arch: x64
           - os: macos-14
             arch: arm64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             arch: x64
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          
+          node-version: "22"
+
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 9
-          
+          version: 10
+
       - name: Download Backend Artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-${{ matrix.os }}-${{ matrix.arch }}
           path: server/dist/
-          
+
       - name: Install Dependencies
         run: |
           cd app
           pnpm install
-        
+
       - name: Build App
         run: |
           cd app
           npm run build
-        
+
       - name: Package App
         run: |
           cd app
-          if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
+          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
             npx electron-builder --linux deb AppImage --publish never
           elif [ "${{ matrix.os }}" == "macos-14" ]; then
             npx electron-builder --mac --arm64 --publish never
@@ -210,8 +210,8 @@ jobs:
             original-artifacts/unsigned-app-windows-latest-x64/*.exe
             original-artifacts/unsigned-app-macos-latest-x64/*.dmg
             original-artifacts/unsigned-app-macos-14-arm64/*.dmg
-            original-artifacts/unsigned-app-ubuntu-22.04-x64/*.AppImage
-            original-artifacts/unsigned-app-ubuntu-22.04-x64/*.deb
+            original-artifacts/unsigned-app-ubuntu-24.04-x64/*.AppImage
+            original-artifacts/unsigned-app-ubuntu-24.04-x64/*.deb
           generate_release_notes: true
           draft: false
           prerelease: false
