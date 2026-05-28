@@ -286,7 +286,8 @@ const ALL_COLUMNS = [
   { key: "date", label: "Date", align: "left" },
   { key: "status", label: "Status", align: "center" },
   { key: "check_in_time", label: "Time In", align: "center" },
-  { key: "check_out_time", label: "Time Out", align: "center" }, // NEW
-  { key: "total_hours", label: "Hours", align: "center" }, // NEW
+  { key: "check_out_time", label: "Time Out", align: "center" },
+  { key: "total_hours", label: "Hours", align: "center" },
+  { key: "late_minutes", label: "Late (Mins)", align: "center" },
   { key: "notes", label: "Notes", align: "left" },
 ] as const
