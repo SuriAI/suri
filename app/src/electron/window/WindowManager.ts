@@ -55,7 +55,7 @@ export class WindowManager {
     const splashPath =
       isDev() ?
         path.join(app.getAppPath(), "out", "main", "splash.html")
-        : path.join(window_dirname, "splash.html")
+      : path.join(window_dirname, "splash.html")
     splash.loadFile(splashPath)
     splash.webContents.once("did-finish-load", () => {
       state.isSplashReady = true
@@ -255,7 +255,7 @@ export class WindowManager {
       mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"))
     }
 
-    mainWindow.once("ready-to-show", () => { })
+    mainWindow.once("ready-to-show", () => {})
 
     mainWindow.on("maximize", () => {
       mainWindow.webContents.send("window:maximized")
