@@ -73,6 +73,13 @@ def test_client(tmp_path, monkeypatch):
     monkeypatch.setattr(database_session, "AsyncSessionLocal", session_factory)
     monkeypatch.setattr(app.router, "lifespan_context", no_op_lifespan)
 
+    import core.lifespan
+    import unittest.mock
+
+    monkeypatch.setattr(core.lifespan, "face_detector", unittest.mock.MagicMock())
+    monkeypatch.setattr(core.lifespan, "face_recognizer", unittest.mock.MagicMock())
+    monkeypatch.setattr(core.lifespan, "liveness_detector", unittest.mock.MagicMock())
+
     async def override_get_db():
         async with session_factory() as session:
             try:

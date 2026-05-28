@@ -5,7 +5,6 @@ import { useGroupUIStore } from "@/components/group/stores"
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
 import { createAttendanceGroup, createAttendanceMember } from "@/test/fixtures"
 
-
 const {
   mockBackendService,
   mockAttendanceManager,
@@ -78,7 +77,6 @@ function resetGlobalStores() {
     lastGroupId: null,
   })
 }
-
 
 function createProps(overrides: Partial<Parameters<typeof useSettings>[0]> = {}) {
   const currentGroup = createAttendanceGroup()
