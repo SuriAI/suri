@@ -41,8 +41,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="rounded-lg border border-[var(--border-primary)] bg-[var(--accent-subtle)] px-4 py-2 text-sm text-[var(--accent)] transition-colors hover:border-[var(--border-hover)]"
-              >
+                className="rounded-lg border border-[var(--border-primary)] bg-[var(--accent-subtle)] px-4 py-2 text-sm text-[var(--accent)] transition-colors hover:border-[var(--border-hover)]">
                 Restart
               </button>
             </div>
