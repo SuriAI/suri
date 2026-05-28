@@ -1,7 +1,7 @@
 <a id="readme-top"></a>
 
 <h1 align="center">
-  <img src="app/public/assets/header.png" alt="Facenox - Offline-first Face Recognition Software" width="100%">
+  <img src="docs/assets/header.png" alt="Facenox - Offline-first Face Recognition Software" width="100%">
 </h1>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="app/public/assets/facenox-ui.png" alt="Facenox Desktop UI" width="100%">
+  <img src="docs/assets/screenshots/02-face-recognition-live.png" alt="Facenox Desktop UI - Active Scan" width="100%">
 </p>
 
 ---
@@ -33,12 +33,12 @@
 
 Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. Biometric matching stays local on the desktop.
 
-| Feature | Facenox | Cloud-Based Systems |
-| :--- | :---: | :---: |
-| **Data Residency** | 100% Local | Remote Cloud |
-| **Internet Dependency** | Optional | Mandatory |
-| **Latency** | Real-time | Network Dependent |
-| **Privacy Risk** | Minimized | High |
+| Feature                 |  Facenox   | Cloud-Based Systems |
+| :---------------------- | :--------: | :-----------------: |
+| **Data Residency**      | 100% Local |    Remote Cloud     |
+| **Internet Dependency** |  Optional  |      Mandatory      |
+| **Latency**             | Real-time  |  Network Dependent  |
+| **Privacy Risk**        | Minimized  |        High         |
 
 ## Features
 
@@ -50,6 +50,55 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 - **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
 - **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting without uploading raw biometric data.
 
+## Screenshots
+
+<details>
+<summary><strong>Click to expand UI Gallery</strong></summary>
+
+### Main Interface
+
+![Camera Preview](docs/assets/screenshots/01-camera-preview.png)
+<br/>
+![Face Recognition](docs/assets/screenshots/02-face-recognition-live.png)
+_Primary control interface for video hardware setup and active biometric scanning, featuring real-time face detection and multi-subject tracking._
+
+### Overview
+
+![Attendance Dashboard](docs/assets/screenshots/03-attendance-dashboard.png)
+_Overview dashboard displaying real-time metrics for 'Present Today' and 'Late Arrivals' alongside a live Activity Log._
+
+### Reports
+
+![Reports](docs/assets/screenshots/04-reports-management.png)
+_Reports interface detailing attendance records, featuring built-in tools for manual session editing and CSV data export._
+
+### Members
+
+![Members](docs/assets/screenshots/05-member-enrollment.png)
+_Member management interface for profile administration, role assignment, and biometric enrollment._
+
+### General
+
+![General Settings](docs/assets/screenshots/06-settings-general.png)
+_Configuration controls for core attendance mechanics, including Entry/Exit modes, Late Tracking thresholds, Duplicate Prevention cooldowns, and Recognition Limits._
+
+### Security & Compliance
+
+![Security Settings](docs/assets/screenshots/07-settings-security.png)
+_Configuration panel for Anti-spoofing (Liveness Verification) toggles, Global Group Consent enforcement, and Data Retention policies._
+
+### Database
+
+![Database Settings](docs/assets/screenshots/08-settings-database-sync.png)
+_Database settings panel detailing system clock accuracy validation and enrollment metrics across groups._
+
+### Backup & Export
+
+![Backup Restore](docs/assets/screenshots/09-database-backup-restore.png)
+_Backup utilities for exporting and restoring the offline SQLite database and biometric profiles via encrypted archives._
+
+</details>
+
 ## Performance
 
 - **No GPU Required:** Real-time matching on standard CPUs.
@@ -59,11 +108,12 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 ## Offline-First Behavior
 
 Facenox Desktop continues to work locally when internet access is unavailable:
+
 - Recognition and liveness verification remain functional.
 - Attendance is recorded and stored in a local SQLite database.
 - Settings, backups, and member management remain accessible.
 - Remote Sync and Dashboard pairing resume automatically when connectivity returns.
-    (Completely optional; sync is disabled by default and only active when your device is paired.)
+  (Completely optional; sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
 > **Privacy Assurance:** Remote Sync and Dashboard pairing only push attendance snapshots and metadata. Facenox **never uploads raw face images or face embeddings** to the cloud; matching always stays on your hardware.
@@ -71,15 +121,19 @@ Facenox Desktop continues to work locally when internet access is unavailable:
 ## How it works
 
 ### Where is the data stored?
+
 Everything is stored in a local SQLite database on your machine. Biometric templates are encrypted at rest.
 
 ### Does it need the internet?
+
 No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% locally. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
 
 ### What hardware do I need?
+
 It's designed for standard CPUs and has been tested on hardware as old as 2nd-gen Intel i7 (2011), 4th-gen i3 (2015), and 8th-gen i5 (2018) laptops. No dedicated GPU or CUDA setup is required.
 
 ### How do I protect my data?
+
 Since Facenox operates 100% locally, we cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive. We recommend regular backups to external storage or a secure organizational cloud.
 
 ## Roadmap
@@ -93,7 +147,7 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 
 > [!IMPORTANT]
 > **Security & Trust**
-> 
+>
 > - **Automated Audits:** Every commit is analyzed by [GitHub CodeQL](https://codeql.github.com/) to detect and prevent security vulnerabilities.
 > - **Build Transparency:** All release binaries are built automatically via GitHub Actions. This ensures that the software you download is a direct, untampered reflection of the open-source code in this repository.
 > - **Privacy First:** We follow a "Zero-Knowledge" architecture. Your biometric data never leaves your device.
@@ -112,13 +166,13 @@ Facenox is in active development. Until code-signing is finalized in a future re
 
 > [!WARNING]  
 > **Windows SmartScreen:** If blocked, click **More info** then **Run anyway**.
-> 
-> <img src="app/public/assets/smartscreen_warning.png" alt="Windows SmartScreen warning" width="350">
+>
+> <img src="docs/assets/smartscreen_warning.png" alt="Windows SmartScreen warning" width="350">
 
 > [!TIP]  
 > **macOS Gatekeeper:** If blocked, **Right-click** the app, select **Open**, then confirm the prompt.
-> 
-> <img src="app/public/assets/macos_gatekeeper_warning.png" alt="macOS Gatekeeper warning" width="350">
+>
+> <img src="docs/assets/macos_gatekeeper_warning.png" alt="macOS Gatekeeper warning" width="350">
 
 ## Documentation
 
@@ -134,6 +188,7 @@ Facenox is in active development. Until code-signing is finalized in a future re
 ## Tech Stack
 
 ### Local Backend
+
 - **Runtime:** Python 3.10+ (FastAPI)
 - **Inference:** ONNX Runtime, OpenCV
 - **Tracking:** ByteTrack (High-performance MOT)
@@ -141,6 +196,7 @@ Facenox is in active development. Until code-signing is finalized in a future re
 - **Storage:** SQLite, SQLAlchemy, Alembic
 
 ### Desktop App
+
 - **Framework:** Electron, React 19
 - **Build Tooling:** Vite, TypeScript, Tailwind CSS
 
