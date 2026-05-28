@@ -154,6 +154,6 @@ describe("useReportTransform", () => {
     )
 
     expect(result.current.daysTracked).toBe(12)
-    expect(result.current.allColumns).toHaveLength(7)
+    expect(result.current.allColumns).toHaveLength(8)
   })
 })
