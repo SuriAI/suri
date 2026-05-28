@@ -63,7 +63,7 @@ Facenox Desktop continues to work locally when internet access is unavailable:
 - Attendance is recorded and stored in a local SQLite database.
 - Settings, backups, and member management remain accessible.
 - Remote Sync and Dashboard pairing resume automatically when connectivity returns.
-    (You can turn them off and never sync to the dashboard in settings.)
+    (Completely optional; sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
 > **Privacy Assurance:** Remote Sync and Dashboard pairing only push attendance snapshots and metadata. Facenox **never uploads raw face images or face embeddings** to the cloud; matching always stays on your hardware.
