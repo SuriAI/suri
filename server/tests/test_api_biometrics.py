@@ -101,6 +101,14 @@ class DummyFaceRecognizer:
     def set_similarity_threshold(self, threshold: float) -> None:
         self.threshold = threshold
 
+    async def export_embeddings(
+        self, organization_id: str | None = None
+    ) -> dict[str, np.ndarray]:
+        return {
+            person_id: np.zeros((128,), dtype=np.float32)
+            for person_id in self.enrolled[organization_id].keys()
+        }
+
 
 class DummyFaceDetector:
     def set_confidence_threshold(self, _value: float) -> None:
@@ -154,6 +162,9 @@ class DummyLivenessDetector:
     ) -> dict:
         return current_liveness
 
+    def clear_namespace(self, _namespace: str | None = None) -> None:
+        return None
+
 
 class SuspiciousLivenessDetector:
     def detect_faces(self, _image: np.ndarray, faces: list[dict]) -> list[dict]:
@@ -177,6 +188,9 @@ class SuspiciousLivenessDetector:
     ) -> dict:
         return current_liveness
 
+    def clear_namespace(self, _namespace: str | None = None) -> None:
+        return None
+
 
 class PreserveGuidanceLivenessDetector:
     def detect_faces(self, _image: np.ndarray, faces: list[dict]) -> list[dict]:
@@ -197,6 +211,9 @@ class PreserveGuidanceLivenessDetector:
         return enriched
 
     def update_face_identity(self, _track_id: int, _person_id: str | None) -> None:
+        return None
+
+    def clear_namespace(self, _namespace: str | None = None) -> None:
         return None
 
 
