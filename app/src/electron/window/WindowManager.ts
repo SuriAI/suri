@@ -8,7 +8,6 @@ import { getWindowIconPath } from "../iconPaths.js"
 
 const window_filename = fileURLToPath(import.meta.url)
 const window_dirname = path.dirname(window_filename)
-const FINAL_SPLASH_HOLD_MS = 300
 
 export class WindowManager {
   static progressFromStep(step: number, totalSteps = state.startupTotalSteps): number {
@@ -56,7 +55,7 @@ export class WindowManager {
     const splashPath =
       isDev() ?
         path.join(app.getAppPath(), "out", "main", "splash.html")
-      : path.join(window_dirname, "splash.html")
+        : path.join(window_dirname, "splash.html")
     splash.loadFile(splashPath)
     splash.webContents.once("did-finish-load", () => {
       state.isSplashReady = true
@@ -180,19 +179,12 @@ export class WindowManager {
   }
 
   private static scheduleSplashRevealAfterCompletion(): void {
-    if (state.splashRevealTimeout) {
-      return
-    }
-
-    const completedAt = state.splashCompletedAt || Date.now()
-    const elapsed = Date.now() - completedAt
-    const remainingDelay = Math.max(0, FINAL_SPLASH_HOLD_MS - elapsed)
-
     state.pendingRevealAfterSplashRender = false
-    state.splashRevealTimeout = setTimeout(() => {
+    if (state.splashRevealTimeout) {
+      clearTimeout(state.splashRevealTimeout)
       state.splashRevealTimeout = null
-      WindowManager.finalizeSplashReveal()
-    }, remainingDelay)
+    }
+    WindowManager.finalizeSplashReveal()
   }
 
   static async revealMainWindowFromSplash(): Promise<void> {
@@ -246,6 +238,7 @@ export class WindowManager {
         webgl: true,
         zoomFactor: 1.0,
         devTools: isDev(),
+        backgroundThrottling: false,
       },
       titleBarStyle: "hidden",
       trafficLightPosition: { x: 12, y: 10 },
@@ -262,7 +255,7 @@ export class WindowManager {
       mainWindow.loadFile(path.join(window_dirname, "../renderer/index.html"))
     }
 
-    mainWindow.once("ready-to-show", () => {})
+    mainWindow.once("ready-to-show", () => { })
 
     mainWindow.on("maximize", () => {
       mainWindow.webContents.send("window:maximized")
