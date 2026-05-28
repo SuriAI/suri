@@ -1,10 +1,12 @@
 import { useState } from "react"
 import { useUIStore } from "@/components/main/stores/uiStore"
 import { Modal } from "@/components/common"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function IntroModal() {
   const { setHasSeenIntro } = useUIStore()
   const [step, setStep] = useState(0)
+  const [isOpen, setIsOpen] = useState(true)
 
   const steps = [
     {
@@ -12,8 +14,9 @@ export function IntroModal() {
       content: (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-white/80">
-            Facenox is a <strong>real-time</strong> attendance system built for privacy. Everything
-            is processed on this device to keep data secure and under local control.
+            Facenox is an <strong>offline-first, privacy-focused</strong> face recognition system
+            designed for real-time attendance tracking. Everything is processed directly on this
+            device to keep your information secure and under local control.
           </p>
           <p className="text-xs text-white/65">
             Here is a quick overview of how information is protected.
@@ -25,15 +28,13 @@ export function IntroModal() {
       title: "No Photos Stored",
       content: (
         <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-[rgba(22,28,36,0.62)] p-4">
-            <p className="text-sm leading-relaxed text-white/90">
-              Facenox <strong>never saves actual photos</strong> of people. Instead, it creates a
-              secure piece of data called a face template.
-            </p>
-          </div>
+          <p className="text-sm leading-relaxed text-white/80">
+            Facenox <strong>never saves actual photos</strong> of people. Instead, it creates a
+            secure face template.
+          </p>
           <p className="text-xs leading-relaxed text-white/65">
-            This data is encrypted and cannot be turned back into a photo, keeping everyone&apos;s
-            identity private.
+            This template is encrypted and cannot be turned back into a photo, keeping
+            everyone&apos;s biometric identity private and safe from data breaches.
           </p>
         </div>
       ),
@@ -42,14 +43,13 @@ export function IntroModal() {
       title: "It stays on this computer",
       content: (
         <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-[rgba(22,28,36,0.62)] p-4">
-            <p className="text-sm leading-relaxed text-white/90">
-              All face recognition and data storage happen <strong>only on this machine</strong>.
-            </p>
-          </div>
+          <p className="text-sm leading-relaxed text-white/80">
+            All face detection, tracking, and recognition are processed{" "}
+            <strong>entirely on this device</strong>.
+          </p>
           <p className="text-xs leading-relaxed text-white/65">
-            No data is sent to the internet or any remote services unless you explicitly choose to
-            sync it with the dashboard later.
+            Your biometric face template never leaves this machine. Only basic profile info (like
+            names) and attendance logs are shared if you choose to sync with the dashboard.
           </p>
         </div>
       ),
@@ -59,19 +59,19 @@ export function IntroModal() {
       content: (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-white/80">
-            Facenox is built to follow privacy standards like the{" "}
-            <strong>Philippine Data Privacy Act</strong> and <strong>GDPR</strong>.
+            Facenox aligns with global privacy standards, ensuring your biometric information is
+            protected.
           </p>
           <p className="text-xs leading-relaxed text-white/65">
-            As an{" "}
+            Our codebase is fully{" "}
             <a
               href="https://github.com/facenox/facenox"
               target="_blank"
               rel="noopener noreferrer"
               className="text-cyan-400/80 underline decoration-cyan-400/30 underline-offset-4 transition-colors hover:text-cyan-400">
-              open-source project
+              open-source
             </a>
-            , the source code is transparent to ensure data is handled correctly.
+            , offering complete transparency into how we manage and secure local assets.
           </p>
 
           <div className="border-t border-white/5 pt-2 text-center">
@@ -85,8 +85,8 @@ export function IntroModal() {
           </div>
 
           <p className="pt-1 text-center text-[11px] text-white/55 italic">
-            By clicking &quot;Finish&quot;, you agree that you understand how data is handled
-            locally.
+            By clicking &quot;Finish&quot;, you acknowledge the on-device management of your
+            personal information.
           </p>
         </div>
       ),
@@ -97,7 +97,10 @@ export function IntroModal() {
     if (step < steps.length - 1) {
       setStep(step + 1)
     } else {
-      setHasSeenIntro(true)
+      setIsOpen(false)
+      setTimeout(() => {
+        setHasSeenIntro(true)
+      }, 250)
     }
   }
 
@@ -110,7 +113,7 @@ export function IntroModal() {
   const currentStep = steps[step]
 
   return (
-    <Modal isOpen={true} maxWidth="md" hideCloseButton={true}>
+    <Modal isOpen={isOpen} maxWidth="md" hideCloseButton={true}>
       <div className="relative -m-5 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Progress Bar */}
         <div className="absolute top-0 right-0 left-0 h-1 bg-[rgba(255,255,255,0.06)]">
@@ -121,11 +124,23 @@ export function IntroModal() {
         </div>
 
         <div className="p-10">
-          <div className="mt-2 mb-10">
-            <h2 className="mb-6 text-2xl font-bold tracking-tight text-white">
-              {currentStep.title}
-            </h2>
-            <div className="flex min-h-[120px] flex-col justify-center">{currentStep.content}</div>
+          <div className="mt-2 mb-10 overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                style={{ willChange: "opacity, transform" }}>
+                <h2 className="mb-6 text-2xl font-bold tracking-tight text-white">
+                  {currentStep.title}
+                </h2>
+                <div className="flex min-h-[120px] flex-col justify-center">
+                  {currentStep.content}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <div className="mt-8 flex items-center justify-between">
