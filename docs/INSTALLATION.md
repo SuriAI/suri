@@ -32,10 +32,9 @@ cd facenox
 
 ### 2. Create the Python environment
 
-The desktop app looks for a Python interpreter in the local server virtual environment first, so create the virtual environment inside `server/venv`.
+The desktop app automatically looks for a Python interpreter in the root directory's virtual environment (`venv/`), so create it at the project root.
 
 ```bash
-cd server
 python -m venv venv
 ```
 
@@ -52,7 +51,7 @@ source venv/bin/activate
 Install backend dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r server/requirements.txt
 ```
 
 On Linux, `opencv-python` also depends on system GLib libraries that are not bundled in the Python wheel. If backend startup fails with an error like `ImportError: libgthread-2.0.so.0: cannot open shared object file`, install the GLib runtime from your distro first.
@@ -70,33 +69,44 @@ sudo apt install libglib2.0-0
 sudo dnf install glib2
 ```
 
-Optional dependency sets:
+Optional dependency sets (run inside `server/` or point to it):
 
 ```bash
 # Formatter and linter
-pip install -r requirements-dev.txt
+pip install -r server/requirements-dev.txt
 
 # PyInstaller packaging/build dependencies
-pip install -r requirements-build.txt
+pip install -r server/requirements-build.txt
 ```
 
 ### 3. Install desktop dependencies
 
+Since this is a `pnpm` workspace, install all project dependencies directly from the repository root:
+
 ```bash
-cd ../app
 pnpm install
 ```
 
 ### 4. Start the desktop app
 
-From the repository root:
+From the repository root, you can start the development workspace using either of these methods:
 
+**Method A: Complete Workspace (starts backend and frontend automatically)**
 ```bash
-cd ..
+./dev-start.sh
+```
+
+**Method B: Start Electron Frontend only (Electron will automatically spawn the backend in the background)**
+```bash
 pnpm dev
 ```
 
-This starts the Electron development app. The app is responsible for starting the local Python backend. You do not need to run the FastAPI server separately for normal desktop development.
+> [!NOTE]
+> You can also run the development commands from any subdirectory inside the workspace. For example, if you are inside the `server/` directory, you can run the dev environment using the pnpm filter flag:
+> ```bash
+> pnpm --filter facenox dev
+> ```
+
 
 ## Optional GPU Runtime
 
