@@ -27,7 +27,9 @@ def signal_handler(signum, _frame):
     signal_name = (
         "SIGINT"
         if signum == signal.SIGINT
-        else "SIGTERM" if signum == signal.SIGTERM else f"Signal {signum}"
+        else "SIGTERM"
+        if signum == signal.SIGTERM
+        else f"Signal {signum}"
     )
     print(f"\nReceived {signal_name} - shutting down gracefully...")
     sys.exit(0)

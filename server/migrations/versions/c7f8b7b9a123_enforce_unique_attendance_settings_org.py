@@ -23,7 +23,8 @@ def upgrade() -> None:
     conn = op.get_bind()
 
     # Keep the newest row for each org before we enforce uniqueness.
-    conn.execute(sa.text("""
+    conn.execute(
+        sa.text("""
             DELETE FROM attendance_settings
             WHERE organization_id IS NOT NULL
               AND id NOT IN (
@@ -32,7 +33,8 @@ def upgrade() -> None:
                 WHERE organization_id IS NOT NULL
                 GROUP BY organization_id
               )
-            """))
+            """)
+    )
 
     with op.batch_alter_table("attendance_settings", schema=None) as batch_op:
         batch_op.drop_index("ix_attendance_settings_organization_id")

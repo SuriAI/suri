@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import numpy as np
 import ulid
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Body, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 
@@ -69,7 +69,7 @@ class BackupImportRequest(BaseModel):
 
 @router.post("/export")
 async def export_backup(
-    password: Optional[str] = None,
+    password: Optional[str] = Body(None),
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """
@@ -155,9 +155,9 @@ async def export_backup(
             from core.lifespan import face_recognizer
 
             if face_recognizer:
-                persons: dict[str, np.ndarray] = (
-                    await face_recognizer.export_embeddings(repo.organization_id)
-                )
+                persons: dict[
+                    str, np.ndarray
+                ] = await face_recognizer.export_embeddings(repo.organization_id)
                 for person_id, embedding in persons.items():
                     arr = embedding.astype(np.float32)
                     biometrics.append(
@@ -510,8 +510,8 @@ async def import_backup(
 
 @router.post("/import-encrypted", response_model=SuccessResponse)
 async def import_encrypted_backup(
-    password: str,
-    blob_b64: str,
+    password: str = Body(...),
+    blob_b64: str = Body(...),
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """Decrypt and import a .facenox backup file."""

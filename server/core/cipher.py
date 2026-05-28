@@ -193,22 +193,20 @@ def encrypt_local_data(plaintext: bytes) -> bytes:
     return iv + encrypted
 
 
+class DecryptionError(Exception):
+    """Raised when local data decryption fails."""
+
+
 def decrypt_local_data(blob: bytes) -> bytes:
     """Decrypt data from local SQLite database storage."""
     key = get_machine_key()
     if len(blob) < IV_SIZE:
-        return blob  # Too short to be encrypted with our scheme
+        raise DecryptionError("Blob too short to be encrypted data")
 
     iv = blob[:IV_SIZE]
     ciphertext = blob[IV_SIZE:]
     try:
         return AESGCM(key).decrypt(iv, ciphertext, None)
-    except Exception:
-        # Fallback for backwards compatibility with unencrypted legacy databases.
-        # Log clearly so operators are aware unencrypted data is present.
-        logger.warning(
-            "decrypt_local_data: decryption failed - returning raw blob. "
-            "This is expected only during first-run migration of legacy unencrypted data. "
-            "If this message persists, the local database may be corrupted or tampered."
-        )
-        return blob
+    except Exception as e:
+        logger.error(f"decrypt_local_data: decryption failed: {e}")
+        raise DecryptionError("Failed to decrypt local data") from e
