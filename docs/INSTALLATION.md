@@ -32,11 +32,14 @@ cd facenox
 
 ### 2. Create the Python environment
 
-The desktop app automatically looks for a Python interpreter in the root directory's virtual environment (`venv/`), so create it at the project root.
+The desktop app looks for a Python interpreter in the virtual environment. By default, it is recommended to create it at the project root (`venv/`):
 
 ```bash
 python -m venv venv
 ```
+
+> [!TIP]
+> **Dual-Venv Auto-Detection**: For maximum developer flexibility, the application's process manager (`BackendProcessManager`) dynamically detects virtual environments located in **either** the project root (`/venv`) or the server subdirectory (`/server/venv`). Root-level `venv/` remains the recommended standard as it integrates natively with root shell tooling (like `dev-start.sh`).
 
 Activate it:
 
