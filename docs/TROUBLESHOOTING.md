@@ -170,15 +170,14 @@ When reporting this issue, include:
 
 ## Recognition works slowly
 
-The default setup uses CPU inference. That is the safest development baseline.
+Facenox is designed exclusively for CPU execution. It runs local ONNX Runtime inference using optimized CPU vector instructions (such as AVX2 on x86 or NEON on ARM). It does not compile, distribute, or support GPU runtimes (like CUDA) to keep package sizes lightweight and ensure maximum system compatibility.
 
 If performance is lower than expected:
 
-- close other camera-heavy apps
-- use a smaller test group first
-- verify that you did not accidentally install an incompatible GPU runtime
+- Ensure your CPU supports AVX2 (x86_64) or NEON (ARM/Apple Silicon) instructions.
+- Close other camera-heavy or high-CPU applications.
+- Reduce your active attendance group size for testing.
 
-Do not assume GPU inference is broken just because CPU performance is slower. CPU is the default path.
 
 ## Management Dashboard Beta pairing fails
 
