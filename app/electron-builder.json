@@ -49,6 +49,11 @@
   "mac": {
     "target": "dmg",
     "artifactName": "Facenox-macOS-v${version}-${arch}.${ext}",
+    "entitlements": "entitlements.mac.plist",
+    "entitlementsInherit": "entitlements.mac.plist",
+    "extendInfo": {
+      "NSCameraUsageDescription": "This app requires camera access to capture video frames for secure, real-time facial recognition and attendance tracking."
+    },
     "extraResources": [
       {
         "from": "../server/dist/server",
