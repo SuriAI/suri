@@ -27,8 +27,8 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <h3 className="mb-2 text-sm font-medium text-white">Data remains local</h3>
           <p className="text-xs leading-relaxed text-white/65">
             Facenox stores biometric profiles, attendance records, and settings locally on this
-            device by default. The desktop app performs face detection, recognition, and liveness
-            checks locally and does not depend on a hosted biometric service.
+            device by default. The desktop app performs face detection, tracking, liveness
+            verification, and recognition locally and does not depend on a hosted biometric service.
           </p>
         </section>
 
@@ -44,8 +44,9 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
         <section>
           <h3 className="mb-2 text-sm font-medium text-white">Works offline</h3>
           <p className="text-xs leading-relaxed text-white/65">
-            Face detection, recognition, and attendance recording work without internet. This
-            ensures privacy and allows use in environments with limited or no network access.
+            Face detection, tracking, liveness verification, and recognition work entirely without
+            internet. This ensures privacy and allows use in environments with limited or no network
+            access.
           </p>
         </section>
 

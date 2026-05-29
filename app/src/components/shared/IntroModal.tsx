@@ -44,7 +44,7 @@ export function IntroModal() {
       content: (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed text-white/80">
-            All face detection, tracking, and recognition are processed{" "}
+            All face detection, tracking, liveness verification, and recognition are processed{" "}
             <strong>entirely on this device</strong>.
           </p>
           <p className="text-xs leading-relaxed text-white/65">
