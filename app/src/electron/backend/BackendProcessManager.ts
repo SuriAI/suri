@@ -493,10 +493,18 @@ export class BackendProcessManager {
 
   private async findPythonExecutable(): Promise<string> {
     const possiblePaths = [
+      // Support virtual environments at the project root folder for standard monorepos.
       path.join(process.cwd(), "..", "venv", "Scripts", "python.exe"),
       path.join(process.cwd(), "..", "venv", "bin", "python"),
       path.join(process.cwd(), "venv", "Scripts", "python.exe"),
       path.join(process.cwd(), "venv", "bin", "python"),
+
+      // Support virtual environments inside the server subdirectory to prevent crashes if the developer ran local build scripts beforehand.
+      path.join(process.cwd(), "..", "server", "venv", "Scripts", "python.exe"),
+      path.join(process.cwd(), "..", "server", "venv", "bin", "python"),
+      path.join(process.cwd(), "server", "venv", "Scripts", "python.exe"),
+      path.join(process.cwd(), "server", "venv", "bin", "python"),
+
       "python",
       "python3",
       "python.exe",
