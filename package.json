@@ -20,10 +20,5 @@
     "format": "npm run format:app && npm run format:server",
     "fix": "npm run lint && npm run format"
   },
-  "license": "AGPL-3.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron"
-    ]
-  }
+  "license": "AGPL-3.0"
 }
