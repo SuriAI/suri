@@ -147,6 +147,7 @@ export class BackgroundSyncManager {
   private debounceTimer: NodeJS.Timeout | null = null
   private isSyncing = false
   private reconnectAttempts = 0
+  private eventStreamController: AbortController | null = null
 
   private getSyncConfig() {
     return {
@@ -247,9 +248,13 @@ export class BackgroundSyncManager {
     const url = `${remoteBaseUrl.replace(/\/+$/, "")}/api/sync/events?deviceId=${deviceId}`
     console.log(`[Sync] Connecting to real-time event stream: ${url}`)
 
+    this.eventStreamController = new AbortController()
+    const { signal } = this.eventStreamController
+
     try {
       // Using global fetch with ReadableStream for SSE in Electron Main
       const response = await fetch(url, {
+        signal,
         headers: {
           Authorization: `Bearer ${deviceToken}`,
           Accept: "text/event-stream",
@@ -287,7 +292,11 @@ export class BackgroundSyncManager {
           }
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log("[Sync] Event stream aborted cleanly.")
+        return
+      }
       console.warn("[Sync] Event stream error, reconnecting...", error)
       this.reconnectEventStream()
     }
@@ -304,7 +313,10 @@ export class BackgroundSyncManager {
   }
 
   private stopEventStream() {
-    // Note: In a future iteration, we should use AbortController to signal the fetch loop to stop.
+    if (this.eventStreamController) {
+      this.eventStreamController.abort()
+      this.eventStreamController = null
+    }
   }
 
   stop() {
