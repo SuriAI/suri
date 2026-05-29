@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Enable App Sandboxing -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    
+    <!-- Network client (to call local sidecar server and remote dashboard) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    
+    <!-- Network server (in case IPC requires local binding) -->
+    <key>com.apple.security.network.server</key>
+    <true/>
+    
+    <!-- Camera Access (Mandatory for webcam stream) -->
+    <key>com.apple.security.device.camera</key>
+    <true/>
+    
+    <!-- Audio Input Access (in case audio feedback or video log captures it) -->
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+    
+    <!-- Hardened Runtime JIT compilation flags (Mandatory for fast ONNX Runtime execution) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-executable-page-protection</key>
+    <true/>
+</dict>
+</plist>
