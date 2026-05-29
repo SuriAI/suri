@@ -324,56 +324,76 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
                 className="flex h-full min-h-[200px] flex-col">
-                {recentRecords.length === 0 ?
-                  <div className="flex flex-1 flex-col items-center justify-center text-white/55">
-                    <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
-                    <div className="text-[12px] font-medium">
-                      No activity logged{" "}
-                      {dateFilter === "today" ?
-                        "today"
-                      : dateFilter === "yesterday" ?
-                        "yesterday"
-                      : "this week"}
-                    </div>
-                  </div>
-                : filteredRecords.length === 0 ?
-                  <div className="flex flex-1 flex-col items-center justify-center text-white/55">
-                    <i className="fa-solid fa-ghost mb-3 text-2xl" />
-                    <div className="text-[12px] font-medium">No results found</div>
-                    <div className="mt-1 text-[11px]">
-                      No activity matched &quot;{activitySearch}&quot;
-                    </div>
-                  </div>
-                : <div className="space-y-1">
-                    {filteredRecords.slice(0, 50).map((record) => {
-                      const displayName = displayNameMap.get(record.person_id) || "Unknown"
+                <AnimatePresence mode="wait">
+                  {recentRecords.length === 0 ?
+                    <motion.div
+                      key="no-activity"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      className="flex flex-1 flex-col items-center justify-center text-white/55">
+                      <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
+                      <div className="text-[12px] font-medium">
+                        No activity logged{" "}
+                        {dateFilter === "today" ?
+                          "today"
+                        : dateFilter === "yesterday" ?
+                          "yesterday"
+                        : "this week"}
+                      </div>
+                    </motion.div>
+                  : filteredRecords.length === 0 ?
+                    <motion.div
+                      key="no-results"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      className="flex flex-1 flex-col items-center justify-center text-white/55">
+                      <i className="fa-solid fa-ghost mb-3 text-2xl" />
+                      <div className="text-[12px] font-medium">No results found</div>
+                      <div className="mt-1 text-[11px]">
+                        No activity matched &quot;{activitySearch}&quot;
+                      </div>
+                    </motion.div>
+                  : <motion.div
+                      key="results"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      className="space-y-1">
+                      {filteredRecords.slice(0, 50).map((record) => {
+                        const displayName = displayNameMap.get(record.person_id) || "Unknown"
 
-                      return (
-                        <div
-                          key={record.id}
-                          className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
-                          <div className="flex items-center gap-4">
-                            <div className="flex flex-col">
-                              <span className="text-[13px] font-medium text-white transition-colors">
-                                {displayName}
-                              </span>
-                              <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
-                                <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
-                                <span>{formatTime(record.timestamp)}</span>
+                        return (
+                          <div
+                            key={record.id}
+                            className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
+                            <div className="flex items-center gap-4">
+                              <div className="flex flex-col">
+                                <span className="text-[13px] font-medium text-white transition-colors">
+                                  {displayName}
+                                </span>
+                                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
+                                  <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
+                                  <span>{formatTime(record.timestamp)}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-4">
-                            <span className="text-[12px] font-medium text-white/55">
-                              {getRelativeTime(record.timestamp)}
-                            </span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-[12px] font-medium text-white/55">
+                                {getRelativeTime(record.timestamp)}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                }
+                        )
+                      })}
+                    </motion.div>
+                  }
+                </AnimatePresence>
               </motion.div>
             }
           </AnimatePresence>

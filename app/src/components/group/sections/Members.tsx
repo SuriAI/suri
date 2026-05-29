@@ -478,38 +478,51 @@ export function Members({
               WebkitMaskImage:
                 "linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)",
             }}>
-            {filteredMembers.length === 0 ?
-              <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
-                <div className="text-[11px] font-medium tracking-wide text-white/55">
-                  {memberSearch.trim() ?
-                    `No results found for "${memberSearch}"`
-                  : enrollmentFilter === "enrolled" ?
-                    "No enrolled members"
-                  : enrollmentFilter === "non-enrolled" ?
-                    "All members are enrolled"
-                  : "No members found in this group"}
-                </div>
-              </div>
-            : <div
-                className="flex w-full flex-col gap-1"
-                style={{
-                  paddingTop: `${paddingTop}px`,
-                  paddingBottom: `${paddingBottom}px`,
-                }}>
-                {visibleMembers.map((member) => (
-                  <MemberRow
-                    key={member.person_id}
-                    member={member}
-                    isSelected={selectedIds.has(member.person_id)}
-                    isSelectionMode={selectedIds.size > 0}
-                    onToggleSelect={toggleSelect}
-                    onEdit={onEdit}
-                    onDelete={setMemberToDelete}
-                    onResetFace={handleResetFace}
-                  />
-                ))}
-              </div>
-            }
+            <AnimatePresence mode="wait">
+              {filteredMembers.length === 0 ?
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
+                  <div className="text-[11px] font-medium tracking-wide text-white/55">
+                    {memberSearch.trim() ?
+                      `No results found for "${memberSearch}"`
+                    : enrollmentFilter === "enrolled" ?
+                      "No enrolled members"
+                    : enrollmentFilter === "non-enrolled" ?
+                      "All members are enrolled"
+                    : "No members found in this group"}
+                  </div>
+                </motion.div>
+              : <motion.div
+                  key="results"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex w-full flex-col gap-1"
+                  style={{
+                    paddingTop: `${paddingTop}px`,
+                    paddingBottom: `${paddingBottom}px`,
+                  }}>
+                  {visibleMembers.map((member) => (
+                    <MemberRow
+                      key={member.person_id}
+                      member={member}
+                      isSelected={selectedIds.has(member.person_id)}
+                      isSelectionMode={selectedIds.size > 0}
+                      onToggleSelect={toggleSelect}
+                      onEdit={onEdit}
+                      onDelete={setMemberToDelete}
+                      onResetFace={handleResetFace}
+                    />
+                  ))}
+                </motion.div>
+              }
+            </AnimatePresence>
           </div>
 
           {/* Consent banner */}
