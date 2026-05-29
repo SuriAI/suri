@@ -87,7 +87,7 @@ Since this is a `pnpm` workspace, install all project dependencies directly from
 pnpm install
 ```
 
-### 4. Start the desktop app
+### 4. Start the desktop appan
 
 From the repository root, you can start the development workspace using either of these methods:
 
