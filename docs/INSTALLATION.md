@@ -113,25 +113,21 @@ pnpm dev
 > pnpm --filter facenox dev
 > ```
 
-
-## Optional GPU Runtime
-
-The default requirements install `onnxruntime` for CPU execution. If you are deliberately testing GPU inference, replace it with the GPU build that matches your environment and drivers.
-
-Do not switch to the GPU runtime unless you actually need it. CPU is the safer default for most contributors.
-
 ## Build Commands
 
-Run these from `app/`:
+You can compile and package the entire application directly from the repository root:
 
 ```bash
+# Build both frontend and backend executable
 pnpm build
+
+# Package the application for specific targets
 pnpm dist:win
 pnpm dist:mac
 pnpm dist:linux
 ```
 
-Desktop build output is written under `app/dist` and related build folders used by Electron Builder.
+Desktop build output is written under `app/dist/` and related build folders.
 
 When packaging the Python backend directly, make sure the build environment has:
 

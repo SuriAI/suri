@@ -6,25 +6,32 @@ This page covers the problems you are most likely to hit while running Facenox f
 
 Check the Python environment first.
 
-- Confirm that `server/venv` exists.
+- Confirm that the virtual environment (`venv/` at the repository root or `server/venv/` inside the server directory) exists.
 - Confirm that the virtual environment contains the packages from `server/requirements.txt`.
-- If needed, recreate the environment:
+- If needed, recreate the environment at the repository root:
 
 ```bash
-cd server
+# Recreate the virtual environment at the project root
 python -m venv venv
+
+# Windows
 venv\Scripts\activate
-pip install -r requirements.txt
+
+# macOS / Linux
+source venv/bin/activate
+
+# Install requirements
+pip install -r server/requirements.txt
 ```
 
-If you also need formatting/linting tools or backend packaging tools, install:
+If you also need formatting/linting tools or backend packaging tools, run:
 
 ```bash
-pip install -r requirements-dev.txt
-pip install -r requirements-build.txt
+pip install -r server/requirements-dev.txt
+pip install -r server/requirements-build.txt
 ```
 
-The Electron app looks for a Python interpreter in the server virtual environment before falling back to system Python.
+The Electron app's process manager dynamically searches for a Python interpreter in both the repository root (`venv/`) and the backend directory (`server/venv/`) before falling back to the system Python.
 
 ## Port `8700` is already in use
 
@@ -79,8 +86,10 @@ sudo dnf install glib2
 After installing the package, verify the backend dependency directly:
 
 ```bash
-cd server
+# Activate the root virtual environment
 source venv/bin/activate
+
+# Verify opencv imports successfully
 python -c "import cv2; print(cv2.__version__)"
 ```
 
