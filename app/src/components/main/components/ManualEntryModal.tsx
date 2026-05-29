@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { Modal } from "@/components/common"
 import { Tooltip, useDialog, InfoPopover } from "@/components/shared"
@@ -206,67 +207,82 @@ export const ManualEntryModal = ({
           </div>
         )}
 
-        {sortedAllMembers.length > 0 ?
-          <div
-            onScroll={handleScroll}
-            className="custom-scroll max-h-52 overflow-x-hidden overflow-y-auto pr-1">
-            <div
-              className="flex w-full flex-col gap-1"
-              style={{
-                paddingTop: `${paddingTop}px`,
-                paddingBottom: `${paddingBottom}px`,
-              }}>
-              {visibleMembers.map((member) => {
-                const isPresent = presentPersonIds.has(member.person_id)
-                const isEntrySubmitting = submittingId === member.person_id
-                const hasFace =
-                  faceDataMap.size === 0 ? null : (faceDataMap.get(member.person_id) ?? false)
+        <AnimatePresence mode="wait">
+          {sortedAllMembers.length > 0 ?
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}>
+              <div
+                onScroll={handleScroll}
+                className="custom-scroll max-h-52 overflow-x-hidden overflow-y-auto pr-1">
+                <div
+                  className="flex w-full flex-col gap-1"
+                  style={{
+                    paddingTop: `${paddingTop}px`,
+                    paddingBottom: `${paddingBottom}px`,
+                  }}>
+                  {visibleMembers.map((member) => {
+                    const isPresent = presentPersonIds.has(member.person_id)
+                    const isEntrySubmitting = submittingId === member.person_id
+                    const hasFace =
+                      faceDataMap.size === 0 ? null : (faceDataMap.get(member.person_id) ?? false)
 
-                return (
-                  <div
-                    key={member.person_id}
-                    onClick={() => !isPresent && handleManualEntry(member.person_id)}
-                    className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
-                      isPresent ?
-                        "cursor-default bg-transparent"
-                      : "cursor-pointer hover:bg-white/5 active:scale-[0.995]"
-                    }`}>
-                    <span className="flex-1 truncate text-[12px] font-bold text-white/70 transition-colors group-hover/item:text-white">
-                      {member.name}
-                    </span>
+                    return (
+                      <div
+                        key={member.person_id}
+                        onClick={() => !isPresent && handleManualEntry(member.person_id)}
+                        className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
+                          isPresent ?
+                            "cursor-default bg-transparent"
+                          : "cursor-pointer hover:bg-white/5 active:scale-[0.995]"
+                        }`}>
+                        <span className="flex-1 truncate text-[12px] font-bold text-white/70 transition-colors group-hover/item:text-white">
+                          {member.name}
+                        </span>
 
-                    <div className="flex min-w-[96px] shrink-0 items-center justify-end">
-                      {isPresent ?
-                        <div className="flex items-center px-2 py-1">
-                          <span className="text-[11px] font-bold text-cyan-400">Present</span>
-                        </div>
-                      : isEntrySubmitting ?
-                        <div className="flex w-24 justify-end pr-2">
-                          <i className="fa-solid fa-spinner fa-spin text-[10px] text-cyan-400"></i>
-                        </div>
-                      : <>
-                          <div className="hidden items-center gap-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-cyan-400 transition-all group-hover/item:flex hover:bg-cyan-500/20 active:scale-95">
-                            <i className="fa-solid fa-plus text-[8px]"></i>
-                            Mark Present
-                          </div>
-                          {!isPresent && hasFace === false && (
-                            <div className="block px-2 py-1 text-[11px] font-bold tracking-tight text-white/30 transition-opacity group-hover/item:hidden">
-                              Not Enrolled
+                        <div className="flex min-w-[96px] shrink-0 items-center justify-end">
+                          {isPresent ?
+                            <div className="flex items-center px-2 py-1">
+                              <span className="text-[11px] font-bold text-cyan-400">Present</span>
                             </div>
-                          )}
-                        </>
-                      }
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        : <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[rgba(22,28,36,0.44)] py-12">
-            <i className="fa-solid fa-user-slash mb-3 text-xl text-white/10"></i>
-            <p className="text-[11px] font-bold tracking-wider text-white/55">No results found</p>
-          </div>
-        }
+                          : isEntrySubmitting ?
+                            <div className="flex w-24 justify-end pr-2">
+                              <i className="fa-solid fa-spinner fa-spin text-[10px] text-cyan-400"></i>
+                            </div>
+                          : <>
+                              <div className="hidden items-center gap-1.5 rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-cyan-400 transition-all group-hover/item:flex hover:bg-cyan-500/20 active:scale-95">
+                                <i className="fa-solid fa-plus text-[8px]"></i>
+                                Mark Present
+                              </div>
+                              {!isPresent && hasFace === false && (
+                                <div className="block px-2 py-1 text-[11px] font-bold tracking-tight text-white/30 transition-opacity group-hover/item:hidden">
+                                  Not Enrolled
+                                </div>
+                              )}
+                            </>
+                          }
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          : <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-[rgba(22,28,36,0.44)] py-12">
+              <i className="fa-solid fa-user-slash mb-3 text-xl text-white/10"></i>
+              <p className="text-[11px] font-bold tracking-wider text-white/55">No results found</p>
+            </motion.div>
+          }
+        </AnimatePresence>
       </div>
     </Modal>
   )

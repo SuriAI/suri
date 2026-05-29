@@ -8,7 +8,6 @@ import { useFaceCapture } from "@/components/group/sections/enrollment/hooks/use
 import { useDialog } from "@/components/shared"
 import { CameraFeed } from "@/components/group/sections/enrollment/components/CameraFeed"
 import { UploadArea } from "@/components/group/sections/enrollment/components/UploadArea"
-import { MemberSidebar } from "@/components/group/sections/enrollment/components/MemberSidebar"
 import { ResultView } from "@/components/group/sections/enrollment/components/ResultView"
 
 interface FaceCaptureProps {
@@ -37,10 +36,6 @@ export function FaceCapture({
 
   const [source, setSource] = useState<CaptureSource>(initialSource ?? "live")
   const [selectedMemberId, setSelectedMemberId] = useState(preSelectedId ?? "")
-  const [memberSearch, setMemberSearch] = useState("")
-  const [enrollmentFilter, setEnrollmentFilter] = useState<"all" | "enrolled" | "non-enrolled">(
-    "all",
-  )
 
   const memberStatus = useMemo(() => {
     const status = new Map<string, boolean>()
@@ -71,7 +66,6 @@ export function FaceCapture({
     setGlobalError,
     captureProcessedFrame,
     handleEnroll,
-    handleRemoveFaceData,
     resetFrames,
   } = useFaceCapture(group, members, onRefresh, dialog)
 
@@ -128,13 +122,6 @@ export function FaceCapture({
     if (!selectedMemberId) return
     await handleEnroll(selectedMemberId, async () => {}, memberStatus)
   }, [selectedMemberId, handleEnroll, memberStatus])
-
-  const handleWrapperRemoveData = useCallback(
-    async (member: AttendanceMember) => {
-      await handleRemoveFaceData(member, async () => {})
-    },
-    [handleRemoveFaceData],
-  )
 
   const resetWorkflow = useCallback(() => {
     resetFrames()
@@ -225,23 +212,15 @@ export function FaceCapture({
         <AnimatePresence mode="wait">
           {!selectedMemberId ?
             <motion.div
-              key="sidebar"
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className="absolute inset-0 flex min-h-0 flex-col">
-              <MemberSidebar
-                members={members}
-                memberStatus={memberStatus}
-                selectedMemberId={selectedMemberId}
-                onSelectMember={setSelectedMemberId}
-                memberSearch={memberSearch}
-                setMemberSearch={setMemberSearch}
-                enrollmentFilter={enrollmentFilter}
-                setEnrollmentFilter={setEnrollmentFilter}
-                onRemoveFaceData={handleWrapperRemoveData}
-              />
+              key="select-member"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-xs font-medium text-white/55">
+                Select a member to begin enrollment
+              </div>
             </motion.div>
           : <motion.div
               key="camera-viewport"

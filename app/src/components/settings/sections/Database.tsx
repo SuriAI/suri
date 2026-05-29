@@ -350,45 +350,66 @@ export function Database({
         <div className="border-y border-white/5">
           <div
             className={`${isInitialLoad || filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
-            {isInitialLoad ?
-              <div className="flex flex-col items-center justify-center py-12 text-white/20">
-                <i className="fa-solid fa-circle-notch fa-spin mb-3 text-2xl opacity-30" />
-                <div className="text-[12px] font-medium tracking-wide">Syncing directory...</div>
-              </div>
-            : filteredData.length === 0 ?
-              <div className="flex flex-col items-center justify-center py-12 text-white/20">
-                <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
-                <div className="text-[12px] font-medium tracking-wide">No results found</div>
-                {groups.length === 0 && (
-                  <div className="mt-1 text-[11px] text-white/40">
-                    Create a group to begin managing members.
-                  </div>
-                )}
-              </div>
-            : filteredData.map((group) => (
-                <GroupEntry
-                  key={group.id}
-                  group={group}
-                  isExpanded={expandedGroups.has(group.id)}
-                  editingGroup={editingGroup}
-                  editingMember={editingMember}
-                  editValue={editValue}
-                  savingGroup={savingGroup}
-                  savingMember={savingMember}
-                  deletingGroup={deletingGroup}
-                  deletingMember={deletingMember}
-                  onToggle={toggleGroup}
-                  onStartEditingGroup={startEditingGroup}
-                  onStartEditingMember={startEditing}
-                  onEditValueChange={setEditValue}
-                  onSaveGroupEdit={saveGroupEdit}
-                  onSaveMemberEdit={saveEdit}
-                  onCancelEditing={cancelEditing}
-                  onDeleteGroup={handleDeleteGroup}
-                  onDeleteMember={handleDeleteMember}
-                />
-              ))
-            }
+            <AnimatePresence mode="wait">
+              {isInitialLoad ?
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex flex-col items-center justify-center py-12 text-white/20">
+                  <i className="fa-solid fa-circle-notch fa-spin mb-3 text-2xl opacity-30" />
+                  <div className="text-[12px] font-medium tracking-wide">Syncing directory...</div>
+                </motion.div>
+              : filteredData.length === 0 ?
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col items-center justify-center py-12 text-white/20">
+                  <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
+                  <div className="text-[12px] font-medium tracking-wide">No results found</div>
+                  {groups.length === 0 && (
+                    <div className="mt-1 text-[11px] text-white/40">
+                      Create a group to begin managing members.
+                    </div>
+                  )}
+                </motion.div>
+              : <motion.div
+                  key="results"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}>
+                  {filteredData.map((group) => (
+                    <GroupEntry
+                      key={group.id}
+                      group={group}
+                      isExpanded={expandedGroups.has(group.id)}
+                      editingGroup={editingGroup}
+                      editingMember={editingMember}
+                      editValue={editValue}
+                      savingGroup={savingGroup}
+                      savingMember={savingMember}
+                      deletingGroup={deletingGroup}
+                      deletingMember={deletingMember}
+                      onToggle={toggleGroup}
+                      onStartEditingGroup={startEditingGroup}
+                      onStartEditingMember={startEditing}
+                      onEditValueChange={setEditValue}
+                      onSaveGroupEdit={saveGroupEdit}
+                      onSaveMemberEdit={saveEdit}
+                      onCancelEditing={cancelEditing}
+                      onDeleteGroup={handleDeleteGroup}
+                      onDeleteMember={handleDeleteMember}
+                    />
+                  ))}
+                </motion.div>
+              }
+            </AnimatePresence>
           </div>
         </div>
       </section>
