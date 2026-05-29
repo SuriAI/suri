@@ -84,13 +84,16 @@ pip install -r server/requirements-build.txt
 
 ### 3. Install desktop dependencies
 
-Since this is a `pnpm` workspace, install all project dependencies directly from the repository root:
+Since this is a `pnpm` workspace, you must install all project dependencies directly from the repository root:
 
 ```bash
 pnpm install
 ```
 
-### 4. Start the desktop appan
+> [!NOTE]
+> **Workspace-Aware Installation**: Since this project uses a `pnpm` workspace, running `pnpm install` in any subfolder (like `app/`) will automatically traverse up to the root, resolve all workspace projects, and maintain the single root `pnpm-lock.yaml`. However, running it directly from the repository root is recommended as a best practice to maintain a consistent developer workflow.
+
+### 4. Start the desktop app
 
 From the repository root, you can start the development workspace using either of these methods:
 
