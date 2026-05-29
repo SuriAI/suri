@@ -332,8 +332,19 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               </>
             : <>
                 <SectionHeader.Breadcrumb>Preferences</SectionHeader.Breadcrumb>
-                <SectionHeader.Separator />
-                <SectionHeader.Breadcrumb active>{headerProps.title}</SectionHeader.Breadcrumb>
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={activeSection}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 8 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    style={{ display: "inline-flex", alignItems: "center" }}
+                    className="gap-2">
+                    <SectionHeader.Separator />
+                    <SectionHeader.Breadcrumb active>{headerProps.title}</SectionHeader.Breadcrumb>
+                  </motion.div>
+                </AnimatePresence>
               </>
             }
           </SectionHeader.Breadcrumbs>
