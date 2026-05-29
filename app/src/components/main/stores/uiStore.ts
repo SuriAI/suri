@@ -93,7 +93,6 @@ export const useUIStore = create<UIState>((set) => ({
   quickSettings: {
     cameraMirrored: true,
     showRecognitionNames: true,
-    showLandmarks: true,
   },
 
   audioSettings: {

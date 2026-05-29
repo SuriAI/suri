@@ -1,5 +1,4 @@
-import { useEffect, useRef, useCallback, memo, useMemo } from "react"
-import { generateGroupDisplayNames } from "@/utils"
+import { useEffect, useRef, useCallback, memo } from "react"
 
 export type { GroupSection } from "@/components/group/types"
 import type { GroupPanelProps } from "@/components/group/types"
@@ -7,14 +6,7 @@ import type { AttendanceGroup } from "@/types/recognition"
 
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
 import { useGroupData } from "@/components/group/hooks"
-import { Tooltip } from "@/components/shared"
-import {
-  ErrorBanner,
-  GroupContent,
-  GroupModals,
-  GroupSidebar,
-  MobileDrawer,
-} from "@/components/group/components"
+import { ErrorBanner, GroupContent, GroupModals, GroupSidebar } from "@/components/group/components"
 
 function GroupPanelComponent({
   onBack,
@@ -33,20 +25,12 @@ function GroupPanelComponent({
   onSectionChange,
 }: GroupPanelProps) {
   const selectedGroup = useGroupStore((state) => state.selectedGroup)
-  const groups = useGroupStore((state) => state.groups)
-  const selectedGroupDisplayName = useMemo(() => {
-    if (!selectedGroup) return ""
-    const displayNames = generateGroupDisplayNames(groups)
-    const match = displayNames.find((g) => g.id === selectedGroup.id)
-    return match ? match.displayName : selectedGroup.name
-  }, [selectedGroup, groups])
   const error = useGroupStore((state) => state.error)
   const setSelectedGroup = useGroupStore((state) => state.setSelectedGroup)
   const setError = useGroupStore((state) => state.setError)
   const fetchGroups = useGroupStore((state) => state.fetchGroups)
   const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails)
   const setActiveSection = useGroupUIStore((state) => state.setActiveSection)
-  const setIsMobileDrawerOpen = useGroupUIStore((state) => state.setIsMobileDrawerOpen)
   const openCreateGroup = useGroupUIStore((state) => state.openCreateGroup)
   const openAddMember = useGroupUIStore((state) => state.openAddMember)
 
@@ -154,29 +138,7 @@ function GroupPanelComponent({
     <div className="flex h-full overflow-hidden bg-[var(--bg-primary)] text-white">
       {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
 
-      <div className="fixed inset-x-0 top-9 z-30 lg:hidden">
-        <div className="flex h-12 items-center justify-between border-b border-white/10 bg-[rgba(17,22,29,0.96)] px-3">
-          <Tooltip content="Open menu" position="bottom">
-            <button
-              onClick={() => setIsMobileDrawerOpen(true)}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-              aria-label="Open menu">
-              Menu
-            </button>
-          </Tooltip>
-          <div className="min-w-0 flex-1 text-right">
-            <div className="truncate text-xs text-white/65">
-              {selectedGroup ? selectedGroupDisplayName : "No group selected"}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden lg:block">
-        <GroupSidebar onBack={onBack} />
-      </div>
-
-      <MobileDrawer />
+      <GroupSidebar onBack={onBack} />
 
       <main className="relative flex h-full flex-1 flex-col overflow-hidden bg-[var(--bg-primary)]">
         <GroupContent

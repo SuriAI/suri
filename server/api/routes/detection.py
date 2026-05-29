@@ -3,13 +3,9 @@ import time
 
 import cv2
 import numpy as np
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 
-from api.deps import get_face_detector, get_liveness_detector
-from api.schemas import (
-    DetectionResponse,
-    OptimizationRequest,
-)
+from api.schemas import DetectionResponse
 from config.models import FACE_DETECTOR_CONFIG
 from hooks import (
     process_face_detection,
@@ -24,52 +20,6 @@ logger = logging.getLogger(__name__)
 MAX_IMAGE_SIZE = 20 * 1024 * 1024  # 20 MB
 
 router = APIRouter()
-
-
-@router.post("/optimize/liveness")
-async def configure_liveness_optimization(
-    request: OptimizationRequest,
-    liveness_detector=Depends(get_liveness_detector),
-):
-    """Configure liveness detection optimization settings"""
-
-    if not liveness_detector:
-        raise HTTPException(status_code=500, detail="Liveness detector not available")
-
-    try:
-        return {
-            "success": True,
-            "message": "Optimization settings updated",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to update settings: {e}")
-
-
-@router.post("/optimize/face_detector")
-async def configure_face_detector_optimization(
-    request: dict,
-    face_detector=Depends(get_face_detector),
-):
-    """Configure face detector optimization settings including minimum face size"""
-
-    try:
-        if face_detector:
-            if "min_face_size" in request:
-                min_size = int(request["min_face_size"])
-                face_detector.set_min_face_size(min_size)
-                return {
-                    "success": True,
-                    "message": "Face detector settings updated successfully",
-                    "new_settings": {"min_face_size": min_size},
-                }
-            else:
-                return {"success": False, "message": "min_face_size parameter required"}
-        else:
-            return {"success": False, "message": "Face detector not available"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to update face detector settings: {e}"
-        )
 
 
 @router.post("/detect", response_model=DetectionResponse)

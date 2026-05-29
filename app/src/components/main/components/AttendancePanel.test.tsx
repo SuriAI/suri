@@ -82,7 +82,6 @@ function resetStores() {
     quickSettings: {
       cameraMirrored: true,
       showRecognitionNames: true,
-      showLandmarks: true,
     },
     audioSettings: {
       recognitionSoundEnabled: true,
@@ -149,7 +148,7 @@ describe("AttendancePanel", () => {
       target: { value: "Bob" },
     })
 
-    expect(screen.getByText('No results for "Bob"')).toBeInTheDocument()
+    expect(await screen.findByText('No results for "Bob"')).toBeInTheDocument()
   })
 
   it("reveals additional records after clicking Load More", async () => {

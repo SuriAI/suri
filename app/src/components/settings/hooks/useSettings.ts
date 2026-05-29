@@ -98,7 +98,6 @@ export const useSettings = ({
     exportCSV: () => void
   } | null>(null)
   const [addMemberHandler, setAddMemberHandler] = useState<(() => void) | null>(null)
-  const [isGroupExpanded, setIsGroupExpanded] = useState(true)
 
   const enrollmentSource = useGroupUIStore((state) => state.lastEnrollmentSource)
   const enrollmentMode = useGroupUIStore((state) => state.lastEnrollmentMode)
@@ -266,8 +265,6 @@ export const useSettings = ({
     setHasSelectedMember,
     reportsExportHandlers,
     addMemberHandler,
-    isGroupExpanded,
-    setIsGroupExpanded,
     toggleQuickSetting,
     updateAudioSetting,
     updateAttendanceSetting,

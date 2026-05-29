@@ -9,7 +9,6 @@ interface GroupUIState {
 
   // Sidebar state
   isSidebarCollapsed: boolean
-  isMobileDrawerOpen: boolean
 
   // Modal states
   showAddMemberModal: boolean
@@ -30,7 +29,6 @@ interface GroupUIState {
   // Actions - Sidebar
   setIsSidebarCollapsed: (collapsed: boolean) => void
   toggleSidebar: () => void
-  setIsMobileDrawerOpen: (open: boolean) => void
 
   // Actions - Modals
   openAddMember: (initialMode?: "single" | "bulk") => void
@@ -56,7 +54,6 @@ interface GroupUIState {
 const initialState = {
   activeSection: "overview" as GroupSection,
   isSidebarCollapsed: false, // Will be loaded from store
-  isMobileDrawerOpen: false,
   showAddMemberModal: false,
   addMemberInitialMode: "single" as "single" | "bulk",
   showEditMemberModal: false,
@@ -94,8 +91,6 @@ export const useGroupUIStore = create<GroupUIState>((set, get) => ({
     set({ isSidebarCollapsed: newValue })
     persistentSettings.setUIState({ groupSidebarCollapsed: newValue }).catch(console.error)
   },
-
-  setIsMobileDrawerOpen: (open) => set({ isMobileDrawerOpen: open }),
 
   // Modals
   openAddMember: (initialMode = "single") =>

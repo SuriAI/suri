@@ -5,8 +5,6 @@ import type { AttendanceTimeHealth } from "@/types/recognition"
 export interface QuickSettings {
   showRecognitionNames: boolean
   cameraMirrored: boolean
-  // Present in UI store; kept optional to avoid breaking older saved settings
-  showLandmarks?: boolean
 }
 
 export interface AudioSettings {

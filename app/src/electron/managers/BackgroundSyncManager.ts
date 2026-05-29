@@ -374,7 +374,7 @@ export class BackgroundSyncManager {
       switch (cmd.command) {
         case "WIPE": {
           // Call the comprehensive wipe endpoint in local Python backend
-          const wipeResponse = await fetch(`${backendService.getUrl()}/wipe`, {
+          const wipeResponse = await fetch(`${backendService.getUrl()}/attendance/wipe`, {
             method: "POST",
             headers: authHeaders({ "Content-Type": "application/json" }),
             signal: AbortSignal.timeout(60000),

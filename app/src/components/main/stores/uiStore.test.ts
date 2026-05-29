@@ -26,7 +26,6 @@ describe("uiStore", () => {
     mockPersistentSettings.getQuickSettings.mockResolvedValue({
       cameraMirrored: true,
       showRecognitionNames: true,
-      showLandmarks: true,
     })
     mockPersistentSettings.getAudioSettings.mockResolvedValue({
       recognitionSoundEnabled: true,
@@ -47,12 +46,17 @@ describe("uiStore", () => {
     useUIStore.getState().setQuickSettings({
       cameraMirrored: false,
       showRecognitionNames: false,
-      showLandmarks: false,
     })
+    await waitFor(() => {
+      expect(mockPersistentSettings.setQuickSettings).toHaveBeenCalledWith({
+        cameraMirrored: false,
+        showRecognitionNames: false,
+      })
+    })
+
     expect(useUIStore.getState().quickSettings).toEqual({
       cameraMirrored: false,
       showRecognitionNames: false,
-      showLandmarks: false,
     })
 
     useUIStore.getState().setQuickSettings((prev) => ({
@@ -89,7 +93,6 @@ describe("uiStore", () => {
     useUIStore.getState().setQuickSettings({
       cameraMirrored: false,
       showRecognitionNames: false,
-      showLandmarks: false,
     })
     useUIStore.getState().setAudioSettings({
       recognitionSoundEnabled: false,
@@ -117,7 +120,6 @@ describe("uiStore", () => {
     useUIStore.getState().setQuickSettings({
       cameraMirrored: false,
       showRecognitionNames: false,
-      showLandmarks: false,
     })
     useUIStore.getState().setAudioSettings({
       recognitionSoundEnabled: false,
@@ -139,7 +141,6 @@ describe("uiStore", () => {
       expect(mockPersistentSettings.setQuickSettings).toHaveBeenCalledWith({
         cameraMirrored: false,
         showRecognitionNames: false,
-        showLandmarks: false,
       })
       expect(mockPersistentSettings.setAudioSettings).toHaveBeenCalledWith({
         recognitionSoundEnabled: false,
