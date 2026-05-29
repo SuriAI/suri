@@ -139,9 +139,9 @@ export const ManualEntryModal = ({
       maxWidth="sm">
       <div className="space-y-4">
         {/* Search & Add Header */}
-        <div className="mt-2 flex items-center">
-          <div className="group/search relative flex-1">
-            <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45"></i>
+        <div className="group/bar mt-2 flex items-center">
+          <div className="relative flex-1">
+            <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/bar:text-white/45"></i>
             <input
               type="text"
               placeholder="Search members..."
@@ -156,7 +156,7 @@ export const ManualEntryModal = ({
                 handleClose()
                 onAddMember()
               }}
-              className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
+              className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all group-focus-within/bar:border-white/20 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
               <i className="fa-solid fa-plus text-xs transition-transform group-hover/add:scale-110"></i>
             </button>
           </Tooltip>

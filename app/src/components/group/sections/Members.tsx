@@ -265,10 +265,10 @@ export function Members({
           <div className="sticky top-0 z-30 shrink-0 space-y-4 bg-transparent px-10 pt-8 pb-4">
             <div className="flex items-center justify-between gap-4">
               <div
-                className={`group/searchbar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
+                className={`group/bar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
                 <div className="relative flex-1">
                   <svg
-                    className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/searchbar:text-white/45"
+                    className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/bar:text-white/45"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -291,8 +291,6 @@ export function Members({
                 </div>
 
                 <div className="relative shrink-0">
-                  {/* Subtle vertical divider */}
-                  <div className="absolute top-2 bottom-2 left-0 z-10 w-px bg-white/5"></div>
                   <Dropdown
                     options={[
                       { value: "all", label: "All" },
@@ -309,7 +307,7 @@ export function Members({
                     menuWidth={160}
                     align="right"
                     onOpenChange={handleDropdownOpenChange}
-                    buttonClassName={`h-9 !bg-white/5 !border-white/5 border-l-0 rounded-l-none rounded-r-lg px-3 ${dropdownWidthClass} text-[11px] font-bold tracking-wider text-white hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 focus:!bg-white/[0.08] transition-all duration-300`}
+                    buttonClassName={`h-9 !bg-white/5 !border-white/5 group-focus-within/bar:!border-white/20 border-l-0 rounded-l-none rounded-r-lg px-3 ${dropdownWidthClass} text-[11px] font-bold tracking-wider text-white hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 focus:!bg-white/[0.08] transition-all duration-300`}
                     optionClassName="text-[11px] font-bold tracking-wider"
                     iconClassName="text-[10px]"
                   />
