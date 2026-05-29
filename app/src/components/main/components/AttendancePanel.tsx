@@ -1,7 +1,12 @@
 import { useState, useMemo, useEffect, memo, useCallback } from "react"
 import type { ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { createDisplayNameMap, getLocalDateString, formatDuration } from "@/utils"
+import {
+  createDisplayNameMap,
+  getLocalDateString,
+  formatDuration,
+  generateGroupDisplayNames,
+} from "@/utils"
 import { Dropdown, Tooltip, MemberTooltip } from "@/components/shared"
 import type { AttendanceGroup, AttendanceRecord, AttendanceMember } from "@/components/main/types"
 import {
@@ -402,9 +407,9 @@ export const AttendancePanel = memo(function AttendancePanel({
           <div className="flex items-center">
             <div className="min-w-30 flex-1">
               <Dropdown
-                options={attendanceGroups.map((group) => ({
+                options={generateGroupDisplayNames(attendanceGroups).map((group) => ({
                   value: group.id,
-                  label: group.name,
+                  label: group.displayName,
                 }))}
                 value={
                   currentGroup && attendanceGroups.some((g) => g.id === currentGroup.id) ?

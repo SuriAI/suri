@@ -63,3 +63,48 @@ export function createDisplayNameMap<T extends HasPersonIdAndName>(
   const withDisplayNames = generateDisplayNames(persons)
   return new Map(withDisplayNames.map((p) => [p.person_id, p.displayName]))
 }
+
+export interface HasIdAndName {
+  id: string
+  name: string
+}
+
+/**
+ * Resolves duplicate group names dynamically by appending suffix counts (e.g., "(2)").
+ * This ensures the user can distinguish between identically named groups in the sidebar
+ * and selection dropdowns without altering the raw database records or raising sync conflicts.
+ */
+export function generateGroupDisplayNames<T extends HasIdAndName>(
+  groups: T[],
+): (T & { displayName: string })[] {
+  const nameOccurrences = new Map<string, number>()
+  groups.forEach((group) => {
+    const normalizedName = group.name.toLowerCase()
+    const count = nameOccurrences.get(normalizedName) || 0
+    nameOccurrences.set(normalizedName, count + 1)
+  })
+
+  const nameCounters = new Map<string, number>()
+
+  return groups.map((group) => {
+    const normalizedName = group.name.toLowerCase()
+    const occurrences = nameOccurrences.get(normalizedName) || 1
+
+    if (occurrences === 1) {
+      return {
+        ...group,
+        displayName: group.name,
+      }
+    }
+
+    const currentCount = nameCounters.get(normalizedName) || 0
+    nameCounters.set(normalizedName, currentCount + 1)
+
+    const displayName = currentCount === 0 ? group.name : `${group.name} (${currentCount + 1})`
+
+    return {
+      ...group,
+      displayName,
+    }
+  })
+}

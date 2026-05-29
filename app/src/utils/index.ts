@@ -7,6 +7,7 @@ export {
   generateDisplayNames,
   getDisplayName,
   createDisplayNameMap,
+  generateGroupDisplayNames,
 } from "@/utils/displayNameUtils"
 
 export {

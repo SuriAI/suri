@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { attendanceManager, backendService } from "@/services"
+import { generateGroupDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useAttendanceStore } from "@/components/main/stores"
 import type { DialogAPI } from "@/components/shared"
@@ -94,12 +95,14 @@ export function useDatabaseManagement(
 
   // Filter groups and members based on search
   const filteredData = useMemo(() => {
+    const withDisplayNames = generateGroupDisplayNames(groupsWithMembers)
+
     if (!searchQuery.trim()) {
-      return groupsWithMembers
+      return withDisplayNames
     }
 
     const query = searchQuery.toLowerCase()
-    return groupsWithMembers
+    return withDisplayNames
       .map((group) => {
         const filteredMembers = group.members.filter(
           (member) =>

@@ -3,6 +3,7 @@ import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 export interface GroupWithMembers extends AttendanceGroup {
   members: AttendanceMember[]
   isLoading?: boolean
+  displayName?: string
 }
 
 export type MemberField = "name" | "email" | "role"

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   createDisplayNameMap,
   generateDisplayNames,
+  generateGroupDisplayNames,
   getDisplayName,
 } from "@/utils/displayNameUtils"
 
@@ -9,6 +10,12 @@ const people = [
   { person_id: "1", name: "Alice" },
   { person_id: "2", name: "Bob" },
   { person_id: "3", name: "Alice" },
+]
+
+const groups = [
+  { id: "1", name: "Class A" },
+  { id: "2", name: "Class B" },
+  { id: "3", name: "Class A" },
 ]
 
 describe("displayNameUtils", () => {
@@ -34,5 +41,21 @@ describe("displayNameUtils", () => {
       ["2", "Bob"],
       ["3", "Alice (2)"],
     ])
+  })
+
+  describe("generateGroupDisplayNames", () => {
+    it("keeps unique group names unchanged", () => {
+      expect(generateGroupDisplayNames([{ id: "1", name: "Class A" }])[0]?.displayName).toBe(
+        "Class A",
+      )
+    })
+
+    it("appends stable suffixes for duplicate group names", () => {
+      expect(generateGroupDisplayNames(groups).map((g) => g.displayName)).toEqual([
+        "Class A",
+        "Class B",
+        "Class A (2)",
+      ])
+    })
   })
 })

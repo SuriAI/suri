@@ -118,7 +118,7 @@ export function GroupEntry({
                   onStartEditingGroup(group, "name")
                 }}
                 className="flex cursor-pointer items-center gap-2 truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
-                {group.name}
+                {group.displayName || group.name}
                 {savingGroup === group.id && (
                   <i className="fa-solid fa-spinner fa-spin text-[10px] text-white/55"></i>
                 )}
@@ -156,7 +156,7 @@ export function GroupEntry({
       <Modal
         isOpen={isExpanded}
         onClose={() => onToggle(group.id)}
-        title={`${group.name} Members`}
+        title={`${group.displayName || group.name} Members`}
         headerActions={
           <button
             onClick={(e) => {
