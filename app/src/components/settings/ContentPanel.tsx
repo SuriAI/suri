@@ -303,6 +303,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             {headerProps.isGroupSection ?
               <>
                 <SectionHeader.Breadcrumb
+                  key="group-name"
                   active={!groupInitialSection || groupInitialSection === "overview"}
                   onClick={
                     !groupInitialSection || groupInitialSection === "overview" ?
@@ -331,7 +332,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                 </AnimatePresence>
               </>
             : <>
-                <SectionHeader.Breadcrumb>Preferences</SectionHeader.Breadcrumb>
+                <SectionHeader.Breadcrumb key="prefs-label">Preferences</SectionHeader.Breadcrumb>
                 <AnimatePresence mode="popLayout">
                   <motion.div
                     key={activeSection}
