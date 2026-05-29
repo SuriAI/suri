@@ -44,7 +44,7 @@ function resetGroupUIStore() {
   useGroupUIStore.setState({
     activeSection: "overview",
     isSidebarCollapsed: false,
-    isMobileDrawerOpen: false,
+
     showAddMemberModal: false,
     showEditMemberModal: false,
     showCreateGroupModal: false,
@@ -94,7 +94,6 @@ function createProps(overrides: Partial<Parameters<typeof useSettings>[0]> = {})
     quickSettings: {
       cameraMirrored: true,
       showRecognitionNames: true,
-      showLandmarks: true,
     },
     ...overrides,
   }

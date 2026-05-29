@@ -48,7 +48,6 @@ function resetStores() {
     quickSettings: {
       cameraMirrored: true,
       showRecognitionNames: true,
-      showLandmarks: true,
     },
     audioSettings: {
       recognitionSoundEnabled: true,

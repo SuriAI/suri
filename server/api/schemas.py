@@ -27,10 +27,6 @@ class DetectionResponse(BaseModel):
     suggested_skip: int = 0
 
 
-class OptimizationRequest(BaseModel):
-    pass
-
-
 # ============================================================================
 # Face Recognition Schemas
 # ============================================================================

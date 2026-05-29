@@ -37,7 +37,6 @@ describe("ContentPanel anti-spoof prompt", () => {
     quickSettings: {
       cameraMirrored: true,
       showRecognitionNames: true,
-      showLandmarks: true,
     },
     toggleQuickSetting: vi.fn(),
     audioSettings: {
