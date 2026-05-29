@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Dropdown, Tooltip } from "@/components/shared"
+import { generateGroupDisplayNames } from "@/utils"
 
 import { useGroupStore, useGroupUIStore } from "@/components/group/stores"
 import { useGroupModals } from "@/components/group/hooks"
@@ -84,9 +85,9 @@ export function MobileDrawer() {
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <Dropdown
-                      options={groups.map((group) => ({
+                      options={generateGroupDisplayNames(groups).map((group) => ({
                         value: group.id,
-                        label: group.name,
+                        label: group.displayName,
                       }))}
                       value={selectedGroup?.id ?? null}
                       onChange={(value: string | number | null) => {

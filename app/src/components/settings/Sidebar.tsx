@@ -1,6 +1,7 @@
 import React from "react"
 import { motion } from "framer-motion"
 import { Dropdown, Tooltip } from "@/components/shared"
+import { generateGroupDisplayNames } from "@/utils"
 import type { AttendanceGroup } from "@/types/recognition"
 import type { GroupSection } from "@/components/group/types"
 
@@ -41,9 +42,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center gap-1">
           <div className="min-w-0 flex-1" key={dropdownGroups.length}>
             <Dropdown
-              options={dropdownGroups.map((group) => ({
+              options={generateGroupDisplayNames(dropdownGroups).map((group) => ({
                 value: group.id,
-                label: group.name,
+                label: group.displayName,
               }))}
               value={dropdownValue}
               onChange={(groupId) => {

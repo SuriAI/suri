@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback, memo } from "react"
+import { useEffect, useRef, useCallback, memo, useMemo } from "react"
+import { generateGroupDisplayNames } from "@/utils"
 
 export type { GroupSection } from "@/components/group/types"
 import type { GroupPanelProps } from "@/components/group/types"
@@ -32,6 +33,13 @@ function GroupPanelComponent({
   onSectionChange,
 }: GroupPanelProps) {
   const selectedGroup = useGroupStore((state) => state.selectedGroup)
+  const groups = useGroupStore((state) => state.groups)
+  const selectedGroupDisplayName = useMemo(() => {
+    if (!selectedGroup) return ""
+    const displayNames = generateGroupDisplayNames(groups)
+    const match = displayNames.find((g) => g.id === selectedGroup.id)
+    return match ? match.displayName : selectedGroup.name
+  }, [selectedGroup, groups])
   const error = useGroupStore((state) => state.error)
   const setSelectedGroup = useGroupStore((state) => state.setSelectedGroup)
   const setError = useGroupStore((state) => state.setError)
@@ -158,7 +166,7 @@ function GroupPanelComponent({
           </Tooltip>
           <div className="min-w-0 flex-1 text-right">
             <div className="truncate text-xs text-white/65">
-              {selectedGroup ? selectedGroup.name : "No group selected"}
+              {selectedGroup ? selectedGroupDisplayName : "No group selected"}
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@ export function GroupModals({
   onMemberSuccess,
   onGroupSuccess,
 }: GroupModalsProps) {
-  const { selectedGroup, fetchGroups, setSelectedGroup, members } = useGroupStore()
+  const { selectedGroup, groups, fetchGroups, setSelectedGroup, members } = useGroupStore()
   const {
     showAddMemberModal,
     showEditMemberModal,
@@ -52,6 +52,7 @@ export function GroupModals({
 
       <CreateGroup
         isOpen={showCreateGroupModal}
+        existingGroups={groups}
         onClose={closeCreateGroup}
         onSuccess={(newGroup) => {
           if (!isEmbedded) {
