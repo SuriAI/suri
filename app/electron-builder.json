@@ -49,6 +49,7 @@
   "mac": {
     "target": "dmg",
     "artifactName": "Facenox-macOS-v${version}-${arch}.${ext}",
+    "identity": null,
     "entitlements": "entitlements.mac.plist",
     "entitlementsInherit": "entitlements.mac.plist",
     "extendInfo": {
