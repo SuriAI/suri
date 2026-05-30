@@ -94,16 +94,18 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
 
-    expect(screen.getByText("Before Enabling Anti-Spoof")).toBeInTheDocument()
+    expect(screen.getByText("Before Enabling Liveness")).toBeInTheDocument()
     expect(screen.getByText("Use balanced lighting")).toBeInTheDocument()
     expect(updateAttendanceSetting).not.toHaveBeenCalled()
 
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
     fireEvent.click(screen.getByRole("button", { name: "Enable" }))
 
     expect(updateAttendanceSetting).toHaveBeenCalledWith({ enableSpoofDetection: true })
   })
 
-  it("navigates between modal sections with arrow controls", async () => {
+  it("navigates between modal sections with footer buttons", async () => {
     const updateAttendanceSetting = vi.fn()
 
     render(<ContentPanel {...baseProps} updateAttendanceSetting={updateAttendanceSetting} />)
@@ -112,7 +114,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     expect(screen.getByText("Use balanced lighting")).toBeInTheDocument()
 
-    fireEvent.click(screen.getByLabelText("Next section"))
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
 
     expect(await screen.findByText("Frame the face properly")).toBeInTheDocument()
     expect(
@@ -121,7 +123,7 @@ describe("ContentPanel anti-spoof prompt", () => {
       ),
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByLabelText("Next section"))
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
 
     expect(await screen.findByText("Keep the camera clear")).toBeInTheDocument()
     expect(
@@ -130,7 +132,7 @@ describe("ContentPanel anti-spoof prompt", () => {
       ),
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByLabelText("Previous section"))
+    fireEvent.click(screen.getByRole("button", { name: "Back" }))
 
     expect(await screen.findByText("Frame the face properly")).toBeInTheDocument()
   })
@@ -142,6 +144,9 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
     fireEvent.click(screen.getByLabelText("Don't show this again"))
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
+    fireEvent.click(screen.getByRole("button", { name: "Next" }))
     fireEvent.click(screen.getByRole("button", { name: "Enable" }))
 
     expect(useUIStore.getState().antiSpoofDetectionInfoDismissed).toBe(true)
@@ -156,7 +161,7 @@ describe("ContentPanel anti-spoof prompt", () => {
 
     fireEvent.click(screen.getByLabelText("Liveness Verification (Anti-Spoof)"))
 
-    expect(screen.queryByText("Before Enabling Anti-Spoof")).not.toBeInTheDocument()
+    expect(screen.queryByText("Before Enabling Liveness")).not.toBeInTheDocument()
     expect(updateAttendanceSetting).toHaveBeenCalledWith({ enableSpoofDetection: true })
   })
 })
