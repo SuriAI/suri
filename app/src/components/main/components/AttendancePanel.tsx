@@ -522,7 +522,7 @@ export const AttendancePanel = memo(function AttendancePanel({
             <AnimatePresence mode="wait">
               {visibleRecords.length > 0 ?
                 <motion.div
-                  key="records"
+                  key={`records-${recordScope}`}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}

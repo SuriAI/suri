@@ -144,7 +144,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
     return (
       <EmptyState
         title="This group has no members"
-        description="View group activity logs and attendance metrics."
+        description="View group activity history and attendance metrics."
         action={
           onAddMember ?
             {
@@ -335,7 +335,7 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
                       className="flex flex-1 flex-col items-center justify-center text-white/55">
                       <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
                       <div className="text-[12px] font-medium">
-                        No activity logged{" "}
+                        No activity recorded{" "}
                         {dateFilter === "today" ?
                           "today"
                         : dateFilter === "yesterday" ?

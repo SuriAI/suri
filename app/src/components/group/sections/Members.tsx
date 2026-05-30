@@ -543,7 +543,7 @@ export function Members({
                   </div>
                 </motion.div>
               : <motion.div
-                  key="results"
+                  key={`results-${enrollmentFilter}`}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
