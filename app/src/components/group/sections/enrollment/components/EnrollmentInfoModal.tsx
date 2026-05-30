@@ -92,7 +92,6 @@ export function EnrollmentInfoModal({
       maxWidth="max-w-[480px]"
       title="Enrollment Guidelines">
       <div className="space-y-6 py-2">
-        {/* Slide Content Area */}
         <div className="relative min-h-[110px] overflow-hidden">
           <AnimatePresence initial={false} mode="wait" custom={direction}>
             <motion.div

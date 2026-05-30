@@ -1,7 +1,7 @@
 import type { JSX } from "react"
 
 /**
- * Properties for the shared premium Spinner component.
+ * Properties for the Spinner component.
  */
 interface SpinnerProps {
   /** The size preset of the spinner */
@@ -36,9 +36,7 @@ const colorClasses = {
 }
 
 /**
- * A highly standardized animated spinner component
- * designed for consistent visual feedback across the Facenox workspace.
- * Reverts to a clean, comfortable, solid border ring with a transparent top segment.
+ * Animated spinner component for loading states.
  */
 export function Spinner({
   size = "md",

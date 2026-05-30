@@ -28,8 +28,7 @@ export interface SwitchProps {
 }
 
 /**
- * A highly accessible, premium glassmorphism switch component.
- * Follows WAI-ARIA standards to ensure full keyboard navigation and screen reader support.
+ * Accessible switch toggle component.
  */
 export function Switch({
   checked = false,
