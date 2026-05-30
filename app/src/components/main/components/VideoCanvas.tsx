@@ -68,7 +68,9 @@ export const VideoCanvas = memo(function VideoCanvas({
     <div className="relative h-full min-h-65 w-full overflow-hidden rounded-lg border border-white/10 bg-[var(--bg-canvas)]">
       <video
         ref={videoRef}
-        className={`absolute inset-0 h-full w-full object-contain ${quickSettings.cameraMirrored ? "scale-x-[-1]" : ""}`}
+        className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
+          isStreaming && !isVideoLoading ? "opacity-100" : "opacity-0"
+        } ${quickSettings.cameraMirrored ? "scale-x-[-1]" : ""}`}
         playsInline
         muted
       />
@@ -109,58 +111,69 @@ export const VideoCanvas = memo(function VideoCanvas({
         </div>
       )}
 
-      {isVideoLoading && (
-        <div className="pointer-events-none absolute inset-0 z-15 flex items-center justify-center bg-[rgba(5,7,10,0.46)]">
-          <div className="relative flex items-center justify-center">
-            <div className="h-12 w-12 rounded-full border border-cyan-500/30">
-              <div className="h-full w-full animate-spin rounded-full border-t-2 border-cyan-400"></div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {(!isStreaming || isVideoLoading) && (
+          <motion.div
+            key="placeholder-overlay"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="pointer-events-none absolute inset-0 z-15 flex items-center justify-center bg-[var(--bg-canvas)]">
+            <AnimatePresence mode="wait">
+              {isVideoLoading ?
+                <motion.div
+                  key="canvas-loader"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex flex-col items-center justify-center">
+                  <div className="h-12 w-12 rounded-full border border-cyan-500/20">
+                    <div className="h-full w-full animate-spin rounded-full border-t-2 border-cyan-400"></div>
+                  </div>
+                </motion.div>
+              : <motion.div
+                  key="canvas-idle-state"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex flex-col items-center gap-3 px-6 text-center">
+                  <div className="relative flex h-16 w-16 items-center justify-center">
+                    <svg
+                      className="h-16 w-16 animate-pulse text-white/55"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="relative flex min-h-[32px] max-w-xl flex-col items-center justify-center text-xs text-white/65">
+                    <p className="text-white/65">{emptyStateText}</p>
 
-      {!isStreaming && !isVideoLoading && (
-        <div className="pointer-events-none absolute inset-0 z-15 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3 px-6 text-center">
-            <div className="relative">
-              <svg
-                className="h-16 w-16 animate-pulse text-white/55"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <div className="relative flex min-h-[32px] max-w-xl flex-col items-center justify-center text-xs text-white/65">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={emptyStateText}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  style={{ willChange: "opacity, transform" }}>
-                  {emptyStateText}
-                </motion.p>
-              </AnimatePresence>
-
-              {hasSelectedGroup && hasEnrolledFaces && onStartTimeChange && lateTrackingEnabled && (
-                <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
-                  <StartTimeChip
-                    startTime={classStartTime || "08:00"}
-                    onTimeChange={onStartTimeChange}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+                    {hasSelectedGroup &&
+                      hasEnrolledFaces &&
+                      onStartTimeChange &&
+                      lateTrackingEnabled && (
+                        <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
+                          <StartTimeChip
+                            startTime={classStartTime || "08:00"}
+                            onTimeChange={onStartTimeChange}
+                          />
+                        </div>
+                      )}
+                  </div>
+                </motion.div>
+              }
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <canvas ref={canvasRef} className="hidden" />
     </div>
