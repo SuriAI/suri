@@ -290,7 +290,7 @@ export function Database({
               onClick={() => setPasswordModal({ isOpen: true, action: "export" })}
               disabled={isBackingUp}
               className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
-              {isBackingUp && status.action === "export" ?
+              {status.type === "loading" && status.action === "export" ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-file-export text-[11px] opacity-40" />}
               Create
@@ -309,7 +309,7 @@ export function Database({
               onClick={startImportFlow}
               disabled={isBackingUp}
               className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97] disabled:opacity-40">
-              {isBackingUp && status.action === "import" ?
+              {status.type === "loading" && status.action === "import" ?
                 <i className="fa-solid fa-circle-notch fa-spin" />
               : <i className="fa-solid fa-file-import text-[11px] opacity-40" />}
               Restore

@@ -21,7 +21,6 @@ interface DetectionPanelProps {
 
 const DetectionCard = memo(
   ({
-    index,
     recognitionResult,
     isRecognized,
     displayName,
@@ -29,7 +28,6 @@ const DetectionCard = memo(
     trackedFace,
     isDone,
   }: {
-    index: number
     recognitionResult: ExtendedFaceRecognitionResponse | undefined
     isRecognized: boolean
     displayName: string
@@ -47,7 +45,6 @@ const DetectionCard = memo(
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -8 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        key={index}
         className={`group relative border-b border-l-2 border-white/5 py-2.5 pr-3 pl-4 transition-colors hover:bg-[rgba(22,28,36,0.52)] ${isActive ? "border-l-cyan-500/50" : "border-l-transparent"}`}
         style={
           isActive ?
@@ -55,30 +52,63 @@ const DetectionCard = memo(
           : undefined
         }>
         <div className="flex items-center justify-between gap-3 py-0.5">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            {isRecognized ?
-              hasConsent ?
-                <MemberTooltip member={member} position="right" role="Recognized">
-                  <span className="cursor-help truncate text-[13px] font-medium text-white/90">
-                    {displayName}
-                  </span>
-                </MemberTooltip>
-              : <div className="flex items-center gap-1.5 opacity-80">
-                  <i className="fa-solid fa-eye-slash text-xs text-indigo-400"></i>
-                  <span className="text-[11px] font-bold tracking-tight text-indigo-400/90 uppercase">
-                    No Consent
-                  </span>
-                </div>
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {isRecognized ?
+                hasConsent ?
+                  <motion.div
+                    key="recognized"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="min-w-0 flex-1">
+                    <MemberTooltip member={member} position="right" role="Recognized">
+                      <span className="block cursor-help truncate text-[13px] font-semibold text-white transition-colors hover:text-cyan-400">
+                        {displayName}
+                      </span>
+                    </MemberTooltip>
+                  </motion.div>
+                : <motion.div
+                    key="no-consent"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex items-center gap-1.5 opacity-80">
+                    <i className="fa-solid fa-eye-slash text-xs text-indigo-400"></i>
+                    <span className="text-[11px] font-bold tracking-tight text-indigo-400/90 uppercase">
+                      No Consent
+                    </span>
+                  </motion.div>
 
-            : <span className="text-[13px] font-medium text-white/55">Searching...</span>}
+              : <motion.span
+                  key="searching"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="flex items-center gap-2 text-[13px] font-medium text-white/45">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-cyan-500/50" />
+                  Searching...
+                </motion.span>
+              }
+            </AnimatePresence>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            {isDone && (
-              <div className="flex animate-pulse items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.2)]">
-                <i className="fa-solid fa-check text-[10px]"></i>
-              </div>
-            )}
+          <div className="flex min-h-5 shrink-0 items-center gap-2">
+            <AnimatePresence>
+              {isDone && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 18 }}
+                  className="flex items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.2)]">
+                  <i className="fa-solid fa-check text-[10px]"></i>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
@@ -232,7 +262,7 @@ export function DetectionPanel({
           transition={{ duration: 0.15 }}
           className="w-full py-0">
           <AnimatePresence mode="popLayout" initial={false}>
-            {filteredFaces.map((face, index) => {
+            {filteredFaces.map((face) => {
               const trackId = face.track_id!
               const recognitionResult = currentRecognitionResults.get(trackId)
               const isRecognized = recognitionEnabled && !!recognitionResult?.person_id
@@ -257,7 +287,6 @@ export function DetectionPanel({
               return (
                 <DetectionCard
                   key={trackId}
-                  index={index}
                   recognitionResult={recognitionResult}
                   isRecognized={isRecognized}
                   displayName={displayName}
