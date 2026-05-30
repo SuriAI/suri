@@ -23,6 +23,8 @@ facenox/
 
 ### JavaScript dependencies
 
+Requires `pnpm`. Install it with `npm install -g pnpm` or enable Corepack (`corepack enable && corepack prepare pnpm@latest --activate`).
+
 ```bash
 cd app
 pnpm install
