@@ -99,7 +99,6 @@ export function DetectionPanel({
   persistentCooldowns,
   currentGroupId,
 }: DetectionPanelProps) {
-  const isShellReady = useAttendanceStore((state) => state.isShellReady)
   const enableSpoofDetection = useAttendanceStore((state) => state.enableSpoofDetection)
   const displayNameMap = useMemo(() => {
     return createDisplayNameMap(groupMembers)
@@ -138,10 +137,16 @@ export function DetectionPanel({
   const hasDetections = filteredFaces.length > 0
 
   return (
-    <>
+    <AnimatePresence mode="popLayout" initial={false}>
       {!hasDetections ?
-        <div className="flex min-h-0 flex-1 items-center justify-center pl-[10px]">
-          <div className="relative flex flex-col items-center gap-4">
+        <motion.div
+          key="scanner-placeholder"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+          className="flex min-h-0 w-full flex-1 items-center justify-center pl-[10px]">
+          <div className="relative flex flex-col items-center">
             <div className="relative h-20 w-20">
               <div
                 className={`absolute inset-0 rounded-xl border transition-all duration-300 ${
@@ -217,50 +222,18 @@ export function DetectionPanel({
                 }`}
               />
             </div>
-
-            <div className="flex h-4 items-center justify-center text-[11px] font-bold">
-              <AnimatePresence mode="wait">
-                {!isShellReady ?
-                  <motion.span
-                    key="loading"
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.15 }}
-                    className="text-white/65">
-                    Loading
-                  </motion.span>
-                : isVideoLoading ?
-                  null
-                : isStreaming ?
-                  <motion.span
-                    key="tracking"
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.15 }}
-                    className="animate-pulse text-cyan-400/60">
-                    Tracking
-                  </motion.span>
-                : <motion.span
-                    key="ready"
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.15 }}
-                    className="text-white/65">
-                    Ready
-                  </motion.span>
-                }
-              </AnimatePresence>
-            </div>
           </div>
-        </div>
-      : <div className="w-full py-0">
+        </motion.div>
+      : <motion.div
+          key="detections-list"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="w-full py-0">
           <AnimatePresence mode="popLayout" initial={false}>
             {filteredFaces.map((face, index) => {
               const trackId = face.track_id!
-              // ... (keep the same logic but inside AnimatePresence)
               const recognitionResult = currentRecognitionResults.get(trackId)
               const isRecognized = recognitionEnabled && !!recognitionResult?.person_id
               const displayName =
@@ -297,8 +270,8 @@ export function DetectionPanel({
               )
             })}
           </AnimatePresence>
-        </div>
+        </motion.div>
       }
-    </>
+    </AnimatePresence>
   )
 }
