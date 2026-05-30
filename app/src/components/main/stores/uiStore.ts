@@ -22,6 +22,7 @@ interface UIState {
   lastGroupId: string | null
   hasSeenIntro: boolean
   antiSpoofDetectionInfoDismissed: boolean
+  enrollmentInfoDismissed: boolean
   isHydrated: boolean
 
   // Sidebar state
@@ -46,6 +47,7 @@ interface UIState {
   setLastGroupId: (id: string | null) => void
   setHasSeenIntro: (seen: boolean) => void
   setAntiSpoofDetectionInfoDismissed: (dismissed: boolean) => void
+  setEnrollmentInfoDismissed: (dismissed: boolean) => void
   setSidebarCollapsed: (collapsed: boolean) => void
   setSidebarWidth: (width: number) => void
   setQuickSettings: (settings: QuickSettings | ((prev: QuickSettings) => QuickSettings)) => void
@@ -67,6 +69,7 @@ const loadInitialSettings = async () => {
     audioSettings,
     hasSeenIntro: uiState.hasSeenIntro,
     antiSpoofDetectionInfoDismissed: uiState.antiSpoofDetectionInfoDismissed,
+    enrollmentInfoDismissed: uiState.enrollmentInfoDismissed,
     sidebarCollapsed: uiState.sidebarCollapsed,
     sidebarWidth: uiState.sidebarWidth,
   }
@@ -85,6 +88,7 @@ export const useUIStore = create<UIState>((set) => ({
   lastGroupId: null,
   hasSeenIntro: false, // Default to false
   antiSpoofDetectionInfoDismissed: false,
+  enrollmentInfoDismissed: false,
   isHydrated: false, // Wait for hydration before rendering decisions
 
   sidebarCollapsed: false,
@@ -114,6 +118,7 @@ export const useUIStore = create<UIState>((set) => ({
   setHasSeenIntro: (seen) => set({ hasSeenIntro: seen }),
   setAntiSpoofDetectionInfoDismissed: (dismissed) =>
     set({ antiSpoofDetectionInfoDismissed: dismissed }),
+  setEnrollmentInfoDismissed: (dismissed) => set({ enrollmentInfoDismissed: dismissed }),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   setSidebarWidth: (width) => set({ sidebarWidth: width }),
 
@@ -150,6 +155,14 @@ useUIStore.subscribe((state, prevState) => {
       .catch(console.error)
   }
 
+  if (state.enrollmentInfoDismissed !== prevState.enrollmentInfoDismissed) {
+    persistentSettings
+      .setUIState({
+        enrollmentInfoDismissed: state.enrollmentInfoDismissed,
+      })
+      .catch(console.error)
+  }
+
   if (state.sidebarCollapsed !== prevState.sidebarCollapsed) {
     persistentSettings.setUIState({ sidebarCollapsed: state.sidebarCollapsed }).catch(console.error)
   }
@@ -175,6 +188,7 @@ if (typeof window !== "undefined") {
       audioSettings,
       hasSeenIntro,
       antiSpoofDetectionInfoDismissed,
+      enrollmentInfoDismissed,
       sidebarCollapsed,
       sidebarWidth,
     }) => {
@@ -183,6 +197,7 @@ if (typeof window !== "undefined") {
         audioSettings,
         hasSeenIntro,
         antiSpoofDetectionInfoDismissed,
+        enrollmentInfoDismissed,
         sidebarCollapsed: sidebarCollapsed ?? false,
         sidebarWidth: sidebarWidth ?? 300,
         isHydrated: true,

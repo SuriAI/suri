@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useBulkEnrollment } from "@/components/group/sections/enrollment/hooks/useBulkEnrollment"
 import { BulkUploadArea } from "@/components/group/shared"
@@ -19,6 +20,18 @@ export function BulkEnrollment({
   onClose,
   className,
 }: BulkEnrollmentProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown, true)
+    return () => window.removeEventListener("keydown", handleKeyDown, true)
+  }, [onClose])
+
   const {
     uploadedFiles,
     detectedFaces,
