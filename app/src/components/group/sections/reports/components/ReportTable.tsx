@@ -157,7 +157,7 @@ export function ReportTable({
                 </td>
               </motion.tr>
             : <motion.tr
-                key="results"
+                key={`results-${statusFilter}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
