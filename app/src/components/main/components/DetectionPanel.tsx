@@ -143,67 +143,116 @@ export function DetectionPanel({
         <div className="flex min-h-0 flex-1 items-center justify-center pl-[10px]">
           <div className="relative flex flex-col items-center gap-4">
             <div className="relative h-20 w-20">
-              {isVideoLoading ?
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-10 w-10 rounded-full border border-cyan-500/20">
-                    <div className="h-full w-full animate-spin rounded-full border-t border-cyan-400/60"></div>
-                  </div>
-                </div>
-              : <>
-                  <div
-                    className={`absolute inset-0 rounded-xl border ${isStreaming ? "ai-pulse-ring border-cyan-500/30" : "border-white/20"}`}
-                  />
+              <div
+                className={`absolute inset-0 rounded-xl border transition-all duration-300 ${
+                  isStreaming || isVideoLoading ?
+                    "ai-pulse-ring border-cyan-500/30"
+                  : "border-white/20"
+                }`}
+              />
 
-                  <div className="absolute inset-1 overflow-hidden rounded-lg">
-                    {isStreaming && (
+              <div className="absolute inset-1 overflow-hidden rounded-lg">
+                <AnimatePresence mode="wait">
+                  {isVideoLoading ?
+                    <motion.div
+                      key="loading-spinner"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full border border-cyan-500/20">
+                        <div className="h-full w-full animate-spin rounded-full border-t border-cyan-400/60"></div>
+                      </div>
+                    </motion.div>
+                  : isStreaming ?
+                    <motion.div
+                      key="scan-active"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute inset-0">
                       <div className="ai-scan-line absolute right-0 left-0 h-0.5 bg-linear-to-r from-transparent via-cyan-400 to-transparent" />
-                    )}
-
-                    <svg
-                      className={`h-full w-full p-4 transition-all duration-500 ${isStreaming ? "text-cyan-400/40" : "animate-pulse text-white/55"}`}
+                    </motion.div>
+                  : <motion.svg
+                      key="camera-idle"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-full w-full animate-pulse p-4 text-white/55"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24">
-                      {!isStreaming && (
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                      )}
-                    </svg>
-                  </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14m-10 4h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </motion.svg>
+                  }
+                </AnimatePresence>
+              </div>
 
-                  <div
-                    className={`absolute top-0 left-0 h-3 w-3 rounded-tl-lg border-t-2 border-l-2 ${isStreaming ? "border-cyan-400/40" : "border-white/20"}`}
-                  />
-                  <div
-                    className={`absolute top-0 right-0 h-3 w-3 rounded-tr-lg border-t-2 border-r-2 ${isStreaming ? "border-cyan-400/40" : "border-white/20"}`}
-                  />
-                  <div
-                    className={`absolute bottom-0 left-0 h-3 w-3 rounded-bl-lg border-b-2 border-l-2 ${isStreaming ? "border-cyan-400/40" : "border-white/20"}`}
-                  />
-                  <div
-                    className={`absolute right-0 bottom-0 h-3 w-3 rounded-br-lg border-r-2 border-b-2 ${isStreaming ? "border-cyan-400/40" : "border-white/20"}`}
-                  />
-                </>
-              }
+              <div
+                className={`absolute top-0 left-0 h-3 w-3 rounded-tl-lg border-t-2 border-l-2 transition-all duration-300 ${
+                  isStreaming || isVideoLoading ? "border-cyan-400/40" : "border-white/20"
+                }`}
+              />
+              <div
+                className={`absolute top-0 right-0 h-3 w-3 rounded-tr-lg border-t-2 border-r-2 transition-all duration-300 ${
+                  isStreaming || isVideoLoading ? "border-cyan-400/40" : "border-white/20"
+                }`}
+              />
+              <div
+                className={`absolute bottom-0 left-0 h-3 w-3 rounded-bl-lg border-b-2 border-l-2 transition-all duration-300 ${
+                  isStreaming || isVideoLoading ? "border-cyan-400/40" : "border-white/20"
+                }`}
+              />
+              <div
+                className={`absolute right-0 bottom-0 h-3 w-3 rounded-br-lg border-r-2 border-b-2 transition-all duration-300 ${
+                  isStreaming || isVideoLoading ? "border-cyan-400/40" : "border-white/20"
+                }`}
+              />
             </div>
 
-            <div
-              className={`text-[11px] font-bold transition-opacity duration-500 ${
-                !isShellReady ? "text-white/65"
-                : isStreaming ? "animate-pulse text-cyan-400/60"
-                : "text-white/65"
-              }`}>
-              {!isShellReady ?
-                "Loading"
-              : isVideoLoading ?
-                null
-              : isStreaming ?
-                "Tracking"
-              : "Ready"}
+            <div className="flex h-4 items-center justify-center text-[11px] font-bold">
+              <AnimatePresence mode="wait">
+                {!isShellReady ?
+                  <motion.span
+                    key="loading"
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-white/65">
+                    Loading
+                  </motion.span>
+                : isVideoLoading ?
+                  null
+                : isStreaming ?
+                  <motion.span
+                    key="tracking"
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.15 }}
+                    className="animate-pulse text-cyan-400/60">
+                    Tracking
+                  </motion.span>
+                : <motion.span
+                    key="ready"
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -3 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-white/65">
+                    Ready
+                  </motion.span>
+                }
+              </AnimatePresence>
             </div>
           </div>
         </div>
