@@ -25,8 +25,8 @@ export interface PersistentSettingsSchema {
     lastEnrollmentMode: string | null
     hasSeenIntro: boolean
     activeGroupSection: string | null
-    closeToTrayNoticeDismissed: boolean
     antiSpoofDetectionInfoDismissed: boolean
+    enrollmentInfoDismissed: boolean
   }
 
   reportScratchpad: Record<
@@ -88,8 +88,8 @@ export const defaultSettings: PersistentSettingsSchema = {
     lastEnrollmentMode: null,
     hasSeenIntro: false,
     activeGroupSection: null,
-    closeToTrayNoticeDismissed: false,
     antiSpoofDetectionInfoDismissed: false,
+    enrollmentInfoDismissed: false,
   },
   reportScratchpad: {},
   reportViews: {},

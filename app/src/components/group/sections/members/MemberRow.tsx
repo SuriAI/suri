@@ -28,29 +28,14 @@ export const MemberRow = React.memo(
     return (
       <div
         onClick={() => onToggleSelect?.(member.person_id)}
-        className={`group flex w-full items-center justify-between gap-4 border-b px-6 py-2.5 transition-all duration-200 ${
+        className={`group flex w-full items-center justify-between gap-4 border-b border-l-2 px-6 py-2.5 transition-all duration-200 ${
           onToggleSelect ? "cursor-pointer" : ""
         } ${
           isSelected ?
-            "border-cyan-500/20 bg-cyan-500/10 hover:border-cyan-500/35 hover:bg-cyan-500/[0.16]"
-          : "border-white/[0.03] hover:bg-white/[0.02]"
+            "border-b-cyan-500/20 border-l-cyan-400 bg-cyan-500/10 hover:border-b-cyan-500/35 hover:bg-cyan-500/[0.16]"
+          : "border-b-white/[0.03] border-l-transparent hover:bg-white/[0.02]"
         }`}>
         <div className="flex min-w-0 flex-1 items-center">
-          {onToggleSelect && (
-            <div
-              className={`flex shrink-0 items-center justify-center overflow-hidden transition-all duration-300 ${
-                isSelected ? "w-8 pr-3 pl-1 opacity-100" : "w-0 px-0 opacity-0"
-              }`}>
-              <div
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                  isSelected ?
-                    "border-cyan-500 bg-cyan-500 text-black"
-                  : "border-white/20 bg-white/5"
-                }`}>
-                {isSelected && <i className="fa-solid fa-check text-[10px]"></i>}
-              </div>
-            </div>
-          )}
           <div className="min-w-0 flex-1">
             <div
               className={`mb-0.5 flex min-w-0 items-center gap-2 text-sm font-semibold transition-colors duration-200 ${

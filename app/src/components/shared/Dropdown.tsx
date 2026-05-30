@@ -111,11 +111,12 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
     useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape" && isOpen) {
+          e.stopImmediatePropagation()
           setIsOpen(false)
         }
       }
-      window.addEventListener("keydown", handleEscape)
-      return () => window.removeEventListener("keydown", handleEscape)
+      window.addEventListener("keydown", handleEscape, true)
+      return () => window.removeEventListener("keydown", handleEscape, true)
     }, [isOpen])
 
     const updateMenuPosition = useCallback(() => {

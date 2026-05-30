@@ -124,6 +124,51 @@ export function Members({
     }
   }, [memberSearch, enrollmentFilter])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedIds((prev) => {
+          if (prev.size > 0) {
+            e.preventDefault()
+            return new Set()
+          }
+          return prev
+        })
+        if (
+          document.activeElement instanceof HTMLInputElement &&
+          document.activeElement.type === "search"
+        ) {
+          document.activeElement.blur()
+        }
+        return
+      }
+
+      const isCmdOrCtrl = e.metaKey || e.ctrlKey
+      if (isCmdOrCtrl && e.key.toLowerCase() === "a") {
+        const target = e.target as HTMLElement
+        const isInputField =
+          target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable
+
+        if (!isInputField) {
+          e.preventDefault()
+          setSelectedIds(new Set(filteredMembers.map((m) => m.person_id)))
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [filteredMembers])
+
+  useEffect(() => {
+    onHasSelectedMemberChange?.(selectedIds.size > 0)
+    return () => {
+      onHasSelectedMemberChange?.(false)
+    }
+  }, [selectedIds, onHasSelectedMemberChange])
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop)
   }, [])

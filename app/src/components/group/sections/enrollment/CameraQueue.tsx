@@ -406,11 +406,15 @@ export function CameraQueue({
         if (nextPending !== -1) {
           setCurrentIndex(nextPending)
         }
+      } else if (e.key === "Escape") {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        onClose?.()
       }
     }
 
-    window.addEventListener("keydown", handleKeyPress)
-    return () => window.removeEventListener("keydown", handleKeyPress)
+    window.addEventListener("keydown", handleKeyPress, true)
+    return () => window.removeEventListener("keydown", handleKeyPress, true)
   }, [
     currentMember,
     isProcessing,
@@ -421,6 +425,7 @@ export function CameraQueue({
     members,
     isQueueFinished,
     findNextPendingIndex,
+    onClose,
   ])
 
   // Automatically start camera in queue mode if queue is started and not already streaming

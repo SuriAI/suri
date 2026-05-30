@@ -59,14 +59,14 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
         !!document.querySelector(".z-100:not(.pointer-events-none)") ||
         !!document.querySelector('[role="dialog"]')
 
-      if (isZustandSubModalOpen || isDomSubModalOpen) return
+      if (isZustandSubModalOpen || isDomSubModalOpen || settings.hasSelectedMember) return
 
       onBack()
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isModal, onBack])
+  }, [isModal, onBack, settings.hasSelectedMember])
 
   const groupSections: {
     id: GroupSection

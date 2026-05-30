@@ -2,7 +2,7 @@ import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Modal } from "@/components/common"
 
-interface AntiSpoofDetectionModalProps {
+interface EnrollmentInfoModalProps {
   isOpen: boolean
   dontShowAgain: boolean
   onClose: () => void
@@ -10,37 +10,31 @@ interface AntiSpoofDetectionModalProps {
   onDontShowAgainChange: (checked: boolean) => void
 }
 
-export function AntiSpoofDetectionModal({
+export function EnrollmentInfoModal({
   isOpen,
   dontShowAgain,
   onClose,
   onConfirm,
   onDontShowAgainChange,
-}: AntiSpoofDetectionModalProps) {
+}: EnrollmentInfoModalProps) {
   const slides = [
     {
-      title: "Use balanced lighting",
+      title: "Use the Camera",
       description:
-        "Use even front lighting. Avoid dim and strong lighting that can make a real face fail liveness.",
-      imageSrc: "./assets/anti-spoof/check-lighting.png",
-      imageAlt: "Admin setup slide showing balanced face lighting for anti-spoof setup.",
+        "Enrolling members using the scanner's actual camera ensures the captured face data matches the local lighting, environment, and camera sensor. This provides the most consistent and accurate recognition during daily scanning.",
     },
     {
-      title: "Frame the face properly",
+      title: "Proper Framing & Pose",
       description:
-        "Make sure the face is large enough and centered in the camera view to less likely avoid getting stuck on move-closer or centering prompts.",
-      imageSrc: "./assets/anti-spoof/check-framing.png",
-      imageAlt: "Admin setup slide showing proper face framing and camera distance.",
+        "Have the member face the camera directly with open eyes and a neutral expression. Avoid dim spaces, harsh shadows, or accessories (like hats or sunglasses) that obstruct the face for a clean scan.",
     },
     {
-      title: "Keep the camera clear",
+      title: "Use File Upload",
       description:
-        "Make sure the camera looks sharp and not blurry. If the image seems soft or hazy, wipe the lens first so the face stays clear during verification.",
-      imageSrc: "./assets/anti-spoof/check-camera-clarity.png",
-      imageAlt:
-        "Admin setup slide showing a clear camera lens and sharp face preview for anti-spoof setup.",
+        "If a member is not physically present, click 'Upload' at the bottom. Ensure the uploaded photo is sharp, well-lit, and front-facing so the system can detect and enroll the face cleanly.",
     },
   ] as const
+
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
 
@@ -95,50 +89,29 @@ export function AntiSpoofDetectionModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      maxWidth="max-w-[640px]"
-      title="Before Enabling Liveness">
+      maxWidth="max-w-[480px]"
+      title="Enrollment Guidelines">
       <div className="space-y-6 py-2">
-        {/* Content Area */}
-        <div className="relative min-h-[220px] overflow-hidden">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
-            <div className="relative h-[220px] w-[260px] shrink-0 overflow-hidden rounded-[18px] border border-white/8 bg-[#0d131b]">
-              <AnimatePresence initial={false} mode="wait" custom={direction}>
-                <motion.img
-                  key={currentSlide.imageSrc}
-                  custom={direction}
-                  src={currentSlide.imageSrc}
-                  alt={currentSlide.imageAlt}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={slideTransition}
-                  className="absolute inset-0 block h-[220px] w-full object-cover"
-                />
-              </AnimatePresence>
-            </div>
-
-            <div className="relative flex min-h-[220px] min-w-0 flex-1 flex-col justify-start overflow-hidden pt-3">
-              <AnimatePresence initial={false} mode="wait" custom={direction}>
-                <motion.div
-                  key={step}
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={slideTransition}
-                  className="w-full">
-                  <div className="mb-2 text-[15px] font-semibold text-white/92">
-                    {currentSlide.title}
-                  </div>
-                  <p className="max-w-[320px] text-[12px] leading-relaxed text-white/60">
-                    {currentSlide.description}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
+        {/* Slide Content Area */}
+        <div className="relative min-h-[110px] overflow-hidden">
+          <AnimatePresence initial={false} mode="wait" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={slideTransition}
+              className="w-full">
+              <div className="mb-2 text-[15px] font-semibold text-white/92">
+                {currentSlide.title}
+              </div>
+              <p className="text-[12px] leading-relaxed text-white/60">
+                {currentSlide.description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Bottom Actions */}
@@ -165,7 +138,7 @@ export function AntiSpoofDetectionModal({
               type="button"
               onClick={isLastStep ? handleConfirm : () => navigateToStep(step + 1)}
               className="flex h-9 w-24 items-center justify-center rounded-lg bg-cyan-500 text-[10px] font-semibold tracking-[0.16em] text-slate-950 uppercase transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
-              {isLastStep ? "Enable" : "Next"}
+              {isLastStep ? "Continue" : "Next"}
             </button>
           </div>
         </div>

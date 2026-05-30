@@ -9,6 +9,8 @@ import { useDialog } from "@/components/shared"
 import { CameraFeed } from "@/components/group/sections/enrollment/components/CameraFeed"
 import { UploadArea } from "@/components/group/sections/enrollment/components/UploadArea"
 import { ResultView } from "@/components/group/sections/enrollment/components/ResultView"
+import { useUIStore } from "@/components/main/stores"
+import { EnrollmentInfoModal } from "@/components/group/sections/enrollment/components/EnrollmentInfoModal"
 
 interface FaceCaptureProps {
   group: AttendanceGroup
@@ -36,6 +38,11 @@ export function FaceCapture({
 
   const [source, setSource] = useState<CaptureSource>(initialSource ?? "live")
   const [selectedMemberId, setSelectedMemberId] = useState(preSelectedId ?? "")
+
+  const enrollmentInfoDismissed = useUIStore((state) => state.enrollmentInfoDismissed)
+  const setEnrollmentInfoDismissed = useUIStore((state) => state.setEnrollmentInfoDismissed)
+  const [showInfoModal, setShowInfoModal] = useState(false)
+  const [dontShowAgainChecked, setDontShowAgainChecked] = useState(false)
 
   const memberStatus = useMemo(() => {
     const status = new Map<string, boolean>()
@@ -72,9 +79,26 @@ export function FaceCapture({
   const framesReady = frames.some((f) => f.status === "ready" || f.status === "enrolled")
   const isProcessing = frames.some((f) => f.status === "processing")
 
+  // Trigger modal on member select if not already dismissed
+  useEffect(() => {
+    if (selectedMemberId && !enrollmentInfoDismissed) {
+      setShowInfoModal(true)
+      setDontShowAgainChecked(false)
+    } else {
+      setShowInfoModal(false)
+    }
+  }, [selectedMemberId, enrollmentInfoDismissed])
+
   useEffect(() => {
     let active = true
-    if (source === "live" && selectedMemberId && !isStreaming && !framesReady && !successMessage) {
+    if (
+      source === "live" &&
+      selectedMemberId &&
+      !showInfoModal &&
+      !isStreaming &&
+      !framesReady &&
+      !successMessage
+    ) {
       const timer = setTimeout(() => {
         if (active) startCamera()
       }, 100)
@@ -83,7 +107,15 @@ export function FaceCapture({
     return () => {
       active = false
     }
-  }, [source, selectedMemberId, isStreaming, framesReady, successMessage, startCamera])
+  }, [
+    source,
+    selectedMemberId,
+    showInfoModal,
+    isStreaming,
+    framesReady,
+    successMessage,
+    startCamera,
+  ])
 
   useEffect(() => {
     if (onSelectedMemberChange) {
@@ -125,10 +157,23 @@ export function FaceCapture({
 
   const resetWorkflow = useCallback(() => {
     resetFrames()
-    if (source === "live") {
+    if (source === "live" && !showInfoModal) {
       startCamera()
     }
-  }, [resetFrames, source, startCamera])
+  }, [resetFrames, source, startCamera, showInfoModal])
+
+  const handleConfirmInfoModal = useCallback(() => {
+    if (dontShowAgainChecked) {
+      setEnrollmentInfoDismissed(true)
+    }
+    setShowInfoModal(false)
+  }, [dontShowAgainChecked, setEnrollmentInfoDismissed])
+
+  const handleCloseInfoModal = useCallback(() => {
+    setShowInfoModal(false)
+    setSelectedMemberId("")
+    resetEnrollment()
+  }, [resetEnrollment])
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -149,11 +194,16 @@ export function FaceCapture({
           e.preventDefault()
           void handleWrapperEnroll()
         }
+      } else if (e.key === "Escape") {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        setSelectedMemberId("")
+        resetEnrollment()
       }
     }
 
-    window.addEventListener("keydown", handleKeyPress)
-    return () => window.removeEventListener("keydown", handleKeyPress)
+    window.addEventListener("keydown", handleKeyPress, true)
+    return () => window.removeEventListener("keydown", handleKeyPress, true)
   }, [
     selectedMemberId,
     source,
@@ -165,6 +215,7 @@ export function FaceCapture({
     handleCaptureFromCamera,
     resetWorkflow,
     handleWrapperEnroll,
+    resetEnrollment,
   ])
 
   const selectedMemberName = useMemo(() => {
@@ -207,6 +258,14 @@ export function FaceCapture({
           </div>
         </div>
       </Modal>
+
+      <EnrollmentInfoModal
+        isOpen={showInfoModal}
+        dontShowAgain={dontShowAgainChecked}
+        onClose={handleCloseInfoModal}
+        onConfirm={handleConfirmInfoModal}
+        onDontShowAgainChange={setDontShowAgainChecked}
+      />
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
