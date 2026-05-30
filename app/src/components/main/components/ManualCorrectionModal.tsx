@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Modal } from "@/components/common"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
+import { getActiveWebSocketService } from "@/services/WebSocketService"
 import type { AttendanceRecord } from "@/components/main/types"
 
 interface ManualCorrectionModalProps {
@@ -56,6 +57,12 @@ export function ManualCorrectionModal({
           next.delete(cooldownKey)
           return next
         })
+
+        // Dynamic Backend Cooldown Reset: Trigger config reload over the active socket to wipe the Python cache
+        const activeSocket = getActiveWebSocketService()
+        if (activeSocket && activeSocket.isWebSocketReady()) {
+          activeSocket.updateLiveConfig({ groupId: store.currentGroup.id })
+        }
       }
 
       setSuccess(`${displayName} attendance entry removed`)

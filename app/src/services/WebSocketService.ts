@@ -17,6 +17,12 @@ export interface WebSocketEventMap {
   attendance_event: import("../components/main/types").AttendanceEvent
 }
 
+let activeWebSocketServiceInstance: WebSocketService | null = null
+
+export function getActiveWebSocketService(): WebSocketService | null {
+  return activeWebSocketServiceInstance
+}
+
 interface WebSocketConfig {
   baseUrl: string
 }
@@ -145,6 +151,8 @@ export class WebSocketService {
             if (socket !== this.ws) {
               return
             }
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            activeWebSocketServiceInstance = this
             this.setWebSocketStatus("connected")
             this.notifyHandlers("connection", {
               status: "connected",
@@ -219,6 +227,9 @@ export class WebSocketService {
   }
 
   disconnect(): void {
+    if (activeWebSocketServiceInstance === this) {
+      activeWebSocketServiceInstance = null
+    }
     if (this.ws) {
       this.setWebSocketStatus("disconnected")
       this.ws.close()
