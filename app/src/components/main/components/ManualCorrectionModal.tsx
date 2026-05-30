@@ -48,6 +48,16 @@ export function ManualCorrectionModal({
       await attendanceManager.voidRecord(record.id, trimmedReason, "desktop_admin")
       const store = useAttendanceStore.getState()
       store.setRecentAttendance(store.recentAttendance.filter((item) => item.id !== record.id))
+
+      if (store.currentGroup) {
+        const cooldownKey = `${record.person_id}-${store.currentGroup.id}`
+        store.setPersistentCooldowns((prev) => {
+          const next = new Map(prev)
+          next.delete(cooldownKey)
+          return next
+        })
+      }
+
       setSuccess(`${displayName} attendance entry removed`)
       await Promise.resolve(onVoided())
       handleClose()
