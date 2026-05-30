@@ -106,9 +106,7 @@ export function useCameraControl({
       const currentStatus = webSocketServiceRef.current?.getWebSocketStatus() || "disconnected"
       if (currentStatus !== "connected") {
         try {
-          setError("Connecting to detection service...")
           await initializeWebSocket()
-          setError(null)
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Unknown error"
           setError(`Failed to connect to detection service: ${errorMessage}`)
