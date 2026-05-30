@@ -425,7 +425,7 @@ export function Attendance({
                 <div className="text-sm font-medium text-white/90">Retention Policy</div>
                 <InfoPopover
                   title="Data Retention"
-                  description="Controls how long attendance logs and biometric signatures are stored in the local database."
+                  description="Controls how long attendance records and biometric signatures are stored in the local database."
                   detailsNode={[
                     <div key="how-it-works" className="space-y-1.5">
                       <div className="font-semibold text-white/90">How it works:</div>
