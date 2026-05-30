@@ -28,9 +28,6 @@ interface AttendancePanelProps {
 const sidebarActionButtonClassName =
   "flex h-9 w-9 shrink-0 items-center justify-center border border-white/[0.08] bg-white/[0.02] text-white/45 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
 
-const sidebarDropdownIconButtonClassName =
-  "h-9 w-full border border-white/[0.08] bg-white/[0.02] px-0 text-white/45 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus:border-white/20 focus:text-white focus:outline-none"
-
 const sidebarActionIconClassName =
   "pointer-events-none text-sm text-current transition-colors duration-200"
 
@@ -464,8 +461,8 @@ export const AttendancePanel = memo(function AttendancePanel({
       {!isPanelLoading && !isPanelSwitchPending && recentAttendance.length > 0 && (
         <div className="shrink-0 px-3 pb-3">
           <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center">
-              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/5 bg-white/5 transition-colors duration-200 focus-within:border-white/20">
+            <div className="group/bar flex min-w-0 flex-1 items-center">
+              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/5 bg-white/5 transition-colors duration-200 group-focus-within/bar:border-white/20 focus-within:border-white/20">
                 <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45" />
                 <input
                   type="text"
@@ -501,7 +498,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                       </span>
                     }
                     menuWidth={120}
-                    buttonClassName={`${sidebarDropdownIconButtonClassName} rounded-r-lg rounded-l-none`}
+                    buttonClassName={`h-9 w-full !border-white/5 !bg-white/5 group-focus-within/bar:!border-white/20 border border-l-0 rounded-l-none rounded-r-lg px-0 text-white/45 transition-all duration-200 hover:!bg-white/[0.08] hover:text-white focus:!border-white/20 focus:text-white focus:outline-none`}
                     showPlaceholderOption={false}
                     allowClear={false}
                   />
@@ -592,13 +589,13 @@ export const AttendancePanel = memo(function AttendancePanel({
                   {!currentGroup ?
                     <ScrollCenteredEmptyState>
                       <div className="text-center text-xs text-white/55">
-                        Select a group to view today&apos;s attendance logs
+                        Select a group to view today&apos;s attendance records
                       </div>
                     </ScrollCenteredEmptyState>
                   : effectiveRecordScope === "today" ?
                     <ScrollCenteredEmptyState>
                       <div className="text-center text-xs text-white/55">
-                        No attendance logs recorded today
+                        No attendance recorded today
                       </div>
                     </ScrollCenteredEmptyState>
                   : groupMembers.length === 0 ?
@@ -629,7 +626,7 @@ export const AttendancePanel = memo(function AttendancePanel({
                     </ScrollCenteredEmptyState>
                   : <ScrollCenteredEmptyState>
                       <div className="text-center text-xs text-white/55">
-                        No attendance logs yet
+                        No attendance recorded yet
                       </div>
                     </ScrollCenteredEmptyState>
                   }

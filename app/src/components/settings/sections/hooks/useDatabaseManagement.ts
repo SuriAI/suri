@@ -409,7 +409,7 @@ export function useDatabaseManagement(
 
   const handlePurgeHistory = useCallback(
     async (skipConfirmation = false) => {
-      const confirmMessage = `Purge ALL attendance history logs?\n\nThis will delete all historical records and daily sessions. Configured groups, member profiles, and biometric face profiles will remain safe. This cannot be undone.`
+      const confirmMessage = `Purge ALL attendance history?\n\nThis will delete all historical records and daily sessions. Configured groups, member profiles, and biometric face profiles will remain safe. This cannot be undone.`
 
       if (!skipConfirmation) {
         if (dialog) {
@@ -443,7 +443,7 @@ export function useDatabaseManagement(
             message: "Successfully purged all attendance records and sessions.",
           })
         } else {
-          alert("✓ Successfully purged all history logs")
+          alert("✓ Successfully purged all history records")
         }
       } catch (error) {
         console.error("Error purging history:", error)

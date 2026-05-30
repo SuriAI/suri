@@ -286,7 +286,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-white/90">Linked Device</div>
                     <p className="mt-0.5 text-xs text-white/65">
-                      Device paired. Attendance logs are syncing automatically.
+                      Device paired. Attendance records are syncing automatically.
                     </p>
                   </div>
                   <button
@@ -475,7 +475,7 @@ function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundaries
               </li>
               <li>
                 <span className="font-semibold text-white/80">Attendance History:</span> Time-in and
-                time-out logs for reporting.
+                time-out records for reporting.
               </li>
               <li>
                 <span className="font-semibold text-white/80">Device Status:</span> Hostname,

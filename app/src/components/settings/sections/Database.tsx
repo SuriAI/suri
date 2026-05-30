@@ -283,7 +283,7 @@ export function Database({
                 <code className="rounded-sm bg-white/5 px-1.5 py-0.5 font-mono text-[11px] text-cyan-400/60">
                   .facenox
                 </code>{" "}
-                file containing all members, history, and biometric profiles.
+                file containing all members, history, and face profiles.
               </p>
             </div>
             <button
@@ -466,12 +466,10 @@ export function Database({
                 {/* Action 2: Reset Face Data */}
                 <div className="flex flex-col gap-6 py-6 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0 flex-1 text-left">
-                    <h4 className="text-[15px] font-semibold text-red-400/80">
-                      Reset Biometric Data
-                    </h4>
+                    <h4 className="text-[15px] font-semibold text-red-400/80">Reset Face Data</h4>
                     <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                       Wipes all face recognition signatures. Enrolled members will need to re-enroll
-                      their biometric profiles.
+                      their face profiles.
                     </p>
                   </div>
                   <button
@@ -482,15 +480,15 @@ export function Database({
                   </button>
                 </div>
 
-                {/* Action 3: Purge Attendance Logs */}
+                {/* Action 3: Purge Attendance History */}
                 <div className="flex flex-col gap-6 py-6 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0 flex-1 text-left">
                     <h4 className="text-[15px] font-semibold text-red-400/80">
-                      Purge Attendance Logs
+                      Purge Attendance History
                     </h4>
                     <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                       Permanently wipes all daily attendance check-ins, checkout timestamps, and
-                      history records. Configured groups, member profiles, and biometric face
+                      history records. Configured groups, member profiles, and enrolled face
                       profiles will remain safe.
                     </p>
                   </div>
