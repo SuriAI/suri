@@ -118,14 +118,14 @@ async def import_metadata(
         groups_count = 0
         for group in request.groups:
             existing_group = await repo.get_group(group.id)
+            remote_id = group.remote_id or group.id
             group_payload = {
                 "id": group.id,
                 "name": group.name,
                 "is_active": group.is_active,
                 "settings": group.settings or {},
+                "remote_id": remote_id,
             }
-            if group.remote_id:
-                group_payload["remote_id"] = group.remote_id
             if group.created_at:
                 group_payload["created_at"] = group.created_at
             if existing_group:
@@ -137,6 +137,7 @@ async def import_metadata(
         members_count = 0
         for member in request.members:
             existing_member = await repo.get_member(member.person_id)
+            remote_id = member.remote_id or member.person_id
             member_payload = {
                 "person_id": member.person_id,
                 "group_id": member.group_id,
@@ -147,11 +148,10 @@ async def import_metadata(
                 "has_consent": member.has_consent,
                 "consent_granted_at": member.consent_granted_at,
                 "consent_granted_by": member.consent_granted_by,
+                "remote_id": remote_id,
             }
             if member.id:
                 member_payload["id"] = member.id
-            if member.remote_id:
-                member_payload["remote_id"] = member.remote_id
             if member.joined_at:
                 member_payload["joined_at"] = member.joined_at
             if existing_member:
@@ -167,6 +167,7 @@ async def import_metadata(
                         {
                             "id": member.group_id,
                             "name": f"Cloud Group ({member.group_id[:6]})",
+                            "remote_id": member.group_id,
                         }
                     )
                 await repo.add_member(member_payload)
@@ -178,7 +179,7 @@ async def import_metadata(
 
         pulled_group_ids = {g.id for g in request.groups}
         group_query = select(AttendanceGroup).where(
-            AttendanceGroup.remote_id.isnot(None),
+            AttendanceGroup.is_deleted.is_(False),
         )
         if pulled_group_ids:
             group_query = group_query.where(AttendanceGroup.id.notin_(pulled_group_ids))
@@ -188,7 +189,7 @@ async def import_metadata(
 
         pulled_member_ids = {m.person_id for m in request.members}
         member_query = select(AttendanceMember).where(
-            AttendanceMember.remote_id.isnot(None),
+            AttendanceMember.is_deleted.is_(False),
         )
         if pulled_member_ids:
             member_query = member_query.where(
