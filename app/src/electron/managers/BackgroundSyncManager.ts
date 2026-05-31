@@ -281,38 +281,25 @@ export class BackgroundSyncManager {
 
       while (true) {
         const { value, done } = await reader.read()
-        if (done) {
-          console.log("[Sync Debug] SSE stream reader finished (done = true)")
-          break
-        }
+        if (done) break
 
         const chunk = decoder.decode(value, { stream: true })
-        console.log(`[Sync Debug] Raw SSE chunk received (${chunk.length} bytes):`, JSON.stringify(chunk))
         const lines = chunk.split("\n")
 
         for (const line of lines) {
-          if (!line.trim()) continue
-          console.log("[Sync Debug] Processing SSE stream line:", JSON.stringify(line))
-
           if (line.startsWith("data: ")) {
             this.lastEventReceivedAt = Date.now()
-            const rawDataString = line.slice(6)
             try {
-              const data = JSON.parse(rawDataString)
-              console.log("[Sync Debug] Decoded SSE JSON payload:", data)
+              const data = JSON.parse(line.slice(6))
               console.log("[Sync] Real-time event received:", data.type)
 
               if (data.type === "POLICY_UPDATE" || data.type === "SYNC_REQUEST" || data.type === "ROSTER_UPDATE") {
-                console.log(`[Sync] Match hit for type "${data.type}". Triggering immediate sync...`)
+                console.log("[Sync] Triggering immediate sync from real-time command.")
                 void this.performSync()
-              } else {
-                console.log(`[Sync Debug] Event type "${data.type}" did not match active trigger filters. Ignored.`)
               }
-            } catch (err: unknown) {
-              console.warn("[Sync Debug] Failed to parse SSE JSON payload:", rawDataString, err)
+            } catch {
+              // Ignore heartbeat or malformed JSON
             }
-          } else {
-            console.log("[Sync Debug] Ignored non-data line (e.g. heartbeat or comment):", JSON.stringify(line))
           }
         }
       }
