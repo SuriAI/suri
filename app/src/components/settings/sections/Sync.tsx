@@ -176,7 +176,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
     const localTime = new Date().toLocaleTimeString()
 
     logs.push(`[${localTime}] [system] Initializing remote sync daemon on "${deviceName}"...`)
-    logs.push(`[${localTime}] [network] Channel established: wss://sync.facenox.com/v1/stream`)
+    const secureEndpoint = config.remoteBaseUrl ? `${config.remoteBaseUrl.replace(/\/+$/, "")}/api/sync/events` : "https://api.facenox.com/api/sync/events"
+    logs.push(`[${localTime}] [network] Event stream established: GET ${secureEndpoint}`)
     logs.push(`[${localTime}] [auth] Device verified. ID: ${config.deviceId || "unknown"}`)
 
     if (config.lastSyncedAt) {
@@ -405,7 +406,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                 </h4>
               </div>
               <span className="font-mono text-[9px] tracking-wider text-white/30">
-                CHANNEL: SECURE_WSS
+                CHANNEL: SECURE_SSE
               </span>
             </div>
 
