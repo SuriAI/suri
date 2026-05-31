@@ -14,6 +14,7 @@ interface MemberEntryProps {
   onSaveEdit: (personId: string, field: MemberField, value: string) => void
   onCancelEditing: () => void
   onDeleteMember: (personId: string, name: string) => void
+  isPaired?: boolean
 }
 
 export const MemberEntry = React.memo(
@@ -28,6 +29,7 @@ export const MemberEntry = React.memo(
     onSaveEdit,
     onCancelEditing,
     onDeleteMember,
+    isPaired,
   }: MemberEntryProps) {
     const isEditing = (field: MemberField) =>
       editingMember?.personId === member.person_id && editingMember.field === field
@@ -129,15 +131,17 @@ export const MemberEntry = React.memo(
               </div>
             }
 
-            <Tooltip content="Delete member" position="top">
-              <button
-                onClick={() => onDeleteMember(member.person_id, member.name)}
-                disabled={deletingMember === member.person_id}
-                className="flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-red-500/10 hover:text-red-400 focus:outline-none disabled:opacity-50">
-                <i
-                  className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can opacity-40 group-hover/member:opacity-75 group-hover/member:hover:opacity-100"} text-[11px] transition-all`}></i>
-              </button>
-            </Tooltip>
+            {!isPaired && (
+              <Tooltip content="Delete member" position="top">
+                <button
+                  onClick={() => onDeleteMember(member.person_id, member.name)}
+                  disabled={deletingMember === member.person_id}
+                  className="flex h-7 w-7 items-center justify-center rounded-md border-0 bg-transparent text-white/55 shadow-none transition-all duration-300 outline-none hover:bg-red-500/10 hover:text-red-400 focus:outline-none disabled:opacity-50">
+                  <i
+                    className={`fa-solid ${deletingMember === member.person_id ? "fa-spinner fa-spin" : "fa-trash-can opacity-40 group-hover/member:opacity-75 group-hover/member:hover:opacity-100"} text-[11px] transition-all`}></i>
+                </button>
+              </Tooltip>
+            )}
           </div>
           {savingMember === member.person_id && (
             <i className="fa-solid fa-spinner fa-spin absolute right-2 text-[10px] text-white/55"></i>

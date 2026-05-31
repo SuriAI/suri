@@ -263,6 +263,7 @@ declare global {
       syncedAt?: string
     }>
     triggerDebouncedSync: () => Promise<void>
+    onDataChanged: (callback: () => void) => () => void
   }
 
   interface BackendServiceAPI {

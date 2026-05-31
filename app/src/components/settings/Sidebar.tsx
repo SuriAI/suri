@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Dropdown, Tooltip } from "@/components/shared"
 import { generateGroupDisplayNames } from "@/utils"
@@ -35,6 +35,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sections,
   groupSections,
 }) => {
+  const [isPaired, setIsPaired] = useState(false)
+
+  useEffect(() => {
+    window.electronAPI?.sync
+      .getConfig()
+      .then((c) => setIsPaired(c.connected))
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[220px] lg:w-[240px]">
       {/* Workspace Switcher Header */}
@@ -68,20 +77,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               align="left"
             />
           </div>
-          <Tooltip content="Create Group" position="bottom">
-            <button
-              onClick={() => {
-                setActiveSection("group")
-                if (activeSection !== "group") {
-                  setGroupInitialSection("overview")
-                }
-                setEnrollmentState(null, null)
-                setTriggerCreateGroup(Date.now())
-              }}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/65 transition-all hover:border-white/10 hover:bg-white/[0.08] hover:text-white active:scale-95">
-              <i className="fa-solid fa-plus text-[11px]"></i>
-            </button>
-          </Tooltip>
+          {!isPaired && (
+            <Tooltip content="Create Group" position="bottom">
+              <button
+                onClick={() => {
+                  setActiveSection("group")
+                  if (activeSection !== "group") {
+                    setGroupInitialSection("overview")
+                  }
+                  setEnrollmentState(null, null)
+                  setTriggerCreateGroup(Date.now())
+                }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/5 bg-white/5 text-white/65 transition-all hover:border-white/10 hover:bg-white/[0.08] hover:text-white active:scale-95">
+                <i className="fa-solid fa-plus text-[11px]"></i>
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
 

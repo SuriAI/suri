@@ -293,6 +293,11 @@ export const AttendancePanel = memo(function AttendancePanel({
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [isManualCorrectionOpen, setIsManualCorrectionOpen] = useState(false)
   const [recordToVoid, setRecordToVoid] = useState<AttendanceRecord | null>(null)
+  const [isPaired, setIsPaired] = useState(false)
+
+  useEffect(() => {
+    window.electronAPI.sync.getConfig().then((c) => setIsPaired(c.connected))
+  }, [])
 
   const todayPresentPersonIds = useMemo(() => {
     const today = getLocalDateString()
@@ -427,14 +432,16 @@ export const AttendancePanel = memo(function AttendancePanel({
                 showPlaceholderOption={false}
               />
             </div>
-            <Tooltip content="Create Group" position="top">
-              <button
-                onClick={() => setShowGroupManagement(true)}
-                className={`${sidebarActionButtonClassName} rounded-none border-r-0`}
-                aria-label="Create Group">
-                <i className={`fa-solid fa-plus ${sidebarActionIconClassName}`}></i>
-              </button>
-            </Tooltip>
+            {!isPaired && (
+              <Tooltip content="Create Group" position="top">
+                <button
+                  onClick={() => setShowGroupManagement(true)}
+                  className={`${sidebarActionButtonClassName} rounded-none border-r-0`}
+                  aria-label="Create Group">
+                  <i className={`fa-solid fa-plus ${sidebarActionIconClassName}`}></i>
+                </button>
+              </Tooltip>
+            )}
             <Tooltip content="Members" position="top">
               <button
                 onClick={() => setShowManualEntry(true)}
@@ -447,13 +454,17 @@ export const AttendancePanel = memo(function AttendancePanel({
         </div>
       : <div className="flex min-h-0 flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="text-center text-xs text-white/55">No groups created</div>
-            <button
-              onClick={() => setShowGroupManagement(true)}
-              className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
-              <i className="fa-solid fa-plus text-xs"></i>
-              Create Group
-            </button>
+            <div className="text-center text-xs text-white/55">
+              {isPaired ? "Groups are managed from the Management Dashboard" : "No groups created"}
+            </div>
+            {!isPaired && (
+              <button
+                onClick={() => setShowGroupManagement(true)}
+                className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
+                <i className="fa-solid fa-plus text-xs"></i>
+                Create Group
+              </button>
+            )}
           </div>
         </div>
       }
@@ -602,14 +613,18 @@ export const AttendancePanel = memo(function AttendancePanel({
                     <ScrollCenteredEmptyState>
                       <div className="flex flex-col items-center justify-center space-y-3">
                         <div className="text-center text-xs text-white/55">
-                          This group has no members
+                          {isPaired ?
+                            "Members are managed from the Management Dashboard"
+                          : "This group has no members"}
                         </div>
-                        <button
-                          onClick={handleOpenSettingsForEnrollment}
-                          className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
-                          <i className="fa-solid fa-user-plus text-xs"></i>
-                          Add Member
-                        </button>
+                        {!isPaired && (
+                          <button
+                            onClick={handleOpenSettingsForEnrollment}
+                            className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs text-white/45 transition-colors hover:bg-white/[0.05] hover:text-white">
+                            <i className="fa-solid fa-user-plus text-xs"></i>
+                            Add Member
+                          </button>
+                        )}
                       </div>
                     </ScrollCenteredEmptyState>
                   : !groupMembers.some((m) => m.has_face_data) ?
@@ -640,7 +655,7 @@ export const AttendancePanel = memo(function AttendancePanel({
         onSuccess={refreshAttendanceData}
         members={groupMembers}
         presentPersonIds={todayPresentPersonIds}
-        onAddMember={handleOpenSettingsForEnrollment}
+        onAddMember={isPaired ? undefined : handleOpenSettingsForEnrollment}
         currentGroup={currentGroup}
       />
       {recordToVoid && (

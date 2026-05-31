@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from api.schemas import (
     SuccessResponse,
     CleanupRequest,
+    ImportMetadataRequest,
+    ImportMetadataResponse,
 )
 from api.deps import get_repository
 from database.repository import AttendanceRepository
@@ -101,3 +103,126 @@ async def purge_attendance_history(
     except Exception as e:
         logger.error(f"Error during history purge: {e}")
         raise HTTPException(status_code=500, detail=f"Purge failed: {str(e)}")
+
+
+@router.post("/import-metadata", response_model=ImportMetadataResponse)
+async def import_metadata(
+    request: ImportMetadataRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """
+    Import metadata (groups and members) pulled from the cloud dashboard.
+    Does not affect existing local biometrics.
+    """
+    try:
+        groups_count = 0
+        for group in request.groups:
+            existing_group = await repo.get_group(group.id)
+            group_payload = {
+                "id": group.id,
+                "name": group.name,
+                "is_active": group.is_active,
+                "settings": group.settings or {},
+            }
+            if group.remote_id:
+                group_payload["remote_id"] = group.remote_id
+            if group.created_at:
+                group_payload["created_at"] = group.created_at
+            if existing_group:
+                await repo.update_group(group.id, group_payload)
+            else:
+                await repo.create_group(group_payload)
+            groups_count += 1
+
+        members_count = 0
+        for member in request.members:
+            existing_member = await repo.get_member(member.person_id)
+            member_payload = {
+                "person_id": member.person_id,
+                "group_id": member.group_id,
+                "name": member.name,
+                "role": member.role,
+                "email": member.email,
+                "is_active": member.is_active,
+                "has_consent": member.has_consent,
+                "consent_granted_at": member.consent_granted_at,
+                "consent_granted_by": member.consent_granted_by,
+            }
+            if member.id:
+                member_payload["id"] = member.id
+            if member.remote_id:
+                member_payload["remote_id"] = member.remote_id
+            if member.joined_at:
+                member_payload["joined_at"] = member.joined_at
+            if existing_member:
+                await repo.update_member(member.person_id, member_payload)
+            else:
+                # Ensure local group exists for SQLite FK constraints
+                group_exists = await repo.get_group(member.group_id)
+                if not group_exists:
+                    logger.warning(
+                        f"Group {member.group_id} not found locally for member {member.name}. Auto-creating Group."
+                    )
+                    await repo.create_group(
+                        {
+                            "id": member.group_id,
+                            "name": f"Cloud Group ({member.group_id[:6]})",
+                        }
+                    )
+                await repo.add_member(member_payload)
+            members_count += 1
+
+        # Prune groups/members that were deleted from the cloud dashboard
+        from database.models import AttendanceGroup, AttendanceMember
+        from sqlalchemy import select
+
+        pulled_group_ids = {g.id for g in request.groups}
+        group_query = select(AttendanceGroup).where(
+            AttendanceGroup.remote_id.isnot(None),
+        )
+        if pulled_group_ids:
+            group_query = group_query.where(AttendanceGroup.id.notin_(pulled_group_ids))
+        result = await repo.session.execute(group_query)
+        for g in result.scalars().all():
+            await repo.delete_group(g.id)
+
+        pulled_member_ids = {m.person_id for m in request.members}
+        member_query = select(AttendanceMember).where(
+            AttendanceMember.remote_id.isnot(None),
+        )
+        if pulled_member_ids:
+            member_query = member_query.where(
+                AttendanceMember.person_id.notin_(pulled_member_ids)
+            )
+        result = await repo.session.execute(member_query)
+        for m in result.scalars().all():
+            m.is_active = False
+            m.is_deleted = True
+
+        await repo.session.commit()
+
+        # Update in-memory face recognizer cache just in case any active member list shifted
+        from core.lifespan import face_recognizer
+
+        if face_recognizer:
+            await face_recognizer.refresh_cache(repo.organization_id)
+
+        await repo.add_audit_log(
+            action="METADATA_PULL_IMPORTED",
+            target_type="system",
+            target_id="cloud_sync",
+            details=f"Imported {groups_count} groups and {members_count} members from cloud dashboard metadata pull.",
+        )
+
+        return ImportMetadataResponse(
+            success=True,
+            groups_count=groups_count,
+            members_count=members_count,
+        )
+
+    except Exception as e:
+        logger.error(f"Error importing cloud metadata: {e}")
+        await repo.session.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Import cloud metadata failed: {str(e)}"
+        )

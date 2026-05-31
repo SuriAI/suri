@@ -84,6 +84,7 @@ class AttendanceGroupResponse(BaseModel):
     created_at: datetime
     is_active: bool
     settings: GroupSettings
+    remote_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -137,6 +138,7 @@ class AttendanceMemberUpdate(BaseModel):
 
 
 class AttendanceMemberResponse(BaseModel):
+    id: str
     person_id: str
     group_id: str
     name: str
@@ -147,6 +149,7 @@ class AttendanceMemberResponse(BaseModel):
     has_consent: bool
     consent_granted_at: Optional[datetime] = None
     consent_granted_by: Optional[str] = None
+    remote_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -172,6 +175,7 @@ class AttendanceRecordCreate(BaseModel):
 class AttendanceRecordResponse(BaseModel):
     id: str
     person_id: str
+    member_id: str
     group_id: str
     timestamp: datetime
     confidence: float
@@ -183,6 +187,7 @@ class AttendanceRecordResponse(BaseModel):
     voided_at: Optional[datetime] = None
     voided_by: Optional[str] = None
     void_reason: Optional[str] = None
+    remote_id: Optional[str] = None
 
     @field_validator("timestamp", "voided_at", mode="before")
     @classmethod
@@ -199,6 +204,7 @@ class AttendanceRecordVoidRequest(BaseModel):
 class AttendanceSessionResponse(BaseModel):
     id: str
     person_id: str
+    member_id: str
     group_id: str
     applied_rule_id: Optional[str] = None
     date: str  # YYYY-MM-DD format
@@ -209,6 +215,7 @@ class AttendanceSessionResponse(BaseModel):
     is_late: bool
     late_minutes: Optional[int]
     notes: Optional[str]
+    remote_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -307,6 +314,7 @@ class AttendanceSettingsResponse(BaseModel):
     enable_liveness_detection: bool
     max_recognition_faces_per_frame: int
     data_retention_days: int
+    remote_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -395,3 +403,38 @@ class ImportDataRequest(BaseModel):
 
 class CleanupRequest(BaseModel):
     days_to_keep: int = Field(90, ge=1, le=365)
+
+
+class ImportedGroup(BaseModel):
+    id: str
+    name: str
+    is_active: bool = True
+    settings: Optional[Dict] = None
+    remote_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class ImportedMember(BaseModel):
+    id: Optional[str] = None
+    person_id: str
+    group_id: str
+    name: str
+    role: Optional[str] = None
+    email: Optional[str] = None
+    is_active: bool = True
+    has_consent: bool = False
+    consent_granted_at: Optional[datetime] = None
+    consent_granted_by: Optional[str] = None
+    remote_id: Optional[str] = None
+    joined_at: Optional[datetime] = None
+
+
+class ImportMetadataRequest(BaseModel):
+    groups: List[ImportedGroup]
+    members: List[ImportedMember]
+
+
+class ImportMetadataResponse(BaseModel):
+    success: bool = True
+    groups_count: int
+    members_count: int

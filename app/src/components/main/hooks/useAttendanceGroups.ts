@@ -433,6 +433,14 @@ export function useAttendanceGroups() {
     })
   }, [cachePanelData, isShellReady, currentGroup?.id])
 
+  useEffect(() => {
+    if (!window.electronAPI?.sync?.onDataChanged) return
+    const cleanup = window.electronAPI.sync.onDataChanged(() => {
+      refreshAttendanceData()
+    })
+    return cleanup
+  }, [refreshAttendanceData])
+
   return {
     currentGroup,
     setCurrentGroup: setCurrentGroupWithCache,

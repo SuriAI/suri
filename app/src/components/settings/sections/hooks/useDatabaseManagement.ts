@@ -25,6 +25,15 @@ export function useDatabaseManagement(
   const { setGroupToDelete, setShowDeleteConfirmation, showDeleteConfirmation, groupToDelete } =
     useAttendanceStore()
 
+  const [isPaired, setIsPaired] = useState(false)
+
+  useEffect(() => {
+    window.electronAPI?.sync
+      .getConfig()
+      .then((c) => setIsPaired(c.connected))
+      .catch(() => {})
+  }, [])
+
   // Initialize with groups if available to prevent "No results found" flash
   const [groupsWithMembers, setGroupsWithMembers] = useState<GroupWithMembers[]>(() =>
     groups.map((g) => ({ ...g, members: [], isLoading: true })),
@@ -269,6 +278,18 @@ export function useDatabaseManagement(
 
   const handleDeleteGroup = useCallback(
     async (groupId: string) => {
+      if (isPaired) {
+        if (dialog) {
+          await dialog.alert({
+            title: "Cannot delete group",
+            message:
+              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+            variant: "warning",
+          })
+        }
+        return
+      }
+
       const targetGroup = groups.find((group) => group.id === groupId)
       if (!targetGroup) {
         if (dialog) {
@@ -287,11 +308,23 @@ export function useDatabaseManagement(
       setShowDeleteConfirmation(true)
       setDeletingGroup(groupId)
     },
-    [groups, setGroupToDelete, setShowDeleteConfirmation, dialog],
+    [groups, setGroupToDelete, setShowDeleteConfirmation, dialog, isPaired],
   )
 
   const handleDeleteMember = useCallback(
     async (personId: string, memberName: string) => {
+      if (isPaired) {
+        if (dialog) {
+          await dialog.alert({
+            title: "Cannot delete member",
+            message:
+              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+            variant: "warning",
+          })
+        }
+        return
+      }
+
       const confirmMessage = `Delete member "${memberName}"?\n\nThis cannot be undone.`
 
       if (dialog) {
@@ -343,11 +376,23 @@ export function useDatabaseManagement(
         setDeletingMember(null)
       }
     },
-    [dialog],
+    [dialog, isPaired],
   )
 
   const handleClearAllGroups = useCallback(
     async (skipConfirmation = false) => {
+      if (isPaired) {
+        if (dialog) {
+          await dialog.alert({
+            title: "Cannot delete groups",
+            message:
+              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+            variant: "warning",
+          })
+        }
+        return
+      }
+
       const groupCount = groups.length
       const confirmMessage = `Delete ALL ${groupCount} groups and member profiles? This will permanently wipe out the entire local directory structure and soft-delete member accounts. This cannot be undone.`
 
@@ -402,7 +447,7 @@ export function useDatabaseManagement(
         setDeletingGroup(null)
       }
     },
-    [groups, onGroupsChanged, dialog],
+    [groups, onGroupsChanged, dialog, isPaired],
   )
 
   const [isPurgingHistory, setIsPurgingHistory] = useState(false)

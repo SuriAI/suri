@@ -110,11 +110,19 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   const [isAntiSpoofModalOpen, setIsAntiSpoofModalOpen] = useState(false)
   const [dontShowAntiSpoofInfoAgain, setDontShowAntiSpoofInfoAgain] = useState(false)
   const [isAuditLogModalOpen, setIsAuditLogModalOpen] = useState(false)
+  const [isPaired, setIsPaired] = useState(false)
   const [syncConfig, setSyncConfig] = useState<{
     connected: boolean
     organizationName: string
     siteName: string
   } | null>(null)
+
+  useEffect(() => {
+    window.electronAPI?.sync
+      .getConfig()
+      .then((c) => setIsPaired(c.connected))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (activeSection === "remote-sync") {
@@ -165,7 +173,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
         validInitialGroup &&
         addMemberHandler &&
         members.length > 0 &&
-        !enrollmentMode
+        !enrollmentMode &&
+        !isPaired
       ) {
         actions = (
           <div className="flex items-center gap-2">
@@ -186,7 +195,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             Back to Members
           </button>
         )
-      } else if (groupInitialSection === "overview" && validInitialGroup) {
+      } else if (groupInitialSection === "overview" && validInitialGroup && !isPaired) {
         actions = (
           <button
             onClick={openEditGroup}
@@ -265,6 +274,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     reportsExportHandlers,
     setGroupInitialSection,
     syncConfig,
+    isPaired,
   ])
 
   const handleSpoofDetectionToggle = (enabled: boolean) => {

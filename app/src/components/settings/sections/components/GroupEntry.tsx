@@ -29,6 +29,7 @@ interface GroupEntryProps {
   onCancelEditing: () => void
   onDeleteGroup: (groupId: string) => void
   onDeleteMember: (personId: string, name: string) => void
+  isPaired?: boolean
 }
 
 export function GroupEntry({
@@ -50,6 +51,7 @@ export function GroupEntry({
   onCancelEditing,
   onDeleteGroup,
   onDeleteMember,
+  isPaired,
 }: GroupEntryProps) {
   const memberCount = group.members.length
   const enrolledCount = group.members.filter((m) => m.has_face_data).length
@@ -158,18 +160,20 @@ export function GroupEntry({
         onClose={() => onToggle(group.id)}
         title={`${group.displayName || group.name} Members`}
         headerActions={
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onDeleteGroup(group.id)
-              onToggle(group.id)
-            }}
-            disabled={deletingGroup === group.id || deletingGroup === "all"}
-            className="flex h-7 items-center justify-center gap-1.5 rounded-md border-0 bg-red-500/10 px-2.5 text-[10px] font-bold tracking-wider text-red-400 uppercase shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-50">
-            <i
-              className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
-            <span>Delete Group</span>
-          </button>
+          !isPaired ?
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteGroup(group.id)
+                onToggle(group.id)
+              }}
+              disabled={deletingGroup === group.id || deletingGroup === "all"}
+              className="flex h-7 items-center justify-center gap-1.5 rounded-md border-0 bg-red-500/10 px-2.5 text-[10px] font-bold tracking-wider text-red-400 uppercase shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-50">
+              <i
+                className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
+              <span>Delete Group</span>
+            </button>
+          : undefined
         }
         maxWidth="max-w-3xl">
         <div className="p-1">
@@ -198,6 +202,7 @@ export function GroupEntry({
                     onSaveEdit={onSaveMemberEdit}
                     onCancelEditing={onCancelEditing}
                     onDeleteMember={onDeleteMember}
+                    isPaired={isPaired}
                   />
                 ))}
               </div>

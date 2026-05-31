@@ -10,6 +10,7 @@ interface OverviewProps {
   group: AttendanceGroup
   members: AttendanceMember[]
   onAddMember?: () => void
+  isPaired?: boolean
 }
 
 const toDate = (value: Date | string): Date => (value instanceof Date ? value : new Date(value))
@@ -74,7 +75,7 @@ const getDateRange = (filter: DateFilter): { start: string; end: string } => {
   return { start: getLocalDateString(monday), end: today }
 }
 
-export function Overview({ group, members, onAddMember }: OverviewProps) {
+export function Overview({ group, members, onAddMember, isPaired }: OverviewProps) {
   const fetchOverviewData = useGroupStore((state) => state.fetchOverviewData)
   const stats = useGroupStore((state) => state.overviewStats[group.id])
 
@@ -144,9 +145,13 @@ export function Overview({ group, members, onAddMember }: OverviewProps) {
     return (
       <EmptyState
         title="This group has no members"
-        description="View group activity history and attendance metrics."
+        description={
+          isPaired ?
+            "Members are managed from the Management Dashboard."
+          : "View group activity history and attendance metrics."
+        }
         action={
-          onAddMember ?
+          !isPaired && onAddMember ?
             {
               label: "Add Member",
               onClick: onAddMember,

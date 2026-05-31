@@ -84,7 +84,7 @@ class AttendanceRepository:
         group = AttendanceGroup(
             id=group_data["id"],
             name=group_data["name"],
-            created_at=to_storage_local(local_now()),
+            created_at=to_storage_local(group_data.get("created_at") or local_now()),
             late_threshold_minutes=settings.get("late_threshold_minutes"),
             late_threshold_enabled=late_threshold_enabled,
             class_start_time=class_start_time,
@@ -92,6 +92,7 @@ class AttendanceRepository:
             organization_id=self.organization_id,
             is_active=True,
             is_deleted=False,
+            remote_id=group_data.get("remote_id"),
         )
         self.session.add(group)
         # Removed individual commit to favor caller-level transactional control
@@ -276,13 +277,13 @@ class AttendanceRepository:
                 )
         else:
             member = AttendanceMember(
-                id=ulid.ulid(),
+                id=member_data.get("id") or ulid.ulid(),
                 person_id=member_data["person_id"],
                 group_id=member_data["group_id"],
                 name=member_data["name"],
                 role=member_data.get("role"),
                 email=member_data.get("email"),
-                joined_at=to_storage_local(local_now()),
+                joined_at=to_storage_local(member_data.get("joined_at") or local_now()),
                 has_consent=has_consent,
                 consent_granted_at=(
                     to_storage_local(local_now()) if has_consent else None
@@ -295,6 +296,7 @@ class AttendanceRepository:
                 is_active=True,
                 is_deleted=False,
                 organization_id=self.organization_id,
+                remote_id=member_data.get("remote_id"),
             )
             self.session.add(member)
         return member
@@ -359,13 +361,13 @@ class AttendanceRepository:
                     )
             else:
                 new_member = AttendanceMember(
-                    id=ulid.ulid(),
+                    id=m_data.get("id") or ulid.ulid(),
                     person_id=person_id,
                     group_id=m_data["group_id"],
                     name=m_data["name"],
                     role=m_data.get("role"),
                     email=m_data.get("email"),
-                    joined_at=to_storage_local(local_now()),
+                    joined_at=to_storage_local(m_data.get("joined_at") or local_now()),
                     has_consent=has_consent,
                     consent_granted_at=(
                         to_storage_local(local_now()) if has_consent else None
@@ -378,6 +380,7 @@ class AttendanceRepository:
                     is_active=True,
                     is_deleted=False,
                     organization_id=self.organization_id,
+                    remote_id=m_data.get("remote_id"),
                 )
                 self.session.add(new_member)
                 results.append(
@@ -396,6 +399,16 @@ class AttendanceRepository:
 
         result = await self.session.execute(query)
         return result.scalars().first()
+
+    async def get_members(self) -> List[AttendanceMember]:
+        query = select(AttendanceMember).where(
+            AttendanceMember.is_active,
+            AttendanceMember.is_deleted.is_(False),
+        )
+        query = self._apply_org_scope(query, AttendanceMember)
+        query = query.order_by(AttendanceMember.name.collate("NOCASE"))
+        result = await self.session.execute(query)
+        return result.scalars().all()
 
     async def get_group_members(self, group_id: str) -> List[AttendanceMember]:
         query = select(AttendanceMember).where(
@@ -699,7 +712,7 @@ class AttendanceRepository:
 
         await self.session.execute(upsert_stmt, values_to_insert)
 
-        return []
+        return values_to_insert
 
     async def get_session(
         self, person_id: str, date: str
@@ -762,6 +775,22 @@ class AttendanceRepository:
             template = template_result.scalars().first()
             settings = AttendanceSettings(**self._settings_payload(template))
             self.session.add(settings)
+
+        # Patch any NULL fields with their column defaults
+        defaults = {
+            "late_threshold_minutes": 15,
+            "enable_location_tracking": False,
+            "confidence_threshold": 0.8,
+            "attendance_cooldown_seconds": 300,
+            "relog_cooldown_seconds": 1800,
+            "enable_liveness_detection": False,
+            "max_recognition_faces_per_frame": 5,
+            "data_retention_days": 0,
+        }
+        for field, value in defaults.items():
+            if getattr(settings, field, None) is None:
+                setattr(settings, field, value)
+
         return settings
 
     async def update_settings(self, settings_data: Dict[str, Any]) -> bool:
@@ -964,6 +993,37 @@ class AttendanceRepository:
             "records_deleted": len(records_to_delete),
             "sessions_deleted": len(sessions_to_delete),
         }
+
+    async def assign_organization_id(self, org_id: str) -> Dict[str, int]:
+        """Assign organization_id to all records that currently have NULL org_id."""
+        counts = {
+            "groups": 0,
+            "members": 0,
+            "records": 0,
+            "sessions": 0,
+            "group_rules": 0,
+            "settings": 0,
+            "faces": 0,
+        }
+
+        for model, key in [
+            (AttendanceGroup, "groups"),
+            (AttendanceMember, "members"),
+            (AttendanceRecord, "records"),
+            (AttendanceSession, "sessions"),
+            (AttendanceGroupRule, "group_rules"),
+            (AttendanceSettings, "settings"),
+            (Face, "faces"),
+        ]:
+            result = await self.session.execute(
+                update(model)
+                .where(model.organization_id.is_(None))
+                .values(organization_id=org_id)
+            )
+            counts[key] = result.rowcount
+
+        await self.session.commit()
+        return counts
 
 
 class FaceRepository:

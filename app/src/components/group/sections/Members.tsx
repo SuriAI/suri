@@ -211,7 +211,12 @@ export function Members({
     }
   })()
 
+  const [isPaired, setIsPaired] = useState(false)
   const [memberToDelete, setMemberToDelete] = useState<AttendanceMember | null>(null)
+
+  useEffect(() => {
+    window.electronAPI.sync.getConfig().then((c) => setIsPaired(c.connected))
+  }, [])
 
   const [isBulkConsentModalOpen, setIsBulkConsentModalOpen] = useState(false)
   const [bulkConsentScope, setBulkConsentScope] = useState<"all" | "selected">("all")
@@ -292,9 +297,13 @@ export function Members({
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
           <EmptyState
             title="This group has no members"
-            description="Add, edit, and remove members to manage profiles and enrollment status."
+            description={
+              isPaired ?
+                "Members are managed from the Management Dashboard."
+              : "Add, edit, and remove members to manage profiles and enrollment status."
+            }
             action={
-              onAdd ?
+              !isPaired && onAdd ?
                 {
                   label: "Add Member",
                   onClick: onAdd,
@@ -560,8 +569,8 @@ export function Members({
                       isSelected={selectedIds.has(member.person_id)}
                       isSelectionMode={selectedIds.size > 0}
                       onToggleSelect={toggleSelect}
-                      onEdit={onEdit}
-                      onDelete={setMemberToDelete}
+                      onEdit={isPaired ? undefined : onEdit}
+                      onDelete={isPaired ? undefined : setMemberToDelete}
                       onResetFace={handleResetFace}
                     />
                   ))}

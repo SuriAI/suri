@@ -22,6 +22,7 @@ interface ReportsProps {
   onDaysTrackedChange?: (daysTracked: number, loading: boolean) => void
   onExportHandlersReady?: (handlers: { exportCSV: () => void }) => void
   onAddMember?: () => void
+  isPaired?: boolean
 }
 
 const DEFAULT_COLUMNS = ["name", "date", "status", "check_in_time"] as unknown as ColumnKey[]
@@ -38,6 +39,7 @@ export function Reports({
   onDaysTrackedChange,
   onExportHandlersReady,
   onAddMember,
+  isPaired,
 }: ReportsProps) {
   const storeMembers = useGroupStore((state) => state.members)
   const [editingRow, setEditingRow] = useState<RowData | null>(null)
@@ -150,9 +152,13 @@ export function Reports({
               className="flex flex-1 items-center justify-center">
               <EmptyState
                 title="This group has no members"
-                description="Generate custom attendance reports and export attendance data."
+                description={
+                  isPaired ?
+                    "Members are managed from the Management Dashboard."
+                  : "Generate custom attendance reports and export attendance data."
+                }
                 action={
-                  onAddMember ?
+                  !isPaired && onAddMember ?
                     {
                       label: "Add Member",
                       onClick: onAddMember,

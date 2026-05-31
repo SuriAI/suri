@@ -341,57 +341,56 @@ class LiveStreamService:
         from core.lifespan import liveness_detector
 
         attendance_messages: list[Dict[str, Any]] = []
-        for face, result in zip(recognition_candidates, recognition_results):
-            original_person_id = result.get("person_id")
-            member_info = group_context.members_by_person_id.get(original_person_id)
-            serialized_result = self._serialize_recognition_result(result, member_info)
-            face["recognition"] = serialized_result
+        async with AsyncSessionLocal() as session:
+            repo = AttendanceRepository(session, organization_id=self.organization_id)
+            settings = await repo.get_settings()
+            service = AttendanceService(
+                repo,
+                face_recognizer=face_recognizer,
+                ws_manager=None,
+            )
 
-            # Middle Ground: Update liveness stability with the recognized identity.
-            # If the identity changed for this track, liveness will be reset to candidate/spoof.
-            if (
-                original_person_id
-                and liveness_detector
-                and face.get("track_id") is not None
-            ):
-                face["liveness"] = liveness_detector.update_face_identity(
-                    track_id=face["track_id"],
-                    person_id=original_person_id,
-                    current_liveness=face.get("liveness", {}),
-                    namespace=client_id,
+            for face, result in zip(recognition_candidates, recognition_results):
+                original_person_id = result.get("person_id")
+                member_info = group_context.members_by_person_id.get(original_person_id)
+                serialized_result = self._serialize_recognition_result(
+                    result, member_info
                 )
+                face["recognition"] = serialized_result
 
-            if (
-                not original_person_id
-                or serialized_result["person_id"] == PROTECTED_IDENTITY
-                or not self._is_attendance_allowed(face, config)
-            ):
-                continue
-
-            cooldown_seconds = group_context.attendance_cooldown_seconds or 300
-            cooldown_key = f"{original_person_id}:{group_context.group_id}"
-            now = time.time()
-            if (
-                now - config.attendance_cooldowns.get(cooldown_key, 0.0)
-                < cooldown_seconds
-            ):
-                continue
-
-            try:
-                async with AsyncSessionLocal() as session:
-                    repo = AttendanceRepository(
-                        session, organization_id=self.organization_id
+                if (
+                    original_person_id
+                    and liveness_detector
+                    and face.get("track_id") is not None
+                ):
+                    face["liveness"] = liveness_detector.update_face_identity(
+                        track_id=face["track_id"],
+                        person_id=original_person_id,
+                        current_liveness=face.get("liveness", {}),
+                        namespace=client_id,
                     )
+
+                if (
+                    not original_person_id
+                    or serialized_result["person_id"] == PROTECTED_IDENTITY
+                    or not self._is_attendance_allowed(face, config)
+                ):
+                    continue
+
+                cooldown_seconds = group_context.attendance_cooldown_seconds or 300
+                cooldown_key = f"{original_person_id}:{group_context.group_id}"
+                now = time.time()
+                if (
+                    now - config.attendance_cooldowns.get(cooldown_key, 0.0)
+                    < cooldown_seconds
+                ):
+                    continue
+
+                try:
                     member = await repo.get_member(original_person_id)
                     if not member:
                         continue
 
-                    settings = await repo.get_settings()
-                    service = AttendanceService(
-                        repo,
-                        face_recognizer=face_recognizer,
-                        ws_manager=None,
-                    )
                     event_result = await service.process_event(
                         AttendanceEventCreate(
                             person_id=original_person_id,
@@ -407,19 +406,17 @@ class LiveStreamService:
                     )
                     if event_result.processed:
                         await session.commit()
-
-                if event_result.processed:
-                    config.attendance_cooldowns[cooldown_key] = now
-                    attendance_messages.append(
-                        self._build_attendance_message(
-                            event_result, member_info or {}, face
+                        config.attendance_cooldowns[cooldown_key] = now
+                        attendance_messages.append(
+                            self._build_attendance_message(
+                                event_result, member_info or {}, face
+                            )
                         )
+                except Exception as exc:
+                    logger.warning(
+                        "[LiveStreamService] Live attendance processing failed for %s: %s",
+                        original_person_id,
+                        exc,
                     )
-            except Exception as exc:
-                logger.warning(
-                    "[LiveStreamService] Live attendance processing failed for %s: %s",
-                    original_person_id,
-                    exc,
-                )
 
         return attendance_messages

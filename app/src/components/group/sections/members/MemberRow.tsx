@@ -8,8 +8,8 @@ interface MemberRowProps {
   isSelected?: boolean
   isSelectionMode?: boolean
   onToggleSelect?: (personId: string) => void
-  onEdit: (member: AttendanceMember) => void
-  onDelete: (member: AttendanceMember) => void
+  onEdit?: (member: AttendanceMember) => void
+  onDelete?: (member: AttendanceMember) => void
   onResetFace: (member: AttendanceMember) => void
 }
 
@@ -70,16 +70,18 @@ export const MemberRow = React.memo(
             <>
               {/* Row Actions (Ultra-Subtle) */}
               <div className="flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                <Tooltip content="Edit details">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEdit(member)
-                    }}
-                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-white">
-                    <i className="fa-solid fa-pen text-[12px]"></i>
-                  </button>
-                </Tooltip>
+                {onEdit && (
+                  <Tooltip content="Edit details">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit(member)
+                      }}
+                      className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-white">
+                      <i className="fa-solid fa-pen text-[12px]"></i>
+                    </button>
+                  </Tooltip>
+                )}
 
                 {isEnrolled && (
                   <Tooltip content="Clear face data">
@@ -94,16 +96,18 @@ export const MemberRow = React.memo(
                   </Tooltip>
                 )}
 
-                <Tooltip content="Remove member">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDelete(member)
-                    }}
-                    className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
-                    <i className="fa-solid fa-trash-can text-[12px]"></i>
-                  </button>
-                </Tooltip>
+                {onDelete && (
+                  <Tooltip content="Remove member">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(member)
+                      }}
+                      className="border-transparent bg-transparent p-1.5 text-white/20 transition-colors hover:bg-transparent hover:text-red-400">
+                      <i className="fa-solid fa-trash-can text-[12px]"></i>
+                    </button>
+                  </Tooltip>
+                )}
               </div>
 
               <div onClick={(e) => e.stopPropagation()}>
