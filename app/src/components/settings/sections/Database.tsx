@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { SettingsOverview, TimeHealthOverview } from "@/components/settings/types"
 import type { AttendanceGroup } from "@/types/recognition"
@@ -57,6 +57,15 @@ export function Database({
     handlePurgeHistory,
     isPurgingHistory,
   } = useDatabaseManagement(groups, onGroupsChanged, dialog)
+
+  const [isPaired, setIsPaired] = useState(false)
+
+  useEffect(() => {
+    window.electronAPI?.sync
+      .getConfig()
+      .then((c) => setIsPaired(c.connected))
+      .catch(() => {})
+  }, [])
 
   const { setError, setSuccess } = useUIStore()
 
@@ -405,6 +414,7 @@ export function Database({
                       onCancelEditing={cancelEditing}
                       onDeleteGroup={handleDeleteGroup}
                       onDeleteMember={handleDeleteMember}
+                      isPaired={isPaired}
                     />
                   ))}
                 </motion.div>
@@ -456,7 +466,9 @@ export function Database({
                   </div>
                   <button
                     onClick={() => handleClearAllGroups(false)}
-                    disabled={isLoading || deletingGroup === "all" || groups.length === 0}
+                    disabled={
+                      isLoading || deletingGroup === "all" || groups.length === 0 || isPaired
+                    }
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     {deletingGroup === "all" && <i className="fa-solid fa-spinner fa-spin" />}
                     Clear Groups

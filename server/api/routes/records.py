@@ -231,12 +231,17 @@ async def get_sessions(
                 )
 
                 await repo.upsert_sessions(day_sessions)
-                await repo.session.commit()
 
                 computed_sessions.extend(day_sessions)
                 current_date += timedelta(days=1)
 
-            sessions = computed_sessions
+            await repo.session.commit()
+
+            sessions = await repo.get_sessions(
+                group_id=group_id,
+                start_date=start_date,
+                end_date=end_date_to_use,
+            )
 
         return sessions
 

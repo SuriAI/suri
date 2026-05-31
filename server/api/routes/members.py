@@ -40,6 +40,11 @@ async def add_member(
 ):
     """Add a new attendance member with auto-generated person_id if not provided"""
     try:
+        if repo.organization_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+            )
         # Check if group exists
         group = await repo.get_group(member_data.group_id)
         if not group:
@@ -94,6 +99,11 @@ async def add_members_bulk(
 ):
     """Add multiple members in bulk using a single database transaction"""
     try:
+        if repo.organization_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+            )
         # Check if groups exist
         group_ids = list(set(m.group_id for m in bulk_data.members))
         for gid in group_ids:
@@ -173,6 +183,11 @@ async def update_member(
 ):
     """Update an attendance member"""
     try:
+        if repo.organization_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+            )
         # Check if member exists
         existing_member = await repo.get_member(person_id)
         if not existing_member:
@@ -265,6 +280,11 @@ async def remove_member(
 ):
     """Remove (deactivate) an attendance member"""
     try:
+        if repo.organization_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+            )
         success = await repo.remove_member(person_id)
         if not success:
             raise HTTPException(status_code=404, detail="Member not found")

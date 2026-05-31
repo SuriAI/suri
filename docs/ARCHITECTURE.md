@@ -81,8 +81,11 @@ This path does not require internet access.
 3. The desktop receives an organization ID, site ID, device ID, and device token.
 4. The desktop exports a local attendance snapshot.
 5. The Electron sync manager wraps that export in a Remote Sync envelope and sends it to `POST /api/sync/push`.
+6. After a successful push, the sync manager automatically pulls metadata (groups and members) from `GET /api/sync/pull` and imports them locally via `POST /attendance/import-metadata`.
 
 The desktop remains the system of record for biometrics and local attendance capture.
+
+When paired with a Dashboard, roster (groups and members) authority shifts to the Dashboard. Desktop roster mutations are blocked by the backend (HTTP 403). Groups and members flow one way: Dashboard → Desktop via pull. Attendance records and sessions are pushed Desktop → Dashboard.
 
 ## Desktop and Remote Sync Boundary
 
@@ -98,16 +101,19 @@ The Remote Sync boundary is intentionally narrow.
 ### Data that may be sent to Facenox Management Dashboard
 
 - organization, site, and device identifiers
-- group and member directory data needed for reporting
 - attendance records and sessions
 - sync status and device health metadata
+
+Groups and members are not sent to Dashboard. They are pulled from Dashboard to Desktop via `import-metadata` after each push.
 
 ## Sync Model
 
 The current sync design is intentionally simple.
 
-- one-way only: desktop to dashboard
-- snapshot-based instead of event-stream based
+- push-then-pull: desktop pushes attendance snapshots, then pulls groups and members metadata from dashboard
+- snapshot-based push with real-time event stream: attendance data is pushed as full snapshots; the desktop also maintains an SSE connection (`/api/sync/events`) for real-time sync triggers (`POLICY_UPDATE`, `ROSTER_UPDATE`, `SYNC_REQUEST`)
+- roster flow is one-way: Dashboard → Desktop. After each push, `import-metadata` upserts incoming groups/members and prunes any local group or member with a `remote_id` that no longer exists in the pull response
+- when paired, Desktop roster mutations are blocked by the local backend (HTTP 403). The Dashboard UI hides roster mutation buttons when connected
 - auto-sync available in the desktop app
 - manual `Sync Now` available as an override
 - initial sync runs immediately after pairing
@@ -121,7 +127,7 @@ This repository does not implement:
 
 - Remote-side biometric storage
 - Remote-side face matching
-- two-way sync for members or attendance edits
+- two-way sync for members or attendance edits (roster is intentionally one-way: Dashboard → Desktop)
 - payroll or HRIS integrations
 - mobile clients
 

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Dropdown, Tooltip } from "@/components/shared"
 import { generateGroupDisplayNames } from "@/utils"
 
@@ -14,6 +15,12 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
   const { selectedGroup, groups, setSelectedGroup } = useGroupStore()
   const { activeSection, isSidebarCollapsed, setActiveSection, toggleSidebar } = useGroupUIStore()
   const { openCreateGroup } = useGroupModals()
+  const [isPaired, setIsPaired] = useState(false)
+
+  useEffect(() => {
+    window.electronAPI.sync.getConfig().then((c) => setIsPaired(c.connected))
+  }, [])
+
   return (
     <aside
       className={`flex h-full shrink-0 flex-col border-r border-white/10 bg-[rgba(12,16,22,0.94)] transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "w-16" : "w-64"}`}>
@@ -47,14 +54,20 @@ export function GroupSidebar({ onBack }: GroupSidebarProps) {
                 align="left"
               />
             </div>
-            <Tooltip content="New Group" position="top">
-              <button
-                onClick={openCreateGroup}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[rgba(24,30,38,0.85)]"
-                aria-label="New Group">
-                <span className="text-lg">+</span>
-              </button>
-            </Tooltip>
+            {isPaired ?
+              <div className="flex items-center gap-1.5 text-[9px] font-bold tracking-wider text-cyan-400/60 uppercase">
+                <i className="fa-solid fa-cloud-check text-[8px]" />
+                <span>From Dashboard</span>
+              </div>
+            : <Tooltip content="New Group" position="top">
+                <button
+                  onClick={openCreateGroup}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[rgba(24,30,38,0.85)]"
+                  aria-label="New Group">
+                  <span className="text-lg">+</span>
+                </button>
+              </Tooltip>
+            }
           </div>
         </div>
       )}

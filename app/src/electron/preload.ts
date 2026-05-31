@@ -132,6 +132,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     triggerDebouncedSync: () => {
       return ipcRenderer.invoke("sync:trigger-debounced")
     },
+    onDataChanged: (callback: () => void) => {
+      const listener = () => callback()
+      ipcRenderer.on("sync:data-changed", listener)
+      return () => ipcRenderer.removeListener("sync:data-changed", listener)
+    },
   },
 })
 

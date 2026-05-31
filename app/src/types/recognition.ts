@@ -143,9 +143,11 @@ export interface AttendanceGroup {
     track_checkout?: boolean
     biometric_consent_certified?: boolean
   }
+  remote_id?: string | null
 }
 
 export interface AttendanceMember {
+  id?: string
   person_id: string
   group_id: string
   name: string
@@ -155,11 +157,13 @@ export interface AttendanceMember {
   is_active: boolean
   has_face_data?: boolean
   has_consent: boolean
+  remote_id?: string | null
 }
 
 export interface AttendanceRecord {
   id: string
   person_id: string
+  member_id: string
   group_id: string
   timestamp: Date
   confidence: number
@@ -177,6 +181,7 @@ export interface AttendanceRecord {
 export interface AttendanceSession {
   id: string
   person_id: string
+  member_id: string
   group_id: string
   applied_rule_id?: string
   date: string

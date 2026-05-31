@@ -12,7 +12,7 @@ interface ManualEntryModalProps {
   onSuccess: () => void | Promise<void>
   members: AttendanceMember[]
   presentPersonIds: Set<string>
-  onAddMember: () => void
+  onAddMember?: () => void
   currentGroup?: AttendanceGroup | null
 }
 
@@ -148,19 +148,21 @@ export const ManualEntryModal = ({
               placeholder="Search members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 pr-4 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
+              className={`h-9 w-full ${onAddMember ? "rounded-r-none border-r-0" : "rounded-r-lg"} rounded-l-lg border border-white/5 bg-white/5 pr-4 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]`}
             />
           </div>
-          <Tooltip content="Add member" position="top">
-            <button
-              onClick={() => {
-                handleClose()
-                onAddMember()
-              }}
-              className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all group-focus-within/bar:border-white/20 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
-              <i className="fa-solid fa-plus text-xs transition-transform group-hover/add:scale-110"></i>
-            </button>
-          </Tooltip>
+          {onAddMember && (
+            <Tooltip content="Add member" position="top">
+              <button
+                onClick={() => {
+                  handleClose()
+                  onAddMember()
+                }}
+                className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all group-focus-within/bar:border-white/20 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
+                <i className="fa-solid fa-plus text-xs transition-transform group-hover/add:scale-110"></i>
+              </button>
+            </Tooltip>
+          )}
         </div>
 
         {/* Minimalist Members Section Stats Ratio */}

@@ -7,6 +7,7 @@ export const groupSettingsSchema = z.object({
   late_threshold_enabled: z.boolean().default(false),
   class_start_time: z.string().nullable().optional(),
   track_checkout: z.boolean().default(false),
+  biometric_consent_certified: z.boolean().optional(),
 })
 
 export const attendanceGroupSchema = z.object({
@@ -15,9 +16,11 @@ export const attendanceGroupSchema = z.object({
   created_at: z.string().datetime(),
   is_active: z.boolean(),
   settings: groupSettingsSchema,
+  remote_id: z.string().nullable().optional(),
 })
 
 export const attendanceMemberSchema = z.object({
+  id: z.string().min(1),
   person_id: z.string().min(1),
   group_id: z.string().min(1),
   name: z.string().min(1),
@@ -28,11 +31,13 @@ export const attendanceMemberSchema = z.object({
   has_consent: z.boolean(),
   consent_granted_at: z.string().datetime().nullable().optional(),
   consent_granted_by: z.string().nullable().optional(),
+  remote_id: z.string().nullable().optional(),
 })
 
 export const attendanceRecordSchema = z.object({
   id: z.string().min(1),
   person_id: z.string().min(1),
+  member_id: z.string().min(1),
   group_id: z.string().min(1),
   timestamp: z.string().datetime(),
   confidence: z.number(),
@@ -49,6 +54,7 @@ export const attendanceRecordSchema = z.object({
 export const attendanceSessionSchema = z.object({
   id: z.string().min(1),
   person_id: z.string().min(1),
+  member_id: z.string().min(1),
   group_id: z.string().min(1),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   check_in_time: z.string().datetime().nullable().optional(),
@@ -83,8 +89,8 @@ export const attendanceExportSchema = z.object({
 export const syncPushSchema = z.object({
   schema_version: z.literal(1),
   snapshot_id: z.string().min(1),
-  device_id: z.string().uuid(),
-  site_id: z.string().uuid(),
+  device_id: z.string().min(1),
+  site_id: z.string().min(1),
   app_version: z.string().min(1),
   exported_at: z.string().datetime(),
   attendance_export: attendanceExportSchema,

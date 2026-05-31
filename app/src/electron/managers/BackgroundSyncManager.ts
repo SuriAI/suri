@@ -2,6 +2,7 @@ import { syncPushSchema, type SyncPushPayload } from "../../shared/syncContract.
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
+import { state } from "../State.js"
 import { getCurrentVersion } from "../updater.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
@@ -73,6 +74,7 @@ function normalizeAttendanceExportForRemote(
           ) ?
             (candidate as { settings: Record<string, unknown> }).settings
           : {
+              late_threshold_minutes: 15,
               late_threshold_enabled: false,
               track_checkout: false,
             },
@@ -145,9 +147,12 @@ export class BackgroundSyncManager {
   private commandTimer: NodeJS.Timeout | null = null
   private catchUpTimer: NodeJS.Timeout | null = null
   private debounceTimer: NodeJS.Timeout | null = null
+  private pollFallbackTimer: NodeJS.Timeout | null = null
   private isSyncing = false
   private reconnectAttempts = 0
   private eventStreamController: AbortController | null = null
+  private lastEventReceivedAt: number = 0
+  private pollFallbackIntervalMs = 60000 // 1 minute fallback poll
 
   private getSyncConfig() {
     return {
@@ -237,6 +242,9 @@ export class BackgroundSyncManager {
 
     // Real-time: Start listening for dashboard events
     void this.startEventStream()
+
+    // Fallback polling: sync periodically if SSE hasn't delivered events
+    this.startPollFallback()
   }
 
   private async startEventStream() {
@@ -266,6 +274,8 @@ export class BackgroundSyncManager {
       }
 
       this.reconnectAttempts = 0
+      // Don't reset lastEventReceivedAt on reconnect to avoid masking SSE failure
+      // from the fallback poll. Only update it when actual SSE data is received.
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
 
@@ -278,6 +288,7 @@ export class BackgroundSyncManager {
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
+            this.lastEventReceivedAt = Date.now()
             try {
               const data = JSON.parse(line.slice(6))
               console.log("[Sync] Real-time event received:", data.type)
@@ -298,13 +309,16 @@ export class BackgroundSyncManager {
         return
       }
       console.warn("[Sync] Event stream error, reconnecting...", error)
+      // On SSE error, immediately do a catch-up sync to pick up missed events
+      void this.performSync()
       this.reconnectEventStream()
     }
   }
 
   private reconnectEventStream() {
     this.stopEventStream()
-    const delay = Math.min(30000, Math.pow(2, this.reconnectAttempts) * 1000)
+    // Faster reconnect: max 10s instead of 30s, start at 500ms
+    const delay = Math.min(10000, Math.pow(2, this.reconnectAttempts) * 500)
     this.reconnectAttempts++
 
     setTimeout(() => {
@@ -316,6 +330,29 @@ export class BackgroundSyncManager {
     if (this.eventStreamController) {
       this.eventStreamController.abort()
       this.eventStreamController = null
+    }
+  }
+
+  private startPollFallback() {
+    this.stopPollFallback()
+    this.pollFallbackTimer = setInterval(() => {
+      // Only sync if we haven't received any SSE event recently
+      // (within the last 2x the poll interval)
+      const staleThreshold = this.pollFallbackIntervalMs * 2
+      const timeSinceLastEvent = Date.now() - this.lastEventReceivedAt
+      if (timeSinceLastEvent >= staleThreshold) {
+        console.log(
+          `[Sync] Fallback poll: No SSE events for ${(timeSinceLastEvent / 1000).toFixed(0)}s, syncing...`,
+        )
+        void this.performSync()
+      }
+    }, this.pollFallbackIntervalMs)
+  }
+
+  private stopPollFallback() {
+    if (this.pollFallbackTimer) {
+      clearInterval(this.pollFallbackTimer)
+      this.pollFallbackTimer = null
     }
   }
 
@@ -333,6 +370,7 @@ export class BackgroundSyncManager {
       clearInterval(this.commandTimer)
       this.commandTimer = null
     }
+    this.stopPollFallback()
     this.stopEventStream()
   }
 
@@ -521,21 +559,81 @@ export class BackgroundSyncManager {
         }
       }
       const syncedAt = new Date().toISOString()
+
+      // Automatically pull metadata (groups & members) from cloud dashboard
+      let pullMsg = ""
+      let pullFailed = false
+      try {
+        console.log("[Sync] Triggering automatic metadata pull sync...")
+        const pullResponse = await fetch(`${remoteBaseUrl.replace(/\/+$/, "")}/api/sync/pull`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${deviceToken}`,
+            "User-Agent": "Facenox-Desktop-Pull",
+          },
+          signal: AbortSignal.timeout(30000),
+        })
+
+        if (pullResponse.ok) {
+          const pullPayload = (await pullResponse.json()) as {
+            groups: Array<Record<string, unknown>>
+            members: Array<Record<string, unknown>>
+          }
+
+          const importResponse = await fetch(
+            `${backendService.getUrl()}/attendance/import-metadata`,
+            {
+              method: "POST",
+              headers: authHeaders({ "Content-Type": "application/json" }),
+              body: JSON.stringify({
+                groups: pullPayload.groups,
+                members: pullPayload.members,
+              }),
+              signal: AbortSignal.timeout(30000),
+            },
+          )
+
+          if (importResponse.ok) {
+            const importResult = (await importResponse.json()) as {
+              success?: boolean
+              groups_count: number
+              members_count: number
+            }
+            pullMsg = ` Pulled ${importResult.groups_count} groups, ${importResult.members_count} members.`
+            console.log(`[Sync] Automatic metadata pull completed.${pullMsg}`)
+            state.mainWindow?.webContents.send("sync:data-changed")
+          } else {
+            pullMsg = " Metadata pull succeeded but local import failed."
+            pullFailed = true
+            console.warn("[Sync] Automatic local metadata import failed.")
+          }
+        } else {
+          pullMsg = " Remote metadata pull failed."
+          pullFailed = true
+          console.warn("[Sync] Automatic remote metadata pull failed.")
+        }
+      } catch (pullError) {
+        pullMsg = ` Metadata pull error: ${pullError instanceof Error ? pullError.message : "unknown"}`
+        pullFailed = true
+        console.warn("[Sync] Automatic metadata pull failed:", pullError)
+      }
+
+      const syncStatus = pullFailed ? "error" : "success"
+      const syncMessage =
+        pullFailed ? `Snapshot synced but:${pullMsg}`
+        : typeof responsePayload?.status === "string" ?
+          `Snapshot ${responsePayload.status}.${pullMsg}`
+        : `Snapshot synced successfully.${pullMsg}`
+
       this.setLastSyncState({
         lastSyncedAt: syncedAt,
-        lastSyncStatus: "success",
-        lastSyncMessage:
-          typeof responsePayload?.status === "string" ?
-            `Snapshot ${responsePayload.status}.`
-          : "Snapshot synced successfully.",
+        lastSyncStatus: syncStatus,
+        lastSyncMessage: syncMessage,
       })
 
       return {
-        success: true,
-        message:
-          typeof responsePayload?.status === "string" ?
-            `Snapshot ${responsePayload.status}.`
-          : "Snapshot synced successfully.",
+        success: !pullFailed,
+        message: syncMessage,
         syncedAt,
       }
     } catch (error) {
