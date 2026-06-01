@@ -562,6 +562,7 @@ export class BackgroundSyncManager {
           trackCheckout?: boolean
           lateThresholdEnabled?: boolean
           lateThresholdMinutes?: number
+          attendanceCooldownSeconds?: number
           dataRetentionDays?: number
         }
         if (typeof policy.forceLiveness === "boolean") {
@@ -575,6 +576,12 @@ export class BackgroundSyncManager {
         }
         if (typeof policy.lateThresholdMinutes === "number") {
           persistentStore.set("sync.policy.lateThresholdMinutes", policy.lateThresholdMinutes)
+        }
+        if (typeof policy.attendanceCooldownSeconds === "number") {
+          persistentStore.set(
+            "sync.policy.attendanceCooldownSeconds",
+            policy.attendanceCooldownSeconds,
+          )
         }
         if (typeof policy.dataRetentionDays === "number") {
           persistentStore.set("sync.policy.dataRetentionDays", policy.dataRetentionDays)

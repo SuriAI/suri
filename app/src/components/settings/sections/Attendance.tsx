@@ -201,9 +201,21 @@ export function Attendance({
                   side="right"
                 />
               </div>
-              <div className="mt-0.5 text-xs text-white/65">
-                Automatically filters out repeated scans from the same person to maintain clean,
-                accurate reports.
+              <div className="relative min-h-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`cooldown-${isPaired}`}
+                    initial={{ opacity: 0, y: -2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 2 }}
+                    transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
+                    className="text-xs font-normal text-white/65">
+                    {isPaired ?
+                      "Managed by your organization."
+                    : "Automatically filters out repeated scans from the same person to maintain clean, accurate reports."
+                    }
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
 
@@ -212,10 +224,11 @@ export function Attendance({
                 <button
                   key={secs}
                   type="button"
-                  onClick={() => onAttendanceCooldownChange(secs)}
+                  onClick={() => !isPaired && onAttendanceCooldownChange(secs)}
+                  disabled={isPaired}
                   className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
-                    attendanceSettings.attendanceCooldownSeconds === secs ?
-                      "text-cyan-400"
+                    isPaired ? "cursor-not-allowed text-white/30 opacity-40"
+                    : attendanceSettings.attendanceCooldownSeconds === secs ? "text-cyan-400"
                     : "text-white/40 hover:text-white/70"
                   }`}>
                   {secs < 60 ? `${secs}s` : `${secs / 60}m`}
