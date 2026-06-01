@@ -1,7 +1,6 @@
 import { ipcMain, dialog } from "electron"
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
-import os from "node:os"
 
 import { backendService } from "../backendService.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
@@ -204,7 +203,7 @@ export function registerSyncHandlers() {
     ) => {
       const remoteBaseUrl = resolveRemoteBaseUrl(input.remoteBaseUrl || "")
       const pairingCode = (input.pairingCode || "").trim()
-      const deviceName = (input.deviceName || "").trim() || os.hostname()
+      const deviceName = (input.deviceName || "").trim() || "Facenox Desktop"
 
       if (!pairingCode) {
         return {

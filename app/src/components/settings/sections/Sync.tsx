@@ -170,47 +170,6 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
     }
   }
 
-  const getTerminalLogs = () => {
-    const logs: string[] = []
-    const deviceName = config.deviceName || "Facenox Desktop"
-    const localTime = new Date().toLocaleTimeString()
-
-    logs.push(`[${localTime}] [system] Initializing remote sync daemon on "${deviceName}"...`)
-    const secureEndpoint =
-      config.remoteBaseUrl ?
-        `${config.remoteBaseUrl.replace(/\/+$/, "")}/api/sync/events`
-      : "https://api.facenox.com/api/sync/events"
-    logs.push(`[${localTime}] [network] Event stream established: GET ${secureEndpoint}`)
-    logs.push(`[${localTime}] [auth] Device verified. ID: ${config.deviceId || "unknown"}`)
-
-    if (config.lastSyncedAt) {
-      const syncTime = new Date(config.lastSyncedAt).toLocaleTimeString()
-      const syncDate = new Date(config.lastSyncedAt).toLocaleDateString()
-      logs.push(
-        `[${syncTime}] [sync] Connection active. Successfully uploaded logs on ${syncDate}.`,
-      )
-    } else {
-      logs.push(
-        `[${localTime}] [sync] Awaiting initial handshake. No successful sync logs cached yet.`,
-      )
-    }
-
-    if (config.lastSyncStatus === "success") {
-      logs.push(
-        `[${localTime}] [sync] Status: OK. ${config.lastSyncMessage || "Telemetry channels functional."}`,
-      )
-    } else if (config.lastSyncStatus === "error") {
-      logs.push(
-        `[${localTime}] [error] Sync warning: ${config.lastSyncMessage || "Underlying sync worker experienced network jitter."}`,
-      )
-    }
-
-    logs.push(
-      `[${localTime}] [scheduler] Standby mode. Remote sync polling active (Interval: ${config.intervalMinutes} min).`,
-    )
-    return logs
-  }
-
   const syncTone =
     config.lastSyncStatus === "success" ? "text-cyan-400/90"
     : config.lastSyncStatus === "error" ? "text-red-400"
@@ -303,12 +262,12 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
 
-                <div className="grid max-w-xl gap-3 font-mono text-[11px] text-white/40 sm:grid-cols-2">
+                <div className="flex justify-between gap-4 font-mono text-[11px] text-white/40">
                   <div className="space-y-0.5">
                     <div>Device: {config.deviceName || "Facenox Desktop"}</div>
                     <div>Hardware ID: {config.deviceId}</div>
                   </div>
-                  <div className="space-y-0.5 sm:text-right">
+                  <div className="space-y-0.5 text-right">
                     <div className={syncTone}>
                       {config.lastSyncedAt ?
                         `Last sync: ${new Date(config.lastSyncedAt).toLocaleString()}`
@@ -318,7 +277,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
                   <button
                     onClick={handleManualSync}
                     disabled={busyAction !== null}
@@ -393,46 +352,6 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
           </div>
         </div>
       </div>
-
-      {/* Dynamic Diagnostics Panel utilizing the bottom space solely when connected */}
-      {config.connected && (
-        <div className="pt-2">
-          <div className="space-y-3 border-t border-white/5 pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500"></span>
-                </span>
-                <h4 className="text-[10px] font-extrabold tracking-[0.15em] text-white/70 uppercase">
-                  Live Sync Diagnostics
-                </h4>
-              </div>
-              <span className="font-mono text-[9px] tracking-wider text-white/30">
-                CHANNEL: SECURE_SSE
-              </span>
-            </div>
-
-            <div className="rounded-xl border border-white/5 bg-[rgba(5,7,10,0.45)] p-5 font-mono text-[10.5px] leading-relaxed text-white/60 shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]">
-              <div className="custom-scroll max-h-[160px] space-y-1.5 overflow-y-auto">
-                {getTerminalLogs().map((log, idx) => {
-                  let tone = "text-white/65"
-                  if (log.includes("[error]")) tone = "text-red-400/90 font-semibold"
-                  if (log.includes("[sync] Status: OK") || log.includes("Successfully"))
-                    tone = "text-cyan-400/90"
-                  if (log.includes("[scheduler]")) tone = "text-white/35"
-                  return (
-                    <div key={idx} className={`flex items-start gap-1 ${tone}`}>
-                      <span className="text-white/20 select-none">&gt;</span>
-                      <span>{log}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <DataBoundariesModal
         isOpen={showPrivacyModal}
