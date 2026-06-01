@@ -293,7 +293,11 @@ export class BackgroundSyncManager {
               const data = JSON.parse(line.slice(6))
               console.log("[Sync] Real-time event received:", data.type)
 
-              if (data.type === "POLICY_UPDATE" || data.type === "SYNC_REQUEST" || data.type === "ROSTER_UPDATE") {
+              if (
+                data.type === "POLICY_UPDATE" ||
+                data.type === "SYNC_REQUEST" ||
+                data.type === "ROSTER_UPDATE"
+              ) {
                 console.log("[Sync] Triggering immediate sync from real-time command.")
                 void this.performSync()
               }
@@ -553,9 +557,27 @@ export class BackgroundSyncManager {
 
       // Process Remote Policy from Dashboard
       if (responsePayload?.policy && typeof responsePayload.policy === "object") {
-        const policy = responsePayload.policy as { forceLiveness?: boolean }
+        const policy = responsePayload.policy as {
+          forceLiveness?: boolean
+          trackCheckout?: boolean
+          lateThresholdEnabled?: boolean
+          lateThresholdMinutes?: number
+          dataRetentionDays?: number
+        }
         if (typeof policy.forceLiveness === "boolean") {
           persistentStore.set("sync.policy.forceLiveness", policy.forceLiveness)
+        }
+        if (typeof policy.trackCheckout === "boolean") {
+          persistentStore.set("sync.policy.trackCheckout", policy.trackCheckout)
+        }
+        if (typeof policy.lateThresholdEnabled === "boolean") {
+          persistentStore.set("sync.policy.lateThresholdEnabled", policy.lateThresholdEnabled)
+        }
+        if (typeof policy.lateThresholdMinutes === "number") {
+          persistentStore.set("sync.policy.lateThresholdMinutes", policy.lateThresholdMinutes)
+        }
+        if (typeof policy.dataRetentionDays === "number") {
+          persistentStore.set("sync.policy.dataRetentionDays", policy.dataRetentionDays)
         }
       }
       const syncedAt = new Date().toISOString()

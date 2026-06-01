@@ -147,10 +147,35 @@ export const useSettings = ({
     }
   }, [loadSystemData])
 
+  const [policyOverrides, setPolicyOverrides] = useState<{
+    trackCheckout?: boolean
+    lateThresholdEnabled?: boolean
+    lateThresholdMinutes?: number
+    dataRetentionDays?: number
+  }>({})
+
   useEffect(() => {
     const loadPolicy = async () => {
-      const policy = await persistentSettings.get<boolean>("sync.policy.forceLiveness")
-      setForceLiveness(!!policy)
+      const [
+        forceLivenessVal,
+        trackCheckout,
+        lateThresholdEnabled,
+        lateThresholdMinutes,
+        dataRetentionDays,
+      ] = await Promise.all([
+        persistentSettings.get<boolean>("sync.policy.forceLiveness"),
+        persistentSettings.get<boolean>("sync.policy.trackCheckout"),
+        persistentSettings.get<boolean>("sync.policy.lateThresholdEnabled"),
+        persistentSettings.get<number>("sync.policy.lateThresholdMinutes"),
+        persistentSettings.get<number>("sync.policy.dataRetentionDays"),
+      ])
+      setForceLiveness(!!forceLivenessVal)
+      setPolicyOverrides({
+        trackCheckout: trackCheckout ?? undefined,
+        lateThresholdEnabled: lateThresholdEnabled ?? undefined,
+        lateThresholdMinutes: lateThresholdMinutes ?? undefined,
+        dataRetentionDays: dataRetentionDays ?? undefined,
+      })
     }
     loadPolicy()
   }, [])
@@ -278,6 +303,7 @@ export const useSettings = ({
     validInitialGroup,
     loadSystemData,
     forceLiveness,
+    policyOverrides,
     enrollmentSource,
     enrollmentMode,
     setEnrollmentState,

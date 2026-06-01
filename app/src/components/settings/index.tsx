@@ -122,7 +122,22 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
         toggleQuickSetting={settings.toggleQuickSetting}
         audioSettings={props.audioSettings}
         updateAudioSetting={settings.updateAudioSetting}
-        attendanceSettings={{ ...props.attendanceSettings, forceLiveness: settings.forceLiveness }}
+        attendanceSettings={{
+          ...props.attendanceSettings,
+          forceLiveness: settings.forceLiveness,
+          ...(settings.policyOverrides.trackCheckout !== undefined && {
+            trackCheckout: settings.policyOverrides.trackCheckout,
+          }),
+          ...(settings.policyOverrides.lateThresholdEnabled !== undefined && {
+            lateThresholdEnabled: settings.policyOverrides.lateThresholdEnabled,
+          }),
+          ...(settings.policyOverrides.lateThresholdMinutes !== undefined && {
+            lateThresholdMinutes: settings.policyOverrides.lateThresholdMinutes,
+          }),
+          ...(settings.policyOverrides.dataRetentionDays !== undefined && {
+            dataRetentionDays: settings.policyOverrides.dataRetentionDays,
+          }),
+        }}
         updateAttendanceSetting={settings.updateAttendanceSetting}
         dropdownValue={settings.dropdownValue}
         systemData={settings.systemData}
