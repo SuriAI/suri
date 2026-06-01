@@ -74,7 +74,7 @@ export function Attendance({
                       transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                       className="text-xs font-normal text-white/65">
                       {isPaired ?
-                        "Managed by Management Dashboard."
+                        "Managed by your organization."
                       : !hasSelectedGroup ?
                         "Select a group to enable this feature"
                       : attendanceSettings.trackCheckout ?
@@ -119,7 +119,7 @@ export function Attendance({
                       transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                       className="text-xs font-normal text-white/65">
                       {isPaired ?
-                        "Managed by Management Dashboard."
+                        "Managed by your organization."
                       : !hasSelectedGroup ?
                         "Select a group to enable late tracking"
                       : attendanceSettings.lateThresholdEnabled ?
@@ -354,7 +354,7 @@ export function Attendance({
                     transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                     className="text-xs font-normal text-white/65">
                     {attendanceSettings.forceLiveness ?
-                      "Enforced by central administration."
+                      "Managed by your organization."
                     : attendanceSettings.enableSpoofDetection ?
                       "Prevents bypass attempts using printed photos, video playback, or other spoofing methods."
                     : "Skip liveness verification."}
@@ -401,7 +401,7 @@ export function Attendance({
                     transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                     className="text-xs font-normal text-white/65">
                     {isPaired ?
-                      "Consent rules managed by Management Dashboard."
+                      "Managed by your organization."
                     : !hasSelectedGroup ?
                       "Select a group to enable this feature"
                     : attendanceSettings.biometricConsentCertified ?

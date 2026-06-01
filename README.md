@@ -35,7 +35,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 | Feature                 |  Facenox   | Cloud-Based Systems |
 | :---------------------- | :--------: | :-----------------: |
-| **Data Residency**      | 100% Local |    Remote Cloud     |
+| **Data Residency**      | Local-First with Optional Cloud Sync |    Remote Cloud     |
 | **Internet Dependency** |  Optional  |      Mandatory      |
 | **Latency**             | Real-time  |  Network Dependent  |
 | **Privacy Risk**        | Minimized  |        High         |
