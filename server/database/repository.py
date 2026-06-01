@@ -26,6 +26,20 @@ class AttendanceRepository:
     def __init__(self, session: AsyncSession, organization_id: Optional[str] = None):
         self.session = session
         self.organization_id = organization_id
+        self._paired: Optional[bool] = None
+
+    async def is_paired(self) -> bool:
+        if self._paired is not None:
+            return self._paired
+        from database.models import AttendanceSettings
+
+        result = await self.session.execute(
+            select(AttendanceSettings.organization_id)
+            .where(AttendanceSettings.organization_id.isnot(None))
+            .limit(1)
+        )
+        self._paired = result.scalar_one_or_none() is not None
+        return self._paired
 
     def _apply_org_scope(self, query, model):
         if self.organization_id:

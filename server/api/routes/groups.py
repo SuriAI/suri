@@ -35,10 +35,10 @@ async def create_group(
 ):
     """Create a new attendance group"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage groups.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage groups.",
             )
         service = AttendanceService(repo)
         group_id = service.generate_id()
@@ -127,10 +127,10 @@ async def update_group(
 ):
     """Update an attendance group"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage groups.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage groups.",
             )
         existing_group = await repo.get_group(group_id)
         if not existing_group:
@@ -178,10 +178,10 @@ async def delete_group(
 ):
     """Delete (deactivate) an attendance group"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage groups.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage groups.",
             )
         success = await repo.delete_group(group_id)
         if not success:
