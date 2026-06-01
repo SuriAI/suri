@@ -40,10 +40,10 @@ async def add_member(
 ):
     """Add a new attendance member with auto-generated person_id if not provided"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage members.",
             )
         # Check if group exists
         group = await repo.get_group(member_data.group_id)
@@ -99,10 +99,10 @@ async def add_members_bulk(
 ):
     """Add multiple members in bulk using a single database transaction"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage members.",
             )
         # Check if groups exist
         group_ids = list(set(m.group_id for m in bulk_data.members))
@@ -183,10 +183,10 @@ async def update_member(
 ):
     """Update an attendance member"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage members.",
             )
         # Check if member exists
         existing_member = await repo.get_member(person_id)
@@ -280,10 +280,10 @@ async def remove_member(
 ):
     """Remove (deactivate) an attendance member"""
     try:
-        if repo.organization_id:
+        if await repo.is_paired():
             raise HTTPException(
                 status_code=403,
-                detail="Roster is synced from the Management Dashboard. Use Dashboard to manage members.",
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage members.",
             )
         success = await repo.remove_member(person_id)
         if not success:
