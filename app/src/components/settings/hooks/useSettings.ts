@@ -154,31 +154,40 @@ export const useSettings = ({
     dataRetentionDays?: number
   }>({})
 
-  useEffect(() => {
-    const loadPolicy = async () => {
-      const [
-        forceLivenessVal,
-        trackCheckout,
-        lateThresholdEnabled,
-        lateThresholdMinutes,
-        dataRetentionDays,
-      ] = await Promise.all([
-        persistentSettings.get<boolean>("sync.policy.forceLiveness"),
-        persistentSettings.get<boolean>("sync.policy.trackCheckout"),
-        persistentSettings.get<boolean>("sync.policy.lateThresholdEnabled"),
-        persistentSettings.get<number>("sync.policy.lateThresholdMinutes"),
-        persistentSettings.get<number>("sync.policy.dataRetentionDays"),
-      ])
-      setForceLiveness(!!forceLivenessVal)
-      setPolicyOverrides({
-        trackCheckout: trackCheckout ?? undefined,
-        lateThresholdEnabled: lateThresholdEnabled ?? undefined,
-        lateThresholdMinutes: lateThresholdMinutes ?? undefined,
-        dataRetentionDays: dataRetentionDays ?? undefined,
-      })
-    }
-    loadPolicy()
+  const loadPolicy = useCallback(async () => {
+    const [
+      forceLivenessVal,
+      trackCheckout,
+      lateThresholdEnabled,
+      lateThresholdMinutes,
+      dataRetentionDays,
+    ] = await Promise.all([
+      persistentSettings.get<boolean>("sync.policy.forceLiveness"),
+      persistentSettings.get<boolean>("sync.policy.trackCheckout"),
+      persistentSettings.get<boolean>("sync.policy.lateThresholdEnabled"),
+      persistentSettings.get<number>("sync.policy.lateThresholdMinutes"),
+      persistentSettings.get<number>("sync.policy.dataRetentionDays"),
+    ])
+    setForceLiveness(!!forceLivenessVal)
+    setPolicyOverrides({
+      trackCheckout: trackCheckout ?? undefined,
+      lateThresholdEnabled: lateThresholdEnabled ?? undefined,
+      lateThresholdMinutes: lateThresholdMinutes ?? undefined,
+      dataRetentionDays: dataRetentionDays ?? undefined,
+    })
   }, [])
+
+  useEffect(() => {
+    loadPolicy()
+  }, [loadPolicy])
+
+  useEffect(() => {
+    if (!window.electronAPI?.sync?.onDataChanged) return
+    const cleanup = window.electronAPI.sync.onDataChanged(() => {
+      loadPolicy()
+    })
+    return cleanup
+  }, [loadPolicy])
 
   useEffect(() => {
     if (activeSection !== "group" || groupInitialSection !== "reports") {

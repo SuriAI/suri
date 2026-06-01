@@ -486,21 +486,33 @@ export function Attendance({
               </div>
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-2">
-              <span className="text-[11px] font-medium text-white/65">days</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={attendanceSettings.dataRetentionDays ?? 0}
-                disabled={isPaired}
-                onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, "")
-                  const num = raw === "" ? 0 : parseInt(raw, 10)
-                  onDataRetentionChange(Math.min(3650, num))
-                }}
-                className={`w-14 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-2 py-1.5 text-center text-xs font-bold text-white transition-all duration-300 outline-none focus:border-white/20 ${
-                  isPaired ? "cursor-not-allowed opacity-40 select-none" : ""
-                }`}
-              />
+              {isPaired && (attendanceSettings.dataRetentionDays ?? 0) <= 0 ?
+                <>
+                  <span className="text-[11px] font-medium text-white/40">lifetime</span>
+                  <span className="flex w-14 items-center justify-center text-xs font-bold text-cyan-400">
+                    ∞
+                  </span>
+                </>
+              : <>
+                  <span className="text-[11px] font-medium text-white/65">
+                    {(attendanceSettings.dataRetentionDays ?? 0) <= 0 ? "" : "days"}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={attendanceSettings.dataRetentionDays ?? 0}
+                    disabled={isPaired}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "")
+                      const num = raw === "" ? 0 : parseInt(raw, 10)
+                      onDataRetentionChange(Math.min(3650, num))
+                    }}
+                    className={`w-14 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-2 py-1.5 text-center text-xs font-bold text-white transition-all duration-300 outline-none focus:border-white/20 ${
+                      isPaired ? "cursor-not-allowed opacity-40 select-none" : ""
+                    }`}
+                  />
+                </>
+              }
             </div>
           </div>
         </div>
