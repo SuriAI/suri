@@ -13,6 +13,7 @@ interface AttendanceProps {
   onDataRetentionChange: (days: number) => void
   onBiometricConsentToggle?: (enabled: boolean) => void
   hasSelectedGroup?: boolean
+  isPaired?: boolean
 }
 
 const SETTINGS_STATUS_SWAP_DURATION = 0.14
@@ -29,6 +30,7 @@ export function Attendance({
   onDataRetentionChange,
   onBiometricConsentToggle,
   hasSelectedGroup = false,
+  isPaired = false,
 }: AttendanceProps) {
   const allowedChoices = [1, 2, 5, 10, 15, 20] as const
   const activeLimit =
@@ -71,7 +73,9 @@ export function Attendance({
                       exit={{ opacity: 0, y: 2 }}
                       transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                       className="text-xs font-normal text-white/65">
-                      {!hasSelectedGroup ?
+                      {isPaired ?
+                        "Managed by Management Dashboard."
+                      : !hasSelectedGroup ?
                         "Select a group to enable this feature"
                       : attendanceSettings.trackCheckout ?
                         "Record both arrival and departure times."
@@ -84,9 +88,10 @@ export function Attendance({
               <Switch
                 checked={attendanceSettings.trackCheckout}
                 onChange={onTrackCheckoutToggle}
-                disabled={!hasSelectedGroup}
-                ariaLabel="Entry & Exit Tracking"
-              />
+                disabled={!hasSelectedGroup || isPaired}
+                ariaLabel="Entry & Exit Tracking">
+                {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
+              </Switch>
             </div>
           </div>
 
@@ -113,7 +118,9 @@ export function Attendance({
                       exit={{ opacity: 0, y: 2 }}
                       transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                       className="text-xs font-normal text-white/65">
-                      {!hasSelectedGroup ?
+                      {isPaired ?
+                        "Managed by Management Dashboard."
+                      : !hasSelectedGroup ?
                         "Select a group to enable late tracking"
                       : attendanceSettings.lateThresholdEnabled ?
                         "Automatically mark members as late based on scheduled start times."
@@ -126,9 +133,10 @@ export function Attendance({
               <Switch
                 checked={attendanceSettings.lateThresholdEnabled}
                 onChange={onLateThresholdToggle}
-                disabled={!hasSelectedGroup}
-                ariaLabel="Late Tracking"
-              />
+                disabled={!hasSelectedGroup || isPaired}
+                ariaLabel="Late Tracking">
+                {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
+              </Switch>
             </div>
 
             <AnimatePresence>
@@ -152,10 +160,11 @@ export function Attendance({
                         <button
                           key={mins}
                           type="button"
-                          onClick={() => onLateThresholdChange(mins)}
+                          onClick={() => !isPaired && onLateThresholdChange(mins)}
+                          disabled={isPaired}
                           className={`relative min-w-[24px] py-1 text-center text-[11px] font-extrabold tracking-wider transition-all duration-150 ${
-                            attendanceSettings.lateThresholdMinutes === mins ?
-                              "text-cyan-400"
+                            isPaired ? "cursor-not-allowed text-white/30 opacity-40"
+                            : attendanceSettings.lateThresholdMinutes === mins ? "text-cyan-400"
                             : "text-white/40 hover:text-white/70"
                           }`}>
                           {mins}m
@@ -391,7 +400,9 @@ export function Attendance({
                     exit={{ opacity: 0, y: 2 }}
                     transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
                     className="text-xs font-normal text-white/65">
-                    {!hasSelectedGroup ?
+                    {isPaired ?
+                      "Consent rules managed by Management Dashboard."
+                    : !hasSelectedGroup ?
                       "Select a group to enable this feature"
                     : attendanceSettings.biometricConsentCertified ?
                       "Bypass manual consent checkboxes during member enrollment."
@@ -404,9 +415,10 @@ export function Attendance({
             <Switch
               checked={attendanceSettings.biometricConsentCertified}
               onChange={(checked) => onBiometricConsentToggle?.(checked)}
-              disabled={!hasSelectedGroup}
-              ariaLabel="Global Group Consent"
-            />
+              disabled={!hasSelectedGroup || isPaired}
+              ariaLabel="Global Group Consent">
+              {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
+            </Switch>
           </div>
         </div>
       </div>
@@ -446,28 +458,31 @@ export function Attendance({
                 />
               </div>
               <div className="mt-0.5 text-xs text-white/65">
-                {(() => {
-                  const totalDays = attendanceSettings.dataRetentionDays
-                  if (!totalDays || totalDays <= 0) return "Keep all records forever."
+                {isPaired ?
+                  "Synchronized with Management Dashboard compliance plan data."
+                : (() => {
+                    const totalDays = attendanceSettings.dataRetentionDays
+                    if (!totalDays || totalDays <= 0) return "Keep all records forever."
 
-                  const years = Math.floor(totalDays / 365)
-                  const remainingDays = totalDays % 365
-                  const months = Math.floor(remainingDays / 30)
+                    const years = Math.floor(totalDays / 365)
+                    const remainingDays = totalDays % 365
+                    const months = Math.floor(remainingDays / 30)
 
-                  let timeStr = ""
-                  if (years > 0) {
-                    timeStr += `${years} ${years === 1 ? "year" : "years"}`
-                    if (months > 0) {
-                      timeStr += ` and ${months} ${months === 1 ? "month" : "months"}`
+                    let timeStr = ""
+                    if (years > 0) {
+                      timeStr += `${years} ${years === 1 ? "year" : "years"}`
+                      if (months > 0) {
+                        timeStr += ` and ${months} ${months === 1 ? "month" : "months"}`
+                      }
+                    } else if (months > 0) {
+                      timeStr = `${months} ${months === 1 ? "month" : "months"}`
+                    } else {
+                      timeStr = `${totalDays} ${totalDays === 1 ? "day" : "days"}`
                     }
-                  } else if (months > 0) {
-                    timeStr = `${months} ${months === 1 ? "month" : "months"}`
-                  } else {
-                    timeStr = `${totalDays} ${totalDays === 1 ? "day" : "days"}`
-                  }
 
-                  return `Delete records older than ${timeStr} automatically.`
-                })()}
+                    return `Delete records older than ${timeStr} automatically.`
+                  })()
+                }
               </div>
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -476,12 +491,15 @@ export function Attendance({
                 type="text"
                 inputMode="numeric"
                 value={attendanceSettings.dataRetentionDays ?? 0}
+                disabled={isPaired}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/\D/g, "")
                   const num = raw === "" ? 0 : parseInt(raw, 10)
                   onDataRetentionChange(Math.min(3650, num))
                 }}
-                className="w-14 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-2 py-1.5 text-center text-xs font-bold text-white transition-all duration-300 outline-none focus:border-white/20"
+                className={`w-14 rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-2 py-1.5 text-center text-xs font-bold text-white transition-all duration-300 outline-none focus:border-white/20 ${
+                  isPaired ? "cursor-not-allowed opacity-40 select-none" : ""
+                }`}
               />
             </div>
           </div>

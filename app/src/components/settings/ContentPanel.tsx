@@ -453,6 +453,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                     updateAttendanceSetting({ biometricConsentCertified: enabled })
                   }
                   hasSelectedGroup={!!validInitialGroup}
+                  isPaired={isPaired}
                 />
               </motion.div>
             )}

@@ -312,6 +312,13 @@ export function Database({
               <h4 className="text-[15px] font-semibold text-white/90">Restore Backup</h4>
               <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                 Restore database from a backup file using its original encryption password.
+                {isPaired && (
+                  <span className="mt-1 block font-bold text-amber-500/80">
+                    <i className="fa-solid fa-triangle-exclamation mr-1" />
+                    Warning: Restoring this backup will overwrite the active paired directories on
+                    the next sync pull.
+                  </span>
+                )}
               </p>
             </div>
             <button
@@ -482,11 +489,18 @@ export function Database({
                     <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
                       Wipes all face recognition signatures. Enrolled members will need to re-enroll
                       their face profiles.
+                      {isPaired && (
+                        <span className="mt-1 block font-bold text-red-400/90">
+                          <i className="fa-solid fa-lock mr-1" />
+                          Disabled: Cannot reset face templates locally while paired with dashboard
+                          directory.
+                        </span>
+                      )}
                     </p>
                   </div>
                   <button
                     onClick={() => onClearDatabase(false)}
-                    disabled={isLoading}
+                    disabled={isLoading || isPaired}
                     className="flex shrink-0 items-center justify-center self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     Reset Face Data
                   </button>
@@ -502,11 +516,18 @@ export function Database({
                       Permanently wipes all daily attendance check-ins, checkout timestamps, and
                       history records. Configured groups, member profiles, and enrolled face
                       profiles will remain safe.
+                      {isPaired && (
+                        <span className="mt-1 block font-bold text-red-400/90">
+                          <i className="fa-solid fa-lock mr-1" />
+                          Disabled: Purging records locally is blocked while connected to prevent
+                          synchronization gap.
+                        </span>
+                      )}
                     </p>
                   </div>
                   <button
                     onClick={() => handlePurgeHistory(false)}
-                    disabled={isLoading || isPurgingHistory}
+                    disabled={isLoading || isPurgingHistory || isPaired}
                     className="flex shrink-0 items-center justify-center gap-2 self-start rounded-lg border-0 bg-red-500/10 px-5 py-2 text-[12px] font-bold text-red-400 shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-20 md:self-auto">
                     {isPurgingHistory && <i className="fa-solid fa-spinner fa-spin" />}
                     Wipe History
