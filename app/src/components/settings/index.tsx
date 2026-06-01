@@ -134,6 +134,9 @@ export const Settings = React.forwardRef<HTMLDivElement, SettingsProps>((props, 
           ...(settings.policyOverrides.lateThresholdMinutes !== undefined && {
             lateThresholdMinutes: settings.policyOverrides.lateThresholdMinutes,
           }),
+          ...(settings.policyOverrides.attendanceCooldownSeconds !== undefined && {
+            attendanceCooldownSeconds: settings.policyOverrides.attendanceCooldownSeconds,
+          }),
           ...(settings.policyOverrides.dataRetentionDays !== undefined && {
             dataRetentionDays: settings.policyOverrides.dataRetentionDays,
           }),

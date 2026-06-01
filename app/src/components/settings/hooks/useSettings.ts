@@ -151,6 +151,7 @@ export const useSettings = ({
     trackCheckout?: boolean
     lateThresholdEnabled?: boolean
     lateThresholdMinutes?: number
+    attendanceCooldownSeconds?: number
     dataRetentionDays?: number
   }>({})
 
@@ -160,12 +161,14 @@ export const useSettings = ({
       trackCheckout,
       lateThresholdEnabled,
       lateThresholdMinutes,
+      attendanceCooldownSeconds,
       dataRetentionDays,
     ] = await Promise.all([
       persistentSettings.get<boolean>("sync.policy.forceLiveness"),
       persistentSettings.get<boolean>("sync.policy.trackCheckout"),
       persistentSettings.get<boolean>("sync.policy.lateThresholdEnabled"),
       persistentSettings.get<number>("sync.policy.lateThresholdMinutes"),
+      persistentSettings.get<number>("sync.policy.attendanceCooldownSeconds"),
       persistentSettings.get<number>("sync.policy.dataRetentionDays"),
     ])
     setForceLiveness(!!forceLivenessVal)
@@ -173,6 +176,7 @@ export const useSettings = ({
       trackCheckout: trackCheckout ?? undefined,
       lateThresholdEnabled: lateThresholdEnabled ?? undefined,
       lateThresholdMinutes: lateThresholdMinutes ?? undefined,
+      attendanceCooldownSeconds: attendanceCooldownSeconds ?? undefined,
       dataRetentionDays: dataRetentionDays ?? undefined,
     })
   }, [])
