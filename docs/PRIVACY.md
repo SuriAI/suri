@@ -29,12 +29,12 @@ The desktop app is the primary environment for biometric processing in this repo
 
 ### What Facenox keeps
 
-Facenox keeps biometric templates used for recognition. These templates are mathematical representations used by the local recognition pipeline.
+Facenox extracts 512-dimension float32 vectors from face scans. The local database stores only these encrypted vectors.
 
 ### How biometric data is handled
 
 Facenox is not designed as a raw face-image archive. 
-- **Enrollment/Matching:** Images are processed in-memory. Only the resulting encrypted biometric template is stored.
+- **Enrollment/Matching:** Face scans are processed in volatile memory (RAM). The pipeline discards the raw photo immediately after extracting the encrypted embedding.
 - **Liveness Detection:** Anti-spoofing analysis happens entirely in **volatile memory (RAM)**. No photos or video frames used for liveness checks are ever written to disk.
 - **Storage:** Templates are encrypted at rest using **AES-256**.
 
@@ -72,7 +72,7 @@ The desktop app can optionally pair with a separate Facenox Management Dashboard
 
 ### Data that MAY be sent (encrypted) to the Facenox Dashboard
 
-- **encrypted biometric templates** — AES-256-GCM encrypted with your organization's key before transmission. The Dashboard stores these encrypted blobs as a blind relay for cross-device sync. Only devices in your organization can decrypt them.
+- **encrypted biometric templates**: AES-256-GCM encrypted with your organization's key before transmission. The Dashboard stores these encrypted blobs as a blind relay for cross-device sync. Only devices in your organization can decrypt them.
 
 ### Data that MAY be sent (plaintext) to the Facenox Dashboard
 
@@ -116,7 +116,7 @@ Operators are still responsible for:
 
 ## Google API Services Disclosure
 
-Facenox uses Google API Services to streamline authentication and account management for the Management Dashboard.
+Facenox uses Google API Services to handle user authentication and account setup for the Management Dashboard.
 
 ### Data Accessed
 When you authenticate via Google, we access your:

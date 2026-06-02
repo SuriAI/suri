@@ -42,13 +42,13 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 ## Features
 
-- **Local Biometrics:** Face detection and recognition, subject tracking (via ByteTrack), and liveness checks (via [face-antispoof-onnx](https://github.com/facenox/face-antispoof-onnx)).
+- **Local Biometrics:** Face detection, ByteTrack subject tracking, and ONNX liveness verification.
 - **Cross-Platform:** Native support for Windows, macOS, and Linux.
 - **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
 - **Subject Management:** Full control over group and member directories.
 - **Attendance Tracking:** Automated session recording and CSV/JSON exports.
 - **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
-- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices — your organization holds the encryption key.
+- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, with your organization holding the master encryption key.
 
 ## Screenshots
 
