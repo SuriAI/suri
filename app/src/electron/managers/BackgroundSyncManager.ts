@@ -1,4 +1,4 @@
-import { syncPushSchema, CURRENT_MODEL_VERSION, type SyncPushPayload, type FaceEmbedding } from "../../shared/syncContract.js"
+import { syncPushSchema, type SyncPushPayload, type FaceEmbedding } from "../../shared/syncContract.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
@@ -542,7 +542,6 @@ export class BackgroundSyncManager {
                   encryptionKey,
                 ),
                 embedding_dimension: e.embedding_dimension,
-                model_version: CURRENT_MODEL_VERSION,
               }))
             }
           }
@@ -702,7 +701,6 @@ export class BackgroundSyncManager {
                         person_id: fe.person_id,
                         embedding_bytes: b64,
                         embedding_dimension: fe.embedding_dimension,
-                        model_version: fe.model_version,
                       }),
                       signal: AbortSignal.timeout(15000),
                     },

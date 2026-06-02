@@ -66,13 +66,10 @@ export const attendanceSessionSchema = z.object({
   notes: z.string().nullable().optional(),
 })
 
-export const CURRENT_MODEL_VERSION = "edgeface-v1"
-
 export const faceEmbeddingSchema = z.object({
   person_id: z.string().min(1),
   embedding_encrypted: z.string().min(1),
   embedding_dimension: z.number().default(512),
-  model_version: z.string().default(CURRENT_MODEL_VERSION),
 })
 export type FaceEmbedding = z.infer<typeof faceEmbeddingSchema>
 
