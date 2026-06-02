@@ -143,7 +143,6 @@ async def export_embeddings(
         return {"embeddings": []}
 
     embeddings = await face_recognizer.export_embeddings(repo.organization_id)
-    from config.models import FACE_RECOGNIZER_MODEL_VERSION
 
     result = []
     for person_id, embedding in embeddings.items():
@@ -153,7 +152,6 @@ async def export_embeddings(
                 "person_id": person_id,
                 "embedding_bytes": base64.b64encode(raw_bytes).decode("ascii"),
                 "embedding_dimension": len(embedding),
-                "model_version": FACE_RECOGNIZER_MODEL_VERSION,
             }
         )
     return {"embeddings": result}
@@ -163,7 +161,6 @@ class ImportEmbeddingRequest(BaseModel):
     person_id: str
     embedding_bytes: str
     embedding_dimension: int = 512
-    model_version: str = "edgeface-v1"
 
 
 @router.post("/import-embedding")
@@ -172,21 +169,10 @@ async def import_embedding(
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """Import a decrypted embedding into the local face recognizer."""
-    from config.models import FACE_RECOGNIZER_MODEL_VERSION
     from core.lifespan import face_recognizer
 
     if not face_recognizer:
         raise HTTPException(status_code=503, detail="Face recognizer not available")
-
-    if request.model_version != FACE_RECOGNIZER_MODEL_VERSION:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Model version mismatch: local={FACE_RECOGNIZER_MODEL_VERSION}, "
-                f"incoming={request.model_version}. "
-                "Update all devices to the same version before syncing embeddings."
-            ),
-        )
 
     raw_bytes = base64.b64decode(request.embedding_bytes)
     embedding = np.frombuffer(raw_bytes, dtype=np.float32)
