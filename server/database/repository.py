@@ -31,11 +31,16 @@ class AttendanceRepository:
     async def is_paired(self) -> bool:
         if self._paired is not None:
             return self._paired
+
+        if not self.organization_id:
+            self._paired = False
+            return False
+
         from database.models import AttendanceSettings
 
         result = await self.session.execute(
             select(AttendanceSettings.organization_id)
-            .where(AttendanceSettings.organization_id.isnot(None))
+            .where(AttendanceSettings.organization_id == self.organization_id)
             .limit(1)
         )
         self._paired = result.scalar_one_or_none() is not None
