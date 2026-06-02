@@ -574,7 +574,7 @@ export function CameraQueue({
                     <AnimatePresence mode="wait">
                       {currentMember && (
                         <motion.div
-                          key={currentMember.personId}
+                          key={currentMember.personId || "current-member"}
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}

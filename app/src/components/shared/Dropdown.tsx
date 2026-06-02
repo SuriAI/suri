@@ -316,9 +316,9 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                           </>
                         )}
 
-                        {options.map((option) => (
+                        {options.map((option, idx) => (
                           <Tooltip
-                            key={String(option.value)}
+                            key={option.value !== "" ? String(option.value) : `empty-${idx}`}
                             content={option.label}
                             offset={4}
                             disabled={!shouldShowCustomTooltip(option.label)}

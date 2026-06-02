@@ -369,12 +369,12 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                       exit={{ opacity: 0, y: -6 }}
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                       className="space-y-1">
-                      {filteredRecords.slice(0, 50).map((record) => {
+                      {filteredRecords.slice(0, 50).map((record, idx) => {
                         const displayName = displayNameMap.get(record.person_id) || "Unknown"
 
                         return (
                           <div
-                            key={record.id}
+                            key={record.id || `record-${idx}`}
                             className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
                             <div className="flex items-center gap-4">
                               <div className="flex flex-col">

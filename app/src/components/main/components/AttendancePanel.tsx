@@ -541,14 +541,14 @@ export const AttendancePanel = memo(function AttendancePanel({
                   {(() => {
                     const recordCheckInStatus = buildRecordCheckInStatusMap(processedRecords)
 
-                    return visibleRecords.map((record) => {
+                    return visibleRecords.map((record, idx) => {
                       const displayName = displayNameMap.get(record.person_id) || "Unknown"
                       const hasCheckedInEarlier = recordCheckInStatus.get(record.id) ?? false
                       const member = memberMap.get(record.person_id)
 
                       return (
                         <AttendanceRecordItem
-                          key={record.id}
+                          key={record.id || `record-${idx}`}
                           record={record}
                           displayName={displayName}
                           member={member}

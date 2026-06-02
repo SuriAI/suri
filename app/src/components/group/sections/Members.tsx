@@ -562,9 +562,9 @@ export function Members({
                     paddingTop: `${paddingTop}px`,
                     paddingBottom: `${paddingBottom}px`,
                   }}>
-                  {visibleMembers.map((member) => (
+                  {visibleMembers.map((member, idx) => (
                     <MemberRow
-                      key={member.person_id}
+                      key={member.person_id || `member-${idx}`}
                       member={member}
                       isSelected={selectedIds.has(member.person_id)}
                       isSelectionMode={selectedIds.size > 0}
