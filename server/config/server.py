@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 SERVER_CONFIG = {
     "host": "127.0.0.1",
-    "port": 8700,
+    "port": 7400,
     "reload": False,
     "log_level": "info",
     # Workers must stay at 1 when passing a live `app` object to uvicorn.run().
@@ -18,7 +18,7 @@ def get_server_config() -> Dict[str, Any]:
     env = os.getenv("ENVIRONMENT", "development")
 
     if env == "testing":
-        config["port"] = 8700
+        config["port"] = 7400
 
     if os.getenv("SERVER_HOST"):
         config["host"] = os.getenv("SERVER_HOST")

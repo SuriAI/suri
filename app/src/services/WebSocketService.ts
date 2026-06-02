@@ -44,7 +44,7 @@ export class WebSocketService {
 
   constructor(config?: Partial<WebSocketConfig>) {
     this.config = {
-      baseUrl: "http://127.0.0.1:8700",
+      baseUrl: "http://127.0.0.1:7400",
       ...config,
     }
     this.clientId = `client_${crypto.randomUUID()}`

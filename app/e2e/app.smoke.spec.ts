@@ -60,7 +60,7 @@ function json(route: Route, data: unknown) {
 }
 
 async function routeBackend(page: Page) {
-  await page.route("http://127.0.0.1:8700/**", async (route) => {
+  await page.route("http://127.0.0.1:7400/**", async (route) => {
     const url = new URL(route.request().url())
 
     if (url.pathname === "/attendance/settings") {

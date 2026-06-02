@@ -17,7 +17,7 @@ import { GroupManager } from "./attendance/GroupManager"
 import { MemberManager } from "./attendance/MemberManager"
 import { RecordManager } from "./attendance/RecordManager"
 
-const API_BASE_URL = "http://127.0.0.1:8700"
+const API_BASE_URL = "http://127.0.0.1:7400"
 const API_ENDPOINTS = {
   groups: "/attendance/groups",
   members: "/attendance/members",

@@ -40,7 +40,7 @@ export class BackendService {
 
   constructor(config?: Partial<BackendConfig>) {
     this.config = {
-      baseUrl: "http://127.0.0.1:8700",
+      baseUrl: "http://127.0.0.1:7400",
       timeout: 30000,
       retryAttempts: 3,
       ...config,

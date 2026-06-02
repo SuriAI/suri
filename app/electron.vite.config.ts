@@ -76,7 +76,7 @@ export default defineConfig({
       chunkSizeWarningLimit: 700,
     },
     server: {
-      port: 3000,
+      port: 2025,
       strictPort: true,
       headers: {
         "Cross-Origin-Opener-Policy": "same-origin",
