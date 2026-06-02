@@ -312,6 +312,20 @@ export function registerSyncHandlers() {
       }
     }
 
+    // Reset local database scope to global/offline mode
+    try {
+      const localUnpairRes = await fetch(`${backendService.getUrl()}/attendance/unpair`, {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        signal: AbortSignal.timeout(10000),
+      })
+      if (!localUnpairRes.ok) {
+        console.warn("[Sync] Failed to unpair local backend settings:", localUnpairRes.status)
+      }
+    } catch (localUnpairErr) {
+      console.warn("[Sync] Error calling local unpair endpoint:", localUnpairErr)
+    }
+
     clearRemoteConnection()
     persistentStore.set("sync.lastSyncStatus", "idle")
     persistentStore.set(

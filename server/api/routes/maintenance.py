@@ -78,6 +78,34 @@ async def remote_wipe_data(
         raise HTTPException(status_code=500, detail=f"Wipe failed: {str(e)}")
 
 
+@router.post("/unpair", response_model=SuccessResponse)
+async def unpair_local_database(
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Reset database organization settings to unlock standalone offline operations."""
+    try:
+        from database.models import AttendanceSettings
+        from sqlalchemy import update
+
+        await repo.session.execute(
+            update(AttendanceSettings).values(organization_id=None)
+        )
+        await repo.session.commit()
+
+        await repo.add_audit_log(
+            action="DEVICE_MANUALLY_UNPAIRED",
+            target_type="system",
+            target_id="settings",
+            details="Device disconnected locally. Organization scope removed from database settings.",
+        )
+
+        return SuccessResponse(message="Local database unpaired successfully.")
+
+    except Exception as e:
+        logger.error(f"Error during local unpairing: {e}")
+        raise HTTPException(status_code=500, detail=f"Unpair failed: {str(e)}")
+
+
 @router.post("/purge-history", response_model=SuccessResponse)
 async def purge_attendance_history(
     repo: AttendanceRepository = Depends(get_repository),
@@ -229,9 +257,7 @@ async def import_metadata(
         erased_faces = 0
         if revoked_consent_ids and face_recognizer:
             for pid in revoked_consent_ids:
-                result = await face_recognizer.remove_person(
-                    pid, repo.organization_id
-                )
+                result = await face_recognizer.remove_person(pid, repo.organization_id)
                 if result.get("success"):
                     erased_faces += 1
             if erased_faces:

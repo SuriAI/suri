@@ -1,4 +1,8 @@
-import { syncPushSchema, type SyncPushPayload, type FaceEmbedding } from "../../shared/syncContract.js"
+import {
+  syncPushSchema,
+  type SyncPushPayload,
+  type FaceEmbedding,
+} from "../../shared/syncContract.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
@@ -709,10 +713,7 @@ export class BackgroundSyncManager {
                   if (embImportResponse.ok) {
                     importedCount++
                   } else {
-                    console.warn(
-                      `[Sync] import-embedding failed for ${fe.person_id}:`,
-                      embResponse,
-                    )
+                    console.warn(`[Sync] import-embedding failed for ${fe.person_id}:`, embResponse)
                   }
                 } catch (err) {
                   console.warn(`[Sync] Failed to import embedding for ${fe.person_id}:`, err)
