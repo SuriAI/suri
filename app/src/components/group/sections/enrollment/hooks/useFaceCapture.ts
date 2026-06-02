@@ -153,6 +153,15 @@ export function useFaceCapture(
 
         await loadMemberStatus()
         if (onRefresh) await onRefresh()
+
+        // Trigger immediate sync so other paired devices receive the new embedding
+        try {
+          if (window.electronAPI?.sync?.triggerNow) {
+            window.electronAPI.sync.triggerNow().catch(() => {})
+          }
+        } catch {
+          // Sync trigger is best-effort
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Enrollment failed. Try again."
         setGlobalError(message)

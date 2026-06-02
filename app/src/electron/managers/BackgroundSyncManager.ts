@@ -4,6 +4,7 @@ import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
 import { state } from "../State.js"
 import { getCurrentVersion } from "../updater.js"
+import { decryptEmbedding, encryptEmbedding } from "./EmbeddingCrypto.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
@@ -162,6 +163,7 @@ export class BackgroundSyncManager {
       siteId: (persistentStore.get("sync.siteId") as string) || "",
       deviceId: (persistentStore.get("sync.deviceId") as string) || "",
       deviceToken: (persistentStore.get("sync.deviceToken") as string) || "",
+      encryptionKey: (persistentStore.get("sync.encryptionKey") as string) || "",
       intervalMinutes:
         (persistentStore.get("sync.intervalMinutes") as number) || DEFAULT_SYNC_INTERVAL_MINUTES,
       lastSyncedAt: (persistentStore.get("sync.lastSyncedAt") as string | null) || null,
@@ -512,6 +514,43 @@ export class BackgroundSyncManager {
         typeof attendanceExport?.exported_at === "string" ?
           attendanceExport.exported_at
         : new Date().toISOString()
+
+      // Export and encrypt face embeddings for cross-device sync
+      let faceEmbeddings: SyncPushPayload["attendance_export"]["face_embeddings"] = []
+      const { encryptionKey } = this.getSyncConfig()
+      if (encryptionKey) {
+        try {
+          const embUrl = `${backendService.getUrl()}/attendance/export-embeddings`
+          const embResponse = await fetch(embUrl, {
+            method: "POST",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            signal: AbortSignal.timeout(30000),
+          })
+          if (embResponse.ok) {
+            const embData = (await embResponse.json()) as {
+              embeddings?: Array<{
+                person_id: string
+                embedding_bytes: string
+                embedding_dimension: number
+              }>
+            }
+            if (embData.embeddings) {
+              faceEmbeddings = embData.embeddings.map((e) => ({
+                person_id: e.person_id,
+                embedding_encrypted: encryptEmbedding(
+                  Uint8Array.from(atob(e.embedding_bytes), (c) => c.charCodeAt(0)),
+                  encryptionKey,
+                ),
+                embedding_dimension: e.embedding_dimension,
+                model_version: "edgeface-v1" as const,
+              }))
+            }
+          }
+        } catch (err) {
+          console.warn("[Sync] Failed to export embeddings:", err)
+        }
+      }
+
       const syncPayload: SyncPushPayload = {
         schema_version: 1 as const,
         snapshot_id: `${deviceId}:${exportedAt}`,
@@ -519,7 +558,10 @@ export class BackgroundSyncManager {
         site_id: siteId,
         app_version: getCurrentVersion(),
         exported_at: exportedAt,
-        attendance_export: attendanceExport,
+        attendance_export: {
+          ...attendanceExport,
+          face_embeddings: faceEmbeddings.length > 0 ? faceEmbeddings : undefined,
+        },
       }
       const validatedPayload = syncPushSchema.parse(syncPayload)
 
@@ -617,6 +659,12 @@ export class BackgroundSyncManager {
           const pullPayload = (await pullResponse.json()) as {
             groups: Array<Record<string, unknown>>
             members: Array<Record<string, unknown>>
+            face_embeddings?: Array<{
+              person_id: string
+              embedding_encrypted: string
+              embedding_dimension: number
+              model_version: string
+            }>
           }
 
           const importResponse = await fetch(
@@ -641,6 +689,41 @@ export class BackgroundSyncManager {
             pullMsg = ` Pulled ${importResult.groups_count} groups, ${importResult.members_count} members.`
             console.log(`[Sync] Automatic metadata pull completed.${pullMsg}`)
             state.mainWindow?.webContents.send("sync:data-changed")
+
+            // Import face embeddings from cloud
+            const { encryptionKey } = this.getSyncConfig()
+            if (encryptionKey && pullPayload.face_embeddings?.length) {
+              let importedCount = 0
+              for (const fe of pullPayload.face_embeddings) {
+                try {
+                  const rawBytes = decryptEmbedding(fe.embedding_encrypted, encryptionKey)
+                  const b64 = btoa(String.fromCharCode(...rawBytes))
+                  const embImportResponse = await fetch(
+                    `${backendService.getUrl()}/attendance/import-embedding`,
+                    {
+                      method: "POST",
+                      headers: authHeaders({ "Content-Type": "application/json" }),
+                      body: JSON.stringify({
+                        person_id: fe.person_id,
+                        embedding_bytes: b64,
+                        embedding_dimension: fe.embedding_dimension,
+                        model_version: fe.model_version,
+                      }),
+                      signal: AbortSignal.timeout(15000),
+                    },
+                  )
+                  if (embImportResponse.ok) {
+                    importedCount++
+                  }
+                } catch (err) {
+                  console.warn(`[Sync] Failed to import embedding for ${fe.person_id}:`, err)
+                }
+              }
+              if (importedCount > 0) {
+                pullMsg += ` Imported ${importedCount} face embeddings.`
+                console.log(`[Sync] ${pullMsg}`)
+              }
+            }
           } else {
             pullMsg = " Metadata pull succeeded but local import failed."
             pullFailed = true

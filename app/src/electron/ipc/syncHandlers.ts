@@ -256,6 +256,7 @@ export function registerSyncHandlers() {
         persistentStore.set("sync.deviceId", String(payload?.deviceId ?? ""))
         persistentStore.set("sync.deviceName", deviceName)
         persistentStore.set("sync.deviceToken", String(payload?.deviceToken ?? ""))
+        persistentStore.set("sync.encryptionKey", String(payload?.encryptionKey ?? ""))
         persistentStore.set("sync.enabled", true)
         persistentStore.set("sync.lastSyncedAt", null)
         persistentStore.set("sync.lastSyncStatus", "idle")
