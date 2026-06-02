@@ -203,15 +203,16 @@ async def import_metadata(
         # Prune orphan face embeddings for members that no longer exist in the roster
         from database.models import Face
 
-        faces_to_prune = select(Face).where(
-            Face.person_id.notin_(pulled_member_ids),
-            Face.organization_id == repo.organization_id,
-        )
-        face_result = await repo.session.execute(faces_to_prune)
         pruned_faces = 0
-        for face in face_result.scalars().all():
-            await repo.session.delete(face)
-            pruned_faces += 1
+        if pulled_member_ids:
+            faces_to_prune = select(Face).where(
+                Face.person_id.notin_(pulled_member_ids),
+                Face.organization_id == repo.organization_id,
+            )
+            face_result = await repo.session.execute(faces_to_prune)
+            for face in face_result.scalars().all():
+                await repo.session.delete(face)
+                pruned_faces += 1
 
         await repo.session.commit()
 
@@ -232,6 +233,7 @@ async def import_metadata(
             success=True,
             groups_count=groups_count,
             members_count=members_count,
+            pruned_faces=pruned_faces,
         )
 
     except Exception as e:
