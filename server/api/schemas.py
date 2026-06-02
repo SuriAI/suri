@@ -439,3 +439,4 @@ class ImportMetadataResponse(BaseModel):
     groups_count: int
     members_count: int
     pruned_faces: int = 0
+    erased_faces: int = 0

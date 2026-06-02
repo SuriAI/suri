@@ -112,7 +112,6 @@ async def import_metadata(
 ):
     """
     Import metadata (groups and members) pulled from the cloud dashboard.
-    Does not affect existing local biometrics.
     """
     try:
         groups_count = 0
@@ -135,6 +134,7 @@ async def import_metadata(
             groups_count += 1
 
         members_count = 0
+        revoked_consent_ids: list[str] = []
         for member in request.members:
             existing_member = await repo.get_member(member.person_id)
             remote_id = member.remote_id or member.person_id
@@ -155,6 +155,9 @@ async def import_metadata(
             if member.joined_at:
                 member_payload["joined_at"] = member.joined_at
             if existing_member:
+                # Track consent revocations for biometric erasure
+                if existing_member.has_consent and not member.has_consent:
+                    revoked_consent_ids.append(member.person_id)
                 await repo.update_member(member.person_id, member_payload)
             else:
                 # Ensure local group exists for SQLite FK constraints
@@ -222,6 +225,18 @@ async def import_metadata(
         if face_recognizer:
             await face_recognizer.refresh_cache(repo.organization_id)
 
+        # Erase biometrics for members whose consent was revoked (GDPR Art. 17)
+        erased_faces = 0
+        if revoked_consent_ids and face_recognizer:
+            for pid in revoked_consent_ids:
+                result = await face_recognizer.remove_person(
+                    pid, repo.organization_id
+                )
+                if result.get("success"):
+                    erased_faces += 1
+            if erased_faces:
+                await face_recognizer.refresh_cache(repo.organization_id)
+
         await repo.add_audit_log(
             action="METADATA_PULL_IMPORTED",
             target_type="system",
@@ -234,6 +249,7 @@ async def import_metadata(
             groups_count=groups_count,
             members_count=members_count,
             pruned_faces=pruned_faces,
+            erased_faces=erased_faces,
         )
 
     except Exception as e:
