@@ -120,7 +120,7 @@ The current sync design is intentionally simple.
 - push-then-pull: desktop pushes attendance snapshots, then pulls groups and members metadata from dashboard
 - snapshot-based push with real-time event stream: attendance data is pushed as full snapshots; the desktop also maintains an SSE connection (`/api/sync/events`) for real-time sync triggers (`POLICY_UPDATE`, `ROSTER_UPDATE`, `SYNC_REQUEST`)
 - roster flow is one-way: Dashboard → Desktop. After each push, `import-metadata` upserts incoming groups/members and prunes any local group or member with a `remote_id` that no longer exists in the pull response
-- when paired, Desktop roster mutations are blocked by the local backend (HTTP 403). The Dashboard UI hides roster mutation buttons when connected
+- when paired, Desktop roster mutations are blocked by the local backend (HTTP 403). The Desktop Kiosk UI hides roster mutation buttons when paired.
 - auto-sync available in the desktop app
 - manual `Sync Now` available as an override
 - initial sync runs immediately after pairing
