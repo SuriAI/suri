@@ -143,6 +143,8 @@ async def export_embeddings(
         return {"embeddings": []}
 
     embeddings = await face_recognizer.export_embeddings(repo.organization_id)
+    from config.models import FACE_RECOGNIZER_MODEL_VERSION
+
     result = []
     for person_id, embedding in embeddings.items():
         raw_bytes = embedding.astype(np.float32).tobytes()
@@ -151,6 +153,7 @@ async def export_embeddings(
                 "person_id": person_id,
                 "embedding_bytes": base64.b64encode(raw_bytes).decode("ascii"),
                 "embedding_dimension": len(embedding),
+                "model_version": FACE_RECOGNIZER_MODEL_VERSION,
             }
         )
     return {"embeddings": result}
@@ -186,20 +189,26 @@ async def import_embedding(
         )
 
     raw_bytes = base64.b64decode(request.embedding_bytes)
-    embedding = np.frombuffer(raw_bytes, dtype=np.float32).reshape(1, -1)
+    embedding = np.frombuffer(raw_bytes, dtype=np.float32)
 
-    if len(embedding[0]) != request.embedding_dimension:
+    if len(embedding) != request.embedding_dimension:
         raise HTTPException(
             status_code=400,
-            detail=f"Expected {request.embedding_dimension}-dim embedding, got {len(embedding[0])}",
+            detail=f"Expected {request.embedding_dimension}-dim embedding, got {len(embedding)}",
         )
 
-    result = await face_recognizer.enroll_person(
+    if not face_recognizer.db_manager:
+        raise HTTPException(status_code=503, detail="Face database not available")
+
+    success = await face_recognizer.db_manager.add_person(
         person_id=request.person_id,
-        embeddings=embedding,
-        organization_id=repo.organization_id,
+        embedding=embedding,
+        image_hash=None,
     )
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to import embedding")
 
     await face_recognizer.refresh_cache(repo.organization_id)
 
-    return {"success": True, "result": result}
+    return {"success": True}

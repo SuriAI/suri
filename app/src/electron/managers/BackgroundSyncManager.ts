@@ -1,4 +1,4 @@
-import { syncPushSchema, type SyncPushPayload } from "../../shared/syncContract.js"
+import { syncPushSchema, CURRENT_MODEL_VERSION, type SyncPushPayload, type FaceEmbedding } from "../../shared/syncContract.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
@@ -542,7 +542,7 @@ export class BackgroundSyncManager {
                   encryptionKey,
                 ),
                 embedding_dimension: e.embedding_dimension,
-                model_version: "edgeface-v1" as const,
+                model_version: CURRENT_MODEL_VERSION,
               }))
             }
           }
@@ -659,12 +659,7 @@ export class BackgroundSyncManager {
           const pullPayload = (await pullResponse.json()) as {
             groups: Array<Record<string, unknown>>
             members: Array<Record<string, unknown>>
-            face_embeddings?: Array<{
-              person_id: string
-              embedding_encrypted: string
-              embedding_dimension: number
-              model_version: string
-            }>
+            face_embeddings?: Array<FaceEmbedding>
           }
 
           const importResponse = await fetch(
@@ -712,8 +707,14 @@ export class BackgroundSyncManager {
                       signal: AbortSignal.timeout(15000),
                     },
                   )
+                  const embResponse = await embImportResponse.json()
                   if (embImportResponse.ok) {
                     importedCount++
+                  } else {
+                    console.warn(
+                      `[Sync] import-embedding failed for ${fe.person_id}:`,
+                      embResponse,
+                    )
                   }
                 } catch (err) {
                   console.warn(`[Sync] Failed to import embedding for ${fe.person_id}:`, err)
