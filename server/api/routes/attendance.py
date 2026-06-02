@@ -1,4 +1,8 @@
+import base64
+
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import select
 
 from sqlalchemy.orm import selectinload
@@ -126,3 +130,76 @@ async def export_attendance_data(
 
 face_detector = None
 face_recognizer = None
+
+
+@router.post("/export-embeddings")
+async def export_embeddings(
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Export decrypted face embeddings for sync (raw float32 bytes, base64-encoded)."""
+    from core.lifespan import face_recognizer
+
+    if not face_recognizer:
+        return {"embeddings": []}
+
+    embeddings = await face_recognizer.export_embeddings(repo.organization_id)
+    result = []
+    for person_id, embedding in embeddings.items():
+        raw_bytes = embedding.astype(np.float32).tobytes()
+        result.append(
+            {
+                "person_id": person_id,
+                "embedding_bytes": base64.b64encode(raw_bytes).decode("ascii"),
+                "embedding_dimension": len(embedding),
+            }
+        )
+    return {"embeddings": result}
+
+
+class ImportEmbeddingRequest(BaseModel):
+    person_id: str
+    embedding_bytes: str
+    embedding_dimension: int = 512
+    model_version: str = "edgeface-v1"
+
+
+@router.post("/import-embedding")
+async def import_embedding(
+    request: ImportEmbeddingRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Import a decrypted embedding into the local face recognizer."""
+    from config.models import FACE_RECOGNIZER_MODEL_VERSION
+    from core.lifespan import face_recognizer
+
+    if not face_recognizer:
+        raise HTTPException(status_code=503, detail="Face recognizer not available")
+
+    if request.model_version != FACE_RECOGNIZER_MODEL_VERSION:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Model version mismatch: local={FACE_RECOGNIZER_MODEL_VERSION}, "
+                f"incoming={request.model_version}. "
+                "Update all devices to the same version before syncing embeddings."
+            ),
+        )
+
+    raw_bytes = base64.b64decode(request.embedding_bytes)
+    embedding = np.frombuffer(raw_bytes, dtype=np.float32).reshape(1, -1)
+
+    if len(embedding[0]) != request.embedding_dimension:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Expected {request.embedding_dimension}-dim embedding, got {len(embedding[0])}",
+        )
+
+    result = await face_recognizer.enroll_person(
+        person_id=request.person_id,
+        embeddings=embedding,
+        organization_id=repo.organization_id,
+    )
+
+    await face_recognizer.refresh_cache(repo.organization_id)
+
+    return {"success": True, "result": result}

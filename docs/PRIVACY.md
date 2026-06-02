@@ -67,19 +67,21 @@ The desktop app can optionally pair with a separate Facenox Management Dashboard
 
 ### Data NOT sent to the Facenox Dashboard
 
-- raw face images
-- biometric templates
-- embeddings
+- raw face images (never leave the device)
 - face matching and recognition decisions
 
-### Data that MAY be sent to the Facenox Dashboard
+### Data that MAY be sent (encrypted) to the Facenox Dashboard
+
+- **encrypted biometric templates** — AES-256-GCM encrypted with your organization's key before transmission. The Dashboard stores these encrypted blobs as a blind relay for cross-device sync. Only devices in your organization can decrypt them.
+
+### Data that MAY be sent (plaintext) to the Facenox Dashboard
 
 - organization, site, and device identifiers
 - groups and member directory data needed for reports
 - attendance records and sessions
 - sync status and device health metadata
 
-The desktop app currently uses one-way snapshot sync. The Remote Sync side is not the source of truth for biometrics.
+The desktop app uses snapshot-based sync. Encrypted biometric templates can sync between devices in the same organization so that enrolling on one device is sufficient for all devices at that site.
 
 ## Offline Operation
 

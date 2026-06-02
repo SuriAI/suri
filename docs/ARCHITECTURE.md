@@ -7,8 +7,8 @@ Facenox is a desktop-first system. Recognition, attendance, and biometric storag
 - Primary runtime: desktop app
 - Primary database: local SQLite
 - Network requirement for core attendance: none
-- Biometric processing: local only
-- Optional remote integration: separate Facenox Management Dashboard deployment for reporting and device management
+- Biometric processing: local only; encrypted templates may sync between paired devices
+- Optional remote integration: separate Facenox Management Dashboard deployment for reporting, device management, and encrypted template relay
 
 ## High-Level Components
 
@@ -87,24 +87,31 @@ The desktop remains the system of record for biometrics and local attendance cap
 
 When paired with a Dashboard, roster (groups and members) authority shifts to the Dashboard. Desktop roster mutations are blocked by the backend (HTTP 403). Groups and members flow one way: Dashboard → Desktop via pull. Attendance records and sessions are pushed Desktop → Dashboard.
 
+When multiple devices are paired to the same site, encrypted face templates can sync between them. Templates are encrypted with the organization's key before leaving the device and are decrypted only on destination devices in the same organization. The Dashboard acts as a blind relay — it stores encrypted blobs but cannot decrypt them.
+
 ## Desktop and Remote Sync Boundary
 
 The Remote Sync boundary is intentionally narrow.
 
 ### Data that stays local
 
-- raw face images
-- biometric templates and embeddings
-- local face matching
-- local enrollment workflow
+- raw face images (never leave the device)
+- local face matching decisions
+- local enrollment workflow and capture pipeline artifacts
 
-### Data that may be sent to Facenox Management Dashboard
+### Data that may be sent encrypted to Facenox Management Dashboard
 
+- **encrypted face templates** (AES-256-GCM encrypted with your organization's key — the Dashboard cannot decrypt them)
 - organization, site, and device identifiers
 - attendance records and sessions
 - sync status and device health metadata
 
-Groups and members are not sent to Dashboard. They are pulled from Dashboard to Desktop via `import-metadata` after each push.
+### Data that is always sent in plaintext
+
+- group and member metadata (needed for roster management)
+- attendance records and sessions (needed for reporting)
+
+Groups and members are not sent to Dashboard via push. They are pulled from Dashboard to Desktop via `import-metadata` after each push.
 
 ## Sync Model
 

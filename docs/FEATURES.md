@@ -63,15 +63,17 @@ Management Dashboard Beta connects a Facenox desktop instance to a separate Face
 ### What does not get synced
 
 - raw face photos
-- biometric templates
-- embeddings
+- face matching decisions
 - remote-side recognition state
+
+### What gets synced (encrypted)
+
+- **biometric templates** — AES-256-GCM encrypted with your organization's key before transmission. The Dashboard stores them as a blind relay. Only your devices can decrypt them.
 
 ## Not in Scope
 
 These items are outside the current desktop repository scope:
 
-- remote-side biometric storage
 - remote-side face matching
 - two-way sync for members and attendance edits
 - payroll or HRIS integrations

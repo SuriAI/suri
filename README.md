@@ -14,7 +14,7 @@
 
 <p align="center">
   <strong>Facenox is offline-first face recognition software for real-time attendance tracking.</strong><br>
-  Built for privacy. It handles detection, matching, and liveness checks entirely on your local hardware so your biometric data never leaves your device.
+  Built for privacy: biometric templates are encrypted client-side and decrypted only on your paired devices.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@
 > This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
 
 > [!NOTE]  
-> **Privacy First:** Facenox is built on the principle that you should own your biometric data. Detection, tracking, and matching happen entirely on your local hardware.
+> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices: only your organization's paired kiosks hold the decryption keys.
 
 ## Why Facenox
 
@@ -35,7 +35,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 | Feature                 |  Facenox   | Cloud-Based Systems |
 | :---------------------- | :--------: | :-----------------: |
-| **Data Residency**      | Local-First with Optional Cloud Sync |    Remote Cloud     |
+| **Data Residency**      | Encrypted End-to-End with Optional Cross-Device Sync |    Remote Cloud     |
 | **Internet Dependency** |  Optional  |      Mandatory      |
 | **Latency**             | Real-time  |  Network Dependent  |
 | **Privacy Risk**        | Minimized  |        High         |
@@ -48,7 +48,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 - **Subject Management:** Full control over group and member directories.
 - **Attendance Tracking:** Automated session recording and CSV/JSON exports.
 - **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
-- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting without uploading raw biometric data.
+- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices — your organization holds the encryption key.
 
 ## Screenshots
 
@@ -116,7 +116,7 @@ Facenox Desktop continues to work locally when internet access is unavailable:
   (Completely optional; sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
-> **Privacy Assurance:** Remote Sync and Dashboard pairing only push attendance snapshots and metadata. Facenox **never uploads raw face images or face embeddings** to the cloud; matching always stays on your hardware.
+> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Kiosks encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay; we cannot read your data. Matching always stays on your local hardware.
 
 ## How it works
 
@@ -126,7 +126,7 @@ Everything is stored in a local SQLite database on your machine. Biometric templ
 
 ### Does it need the internet?
 
-No. All biometric processing (face detection, recognition, liveness checks, and tracking) works 100% locally. Internet is only required if you choose to sync attendance metadata to the optional Facenox Dashboard.
+No. The local FastAPI server processes all camera frames on your machine. Internet connectivity is only required to upload attendance logs or sync encrypted templates to the web dashboard.
 
 ### What hardware do I need?
 
@@ -148,9 +148,9 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 > [!IMPORTANT]
 > **Security & Trust**
 >
-> - **Automated Audits:** Every commit is analyzed by [GitHub CodeQL](https://codeql.github.com/) to detect and prevent security vulnerabilities.
-> - **Build Transparency:** All release binaries are built automatically via GitHub Actions. This ensures that the software you download is a direct, untampered reflection of the open-source code in this repository.
-> - **Privacy First:** We follow a "Zero-Knowledge" architecture. Your biometric data never leaves your device.
+> - **Automated Audits:** GitHub CodeQL scans commits for security vulnerabilities on every push.
+> - **Build Transparency:** GitHub Actions compiles all release binaries from public source code.
+> - **Privacy First:** Kiosks encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay; we cannot read your data.
 
 > **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 
