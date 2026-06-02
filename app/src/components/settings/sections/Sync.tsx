@@ -426,7 +426,7 @@ function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundaries
                 <span className="font-semibold text-cyan-400">
                   No raw photos are stored even locally
                 </span>
-                , and biometric data never leaves this device.
+                , and biometric data is encrypted end-to-end before being sent to the cloud.
               </li>
               <li>
                 <span className="font-semibold text-white/80">Live Camera Feed:</span> Temporary
