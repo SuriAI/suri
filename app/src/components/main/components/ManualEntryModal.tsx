@@ -226,7 +226,7 @@ export const ManualEntryModal = ({
                     paddingTop: `${paddingTop}px`,
                     paddingBottom: `${paddingBottom}px`,
                   }}>
-                  {visibleMembers.map((member) => {
+                  {visibleMembers.map((member, idx) => {
                     const isPresent = presentPersonIds.has(member.person_id)
                     const isEntrySubmitting = submittingId === member.person_id
                     const hasFace =
@@ -234,7 +234,7 @@ export const ManualEntryModal = ({
 
                     return (
                       <div
-                        key={member.person_id}
+                        key={member.person_id || `member-${idx}`}
                         onClick={() => !isPresent && handleManualEntry(member.person_id)}
                         className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
                           isPresent ?

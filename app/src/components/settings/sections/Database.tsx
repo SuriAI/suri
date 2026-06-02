@@ -400,9 +400,9 @@ export function Database({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}>
-                  {filteredData.map((group) => (
+                  {filteredData.map((group, idx) => (
                     <GroupEntry
-                      key={group.id}
+                      key={group.id || `group-${idx}`}
                       group={group}
                       isExpanded={expandedGroups.has(group.id)}
                       editingGroup={editingGroup}

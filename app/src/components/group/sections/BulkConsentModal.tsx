@@ -56,9 +56,9 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
         </p>
 
         <div className="custom-scroll max-h-48 space-y-1.5 overflow-y-auto pr-1">
-          {pendingMembers.map((member) => (
+          {pendingMembers.map((member, idx) => (
             <label
-              key={member.person_id}
+              key={member.person_id || `member-${idx}`}
               className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-200 ${
                 checkedIds.has(member.person_id) ?
                   "border-cyan-500/30 bg-cyan-500/10"

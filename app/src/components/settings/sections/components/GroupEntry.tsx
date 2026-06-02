@@ -189,9 +189,9 @@ export function GroupEntry({
                   paddingTop: `${paddingTop}px`,
                   paddingBottom: `${paddingBottom}px`,
                 }}>
-                {visibleMembers.map((member) => (
+                {visibleMembers.map((member, idx) => (
                   <MemberEntry
-                    key={member.person_id}
+                    key={member.person_id || `member-${idx}`}
                     member={member}
                     editingMember={editingMember}
                     editValue={editValue}
