@@ -33,21 +33,21 @@ pip install -r server/requirements-build.txt
 
 The Electron app's process manager dynamically searches for a Python interpreter in both the repository root (`venv/`) and the backend directory (`server/venv/`) before falling back to the system Python.
 
-## Port `8700` is already in use
+## Port `7400` is already in use
 
-Facenox's local backend uses port `8700` by default. Another Facenox instance or an orphaned Python process can block startup.
+Facenox's local backend uses port `7400` by default. Another Facenox instance or an orphaned Python process can block startup.
 
 ### Windows
 
 ```bash
-netstat -ano | findstr :8700
+netstat -ano | findstr :7400
 taskkill /PID <PID> /F
 ```
 
 ### macOS or Linux
 
 ```bash
-lsof -i :8700
+lsof -i :7400
 kill -9 <PID>
 ```
 
