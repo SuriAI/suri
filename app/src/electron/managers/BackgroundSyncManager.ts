@@ -485,7 +485,7 @@ export class BackgroundSyncManager {
       })
       return {
         success: false,
-        message: "Device pairing is incomplete.",
+        message: "Device connection is incomplete.",
       }
     }
 

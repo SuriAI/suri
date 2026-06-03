@@ -99,7 +99,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       setSuccess(
         nextConfig.connected ?
           "Remote sync settings saved. Auto-sync state updated."
-        : "Remote sync settings saved. You can pair this desktop whenever you're ready.",
+        : "Remote sync settings saved. You can connect this desktop whenever you're ready.",
       )
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save Remote Sync settings.")
@@ -118,18 +118,18 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       })
 
       if (!result.success || !result.config) {
-        throw new Error(result.error || "Pairing failed.")
+        throw new Error(result.error || "Connection failed.")
       }
 
       syncFromConfig(result.config)
       setPairingCode("")
       if (result.initialSyncSucceeded === false) {
-        setError(result.message || "Device paired successfully.")
+        setError(result.message || "Device connected.")
       } else {
-        setSuccess(result.message || "Device paired successfully.")
+        setSuccess(result.message || "Device connected.")
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not pair this desktop.")
+      setError(error instanceof Error ? error.message : "Could not connect this desktop.")
     } finally {
       setBusyAction(null)
     }
@@ -197,7 +197,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-white/90">Link Device</div>
+                    <div className="text-sm font-medium text-white/90">Connect Device</div>
                     <p className="mt-0.5 text-xs text-white/65">
                       Generate a code in the{" "}
                       <a
@@ -247,9 +247,9 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
             : <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-white/90">Linked Device</div>
+                    <div className="text-sm font-medium text-white/90">Connected Device</div>
                     <p className="mt-0.5 text-xs text-white/65">
-                      Device paired. Attendance records are syncing automatically.
+                      Device connected. Attendance records are syncing automatically.
                     </p>
                   </div>
                   <button
