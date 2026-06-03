@@ -244,7 +244,7 @@ export function registerSyncHandlers() {
             error:
               typeof payload?.error === "string" ?
                 payload.error
-              : `Pairing failed with HTTP ${response.status}.`,
+              : `Connection failed with HTTP ${response.status}.`,
           }
         }
 
@@ -260,7 +260,7 @@ export function registerSyncHandlers() {
         persistentStore.set("sync.enabled", true)
         persistentStore.set("sync.lastSyncedAt", null)
         persistentStore.set("sync.lastSyncStatus", "idle")
-        persistentStore.set("sync.lastSyncMessage", "Device paired. Starting initial sync...")
+        persistentStore.set("sync.lastSyncMessage", "Device connected. Starting initial sync...")
 
         syncManager.start({ skipCatchUp: true })
         const initialSyncResult = await syncManager.performSync()
@@ -271,13 +271,13 @@ export function registerSyncHandlers() {
           initialSyncSucceeded: initialSyncResult.success,
           message:
             initialSyncResult.success ?
-              "Device paired and initial sync completed."
-            : `Device paired, but the initial sync failed. Local attendance still works. ${initialSyncResult.message}`,
+              "Device connected and initial sync completed."
+            : `Device connected, but the initial sync failed. Local attendance still works. ${initialSyncResult.message}`,
         }
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Pairing failed.",
+          error: error instanceof Error ? error.message : "Connection failed.",
         }
       }
     },
@@ -305,10 +305,10 @@ export function registerSyncHandlers() {
 
         if (!response.ok && ![401, 404].includes(response.status)) {
           const text = await response.text()
-          warning = text || `Remote unpair returned HTTP ${response.status}.`
+          warning = text || `Remote disconnect returned HTTP ${response.status}.`
         }
       } catch (error) {
-        warning = error instanceof Error ? error.message : "Remote unpair failed."
+        warning = error instanceof Error ? error.message : "Remote disconnect failed."
       }
     }
 
