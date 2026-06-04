@@ -205,16 +205,19 @@ export class BackgroundSyncManager {
     }, delayMs)
   }
 
-  private setLastSyncState(state: {
+  private setLastSyncState(syncState: {
     lastSyncedAt?: string | null
     lastSyncStatus: "idle" | "success" | "error"
     lastSyncMessage: string | null
   }) {
-    if (state.lastSyncedAt !== undefined) {
-      persistentStore.set("sync.lastSyncedAt", state.lastSyncedAt)
+    if (syncState.lastSyncedAt !== undefined) {
+      persistentStore.set("sync.lastSyncedAt", syncState.lastSyncedAt)
     }
-    persistentStore.set("sync.lastSyncStatus", state.lastSyncStatus)
-    persistentStore.set("sync.lastSyncMessage", state.lastSyncMessage)
+    persistentStore.set("sync.lastSyncStatus", syncState.lastSyncStatus)
+    persistentStore.set("sync.lastSyncMessage", syncState.lastSyncMessage)
+
+    // Broadcast the status change to the renderer
+    state.mainWindow?.webContents.send("sync:data-changed")
   }
 
   start(options: { skipCatchUp?: boolean } = {}) {
