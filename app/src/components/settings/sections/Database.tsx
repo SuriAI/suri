@@ -61,10 +61,22 @@ export function Database({
   const [isPaired, setIsPaired] = useState(false)
 
   useEffect(() => {
-    window.electronAPI?.sync
-      .getConfig()
-      .then((c) => setIsPaired(c.connected))
-      .catch(() => {})
+    if (!window.electronAPI?.sync) return
+
+    const fetchConfig = () => {
+      window.electronAPI.sync
+        .getConfig()
+        .then((c) => setIsPaired(c.connected))
+        .catch(console.error)
+    }
+
+    fetchConfig()
+
+    const unsubscribe = window.electronAPI.sync.onDataChanged(() => {
+      fetchConfig()
+    })
+
+    return unsubscribe
   }, [])
 
   const { setError, setSuccess } = useUIStore()

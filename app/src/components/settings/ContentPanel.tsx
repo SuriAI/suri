@@ -118,10 +118,22 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   } | null>(null)
 
   useEffect(() => {
-    window.electronAPI?.sync
-      .getConfig()
-      .then((c) => setIsPaired(c.connected))
-      .catch(() => {})
+    if (!window.electronAPI?.sync) return
+
+    const fetchConfig = () => {
+      window.electronAPI.sync
+        .getConfig()
+        .then((c) => setIsPaired(c.connected))
+        .catch(console.error)
+    }
+
+    fetchConfig()
+
+    const unsubscribe = window.electronAPI.sync.onDataChanged(() => {
+      fetchConfig()
+    })
+
+    return unsubscribe
   }, [])
 
   useEffect(() => {

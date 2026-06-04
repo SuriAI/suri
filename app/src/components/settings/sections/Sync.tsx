@@ -84,6 +84,12 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
 
   useEffect(() => {
     void loadConfig()
+
+    if (!window.electronAPI?.sync) return
+    const unsubscribe = window.electronAPI.sync.onDataChanged(() => {
+      void loadConfig()
+    })
+    return unsubscribe
   }, [loadConfig])
 
   const handleSave = async () => {
