@@ -387,97 +387,56 @@ function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundaries
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="max-w-[760px]"
+      maxWidth="max-w-[520px]"
       title="Data Boundaries & Privacy">
-      <div className="space-y-6">
-        {/* Subtitle */}
-        <p className="-mt-2 text-[12px] leading-normal text-white/50">
-          Understand how information is safely stored and processed within the Facenox ecosystem.
+      <div className="space-y-5 pt-2">
+        <p className="text-[12px] leading-relaxed text-white/65">
+          To maintain security and compliance, Facenox separates what information is shared with the
+          management dashboard versus what remains locked locally:
         </p>
 
-        {/* Grid Content */}
-        <div className="grid gap-8 sm:grid-cols-2">
-          {/* Column 1: Shared with Dashboard */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-              <i className="fa-solid fa-cloud-arrow-up text-xs text-cyan-400" />
-              <h4 className="text-[12px] font-semibold tracking-wider text-white/95 uppercase">
-                Shared with Dashboard
-              </h4>
-            </div>
-            <ul className="space-y-3 text-[12px] leading-relaxed text-white/50">
-              <li>
-                <span className="font-semibold text-white/80">Member Profiles:</span> Names, roles,
-                and group memberships synced with the dashboard.
-              </li>
-              <li>
-                <span className="font-semibold text-white/80">Attendance History:</span> Time-in and
-                time-out records for reporting.
-              </li>
-              <li>
-                <span className="font-semibold text-white/80">Device Status:</span> Hostname,
-                network connection quality, and current app update status.
-              </li>
-              <li>
-                <span className="font-semibold text-white/80">System Settings:</span> Sync limits
-                and attendance rules set by organization.
-              </li>
-            </ul>
+        <div className="space-y-5 text-xs">
+          {/* Cloud Sync Section */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">Shared with Dashboard</div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Only standard roster names, roles, attendance timestamps, and device diagnostics are
+              synced to the dashboard.
+            </p>
           </div>
 
-          {/* Column 2: Stored Locally Only */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-              <i className="fa-solid fa-laptop text-xs text-cyan-400" />
-              <h4 className="text-[12px] font-semibold tracking-wider text-white/95 uppercase">
-                Stored Locally Only
-              </h4>
-            </div>
-            <ul className="space-y-3 text-[12px] leading-relaxed text-white/50">
-              <li>
-                <span className="font-semibold text-white/80">Biometric Data:</span> Secure
-                mathematical codes used to identify members.{" "}
-                <span className="font-semibold text-cyan-400">
-                  No raw photos are stored even locally
-                </span>
-                , and biometric data is encrypted end-to-end before being sent to the cloud.
-              </li>
-              <li>
-                <span className="font-semibold text-white/80">Live Camera Feed:</span> Temporary
-                video processing frames; camera footage is{" "}
-                <span className="font-semibold text-cyan-400">never</span> recorded or uploaded.
-              </li>
-              <li>
-                {onNavigateToDB ?
-                  <button
-                    onClick={() => {
-                      onClose()
-                      onNavigateToDB()
-                    }}
-                    className="font-semibold text-white/80 hover:text-cyan-400 hover:underline">
-                    Offline Database:
-                  </button>
-                : <span className="font-semibold text-white/80">Offline Database:</span>}{" "}
-                Secured database containing local attendance records and device configurations.
-              </li>
-              <li>
-                <span className="font-semibold text-white/80">Local AI Processing:</span> All face
-                detection, recognition, and liveness checks are computed strictly on this machine.
-              </li>
-            </ul>
+          {/* Local Processing Section */}
+          <div className="space-y-2">
+            <div className="text-[13px] font-semibold text-white/90">Stored Locally Only</div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Biometric face vectors are encrypted and kept strictly local.{" "}
+              <strong>No raw photos are ever saved or uploaded.</strong>
+            </p>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              The camera feed is processed live in volatile memory and never recorded.
+            </p>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4 text-[11px] text-white/40">
-          <span>GDPR (EU) & PH Data Privacy Act (DPA 2012) Aligned</span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
-              Understood
-            </button>
+        <div className="flex items-center justify-between border-t border-white/5 pt-4">
+          <div>
+            {onNavigateToDB && (
+              <button
+                onClick={() => {
+                  onClose()
+                  onNavigateToDB()
+                }}
+                className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 hover:underline">
+                Manage Local Database →
+              </button>
+            )}
           </div>
+
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
+            Understood
+          </button>
         </div>
       </div>
     </Modal>
