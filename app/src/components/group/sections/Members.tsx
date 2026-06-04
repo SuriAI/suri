@@ -197,8 +197,11 @@ export function Members({
     let noConsent = 0
     let enrolled = 0
 
+    const isConsentCertified = Boolean(group?.settings?.biometric_consent_certified)
+
     selectedMembersList.forEach((m) => {
-      if (!m.has_consent) noConsent++
+      const hasConsent = isConsentCertified || !!m.has_consent
+      if (!hasConsent) noConsent++
       else if (m.has_face_data) enrolled++
       else ready++
     })
@@ -572,6 +575,7 @@ export function Members({
                       onEdit={isPaired ? undefined : onEdit}
                       onDelete={isPaired ? undefined : setMemberToDelete}
                       onResetFace={handleResetFace}
+                      isConsentCertified={Boolean(group?.settings?.biometric_consent_certified)}
                     />
                   ))}
                 </motion.div>
@@ -580,7 +584,7 @@ export function Members({
           </div>
 
           {/* Consent banner */}
-          {members.some((m) => !m.has_consent) && (
+          {!group?.settings?.biometric_consent_certified && members.some((m) => !m.has_consent) && (
             <div className="pointer-events-none absolute right-0 bottom-6 left-0 z-40 flex justify-center">
               <div className="animate-in fade-in slide-in-from-bottom-4 pointer-events-auto flex items-center gap-4 rounded-lg border border-white/10 bg-[#0d1117]/95 px-4 py-2 text-[11px] font-medium text-white/65 shadow-xl duration-500">
                 <div className="flex items-center gap-2">
@@ -629,7 +633,9 @@ export function Members({
             {mode === "bulk" && source === "upload" && (
               <BulkEnrollment
                 group={group}
-                members={selectedMembersList.filter((m) => m.has_consent)}
+                members={selectedMembersList.filter(
+                  (m) => Boolean(group?.settings?.biometric_consent_certified) || !!m.has_consent,
+                )}
                 onRefresh={onMembersChange}
                 onClose={resetEnrollment}
                 className="flex-1"
@@ -640,7 +646,9 @@ export function Members({
                 group={group}
                 members={members}
                 preselectedIds={selectedMembersList
-                  .filter((m) => m.has_consent)
+                  .filter(
+                    (m) => Boolean(group?.settings?.biometric_consent_certified) || !!m.has_consent,
+                  )
                   .map((m) => m.person_id)}
                 onRefresh={onMembersChange}
                 onClose={resetEnrollment}
