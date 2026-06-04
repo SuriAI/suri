@@ -19,7 +19,16 @@ function authHeaders(extra: Record<string, string> = {}) {
 }
 
 function normalizeRemoteBaseUrl(value: string): string {
-  return value.trim().replace(/\/+$/, "")
+  let url = value.trim().replace(/\/+$/, "")
+  if (!url) return ""
+
+  if (!/^https?:\/\//i.test(url)) {
+    const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1]))/i.test(
+      url,
+    )
+    url = (isLocal ? "http://" : "https://") + url
+  }
+  return url
 }
 
 function resolveRemoteBaseUrl(value: string): string {
