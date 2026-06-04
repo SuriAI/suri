@@ -93,6 +93,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   }, [loadConfig])
 
   const handleSave = async () => {
+    setError(null)
+    setSuccess(null)
     setBusyAction("saving")
     try {
       const nextConfig = await window.electronAPI.sync.updateConfig({
@@ -115,6 +117,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   }
 
   const handlePair = async () => {
+    setError(null)
+    setSuccess(null)
     setBusyAction("pairing")
     try {
       const result = await window.electronAPI.sync.pairDevice({
@@ -142,6 +146,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   }
 
   const handleDisconnect = async () => {
+    setError(null)
+    setSuccess(null)
     setBusyAction("disconnecting")
     try {
       const result = await window.electronAPI.sync.disconnectDevice()
@@ -160,6 +166,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   }
 
   const handleManualSync = async () => {
+    setError(null)
+    setSuccess(null)
     setBusyAction("syncing")
     try {
       const result = await window.electronAPI.sync.triggerNow()
