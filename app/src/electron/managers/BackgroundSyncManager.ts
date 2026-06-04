@@ -154,6 +154,8 @@ export class BackgroundSyncManager {
   private debounceTimer: NodeJS.Timeout | null = null
   private pollFallbackTimer: NodeJS.Timeout | null = null
   private isSyncing = false
+  /** When true, a sync will be re-triggered once the current one finishes. */
+  private pendingSyncRequested = false
   private reconnectAttempts = 0
   private eventStreamController: AbortController | null = null
   private lastEventReceivedAt: number = 0
@@ -368,6 +370,7 @@ export class BackgroundSyncManager {
 
   stop() {
     this.clearCatchUpTimer()
+    this.pendingSyncRequested = false
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer)
       this.debounceTimer = null
@@ -469,9 +472,13 @@ export class BackgroundSyncManager {
 
   async performSync() {
     if (this.isSyncing) {
+      // Queue a follow-up sync instead of silently dropping this request.
+      // Prevents missed updates from SSE events or manual triggers that
+      // arrive while a sync is already in-flight.
+      this.pendingSyncRequested = true
       return {
         success: false,
-        message: "A sync is already running.",
+        message: "A sync is already running. Queued for re-sync.",
       }
     }
 
@@ -692,9 +699,14 @@ export class BackgroundSyncManager {
             const { encryptionKey } = this.getSyncConfig()
             if (encryptionKey && pullPayload.face_embeddings?.length) {
               let importedCount = 0
+              let consecutiveDecryptFailures = 0
+              const MAX_CONSECUTIVE_DECRYPT_FAILURES = 3
+
               for (const fe of pullPayload.face_embeddings) {
                 try {
                   const rawBytes = decryptEmbedding(fe.embedding_encrypted, encryptionKey)
+                  // Reset streak on successful decryption
+                  consecutiveDecryptFailures = 0
                   const b64 = btoa(String.fromCharCode(...rawBytes))
                   const embImportResponse = await fetch(
                     `${backendService.getUrl()}/attendance/import-embedding`,
@@ -716,7 +728,17 @@ export class BackgroundSyncManager {
                     console.warn(`[Sync] import-embedding failed for ${fe.person_id}:`, embResponse)
                   }
                 } catch (err) {
+                  consecutiveDecryptFailures++
                   console.warn(`[Sync] Failed to import embedding for ${fe.person_id}:`, err)
+
+                  // Abort early on suspected key mismatch to prevent log spam
+                  if (consecutiveDecryptFailures >= MAX_CONSECUTIVE_DECRYPT_FAILURES) {
+                    console.error(
+                      `[Sync] Aborting embedding import: ${MAX_CONSECUTIVE_DECRYPT_FAILURES} consecutive decryption failures. Possible encryption key mismatch.`,
+                    )
+                    pullMsg += " Embedding sync aborted: encryption key may be invalid."
+                    break
+                  }
                 }
               }
               if (importedCount > 0) {
@@ -771,6 +793,13 @@ export class BackgroundSyncManager {
       }
     } finally {
       this.isSyncing = false
+
+      // If another sync was requested while we were busy, run it now.
+      if (this.pendingSyncRequested) {
+        this.pendingSyncRequested = false
+        console.log("[Sync] Running queued follow-up sync.")
+        void this.performSync()
+      }
     }
   }
 
