@@ -151,7 +151,7 @@ describe("Sync", () => {
 
     expect(
       await screen.findByText(
-        "Remote sync settings saved. You can pair this desktop whenever you're ready.",
+        "Remote sync settings saved. You can connect this desktop whenever you're ready.",
       ),
     ).toBeInTheDocument()
 
