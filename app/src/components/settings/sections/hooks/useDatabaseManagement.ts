@@ -28,10 +28,22 @@ export function useDatabaseManagement(
   const [isPaired, setIsPaired] = useState(false)
 
   useEffect(() => {
-    window.electronAPI?.sync
-      .getConfig()
-      .then((c) => setIsPaired(c.connected))
-      .catch(() => {})
+    if (!window.electronAPI?.sync) return
+
+    const fetchConfig = () => {
+      window.electronAPI.sync
+        .getConfig()
+        .then((c) => setIsPaired(c.connected))
+        .catch(console.error)
+    }
+
+    fetchConfig()
+
+    const unsubscribe = window.electronAPI.sync.onDataChanged(() => {
+      fetchConfig()
+    })
+
+    return unsubscribe
   }, [])
 
   // Initialize with groups if available to prevent "No results found" flash
@@ -284,7 +296,7 @@ export function useDatabaseManagement(
             title: "Cannot delete group",
             message:
               "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
-            variant: "warning",
+            variant: "default",
           })
         }
         return
@@ -319,7 +331,7 @@ export function useDatabaseManagement(
             title: "Cannot delete member",
             message:
               "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
-            variant: "warning",
+            variant: "default",
           })
         }
         return
@@ -387,7 +399,7 @@ export function useDatabaseManagement(
             title: "Cannot delete groups",
             message:
               "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
-            variant: "warning",
+            variant: "default",
           })
         }
         return

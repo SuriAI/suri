@@ -7,6 +7,7 @@ import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { syncManager } from "../managers/BackgroundSyncManager.js"
 import { persistentStore } from "../persistentStore.js"
 import { getCurrentVersion } from "../updater.js"
+import { state } from "../State.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
   DEFAULT_SYNC_INTERVAL_MINUTES,
@@ -188,6 +189,8 @@ export function registerSyncHandlers() {
       syncManager.stop()
     }
 
+    state.mainWindow?.webContents.send("sync:data-changed")
+
     return status
   })
 
@@ -289,6 +292,8 @@ export function registerSyncHandlers() {
         syncManager.start({ skipCatchUp: true })
         const initialSyncResult = await syncManager.performSync()
 
+        state.mainWindow?.webContents.send("sync:data-changed")
+
         return {
           success: true,
           config: getRemoteSyncStatus(),
@@ -299,6 +304,7 @@ export function registerSyncHandlers() {
             : `Device connected, but the initial sync failed. Local attendance still works. ${initialSyncResult.message}`,
         }
       } catch (error) {
+        state.mainWindow?.webContents.send("sync:data-changed")
         return {
           success: false,
           error: error instanceof Error ? error.message : "Connection failed.",
@@ -359,6 +365,8 @@ export function registerSyncHandlers() {
       : "Device disconnected from Management Dashboard.",
     )
     syncManager.stop()
+
+    state.mainWindow?.webContents.send("sync:data-changed")
 
     return {
       success: true,
