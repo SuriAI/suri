@@ -164,6 +164,7 @@ async def import_metadata(
             if group.created_at:
                 group_payload["created_at"] = group.created_at
             if existing_group:
+                was_deleted = existing_group.is_deleted
                 # Revive soft-deleted groups and update all fields directly
                 # to avoid repo.update_group → get_group filter issues
                 existing_group.name = group.name
@@ -180,6 +181,21 @@ async def import_metadata(
                     existing_group.class_start_time = settings["class_start_time"]
                 if "track_checkout" in settings:
                     existing_group.track_checkout = settings["track_checkout"]
+
+                # Re-assert group rule when reviving to prevent stale
+                # attendance config (thresholds, class start time, etc.)
+                if was_deleted:
+                    await repo.add_group_rule(
+                        repo._group_rule_payload(
+                            existing_group.id,
+                            {
+                                "late_threshold_minutes": existing_group.late_threshold_minutes,
+                                "late_threshold_enabled": existing_group.late_threshold_enabled,
+                                "class_start_time": existing_group.class_start_time,
+                                "track_checkout": existing_group.track_checkout,
+                            },
+                        )
+                    )
             else:
                 await repo.create_group(group_payload)
             groups_count += 1
@@ -240,6 +256,7 @@ async def import_metadata(
         group_query = select(AttendanceGroup).where(
             AttendanceGroup.is_deleted.is_(False),
         )
+        group_query = repo._apply_org_scope(group_query, AttendanceGroup)
         if pulled_group_ids:
             group_query = group_query.where(AttendanceGroup.id.notin_(pulled_group_ids))
         result = await repo.session.execute(group_query)
@@ -250,6 +267,7 @@ async def import_metadata(
         member_query = select(AttendanceMember).where(
             AttendanceMember.is_deleted.is_(False),
         )
+        member_query = repo._apply_org_scope(member_query, AttendanceMember)
         if pulled_member_ids:
             member_query = member_query.where(
                 AttendanceMember.person_id.notin_(pulled_member_ids)
