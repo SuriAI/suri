@@ -13,75 +13,94 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={
-        <div>
-          <h2 className="text-xl font-semibold text-white">Privacy & Data Handling</h2>
-          <p className="mt-1 text-sm font-normal text-white/65">
-            How information is stored and used
-          </p>
+      maxWidth="max-w-[520px]"
+      title="Privacy & Data Handling">
+      <div className="space-y-5 pt-2">
+        <p className="text-[12px] leading-relaxed text-white/65">
+          Facenox is built with a privacy-first architecture, ensuring full compliance and local
+          control over your biometric data:
+        </p>
+
+        <div className="custom-scroll max-h-[50vh] space-y-5 overflow-y-auto pr-1 text-xs">
+          {/* Section 1 */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">Data remains local</div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Biometric templates, attendance records, and app settings are stored locally on this
+              machine. Face detection and matching execute entirely on-device, independent of any
+              external cloud biometric servers.
+            </p>
+          </div>
+
+          {/* Section 2 */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">
+              Zero telemetry and tracking
+            </div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              The application runs without ads, telemetry scripts, or usage tracking. No diagnostic
+              or performance data is transmitted externally, keeping your network interface
+              completely private.
+            </p>
+          </div>
+
+          {/* Section 3 */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">
+              Offline operational capability
+            </div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Face matching and liveness verification run without active network connectivity. This
+              allows secure, offline deployments and ensures system availability during internet
+              outages.
+            </p>
+          </div>
+
+          {/* Section 4 */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">Remote sync boundaries</div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Syncing with the management dashboard uploads only roster metadata (names, roles) and
+              attendance timestamps. Biometric templates and raw camera images are never uploaded.
+              To migrate profiles between devices, use local encrypted backups.
+            </p>
+          </div>
+
+          {/* Section 5 */}
+          <div className="space-y-1">
+            <div className="text-[13px] font-semibold text-white/90">
+              Compliance tools & disclaimers
+            </div>
+            <p className="text-[11px] leading-relaxed text-white/50">
+              Facenox provides consent logging, data export, and secure purge controls to assist
+              with privacy regulations. Note that compliance ultimately depends on your
+              organization&apos;s operational policies and notices.
+            </p>
+          </div>
         </div>
-      }
-      maxWidth="md">
-      <div className="custom-scroll mt-2 -mr-2 max-h-[70vh] space-y-6 overflow-y-auto pr-2 pb-10">
-        <section>
-          <h3 className="mb-2 text-sm font-medium text-white">Data remains local</h3>
-          <p className="text-xs leading-relaxed text-white/65">
-            Facenox stores biometric profiles, attendance records, and settings locally on this
-            device by default. The desktop app performs face detection, tracking, liveness
-            verification, and recognition locally and does not depend on a hosted biometric service.
-          </p>
-        </section>
 
-        <section>
-          <h3 className="mb-2 text-sm font-medium text-white">No data collection</h3>
-          <p className="text-xs leading-relaxed text-white/65">
-            The current desktop app does not include analytics, ads, or hidden telemetry. Biometric
-            processing is performed locally, and the app does not send routine usage data to a
-            hosted monitoring service.
-          </p>
-        </section>
-
-        <section>
-          <h3 className="mb-2 text-sm font-medium text-white">Works offline</h3>
-          <p className="text-xs leading-relaxed text-white/65">
-            Face detection, tracking, liveness verification, and recognition work entirely without
-            internet. This ensures privacy and allows use in environments with limited or no network
-            access.
-          </p>
-        </section>
-
-        <section>
-          <h3 className="mb-2 text-sm font-medium text-white">Remote Reporting Sync</h3>
-          <p className="text-xs leading-relaxed text-white/65">
-            Facenox can pair with a separate Facenox Management Dashboard for reporting and device
-            sync. Remote sync does not upload face embeddings or raw face images, and biometric
-            matching stays local to the desktop app. To move biometric profiles between devices, use
-            an encrypted backup and restore.
-          </p>
-        </section>
-
-        <section>
-          <h3 className="mb-2 text-sm font-medium text-white">Regulatory compliance</h3>
-          <p className="text-xs leading-relaxed text-white/65">
-            Facenox includes local storage, consent tracking, export, and deletion controls that can
-            help support privacy-conscious deployments. Compliance still depends on operational
-            policies and legal notices.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="flex items-center justify-between border-t border-white/5 pt-4">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => updaterService.openReleasePage("https://gdpr-info.eu/")}
-              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/55 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
+              className="rounded bg-white/5 px-2.5 py-1 text-[9px] font-semibold text-white/55 transition-all hover:bg-white/10 hover:text-white/70 active:scale-95">
               GDPR (EU)
             </button>
             <button
               onClick={() =>
                 updaterService.openReleasePage("https://privacy.gov.ph/data-privacy-act/")
               }
-              className="rounded bg-[rgba(22,28,36,0.62)] px-2 py-0.5 text-[10px] text-white/55 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white/70 active:scale-95">
-              Data Privacy Act of 2012 (PH)
+              className="rounded bg-white/5 px-2.5 py-1 text-[9px] font-semibold text-white/55 transition-all hover:bg-white/10 hover:text-white/70 active:scale-95">
+              Data Privacy Act (PH)
             </button>
           </div>
-        </section>
+
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
+            Close
+          </button>
+        </div>
       </div>
     </Modal>
   )
