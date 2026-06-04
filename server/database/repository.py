@@ -1023,6 +1023,7 @@ class AttendanceRepository:
             "group_rules": 0,
             "settings": 0,
             "faces": 0,
+            "audit_logs": 0,
         }
 
         for model, key in [
@@ -1033,6 +1034,7 @@ class AttendanceRepository:
             (AttendanceGroupRule, "group_rules"),
             (AttendanceSettings, "settings"),
             (Face, "faces"),
+            (AuditLog, "audit_logs"),
         ]:
             result = await self.session.execute(
                 update(model)
