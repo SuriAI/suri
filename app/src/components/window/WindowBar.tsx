@@ -44,9 +44,7 @@ export default function WindowBar() {
     if (!window.electronAPI?.sync) return
 
     const fetchConfig = () => {
-      window.electronAPI.sync.getConfig()
-        .then(setSyncConfig)
-        .catch(console.error)
+      window.electronAPI.sync.getConfig().then(setSyncConfig).catch(console.error)
     }
 
     fetchConfig()
@@ -124,20 +122,21 @@ export default function WindowBar() {
         <img
           src="./icons/logo-transparent.png"
           alt="Facenox"
-          className={`${isMac ? "-ml-4" : ""} h-4 w-4 object-contain opacity-60 pointer-events-none`}
+          className={`${isMac ? "-ml-4" : ""} pointer-events-none h-4 w-4 object-contain opacity-60`}
         />
         {(() => {
           if (!syncConfig) return null
 
           const isSyncEnabled = syncConfig.connected && syncConfig.enabled
-          let dotColorClass = "bg-white/30"
-          let statusText = "Loading..."
-          let tooltipContent = "Reading sync state..."
+          let dotColorClass: string
+          let statusText: string
+          let tooltipContent: string
 
           if (!isSyncEnabled) {
             dotColorClass = "bg-white/35"
             statusText = "Local"
-            tooltipContent = "Running in offline mode. Biometrics and attendance records are stored only on this device."
+            tooltipContent =
+              "Running in offline mode. Biometrics and attendance records are stored only on this device."
           } else {
             const relativeTime = formatRelativeTime(syncConfig.lastSyncedAt)
             if (syncConfig.lastSyncStatus === "success") {
@@ -157,7 +156,7 @@ export default function WindowBar() {
 
           return (
             <Tooltip content={tooltipContent} position="bottom" offset={6}>
-              <div className="flex items-center gap-1.5 text-[9px] font-bold tracking-wide text-white/50 transition-all duration-200 hover:text-white/75 [webkit-app-region:no-drag] cursor-default pointer-events-auto select-none">
+              <div className="pointer-events-auto flex cursor-default items-center gap-1.5 text-[9px] font-bold tracking-wide text-white/50 transition-all duration-200 select-none [webkit-app-region:no-drag] hover:text-white/75">
                 <span className={`h-1.5 w-1.5 rounded-full ${dotColorClass}`} />
                 <span>{statusText}</span>
               </div>
