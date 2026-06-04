@@ -262,6 +262,24 @@ export function registerSyncHandlers() {
         persistentStore.set("sync.lastSyncStatus", "idle")
         persistentStore.set("sync.lastSyncMessage", "Device connected. Starting initial sync...")
 
+        // Assign organization_id to existing offline records
+        try {
+          const assignUrl = `${backendService.getUrl()}/attendance/groups/assign-org-id`
+          const assignResponse = await fetch(assignUrl, {
+            method: "POST",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            signal: AbortSignal.timeout(10000),
+          })
+          if (assignResponse.ok) {
+            const assignCounts = await assignResponse.json()
+            console.log("[Sync] Successfully assigned organization ID to offline records:", assignCounts)
+          } else {
+            console.warn("[Sync] Failed to assign organization ID to offline records:", assignResponse.status)
+          }
+        } catch (assignError) {
+          console.warn("[Sync] Error calling assign-org-id backend route:", assignError)
+        }
+
         syncManager.start({ skipCatchUp: true })
         const initialSyncResult = await syncManager.performSync()
 
