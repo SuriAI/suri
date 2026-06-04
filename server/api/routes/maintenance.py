@@ -1,5 +1,6 @@
 import logging
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
 
 from api.schemas import (
     SuccessResponse,
@@ -9,6 +10,7 @@ from api.schemas import (
 )
 from api.deps import get_repository
 from database.repository import AttendanceRepository
+from database.models import AttendanceGroup
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +146,13 @@ async def import_metadata(
     try:
         groups_count = 0
         for group in request.groups:
-            existing_group = await repo.get_group(group.id)
+            # Query without is_deleted filter to find soft-deleted groups too.
+            # Using repo.get_group() would miss deleted rows, causing a
+            # UNIQUE constraint violation on re-insert.
+            stmt = select(AttendanceGroup).where(AttendanceGroup.id == group.id)
+            result = await repo.session.execute(stmt)
+            existing_group = result.scalars().first()
+
             remote_id = group.remote_id or group.id
             group_payload = {
                 "id": group.id,
@@ -156,7 +164,22 @@ async def import_metadata(
             if group.created_at:
                 group_payload["created_at"] = group.created_at
             if existing_group:
-                await repo.update_group(group.id, group_payload)
+                # Revive soft-deleted groups and update all fields directly
+                # to avoid repo.update_group → get_group filter issues
+                existing_group.name = group.name
+                existing_group.is_active = group.is_active if group.is_active is not None else True
+                existing_group.is_deleted = False
+                existing_group.remote_id = remote_id
+                existing_group.organization_id = repo.organization_id
+                settings = group.settings or {}
+                if "late_threshold_minutes" in settings:
+                    existing_group.late_threshold_minutes = settings["late_threshold_minutes"]
+                if "late_threshold_enabled" in settings:
+                    existing_group.late_threshold_enabled = settings["late_threshold_enabled"]
+                if "class_start_time" in settings:
+                    existing_group.class_start_time = settings["class_start_time"]
+                if "track_checkout" in settings:
+                    existing_group.track_checkout = settings["track_checkout"]
             else:
                 await repo.create_group(group_payload)
             groups_count += 1
@@ -189,7 +212,10 @@ async def import_metadata(
                 await repo.update_member(member.person_id, member_payload)
             else:
                 # Ensure local group exists for SQLite FK constraints
-                group_exists = await repo.get_group(member.group_id)
+                # Query without is_deleted filter to catch soft-deleted rows
+                grp_stmt = select(AttendanceGroup).where(AttendanceGroup.id == member.group_id)
+                grp_result = await repo.session.execute(grp_stmt)
+                group_exists = grp_result.scalars().first()
                 if not group_exists:
                     logger.warning(
                         f"Group {member.group_id} not found locally for member {member.name}. Auto-creating Group."
@@ -201,12 +227,14 @@ async def import_metadata(
                             "remote_id": member.group_id,
                         }
                     )
+                elif group_exists.is_deleted:
+                    group_exists.is_deleted = False
+                    group_exists.is_active = True
                 await repo.add_member(member_payload)
             members_count += 1
 
         # Prune groups/members that were deleted from the cloud dashboard
-        from database.models import AttendanceGroup, AttendanceMember
-        from sqlalchemy import select
+        from database.models import AttendanceMember
 
         pulled_group_ids = {g.id for g in request.groups}
         group_query = select(AttendanceGroup).where(
