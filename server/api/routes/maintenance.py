@@ -168,15 +168,21 @@ async def import_metadata(
                 # Revive soft-deleted groups and update all fields directly
                 # to avoid repo.update_group → get_group filter issues
                 existing_group.name = group.name
-                existing_group.is_active = group.is_active if group.is_active is not None else True
+                existing_group.is_active = (
+                    group.is_active if group.is_active is not None else True
+                )
                 existing_group.is_deleted = False
                 existing_group.remote_id = remote_id
                 existing_group.organization_id = repo.organization_id
                 settings = group.settings or {}
                 if "late_threshold_minutes" in settings:
-                    existing_group.late_threshold_minutes = settings["late_threshold_minutes"]
+                    existing_group.late_threshold_minutes = settings[
+                        "late_threshold_minutes"
+                    ]
                 if "late_threshold_enabled" in settings:
-                    existing_group.late_threshold_enabled = settings["late_threshold_enabled"]
+                    existing_group.late_threshold_enabled = settings[
+                        "late_threshold_enabled"
+                    ]
                 if "class_start_time" in settings:
                     existing_group.class_start_time = settings["class_start_time"]
                 if "track_checkout" in settings:
@@ -229,7 +235,9 @@ async def import_metadata(
             else:
                 # Ensure local group exists for SQLite FK constraints
                 # Query without is_deleted filter to catch soft-deleted rows
-                grp_stmt = select(AttendanceGroup).where(AttendanceGroup.id == member.group_id)
+                grp_stmt = select(AttendanceGroup).where(
+                    AttendanceGroup.id == member.group_id
+                )
                 grp_result = await repo.session.execute(grp_stmt)
                 group_exists = grp_result.scalars().first()
                 if not group_exists:

@@ -272,9 +272,15 @@ export function registerSyncHandlers() {
           })
           if (assignResponse.ok) {
             const assignCounts = await assignResponse.json()
-            console.log("[Sync] Successfully assigned organization ID to offline records:", assignCounts)
+            console.log(
+              "[Sync] Successfully assigned organization ID to offline records:",
+              assignCounts,
+            )
           } else {
-            console.warn("[Sync] Failed to assign organization ID to offline records:", assignResponse.status)
+            console.warn(
+              "[Sync] Failed to assign organization ID to offline records:",
+              assignResponse.status,
+            )
           }
         } catch (assignError) {
           console.warn("[Sync] Error calling assign-org-id backend route:", assignError)

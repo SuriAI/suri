@@ -153,6 +153,7 @@ export class BackgroundSyncManager {
   private catchUpTimer: NodeJS.Timeout | null = null
   private debounceTimer: NodeJS.Timeout | null = null
   private pollFallbackTimer: NodeJS.Timeout | null = null
+  private reconnectTimer: NodeJS.Timeout | null = null
   private isSyncing = false
   /** When true, a sync will be re-triggered once the current one finishes. */
   private pendingSyncRequested = false
@@ -333,12 +334,20 @@ export class BackgroundSyncManager {
     const delay = Math.min(10000, Math.pow(2, this.reconnectAttempts) * 500)
     this.reconnectAttempts++
 
-    setTimeout(() => {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+    }
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
       void this.startEventStream()
     }, delay)
   }
 
   private stopEventStream() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
     if (this.eventStreamController) {
       this.eventStreamController.abort()
       this.eventStreamController = null
@@ -371,6 +380,10 @@ export class BackgroundSyncManager {
   stop() {
     this.clearCatchUpTimer()
     this.pendingSyncRequested = false
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer)
       this.debounceTimer = null
@@ -707,7 +720,7 @@ export class BackgroundSyncManager {
                   const rawBytes = decryptEmbedding(fe.embedding_encrypted, encryptionKey)
                   // Reset streak on successful decryption
                   consecutiveDecryptFailures = 0
-                  const b64 = btoa(String.fromCharCode(...rawBytes))
+                  const b64 = Buffer.from(rawBytes).toString("base64")
                   const embImportResponse = await fetch(
                     `${backendService.getUrl()}/attendance/import-embedding`,
                     {
