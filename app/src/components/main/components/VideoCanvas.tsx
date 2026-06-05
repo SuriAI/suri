@@ -162,7 +162,7 @@ export const VideoCanvas = memo(function VideoCanvas({
                       lateTrackingEnabled && (
                         <div className="pointer-events-auto absolute top-full left-1/2 mt-4 -translate-x-1/2">
                           <StartTimeChip
-                            startTime={classStartTime || "08:00"}
+                            startTime={classStartTime}
                             onTimeChange={onStartTimeChange}
                           />
                         </div>
