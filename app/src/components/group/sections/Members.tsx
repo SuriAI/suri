@@ -59,9 +59,7 @@ export function Members({
         target.closest("button, input, select, [data-member-row], [role=button], [role=combobox]")
       )
         return
-      if (outerRef.current && outerRef.current.contains(target)) {
-        setSelectedIds(new Set())
-      }
+      setSelectedIds(new Set())
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
