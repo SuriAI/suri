@@ -27,8 +27,8 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
             <div className="text-[13px] font-semibold text-white/90">Data remains local</div>
             <p className="text-[11px] leading-relaxed text-white/50">
               Biometric templates, attendance records, and app settings are stored locally on this
-              machine. Face detection and matching execute entirely on-device, independent of any
-              external cloud biometric servers.
+              machine. Face matching and liveness detection execute entirely on-device, independent
+              of any cloud-based biometric matching engines.
             </p>
           </div>
 
@@ -60,9 +60,10 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-1">
             <div className="text-[13px] font-semibold text-white/90">Remote sync boundaries</div>
             <p className="text-[11px] leading-relaxed text-white/50">
-              Syncing with the management dashboard uploads only roster metadata (names, roles) and
-              attendance timestamps. Biometric templates and raw camera images are never uploaded.
-              To migrate profiles between devices, use local encrypted backups.
+              Syncing with the management dashboard uploads roster metadata, attendance logs, and
+              encrypted biometric vectors (embeddings) to enable cross-device kiosk synchronization.
+              Raw camera images/photos are never uploaded, and vectors are stored securely in their
+              encrypted form on the cloud.
             </p>
           </div>
 
