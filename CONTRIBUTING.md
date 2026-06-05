@@ -1,6 +1,6 @@
 # Contributing to Facenox
 
-Thanks for contributing.
+Thanks for considering contributing!
 
 Facenox is a local-first desktop product with a privacy-sensitive domain. Changes that affect biometrics, consent, storage, exports, sync, or deletion need extra care and clear documentation.
 
