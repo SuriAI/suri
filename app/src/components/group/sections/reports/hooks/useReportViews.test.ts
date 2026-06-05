@@ -62,6 +62,7 @@ describe("useReportViews", () => {
       expect(mockPersistentSettings.setReportScratchpad).toHaveBeenCalledWith("group-1", {
         columns: ["name", "status"],
         groupBy: "none",
+        pageSize: 50,
         columnsFollowDefault: false,
       })
     })

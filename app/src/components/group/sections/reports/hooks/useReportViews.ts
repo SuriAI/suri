@@ -13,12 +13,14 @@ export function useReportViews(
   groupId: string,
   defaultColumns: ColumnKey[],
   defaultColumnPresets: ColumnKey[][] = [defaultColumns],
+  defaultPageSize = 50,
 ) {
   // Current settings state
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(defaultColumns)
   const [groupBy, setGroupBy] = useState<GroupByKey>("none")
   const [statusFilter, setStatusFilter] = useState<ReportStatusFilter>("all")
   const [search, setSearch] = useState<string>("")
+  const [pageSize, setPageSize] = useState(defaultPageSize)
   const [columnsFollowDefault, setColumnsFollowDefault] = useState(true)
 
   // Track if we are currently loading state to avoid overwriting during init
@@ -34,6 +36,7 @@ export function useReportViews(
           groupBy: unknown
           statusFilter: unknown
           columnsFollowDefault: unknown
+          pageSize: unknown
         }>
 
         if (s) {
@@ -53,6 +56,7 @@ export function useReportViews(
           }
 
           if (s.groupBy) setGroupBy(s.groupBy as GroupByKey)
+          if (s.pageSize) setPageSize(s.pageSize as number)
           // Note: statusFilter and search are ephemeral by design
         } else {
           setColumnsFollowDefault(true)
@@ -75,12 +79,13 @@ export function useReportViews(
         .setReportScratchpad(groupId, {
           columns: visibleColumns,
           groupBy,
+          pageSize,
           columnsFollowDefault,
           // We don't persist statusFilter or search as they should be ephemeral
         })
         .catch(console.error)
     }
-  }, [groupId, visibleColumns, groupBy, columnsFollowDefault, isInitializing])
+  }, [groupId, visibleColumns, groupBy, pageSize, columnsFollowDefault, isInitializing])
 
   const handleSetVisibleColumns = (cols: ColumnKey[]) => {
     setColumnsFollowDefault(false)
@@ -96,5 +101,7 @@ export function useReportViews(
     setStatusFilter,
     search,
     setSearch,
+    pageSize,
+    setPageSize,
   }
 }
