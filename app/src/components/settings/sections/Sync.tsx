@@ -193,12 +193,12 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
     <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
       <div className="overflow-hidden">
         {/* Elevated Header Row with Connect/Connected Device Details and Actions */}
-        <div className="flex items-start justify-between border-b border-white/5 pt-6 pb-4 gap-4">
+        <div className="flex items-start justify-between gap-4 border-b border-white/5 pt-6 pb-4">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-medium text-white/90">
               {!config.connected ? "Connect Device" : "Connected Device"}
             </h3>
-            {!config.connected ? (
+            {!config.connected ?
               <p className="mt-0.5 text-xs text-white/65">
                 Generate a code in the{" "}
                 <a
@@ -212,20 +212,19 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                 </a>{" "}
                 and enter it below to connect this device.
               </p>
-            ) : config.remoteBaseUrl && config.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL ? (
+            : config.remoteBaseUrl && config.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL ?
               <p className="mt-0.5 text-xs text-white/65">
                 Device connected. Attendance records are syncing automatically to custom server:{" "}
                 <span className="font-mono text-[11px] text-white/80 underline select-all">
                   {config.remoteBaseUrl}
                 </span>
               </p>
-            ) : (
-              <p className="mt-0.5 text-xs text-white/65">
+            : <p className="mt-0.5 text-xs text-white/65">
                 Device connected. Attendance records are syncing automatically.
               </p>
-            )}
+            }
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-3 mt-0.5">
+          <div className="mt-0.5 flex shrink-0 flex-col items-end gap-3">
             <button
               onClick={() => setShowPrivacyModal(true)}
               className="text-[10px] font-extrabold tracking-[0.12em] text-cyan-400/90 uppercase transition-colors hover:text-cyan-300">
@@ -245,7 +244,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
         <div className="py-2">
           {/* Connection Actions Row */}
           <div className="flex flex-col gap-4 py-4">
-            {!config.connected ? (
+            {!config.connected ?
               <div className="space-y-4">
                 <div className="flex max-w-md flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="min-w-0 flex-1 space-y-1.5">
@@ -269,8 +268,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-4">
+            : <div className="space-y-4">
                 <div className="flex justify-between gap-4 font-mono text-[11px] text-white/40">
                   <div className="space-y-0.5">
                     <div>Device: {config.deviceName || "Facenox Desktop"}</div>
@@ -305,74 +303,74 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
               </div>
-            )}
+            }
           </div>
         </div>
 
-            <AnimatePresence>
-              {showAdvanced && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="overflow-hidden">
-                  <div className="mt-4 grid gap-4 border-t border-white/5 pt-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
-                            Custom Server URL
-                          </label>
-                          {remoteBaseUrl &&
-                            remoteBaseUrl.trim() !== DEFAULT_REMOTE_BASE_URL &&
-                            !config.connected && (
-                              <button
-                                type="button"
-                                onClick={() => setRemoteBaseUrl("")}
-                                className="cursor-pointer text-[9px] font-bold tracking-wider text-cyan-400 transition-colors hover:text-cyan-300">
-                                Reset to Default
-                              </button>
-                            )}
-                        </div>
-                        <input
-                          type="url"
-                          placeholder="Leave empty for official sync"
-                          value={remoteBaseUrl}
-                          disabled={config.connected}
-                          onChange={(e) => setRemoteBaseUrl(e.target.value)}
-                          className="h-8.5 w-full rounded border border-white/10 bg-transparent px-3 text-[12px] text-white transition-all duration-200 outline-none focus:border-white/20 disabled:cursor-not-allowed disabled:opacity-40"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
-                          Device Name Override
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Facenox Desktop"
-                          value={deviceName}
-                          disabled={config.connected}
-                          onChange={(e) => setDeviceName(e.target.value)}
-                          className="h-8.5 w-full rounded border border-white/10 bg-transparent px-3 text-[12px] text-white transition-all duration-200 outline-none focus:border-white/20 disabled:cursor-not-allowed disabled:opacity-40"
-                        />
-                      </div>
+        <AnimatePresence>
+          {showAdvanced && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="overflow-hidden">
+              <div className="mt-4 grid gap-4 border-t border-white/5 pt-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
+                        Custom Server URL
+                      </label>
+                      {remoteBaseUrl &&
+                        remoteBaseUrl.trim() !== DEFAULT_REMOTE_BASE_URL &&
+                        !config.connected && (
+                          <button
+                            type="button"
+                            onClick={() => setRemoteBaseUrl("")}
+                            className="cursor-pointer text-[9px] font-bold tracking-wider text-cyan-400 transition-colors hover:text-cyan-300">
+                            Reset to Default
+                          </button>
+                        )}
                     </div>
-
-                    <div className="pt-2">
-                      <button
-                        onClick={handleSave}
-                        disabled={busyAction !== null}
-                        className="flex items-center gap-2 rounded border border-white/10 bg-[rgba(22,28,36,0.62)] px-4 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-40">
-                        {busyAction === "saving" && <i className="fa-solid fa-spinner fa-spin" />}
-                        Save Configuration
-                      </button>
-                    </div>
+                    <input
+                      type="url"
+                      placeholder="Leave empty for official sync"
+                      value={remoteBaseUrl}
+                      disabled={config.connected}
+                      onChange={(e) => setRemoteBaseUrl(e.target.value)}
+                      className="h-8.5 w-full rounded border border-white/10 bg-transparent px-3 text-[12px] text-white transition-all duration-200 outline-none focus:border-white/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
+                      Device Name Override
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Facenox Desktop"
+                      value={deviceName}
+                      disabled={config.connected}
+                      onChange={(e) => setDeviceName(e.target.value)}
+                      className="h-8.5 w-full rounded border border-white/10 bg-transparent px-3 text-[12px] text-white transition-all duration-200 outline-none focus:border-white/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={busyAction !== null}
+                    className="flex items-center gap-2 rounded border border-white/10 bg-[rgba(22,28,36,0.62)] px-4 py-1.5 text-xs font-semibold text-white/70 transition-all hover:bg-[rgba(22,28,36,0.85)] hover:text-white active:scale-95 disabled:cursor-not-allowed disabled:opacity-40">
+                    {busyAction === "saving" && <i className="fa-solid fa-spinner fa-spin" />}
+                    Save Configuration
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <DataBoundariesModal
         isOpen={showPrivacyModal}
