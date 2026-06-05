@@ -8,6 +8,7 @@ import type {
 } from "@/components/settings/sections/types"
 import { MemberEntry } from "@/components/settings/sections/components/MemberEntry"
 import { Modal } from "@/components/common/Modal"
+import { EditGroup } from "@/components/group/modals"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 
 interface GroupEntryProps {
@@ -30,8 +31,14 @@ interface GroupEntryProps {
   onDeleteGroup: (groupId: string) => void
   onDeleteMember: (personId: string, name: string) => void
   isPaired?: boolean
+  onGroupsChanged?: () => void
 }
 
+/**
+ * Renders a directory group row with its list of members in a modal.
+ * Connects group editing and deletion state to the settings page
+ * context, and triggers state synchronization on metadata updates.
+ */
 export function GroupEntry({
   group,
   isExpanded,
@@ -52,12 +59,14 @@ export function GroupEntry({
   onDeleteGroup,
   onDeleteMember,
   isPaired,
+  onGroupsChanged,
 }: GroupEntryProps) {
   const memberCount = group.members.length
   const enrolledCount = group.members.filter((m) => m.has_face_data).length
 
   const [scrollTop, setScrollTop] = useState(0)
   const [prevExpanded, setPrevExpanded] = useState(isExpanded)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   if (isExpanded !== prevExpanded) {
     setPrevExpanded(isExpanded)
@@ -164,18 +173,29 @@ export function GroupEntry({
         title={`${group.displayName || group.name} Members`}
         headerActions={
           !isPaired ?
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDeleteGroup(group.id)
-                onToggle(group.id)
-              }}
-              disabled={deletingGroup === group.id || deletingGroup === "all"}
-              className="flex h-7 items-center justify-center gap-1.5 rounded-md border-0 bg-red-500/10 px-2.5 text-[10px] font-bold tracking-wider text-red-400 uppercase shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-50">
-              <i
-                className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
-              <span>Delete Group</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsEditModalOpen(true)
+                }}
+                className="flex h-7 items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/[0.02] px-2.5 text-[10px] font-bold tracking-wider text-white/70 uppercase shadow-none transition-all hover:border-white/25 hover:bg-white/5 active:scale-95">
+                <i className="fa-solid fa-pen text-[10px]"></i>
+                <span>Edit Group</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDeleteGroup(group.id)
+                  onToggle(group.id)
+                }}
+                disabled={deletingGroup === group.id || deletingGroup === "all"}
+                className="flex h-7 items-center justify-center gap-1.5 rounded-md border-0 bg-red-500/10 px-2.5 text-[10px] font-bold tracking-wider text-red-400 uppercase shadow-none transition-all hover:bg-red-500/20 active:scale-95 disabled:opacity-50">
+                <i
+                  className={`fa-solid ${deletingGroup === group.id ? "fa-spinner fa-spin" : "fa-trash-can"} text-[10px]`}></i>
+                <span>Delete Group</span>
+              </button>
+            </div>
           : undefined
         }
         maxWidth="max-w-3xl">
@@ -213,6 +233,17 @@ export function GroupEntry({
           }
         </div>
       </Modal>
+
+      {!isPaired && (
+        <EditGroup
+          isOpen={isEditModalOpen}
+          group={group}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => {
+            onGroupsChanged?.()
+          }}
+        />
+      )}
     </div>
   )
 }

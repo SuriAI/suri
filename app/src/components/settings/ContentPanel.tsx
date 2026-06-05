@@ -220,7 +220,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             onClick={openEditGroup}
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5 text-[11px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
             <i className="fa-solid fa-pen text-[10px]"></i>
-            Edit Group
+            Edit
           </button>
         )
       } else if (groupInitialSection === "reports" && reportsExportHandlers) {

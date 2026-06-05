@@ -434,6 +434,7 @@ export function Database({
                       onDeleteGroup={handleDeleteGroup}
                       onDeleteMember={handleDeleteMember}
                       isPaired={isPaired}
+                      onGroupsChanged={onGroupsChanged}
                     />
                   ))}
                 </motion.div>
