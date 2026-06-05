@@ -9,6 +9,7 @@ from api.schemas import (
     AttendanceMemberUpdate,
     AttendanceMemberResponse,
     BulkMemberCreate,
+    BulkMemberDeleteRequest,
     BulkMemberResponse,
     SuccessResponse,
 )
@@ -309,6 +310,63 @@ async def remove_member(
         raise
     except Exception as e:
         logger.error(f"Error removing member {person_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@router.post("/bulk-delete", response_model=BulkMemberResponse)
+async def remove_members_bulk(
+    bulk_data: BulkMemberDeleteRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Remove multiple members in bulk using a single transaction"""
+    try:
+        if await repo.is_paired():
+            raise HTTPException(
+                status_code=403,
+                detail="Groups are synced from the Management Dashboard. Use Dashboard to manage members.",
+            )
+
+        bulk_results = await repo.remove_members_bulk(bulk_data.person_ids)
+
+        success_count = 0
+        error_count = 0
+        errors = []
+
+        for res in bulk_results:
+            if res.get("success", False):
+                success_count += 1
+                await repo.add_audit_log(
+                    action="MEMBER_DELETED",
+                    target_type="member",
+                    target_id=res["person_id"],
+                    details="Bulk delete",
+                )
+            else:
+                error_count += 1
+                errors.append(
+                    {
+                        "person_id": res.get("person_id", "unknown"),
+                        "error": res.get("error", "Failed to delete member"),
+                    }
+                )
+
+        from core.lifespan import face_recognizer
+
+        if face_recognizer:
+            await face_recognizer.refresh_cache(repo.organization_id)
+
+        await repo.session.commit()
+
+        return BulkMemberResponse(
+            success_count=success_count,
+            error_count=error_count,
+            errors=errors,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk member delete: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 

@@ -375,6 +375,10 @@ class BulkMemberCreate(BaseModel):
     members: List[AttendanceMemberCreate] = Field(..., min_length=1, max_length=1000)
 
 
+class BulkMemberDeleteRequest(BaseModel):
+    person_ids: List[str] = Field(..., min_length=1, max_length=1000)
+
+
 class BulkMemberResponse(BaseModel):
     success_count: int
     error_count: int

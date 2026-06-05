@@ -571,9 +571,30 @@ export function Members({
                           confirmVariant: "danger",
                         })
                         if (confirmed) {
-                          for (const id of selectedIds) {
-                            const member = members.find((m) => m.person_id === id)
-                            if (member) await removeMember(member)
+                          const ids = [...selectedIds]
+                          const previousGroupMembers = useGroupStore.getState().members
+                          const previousAttendanceMembers =
+                            useAttendanceStore.getState().groupMembers
+
+                          useGroupStore.setState({
+                            members: previousGroupMembers.filter((m) => !ids.includes(m.person_id)),
+                          })
+                          useAttendanceStore.setState({
+                            groupMembers: previousAttendanceMembers.filter(
+                              (m) => !ids.includes(m.person_id),
+                            ),
+                          })
+
+                          try {
+                            const result = await attendanceManager.removeMembersBulk(ids)
+                            if (result.error_count > 0) {
+                              console.warn("Some members failed to delete:", result.errors)
+                            }
+                            onMembersChange()
+                          } catch (err) {
+                            console.error("Error removing members, rolling back state:", err)
+                            useGroupStore.setState({ members: previousGroupMembers })
+                            useAttendanceStore.setState({ groupMembers: previousAttendanceMembers })
                           }
                           setSelectedIds(new Set())
                         }
