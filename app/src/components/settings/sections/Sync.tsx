@@ -192,51 +192,62 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
   return (
     <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
       <div className="overflow-hidden">
-        {/* Category Title Row with Far-Right aligned Privacy Trigger link */}
-        <div className="flex items-center justify-between border-b border-white/5 pt-6 pb-4">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-            Remote Sync
-          </h3>
-          <button
-            onClick={() => setShowPrivacyModal(true)}
-            className="text-[10px] font-extrabold tracking-[0.12em] text-cyan-400/90 uppercase transition-colors hover:text-cyan-300">
-            View Privacy & Boundaries
-          </button>
+        {/* Elevated Header Row with Connect/Connected Device Details and Actions */}
+        <div className="flex items-start justify-between border-b border-white/5 pt-6 pb-4 gap-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-medium text-white/90">
+              {!config.connected ? "Connect Device" : "Connected Device"}
+            </h3>
+            {!config.connected ? (
+              <p className="mt-0.5 text-xs text-white/65">
+                Generate a code in the{" "}
+                <a
+                  href="https://app.facenox.com"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    updaterService.openReleasePage("https://app.facenox.com")
+                  }}
+                  className="text-white transition-colors hover:underline">
+                  Management Dashboard
+                </a>{" "}
+                and enter it below to connect this device.
+              </p>
+            ) : config.remoteBaseUrl && config.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL ? (
+              <p className="mt-0.5 text-xs text-white/65">
+                Device connected. Attendance records are syncing automatically to custom server:{" "}
+                <span className="font-mono text-[11px] text-white/80 underline select-all">
+                  {config.remoteBaseUrl}
+                </span>
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs text-white/65">
+                Device connected. Attendance records are syncing automatically.
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-3 mt-0.5">
+            <button
+              onClick={() => setShowPrivacyModal(true)}
+              className="text-[10px] font-extrabold tracking-[0.12em] text-cyan-400/90 uppercase transition-colors hover:text-cyan-300">
+              View Privacy & Boundaries
+            </button>
+            <button
+              onClick={() => setShowAdvanced((value) => !value)}
+              className="group flex items-center gap-1.5 text-xs font-semibold text-white/45 transition hover:text-white/70">
+              <span>{showAdvanced ? "Hide Advanced" : "Advanced Settings"}</span>
+              <i
+                className={`fa-solid ${showAdvanced ? "fa-chevron-up" : "fa-chevron-down"} text-[9px]`}
+              />
+            </button>
+          </div>
         </div>
 
         <div className="py-2">
           {/* Connection Actions Row */}
           <div className="flex flex-col gap-4 py-4">
-            {!config.connected ?
+            {!config.connected ? (
               <div className="space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-white/90">Connect Device</div>
-                    <p className="mt-0.5 text-xs text-white/65">
-                      Generate a code in the{" "}
-                      <a
-                        href="https://app.facenox.com"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          updaterService.openReleasePage("https://app.facenox.com")
-                        }}
-                        className="text-white transition-colors hover:underline">
-                        Management Dashboard
-                      </a>{" "}
-                      and enter it below to connect this device.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowAdvanced((value) => !value)}
-                    className="group mt-1 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-white/45 transition hover:text-white/70">
-                    <span>{showAdvanced ? "Hide Advanced" : "Advanced Settings"}</span>
-                    <i
-                      className={`fa-solid ${showAdvanced ? "fa-chevron-up" : "fa-chevron-down"} text-[9px]`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex max-w-md flex-col gap-3 pt-2 sm:flex-row sm:items-end">
+                <div className="flex max-w-md flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <label className="text-[10px] font-extrabold tracking-widest text-white/40 uppercase">
                       Pairing Code
@@ -258,33 +269,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
               </div>
-            : <div className="space-y-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-white/90">Connected Device</div>
-                    {config.remoteBaseUrl && config.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL ?
-                      <p className="mt-0.5 text-xs text-white/65">
-                        Device connected. Attendance records are syncing automatically to custom
-                        server:{" "}
-                        <span className="font-mono text-[11px] text-white/80 underline select-all">
-                          {config.remoteBaseUrl}
-                        </span>
-                      </p>
-                    : <p className="mt-0.5 text-xs text-white/65">
-                        Device connected. Attendance records are syncing automatically.
-                      </p>
-                    }
-                  </div>
-                  <button
-                    onClick={() => setShowAdvanced((value) => !value)}
-                    className="group mt-1 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-white/45 transition hover:text-white/70">
-                    <span>{showAdvanced ? "Hide Advanced" : "Advanced Settings"}</span>
-                    <i
-                      className={`fa-solid ${showAdvanced ? "fa-chevron-up" : "fa-chevron-down"} text-[9px]`}
-                    />
-                  </button>
-                </div>
-
+            ) : (
+              <div className="space-y-4">
                 <div className="flex justify-between gap-4 font-mono text-[11px] text-white/40">
                   <div className="space-y-0.5">
                     <div>Device: {config.deviceName || "Facenox Desktop"}</div>
@@ -319,7 +305,9 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
               </div>
-            }
+            )}
+          </div>
+        </div>
 
             <AnimatePresence>
               {showAdvanced && (
@@ -385,8 +373,6 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
               )}
             </AnimatePresence>
           </div>
-        </div>
-      </div>
 
       <DataBoundariesModal
         isOpen={showPrivacyModal}
