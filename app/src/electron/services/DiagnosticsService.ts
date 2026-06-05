@@ -3,6 +3,7 @@ import fs from "fs"
 import path from "path"
 import { app } from "electron"
 import { backendService } from "../backendService.js"
+import isDev from "../util.js"
 
 export interface SystemHealthReport {
   timestamp: string
@@ -32,13 +33,17 @@ export class DiagnosticsService {
     const totalMem = os.totalmem()
     const freeMem = os.freemem()
 
-    // Get last 100 lines of app.log if it exists
-    const logPath = path.join(app.getPath("userData"), "logs", "app.log")
-    let logs: string[] = []
+    // Get last 100 lines of backend-startup.log
+    const logDir = isDev() ? path.join(process.cwd(), "..", "data") : app.getPath("userData")
+    const logPath = path.join(logDir, "backend-startup.log")
+
+    let logs: string[]
     try {
       if (fs.existsSync(logPath)) {
         const content = fs.readFileSync(logPath, "utf8")
-        logs = content.split("\n").slice(-100)
+        logs = content.split(/\r?\n/).slice(-100)
+      } else {
+        logs = [`No backend logs found at ${logPath}`]
       }
     } catch (error) {
       logs = [`Failed to read logs: ${error}`]
