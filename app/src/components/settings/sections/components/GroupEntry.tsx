@@ -121,9 +121,7 @@ export function GroupEntry({
                   onStartEditingGroup(group, "name")
                 }}
                 className={`flex items-center gap-2 truncate text-[13px] font-semibold transition-colors ${
-                  isPaired ?
-                    "text-white/70"
-                  : "cursor-pointer text-white/90 hover:text-white"
+                  isPaired ? "text-white/70" : "cursor-pointer text-white/90 hover:text-white"
                 }`}>
                 {group.displayName || group.name}
                 {savingGroup === group.id && (

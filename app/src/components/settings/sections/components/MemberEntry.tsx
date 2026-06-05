@@ -87,9 +87,10 @@ export const MemberEntry = React.memo(
                   onClick={() => !isPaired && onStartEditing(member, "role")}
                   className={`truncate transition-colors ${
                     isPaired ?
-                      member.role ? "text-white/55" : "text-white/20 italic"
-                    : member.role ?
-                      "cursor-pointer text-white/65 hover:text-white/70"
+                      member.role ?
+                        "text-white/55"
+                      : "text-white/20 italic"
+                    : member.role ? "cursor-pointer text-white/65 hover:text-white/70"
                     : "cursor-pointer text-white/20 italic hover:text-white/55"
                   }`}>
                   {member.role || "No role"}
@@ -115,7 +116,9 @@ export const MemberEntry = React.memo(
                   : <div
                       onClick={() => !isPaired && onStartEditing(member, "email")}
                       className={`truncate transition-colors ${
-                        isPaired ? "text-white/55" : "cursor-pointer text-white/65 hover:text-white/80"
+                        isPaired ? "text-white/55" : (
+                          "cursor-pointer text-white/65 hover:text-white/80"
+                        )
                       }`}>
                       {member.email}
                     </div>
