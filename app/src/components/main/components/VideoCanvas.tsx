@@ -17,7 +17,7 @@ interface VideoCanvasProps {
   hasGroups?: boolean
   hasMembers?: boolean
   lateTrackingEnabled?: boolean
-  classStartTime?: string
+  classStartTime?: string | null
   onStartTimeChange?: (newTime: string) => void
 }
 

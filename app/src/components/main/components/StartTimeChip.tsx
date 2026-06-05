@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { Tooltip } from "@/components/shared"
 
 interface StartTimeChipProps {
-  startTime: string // "HH:MM" format
+  startTime: string | null // "HH:MM" format
   onTimeChange: (newTime: string) => void
   disabled?: boolean
 }
@@ -27,6 +27,14 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
     }
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [isOpen])
+
+  const safeTime =
+    startTime ??
+    new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
 
   const formatTimeDisplay = (
     time: string,
@@ -55,7 +63,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
 
   const isTimeOutdated = (): boolean => {
     try {
-      const [hours, minutes] = startTime.split(":").map(Number)
+      const [hours, minutes] = safeTime.split(":").map(Number)
       const now = new Date()
       const setTime = new Date()
       setTime.setHours(hours, minutes, 0, 0)
@@ -69,7 +77,7 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
   }
 
   const outdated = isTimeOutdated()
-  const { time, period } = formatTimeDisplay(startTime)
+  const { time, period } = formatTimeDisplay(safeTime)
 
   return (
     <div ref={containerRef} className="relative">
@@ -141,16 +149,16 @@ export function StartTimeChip({ startTime, onTimeChange, disabled = false }: Sta
           <div className="group relative overflow-hidden rounded-lg border border-white/6 bg-[rgba(22,28,36,0.62)] transition-colors hover:bg-[rgba(28,35,44,0.82)]">
             <input
               type="time"
-              value={startTime}
+              value={safeTime}
               onChange={(e) => onTimeChange(e.target.value)}
               onClick={(e) => e.currentTarget.showPicker()}
               className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
             />
             <div className="pointer-events-none px-3 py-2.5 text-center">
               <div className="flex items-baseline justify-center gap-1 font-mono text-xl tracking-widest text-white">
-                <span>{formatTimeDisplay(startTime).time}</span>
+                <span>{formatTimeDisplay(safeTime).time}</span>
                 <span className="text-[11px] font-medium tracking-tight text-white/55">
-                  {formatTimeDisplay(startTime).period}
+                  {formatTimeDisplay(safeTime).period}
                 </span>
               </div>
             </div>
