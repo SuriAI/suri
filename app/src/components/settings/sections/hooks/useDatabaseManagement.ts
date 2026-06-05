@@ -88,7 +88,7 @@ export function useDatabaseManagement(
             // Check if we already have members for this group in our local state to avoid flicker
             const existing = groupsWithMembersRef.current.find((g) => g.id === group.id)
             if (existing && existing.members.length > 0) {
-              return existing
+              return { ...group, members: existing.members, isLoading: false }
             }
 
             const members = await attendanceManager.getGroupMembers(group.id)
