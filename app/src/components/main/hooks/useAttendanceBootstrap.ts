@@ -11,7 +11,6 @@ export function useAttendanceBootstrap() {
     if (!isHydrated || startedRef.current) return
 
     startedRef.current = true
-    let cancelled = false
 
     const { setShellBootstrapping, setShellReady, setShellBootstrapError, setPanelLoading } =
       useAttendanceStore.getState()
@@ -25,15 +24,11 @@ export function useAttendanceBootstrap() {
       try {
         await bootstrapShellData()
 
-        if (cancelled) return
-
         window.facenoxElectron?.updateSplashDataStep(9)
 
         setShellReady(true)
         setShellBootstrapping(false)
       } catch (error) {
-        if (cancelled) return
-
         const message =
           error instanceof Error ? error.message : "Failed to load startup attendance data."
 
@@ -46,9 +41,5 @@ export function useAttendanceBootstrap() {
     }
 
     bootstrap().catch(console.error)
-
-    return () => {
-      cancelled = true
-    }
   }, [isHydrated, setError])
 }
