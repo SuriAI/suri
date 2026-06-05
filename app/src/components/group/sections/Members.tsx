@@ -132,6 +132,8 @@ export function Members({
   }
 
   filteredMembers = [...filteredMembers].sort((a, b) => {
+    if (!a.has_face_data && b.has_face_data) return -1
+    if (a.has_face_data && !b.has_face_data) return 1
     return a.displayName.localeCompare(b.displayName)
   })
 
