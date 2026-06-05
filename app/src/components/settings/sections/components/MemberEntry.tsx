@@ -61,8 +61,10 @@ export const MemberEntry = React.memo(
                 className="h-6 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[13px] font-medium text-white transition-all outline-none focus:ring-1 focus:ring-white/20"
               />
             : <div
-                onClick={() => onStartEditing(member, "name")}
-                className="cursor-pointer truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
+                onClick={() => !isPaired && onStartEditing(member, "name")}
+                className={`truncate text-[13px] font-semibold transition-colors ${
+                  isPaired ? "text-white/70" : "cursor-pointer text-white/90 hover:text-white"
+                }`}>
                 {member.name}
               </div>
             }
@@ -82,11 +84,13 @@ export const MemberEntry = React.memo(
                   className="h-5 w-24 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[11px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
                 />
               : <div
-                  onClick={() => onStartEditing(member, "role")}
-                  className={`cursor-pointer truncate transition-colors ${
-                    member.role ?
-                      "text-white/65 hover:text-white/70"
-                    : "text-white/20 italic hover:text-white/55"
+                  onClick={() => !isPaired && onStartEditing(member, "role")}
+                  className={`truncate transition-colors ${
+                    isPaired ?
+                      member.role ? "text-white/55" : "text-white/20 italic"
+                    : member.role ?
+                      "cursor-pointer text-white/65 hover:text-white/70"
+                    : "cursor-pointer text-white/20 italic hover:text-white/55"
                   }`}>
                   {member.role || "No role"}
                 </div>
@@ -109,8 +113,10 @@ export const MemberEntry = React.memo(
                       className="h-5 w-32 rounded-md border-0 bg-white/10 px-2 py-0.5 text-[11px] text-white/70 transition-all outline-none focus:ring-1 focus:ring-white/20"
                     />
                   : <div
-                      onClick={() => onStartEditing(member, "email")}
-                      className="cursor-pointer truncate text-white/65 transition-colors hover:text-white/80">
+                      onClick={() => !isPaired && onStartEditing(member, "email")}
+                      className={`truncate transition-colors ${
+                        isPaired ? "text-white/55" : "cursor-pointer text-white/65 hover:text-white/80"
+                      }`}>
                       {member.email}
                     </div>
                   }
