@@ -256,6 +256,9 @@ async def import_backup(
                         ),
                         class_start_time=settings_dict.get("class_start_time", "08:00"),
                         track_checkout=settings_dict.get("track_checkout", False),
+                        biometric_consent_certified=settings_dict.get(
+                            "biometric_consent_certified", False
+                        ),
                         organization_id=repo.organization_id,
                         is_active=group.is_active,
                         is_deleted=False,
@@ -276,6 +279,10 @@ async def import_backup(
                     )
                     existing.track_checkout = settings_dict.get(
                         "track_checkout", existing.track_checkout
+                    )
+                    existing.biometric_consent_certified = settings_dict.get(
+                        "biometric_consent_certified",
+                        existing.biometric_consent_certified,
                     )
                 existing.is_active = group.is_active
                 existing.is_deleted = False

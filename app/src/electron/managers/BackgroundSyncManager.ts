@@ -81,7 +81,9 @@ function normalizeAttendanceExportForRemote(
           : {
               late_threshold_minutes: 15,
               late_threshold_enabled: false,
+              class_start_time: null,
               track_checkout: false,
+              biometric_consent_certified: false,
             },
       }
     }),

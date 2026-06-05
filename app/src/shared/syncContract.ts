@@ -7,7 +7,7 @@ export const groupSettingsSchema = z.object({
   late_threshold_enabled: z.boolean().default(false),
   class_start_time: z.string().nullable().optional(),
   track_checkout: z.boolean().default(false),
-  biometric_consent_certified: z.boolean().optional(),
+  biometric_consent_certified: z.boolean().default(false),
 })
 
 export const attendanceGroupSchema = z.object({
