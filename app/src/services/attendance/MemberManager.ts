@@ -122,6 +122,18 @@ export class MemberManager {
     }
   }
 
+  async removeMembersBulk(personIds: string[]): Promise<{
+    success_count: number
+    error_count: number
+    errors: Array<{ person_id: string; error: string }>
+  }> {
+    return await this.httpClient.post<{
+      success_count: number
+      error_count: number
+      errors: Array<{ person_id: string; error: string }>
+    }>(`${this.apiEndpoints.members}/bulk-delete`, { person_ids: personIds })
+  }
+
   async removeMember(personId: string): Promise<boolean> {
     try {
       await this.httpClient.delete(`${this.apiEndpoints.members}/${personId}`)

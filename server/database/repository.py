@@ -490,6 +490,42 @@ class AttendanceRepository:
 
         return True
 
+    async def remove_members_bulk(self, person_ids: List[str]) -> List[dict]:
+        results = []
+        members_query = select(AttendanceMember).where(
+            AttendanceMember.person_id.in_(person_ids)
+        )
+        members_query = self._apply_org_scope(members_query, AttendanceMember)
+        members_result = await self.session.execute(members_query)
+        existing_ids = {m.person_id for m in members_result.scalars().all()}
+
+        for pid in person_ids:
+            if pid not in existing_ids:
+                results.append(
+                    {"success": False, "person_id": pid, "error": "Member not found"}
+                )
+                continue
+
+            face_query = select(Face).where(Face.person_id == pid)
+            face_query = self._apply_org_scope(face_query, Face)
+            face_result = await self.session.execute(face_query)
+            face = face_result.scalars().first()
+            if face:
+                await self.session.delete(face)
+
+            member_query = select(AttendanceMember).where(
+                AttendanceMember.person_id == pid
+            )
+            member_query = self._apply_org_scope(member_query, AttendanceMember)
+            member_result = await self.session.execute(member_query)
+            member = member_result.scalars().first()
+            member.is_active = False
+            member.is_deleted = True
+
+            results.append({"success": True, "person_id": pid})
+
+        return results
+
     async def rename_person_id(self, old_person_id: str, new_person_id: str) -> bool:
         member = await self.get_member(old_person_id)
         if not member:

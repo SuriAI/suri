@@ -119,6 +119,14 @@ export class AttendanceManager {
     return this.memberManager.addMembersBulk(members, groupId)
   }
 
+  async removeMembersBulk(personIds: string[]): Promise<{
+    success_count: number
+    error_count: number
+    errors: Array<{ person_id: string; error: string }>
+  }> {
+    return this.memberManager.removeMembersBulk(personIds)
+  }
+
   async getMember(personId: string): Promise<AttendanceMember | undefined> {
     return this.memberManager.getMember(personId)
   }
