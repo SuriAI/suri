@@ -47,7 +47,7 @@ export function FloatingAlert({ message, variant, onDismiss }: FloatingAlertProp
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: -20, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className={`pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-md ${current.borderBg}`}>
+      className={`pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] ${current.borderBg}`}>
       <i className={`${current.icon} mt-0.5`} />
       <div className="flex-1 text-sm leading-relaxed">
         <span className={`mr-1.5 font-semibold whitespace-nowrap ${current.labelColor}`}>
