@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services"
-import { useGroupUIStore } from "@/components/group/stores"
+import { useGroupUIStore, useGroupStore } from "@/components/group/stores"
+import { useAttendanceStore } from "@/components/main/stores"
 import { generateDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { EmptyState } from "@/components/group/shared/EmptyState"
@@ -258,12 +259,27 @@ export function Members({
   const confirmRemoveMember = async () => {
     if (!memberToDelete) return
 
+    const targetId = memberToDelete.person_id
+    const previousGroupMembers = useGroupStore.getState().members
+    const previousAttendanceMembers = useAttendanceStore.getState().groupMembers
+
+    // Optimistically update both child and parent store states
+    useGroupStore.setState({
+      members: previousGroupMembers.filter((m) => m.person_id !== targetId),
+    })
+    useAttendanceStore.setState({
+      groupMembers: previousAttendanceMembers.filter((m) => m.person_id !== targetId),
+    })
+
     try {
-      await attendanceManager.removeMember(memberToDelete.person_id)
+      await attendanceManager.removeMember(targetId)
       onMembersChange()
       setMemberToDelete(null)
     } catch (err) {
-      console.error("Error removing member:", err)
+      console.error("Error removing member, rolling back state:", err)
+      // Rollback state on failure
+      useGroupStore.setState({ members: previousGroupMembers })
+      useAttendanceStore.setState({ groupMembers: previousAttendanceMembers })
     }
   }
 
