@@ -133,7 +133,7 @@ It's designed for standard CPUs and has been tested on hardware as old as 2nd-ge
 
 ### How do I protect my data?
 
-Since Facenox operates 100% locally, we cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive. We recommend regular backups to external storage or a secure organizational cloud.
+As Facenox is designed to run locally, we do not have access to your database and cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive, and we recommend keeping regular backups on external storage or your own secure cloud.
 
 ## Roadmap
 
