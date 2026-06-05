@@ -150,7 +150,6 @@ export class MemberManager {
     imageData: Blob | string,
     bbox: number[],
     landmarks_5: number[][],
-    enableLiveness: boolean = false, // liveness is an attendance-time check, not enrollment
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
       let imageBlob: Blob
@@ -169,7 +168,6 @@ export class MemberManager {
         JSON.stringify({
           bbox,
           landmarks_5,
-          enable_liveness_detection: enableLiveness,
         }),
       )
 
