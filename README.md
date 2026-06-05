@@ -112,10 +112,10 @@ Facenox Desktop continues to work locally when internet access is unavailable:
 - Attendance is recorded and stored in a local SQLite database.
 - Settings, backups, and member management remain accessible.
 - Remote Sync and Dashboard pairing resume automatically when connectivity returns.
-  (Completely optional; sync is disabled by default and only active when your device is paired.)
+  (Completely optional, as sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
-> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay; we cannot read your data. Matching always stays on your local hardware.
+> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay, ensuring your data remains completely unreadable to anyone, including us. Matching always stays on your local hardware.
 
 ## How it works
 
@@ -149,7 +149,7 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 >
 > - **Automated Audits:** GitHub CodeQL scans commits for security vulnerabilities on every push.
 > - **Build Transparency:** GitHub Actions compiles all release binaries from public source code.
-> - **Privacy First:** Devices encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay; we cannot read your data.
+> - **Privacy First:** Devices encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay, ensuring your data remains completely unreadable to us.
 
 > **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 
