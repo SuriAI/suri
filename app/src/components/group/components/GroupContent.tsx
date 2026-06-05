@@ -22,8 +22,6 @@ function GroupContentComponent({
   const selectedGroup = useGroupStore((state) => state.selectedGroup)
   const groupsLength = useGroupStore((state) => state.groups.length)
   const members = useGroupStore((state) => state.members)
-  const fetchGroupDetails = useGroupStore((state) => state.fetchGroupDetails)
-
   const activeSection = useGroupUIStore((state) => state.activeSection)
   const openAddMember = useGroupUIStore((state) => state.openAddMember)
   const openEditMember = useGroupUIStore((state) => state.openEditMember)
@@ -51,9 +49,6 @@ function GroupContentComponent({
   }, [])
 
   const handleMembersChange = () => {
-    if (selectedGroup) {
-      fetchGroupDetails(selectedGroup.id)
-    }
     onMembersChange()
   }
 

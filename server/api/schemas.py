@@ -383,6 +383,7 @@ class BulkMemberResponse(BaseModel):
     success_count: int
     error_count: int
     errors: List[Dict[str, str]] = []
+    members: List[AttendanceMemberResponse] = []
 
 
 class ExportDataResponse(BaseModel):
