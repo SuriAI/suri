@@ -129,7 +129,6 @@ export function useFaceCapture(
           blob,
           frame.bbox,
           frame.landmarks_5,
-          false, // Enrollment should not enforce liveness
         )
 
         if (!result.success) {

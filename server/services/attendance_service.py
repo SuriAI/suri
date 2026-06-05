@@ -550,7 +550,6 @@ class AttendanceService:
         image: np.ndarray,
         bbox: List[float],
         landmarks_5: List[List[float]],
-        enable_liveness: bool = False,  # liveness is enforcement at attendance-time, not enrollment
     ) -> Dict[str, Any]:
         """Enroll member for recognition in a group."""
         if not self.face_recognizer:
@@ -572,23 +571,13 @@ class AttendanceService:
                 "Biometric consent is required before face enrollment"
             )
 
-        from hooks import process_face_detection, process_liveness_for_face_operation
+        from hooks import process_face_detection
 
         detections = await process_face_detection(
             image, min_face_size=0, enable_liveness=False
         )
         if not detections:
             raise ValueError("No detectable face found in image")
-
-        (
-            should_block,
-            error_msg,
-            liveness_status,
-        ) = await process_liveness_for_face_operation(
-            image, bbox, enable_liveness, "Enrollment"
-        )
-        if should_block:
-            raise ValueError(error_msg)
 
         logger.info(f"Enrolling face for {person_id} in group {group_id}")
 

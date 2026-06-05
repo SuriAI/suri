@@ -300,9 +300,6 @@ async def enroll_member_for_group_person(
             meta = json.loads(metadata)
             bbox = meta.get("bbox")
             landmarks_5 = meta.get("landmarks_5")
-            enable_liveness = meta.get(
-                "enable_liveness_detection", False
-            )  # default off for enrollment
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid metadata format: {e}")
 
@@ -330,7 +327,7 @@ async def enroll_member_for_group_person(
         service = AttendanceService(repo, face_recognizer=face_recognizer)
         try:
             return await service.enroll_member(
-                group_id, person_id, img, bbox, landmarks_5, enable_liveness
+                group_id, person_id, img, bbox, landmarks_5
             )
         except PermissionError as e:
             raise HTTPException(status_code=403, detail=str(e))

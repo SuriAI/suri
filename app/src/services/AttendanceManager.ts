@@ -153,7 +153,6 @@ export class AttendanceManager {
     imageData: Blob | string,
     bbox: number[],
     landmarks_5: number[][],
-    enableLiveness: boolean = false, // liveness is an attendance-time check, not enrollment
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     return this.memberManager.enrollFaceForGroupPerson(
       groupId,
@@ -161,7 +160,6 @@ export class AttendanceManager {
       imageData,
       bbox,
       landmarks_5,
-      enableLiveness,
     )
   }
 
