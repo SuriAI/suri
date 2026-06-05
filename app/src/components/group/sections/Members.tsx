@@ -132,10 +132,6 @@ export function Members({
   }
 
   filteredMembers = [...filteredMembers].sort((a, b) => {
-    // Sort by enrollment status first (Not Enrolled first)
-    if (!a.has_face_data && b.has_face_data) return -1
-    if (a.has_face_data && !b.has_face_data) return 1
-    // Then alphabetically
     return a.displayName.localeCompare(b.displayName)
   })
 
