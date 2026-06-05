@@ -1,4 +1,4 @@
-import { app, protocol, BrowserWindow, nativeTheme } from "electron"
+import { app, protocol, BrowserWindow, nativeTheme, powerMonitor } from "electron"
 import path from "path"
 import { fileURLToPath } from "node:url"
 import { backendService } from "./backendService.js"
@@ -141,6 +141,13 @@ app.whenReady().then(async () => {
   // Wait for compositor ready before unlocking transition handshakes.
   await new Promise<void>((resolve) => {
     state.mainWindow?.once("ready-to-show", () => resolve())
+  })
+
+  // Listen for OS resume events to notify renderer for drift corrections
+  powerMonitor.on("resume", () => {
+    if (state.mainWindow && !state.mainWindow.isDestroyed()) {
+      state.mainWindow.webContents.send("system:resume")
+    }
   })
 
   TrayManager.createTray()

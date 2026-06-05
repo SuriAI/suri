@@ -66,6 +66,8 @@ declare global {
     onSplashProgress: (callback: (update: { progress: number }) => void) => () => void
     onMaximize: (callback: () => void) => () => void
     onUnmaximize: (callback: () => void) => () => void
+    onRestore: (callback: () => void) => () => void
+    onSystemResume: (callback: () => void) => () => void
     getSystemStats: () => Promise<{
       cpu: number
       memory: { total: number; free: number; appUsage: number }
