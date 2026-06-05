@@ -15,6 +15,7 @@ import { useGroupUIStore } from "@/components/group/stores"
 import { useUIStore } from "@/components/main/stores"
 import { attendanceManager } from "@/services"
 import { Tooltip } from "@/components/shared"
+import { DEFAULT_REMOTE_BASE_URL } from "../../services/syncDefaults"
 import type {
   QuickSettings,
   AttendanceSettings,
@@ -115,6 +116,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     connected: boolean
     organizationName: string
     siteName: string
+    remoteBaseUrl?: string
   } | null>(null)
 
   useEffect(() => {
@@ -139,7 +141,12 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
   useEffect(() => {
     if (activeSection === "remote-sync") {
       window.electronAPI.sync.getConfig().then((cfg) => {
-        const data = cfg as { connected: boolean; organizationName: string; siteName: string }
+        const data = cfg as {
+          connected: boolean
+          organizationName: string
+          siteName: string
+          remoteBaseUrl?: string
+        }
         setSyncConfig(data)
       })
     }
@@ -254,22 +261,33 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             AUDIT LOG
           </button>
         : activeSection === "remote-sync" && syncConfig ?
-          <Tooltip
-            content={
-              syncConfig.connected ?
-                `Linked to ${syncConfig.organizationName || "Remote Server"} • Site Location: ${syncConfig.siteName || "Default Site"}`
-              : "Operating locally. Remote syncing is disabled."
-            }
-            position="bottom">
-            <div
-              className={`cursor-help rounded border px-2 py-0.5 text-[9px] font-extrabold tracking-widest uppercase transition-all duration-200 ${
+          <div className="flex items-center gap-2">
+            {syncConfig.remoteBaseUrl && syncConfig.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL && (
+              <Tooltip
+                content={`Custom sync destination: ${syncConfig.remoteBaseUrl}`}
+                position="bottom">
+                <span className="text-[9px] font-extrabold tracking-widest text-white/45 uppercase select-none">
+                  Custom Server
+                </span>
+              </Tooltip>
+            )}
+            <Tooltip
+              content={
                 syncConfig.connected ?
-                  "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
-                : "border-white/5 bg-white/5 text-white/50"
-              }`}>
-              {syncConfig.connected ? "Online" : "Offline"}
-            </div>
-          </Tooltip>
+                  `Linked to ${syncConfig.organizationName || "Remote Server"} • Site Location: ${syncConfig.siteName || "Default Site"}`
+                : "Operating locally. Remote syncing is disabled."
+              }
+              position="bottom">
+              <div
+                className={`cursor-help rounded border px-2 py-0.5 text-[9px] font-extrabold tracking-widest uppercase transition-all duration-200 ${
+                  syncConfig.connected ?
+                    "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
+                  : "border-white/5 bg-white/5 text-white/50"
+                }`}>
+                {syncConfig.connected ? "Online" : "Offline"}
+              </div>
+            </Tooltip>
+          </div>
         : null,
       isGroupSection: false,
     }
