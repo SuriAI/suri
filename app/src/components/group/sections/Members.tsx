@@ -428,7 +428,7 @@ export function Members({
             </div>
 
             {members.length > 0 && filteredMembers.length > 0 && (
-              <div className="flex w-full items-center justify-between py-1">
+              <div className="flex min-h-8 w-full items-center justify-between py-1">
                 <div className="text-xs text-white/55">
                   {selectedStats.total > 0 ?
                     <div className="flex items-center gap-3">
@@ -459,156 +459,183 @@ export function Members({
                   }
                 </div>
                 <div className="flex items-center gap-4">
-                  {selectedIds.size >= 2 && selectedStats.noConsent > 0 && (
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      onClick={() => {
-                        setBulkConsentScope("selected")
-                        setIsBulkConsentModalOpen(true)
-                      }}
-                      className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-amber-400 transition-all hover:bg-amber-500/20">
-                      GRANT CONSENT ({selectedStats.noConsent})
-                    </motion.button>
-                  )}
-
-                  {selectedIds.size >= 2 && selectedStats.eligible === 1 && (
-                    <Tooltip
-                      content={
-                        selectedStats.enrolled > 0 ?
-                          "This member is already enrolled. Proceed to re-enroll."
-                        : "Proceed to enroll member"
-                      }>
+                  <AnimatePresence>
+                    {selectedIds.size >= 2 && selectedStats.noConsent > 0 && (
                       <motion.button
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => {
+                          setBulkConsentScope("selected")
+                          setIsBulkConsentModalOpen(true)
+                        }}
+                        className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-amber-400 transition-all hover:bg-amber-500/20">
+                        GRANT CONSENT ({selectedStats.noConsent})
+                      </motion.button>
+                    )}
+
+                    {selectedIds.size >= 2 && selectedStats.eligible === 1 && (
+                      <motion.div
+                        key="enroll-single"
                         initial={{ opacity: 0, scale: 0.95, x: 10 }}
                         animate={{ opacity: 1, scale: 1, x: 0 }}
-                        onClick={() =>
-                          jumpToEnrollment(
-                            selectedMembersList.find((m) => m.has_consent)!.person_id,
-                          )
-                        }
-                        className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                          selectedStats.enrolled > 0 ?
-                            "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
-                          : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
-                        }`}>
-                        {selectedStats.enrolled > 0 ? "RE-ENROLL (1)" : "ENROLL (1)"}
-                      </motion.button>
-                    </Tooltip>
-                  )}
-                  {selectedIds.size >= 2 && selectedStats.eligible > 1 && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, x: 10 }}
-                      animate={{ opacity: 1, scale: 1, x: 0 }}>
-                      <Tooltip
-                        content={
-                          selectedStats.enrolled > 0 ?
-                            `Includes ${selectedStats.enrolled} already enrolled member${selectedStats.enrolled > 1 ? "s" : ""}`
-                          : "Proceed to enroll members"
-                        }>
-                        <div>
-                          <Dropdown
-                            options={[
-                              {
-                                value: "camera",
-                                label: (
-                                  <div className="flex items-center gap-2">
-                                    <i className="fa-solid fa-video w-3 text-center text-xs text-white/55" />
-                                    <span>via Webcam</span>
-                                  </div>
-                                ),
-                              },
-                              {
-                                value: "upload",
-                                label: (
-                                  <div className="flex items-center gap-2">
-                                    <i className="fa-solid fa-folder-open w-3 text-center text-xs text-white/55" />
-                                    <span>via File Upload</span>
-                                  </div>
-                                ),
-                              },
-                            ]}
-                            value={null}
-                            onChange={(val) => {
-                              if (val === "camera") setEnrollmentState("camera", "queue")
-                              if (val === "upload") setEnrollmentState("upload", "bulk")
-                            }}
-                            allowClear={false}
-                            showPlaceholderOption={false}
-                            trigger={
-                              <button
-                                className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
-                                  selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
-                                    "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
-                                  : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
-                                }`}>
-                                {selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
-                                  "RE-ENROLL"
-                                : "ENROLL"}{" "}
-                                ({selectedStats.eligible})
-                                <i className="fa-solid fa-chevron-down ml-0.5 text-[9px] opacity-60"></i>
-                              </button>
+                        exit={{ opacity: 0, scale: 0.95, x: 10 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}>
+                        <Tooltip
+                          content={
+                            selectedStats.enrolled > 0 ?
+                              "This member is already enrolled. Proceed to re-enroll."
+                            : "Proceed to enroll member"
+                          }>
+                          <motion.button
+                            onClick={() =>
+                              jumpToEnrollment(
+                                selectedMembersList.find((m) => m.has_consent)!.person_id,
+                              )
                             }
-                            menuWidth={180}
-                            buttonClassName="p-0 border-0 bg-transparent hover:bg-transparent h-auto w-auto"
-                            optionClassName="text-[11px] font-bold tracking-wider py-2.5"
-                          />
-                        </div>
-                      </Tooltip>
-                    </motion.div>
-                  )}
-                  {selectedIds.size >= 2 && (
-                    <motion.button
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      onClick={async () => {
-                        const confirmed = await dialog.confirm({
-                          title: "Remove Members",
-                          message: `Are you sure you want to remove ${selectedIds.size} member${selectedIds.size > 1 ? "s" : ""}?`,
-                          confirmText: `Remove (${selectedIds.size})`,
-                          confirmVariant: "danger",
-                        })
-                        if (confirmed) {
-                          const ids = [...selectedIds]
-                          const previousGroupMembers = useGroupStore.getState().members
-                          const previousAttendanceMembers =
-                            useAttendanceStore.getState().groupMembers
+                            className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
+                              selectedStats.enrolled > 0 ?
+                                "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
+                              : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                            }`}>
+                            {selectedStats.enrolled > 0 ? "RE-ENROLL (1)" : "ENROLL (1)"}
+                          </motion.button>
+                        </Tooltip>
+                      </motion.div>
+                    )}
 
-                          useGroupStore.setState({
-                            members: previousGroupMembers.filter((m) => !ids.includes(m.person_id)),
-                          })
-                          useAttendanceStore.setState({
-                            groupMembers: previousAttendanceMembers.filter(
-                              (m) => !ids.includes(m.person_id),
-                            ),
-                          })
+                    {selectedIds.size >= 2 && selectedStats.eligible > 1 && (
+                      <motion.div
+                        key="enroll-multi"
+                        initial={{ opacity: 0, scale: 0.95, x: 10 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, x: 10 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}>
+                        <Tooltip
+                          content={
+                            selectedStats.enrolled > 0 ?
+                              `Includes ${selectedStats.enrolled} already enrolled member${selectedStats.enrolled > 1 ? "s" : ""}`
+                            : "Proceed to enroll members"
+                          }>
+                          <div>
+                            <Dropdown
+                              options={[
+                                {
+                                  value: "camera",
+                                  label: (
+                                    <div className="flex items-center gap-2">
+                                      <i className="fa-solid fa-video w-3 text-center text-xs text-white/55" />
+                                      <span>via Webcam</span>
+                                    </div>
+                                  ),
+                                },
+                                {
+                                  value: "upload",
+                                  label: (
+                                    <div className="flex items-center gap-2">
+                                      <i className="fa-solid fa-folder-open w-3 text-center text-xs text-white/55" />
+                                      <span>via File Upload</span>
+                                    </div>
+                                  ),
+                                },
+                              ]}
+                              value={null}
+                              onChange={(val) => {
+                                if (val === "camera") setEnrollmentState("camera", "queue")
+                                if (val === "upload") setEnrollmentState("upload", "bulk")
+                              }}
+                              allowClear={false}
+                              showPlaceholderOption={false}
+                              trigger={
+                                <button
+                                  className={`flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-wider transition-all ${
+                                    selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
+                                      "border border-white/10 bg-transparent text-white/65 hover:bg-white/5 hover:text-white"
+                                    : "bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 hover:text-cyan-200"
+                                  }`}>
+                                  {selectedStats.enrolled > 0 && selectedStats.ready === 0 ?
+                                    "RE-ENROLL"
+                                  : "ENROLL"}{" "}
+                                  ({selectedStats.eligible})
+                                  <i className="fa-solid fa-chevron-down ml-0.5 text-[9px] opacity-60"></i>
+                                </button>
+                              }
+                              menuWidth={180}
+                              buttonClassName="p-0 border-0 bg-transparent hover:bg-transparent h-auto w-auto"
+                              optionClassName="text-[11px] font-bold tracking-wider py-2.5"
+                            />
+                          </div>
+                        </Tooltip>
+                      </motion.div>
+                    )}
 
-                          try {
-                            const result = await attendanceManager.removeMembersBulk(ids)
-                            if (result.error_count > 0) {
-                              console.warn("Some members failed to delete:", result.errors)
+                    {selectedIds.size >= 2 && (
+                      <motion.button
+                        key="delete"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={async () => {
+                          const confirmed = await dialog.confirm({
+                            title: "Remove Members",
+                            message: `Are you sure you want to remove ${selectedIds.size} member${selectedIds.size > 1 ? "s" : ""}?`,
+                            confirmText: `Remove (${selectedIds.size})`,
+                            confirmVariant: "danger",
+                          })
+                          if (confirmed) {
+                            const ids = [...selectedIds]
+                            const previousGroupMembers = useGroupStore.getState().members
+                            const previousAttendanceMembers =
+                              useAttendanceStore.getState().groupMembers
+
+                            useGroupStore.setState({
+                              members: previousGroupMembers.filter(
+                                (m) => !ids.includes(m.person_id),
+                              ),
+                            })
+                            useAttendanceStore.setState({
+                              groupMembers: previousAttendanceMembers.filter(
+                                (m) => !ids.includes(m.person_id),
+                              ),
+                            })
+
+                            try {
+                              const result = await attendanceManager.removeMembersBulk(ids)
+                              if (result.error_count > 0) {
+                                console.warn("Some members failed to delete:", result.errors)
+                              }
+                              onMembersChange()
+                            } catch (err) {
+                              console.error("Error removing members, rolling back state:", err)
+                              useGroupStore.setState({ members: previousGroupMembers })
+                              useAttendanceStore.setState({
+                                groupMembers: previousAttendanceMembers,
+                              })
                             }
-                            onMembersChange()
-                          } catch (err) {
-                            console.error("Error removing members, rolling back state:", err)
-                            useGroupStore.setState({ members: previousGroupMembers })
-                            useAttendanceStore.setState({ groupMembers: previousAttendanceMembers })
+                            setSelectedIds(new Set())
                           }
-                          setSelectedIds(new Set())
-                        }
-                      }}
-                      className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-red-400 transition-all hover:bg-red-500/20">
-                      <i className="fa-solid fa-trash-can text-[9px]" />
-                      DELETE ({selectedIds.size})
-                    </motion.button>
-                  )}
-                  {selectedIds.size > 0 && (
-                    <button
-                      onClick={() => setSelectedIds(new Set())}
-                      className="flex items-center gap-2 text-[11px] font-bold text-white/55 transition-all hover:text-white">
-                      Clear
-                    </button>
-                  )}
+                        }}
+                        className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-red-400 transition-all hover:bg-red-500/20">
+                        <i className="fa-solid fa-trash-can text-[9px]" />
+                        DELETE ({selectedIds.size})
+                      </motion.button>
+                    )}
+
+                    {selectedIds.size > 0 && (
+                      <motion.button
+                        key="clear"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={() => setSelectedIds(new Set())}
+                        className="flex items-center gap-2 text-[11px] font-bold text-white/55 transition-all hover:text-white">
+                        Clear
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                   <button
                     onClick={
                       selectedIds.size === filteredMembers.length ? undefined : toggleSelectAll
