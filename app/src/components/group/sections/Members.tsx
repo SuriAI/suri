@@ -49,6 +49,23 @@ export function Members({
   const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
   const [scrollTop, setScrollTop] = useState(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const outerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (selectedIds.size === 0) return
+      const target = e.target as HTMLElement
+      if (
+        target.closest("button, input, select, [data-member-row], [role=button], [role=combobox]")
+      )
+        return
+      if (outerRef.current && outerRef.current.contains(target)) {
+        setSelectedIds(new Set())
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [selectedIds.size])
 
   const handleSearchFocus = () => {
     setIsSearchFocused(true)
@@ -256,31 +273,35 @@ export function Members({
     }
   }
 
+  const removeMember = useCallback(
+    async (member: AttendanceMember) => {
+      const targetId = member.person_id
+      const previousGroupMembers = useGroupStore.getState().members
+      const previousAttendanceMembers = useAttendanceStore.getState().groupMembers
+
+      useGroupStore.setState({
+        members: previousGroupMembers.filter((m) => m.person_id !== targetId),
+      })
+      useAttendanceStore.setState({
+        groupMembers: previousAttendanceMembers.filter((m) => m.person_id !== targetId),
+      })
+
+      try {
+        await attendanceManager.removeMember(targetId)
+        onMembersChange()
+      } catch (err) {
+        console.error("Error removing member, rolling back state:", err)
+        useGroupStore.setState({ members: previousGroupMembers })
+        useAttendanceStore.setState({ groupMembers: previousAttendanceMembers })
+      }
+    },
+    [onMembersChange],
+  )
+
   const confirmRemoveMember = async () => {
     if (!memberToDelete) return
-
-    const targetId = memberToDelete.person_id
-    const previousGroupMembers = useGroupStore.getState().members
-    const previousAttendanceMembers = useAttendanceStore.getState().groupMembers
-
-    // Optimistically update both child and parent store states
-    useGroupStore.setState({
-      members: previousGroupMembers.filter((m) => m.person_id !== targetId),
-    })
-    useAttendanceStore.setState({
-      groupMembers: previousAttendanceMembers.filter((m) => m.person_id !== targetId),
-    })
-
-    try {
-      await attendanceManager.removeMember(targetId)
-      onMembersChange()
-      setMemberToDelete(null)
-    } catch (err) {
-      console.error("Error removing member, rolling back state:", err)
-      // Rollback state on failure
-      useGroupStore.setState({ members: previousGroupMembers })
-      useAttendanceStore.setState({ groupMembers: previousAttendanceMembers })
-    }
+    await removeMember(memberToDelete)
+    setMemberToDelete(null)
   }
 
   const handleResetFace = useCallback(
@@ -325,7 +346,7 @@ export function Members({
     : "max-w-[330px]"
 
   return (
-    <div className="relative flex h-full w-full flex-col overflow-hidden">
+    <div ref={outerRef} className="relative flex h-full w-full flex-col overflow-hidden">
       {/* BACKGROUND CONTENT: Always render the list or empty state */}
       {members.length === 0 ?
         <motion.div key="empty" className="relative flex h-full w-full flex-col">
@@ -435,7 +456,7 @@ export function Members({
                   }
                 </div>
                 <div className="flex items-center gap-4">
-                  {selectedStats.noConsent > 0 && (
+                  {selectedIds.size >= 2 && selectedStats.noConsent > 0 && (
                     <motion.button
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -448,7 +469,7 @@ export function Members({
                     </motion.button>
                   )}
 
-                  {selectedStats.eligible === 1 && (
+                  {selectedIds.size >= 2 && selectedStats.eligible === 1 && (
                     <Tooltip
                       content={
                         selectedStats.enrolled > 0 ?
@@ -472,7 +493,7 @@ export function Members({
                       </motion.button>
                     </Tooltip>
                   )}
-                  {selectedStats.eligible > 1 && (
+                  {selectedIds.size >= 2 && selectedStats.eligible > 1 && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95, x: 10 }}
                       animate={{ opacity: 1, scale: 1, x: 0 }}>
@@ -532,6 +553,30 @@ export function Members({
                         </div>
                       </Tooltip>
                     </motion.div>
+                  )}
+                  {selectedIds.size >= 2 && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      onClick={async () => {
+                        const confirmed = await dialog.confirm({
+                          title: "Remove Members",
+                          message: `Are you sure you want to remove ${selectedIds.size} member${selectedIds.size > 1 ? "s" : ""}?`,
+                          confirmText: `Remove (${selectedIds.size})`,
+                          confirmVariant: "danger",
+                        })
+                        if (confirmed) {
+                          for (const id of selectedIds) {
+                            const member = members.find((m) => m.person_id === id)
+                            if (member) await removeMember(member)
+                          }
+                          setSelectedIds(new Set())
+                        }
+                      }}
+                      className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-red-400 transition-all hover:bg-red-500/20">
+                      <i className="fa-solid fa-trash-can text-[9px]" />
+                      DELETE ({selectedIds.size})
+                    </motion.button>
                   )}
                   {selectedIds.size > 0 && (
                     <button
@@ -597,17 +642,18 @@ export function Members({
                     paddingBottom: `${paddingBottom}px`,
                   }}>
                   {visibleMembers.map((member, idx) => (
-                    <MemberRow
-                      key={member.person_id || `member-${idx}`}
-                      member={member}
-                      isSelected={selectedIds.has(member.person_id)}
-                      isSelectionMode={selectedIds.size > 0}
-                      onToggleSelect={toggleSelect}
-                      onEdit={isPaired ? undefined : onEdit}
-                      onDelete={isPaired ? undefined : setMemberToDelete}
-                      onResetFace={handleResetFace}
-                      isConsentCertified={Boolean(group?.settings?.biometric_consent_certified)}
-                    />
+                    <div key={member.person_id || `member-${idx}`} data-member-row>
+                      <MemberRow
+                        member={member}
+                        isSelected={selectedIds.has(member.person_id)}
+                        isSelectionMode={selectedIds.size >= 2}
+                        onToggleSelect={toggleSelect}
+                        onEdit={isPaired ? undefined : onEdit}
+                        onDelete={isPaired ? undefined : setMemberToDelete}
+                        onResetFace={handleResetFace}
+                        isConsentCertified={Boolean(group?.settings?.biometric_consent_certified)}
+                      />
+                    </div>
                   ))}
                 </motion.div>
               }
