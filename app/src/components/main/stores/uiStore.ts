@@ -182,26 +182,30 @@ useUIStore.subscribe((state, prevState) => {
 
 // Load Settings from store on initialization
 if (typeof window !== "undefined") {
-  loadInitialSettings().then(
-    ({
-      quickSettings,
-      audioSettings,
-      hasSeenIntro,
-      antiSpoofDetectionInfoDismissed,
-      enrollmentInfoDismissed,
-      sidebarCollapsed,
-      sidebarWidth,
-    }) => {
-      useUIStore.setState({
+  loadInitialSettings()
+    .then(
+      ({
         quickSettings,
         audioSettings,
         hasSeenIntro,
         antiSpoofDetectionInfoDismissed,
         enrollmentInfoDismissed,
-        sidebarCollapsed: sidebarCollapsed ?? false,
-        sidebarWidth: sidebarWidth ?? 300,
-        isHydrated: true,
-      })
-    },
-  )
+        sidebarCollapsed,
+        sidebarWidth,
+      }) => {
+        useUIStore.setState({
+          quickSettings,
+          audioSettings,
+          hasSeenIntro,
+          antiSpoofDetectionInfoDismissed,
+          enrollmentInfoDismissed,
+          sidebarCollapsed: sidebarCollapsed ?? false,
+          sidebarWidth: sidebarWidth ?? 300,
+          isHydrated: true,
+        })
+      },
+    )
+    .catch(() => {
+      useUIStore.setState({ isHydrated: true })
+    })
 }
