@@ -25,7 +25,8 @@ interface DropdownProps<T = string> extends Omit<React.HTMLAttributes<HTMLDivEle
   allowClear?: boolean // Allow selecting placeholder to clear value
   trigger?: React.ReactNode
   menuWidth?: number | string
-  align?: "left" | "right"
+  align?: "left" | "right" | "center"
+  alignToSelector?: string
   onOpenChange?: (isOpen: boolean) => void
 }
 
@@ -48,6 +49,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       trigger,
       menuWidth,
       align,
+      alignToSelector,
       onOpenChange,
       ...props
     },
@@ -69,6 +71,8 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       width: number
       buttonRight: number
       opensUp: boolean
+      parentLeft?: number
+      parentWidth?: number
     } | null>(null)
     const internalRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLElement>(null)
@@ -123,6 +127,16 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       if (!buttonRef.current) return
 
       const buttonRect = buttonRef.current.getBoundingClientRect()
+
+      let parentRect = buttonRect
+      if (alignToSelector) {
+        const el =
+          buttonRef.current.closest(alignToSelector) || document.querySelector(alignToSelector)
+        if (el) {
+          parentRect = el.getBoundingClientRect()
+        }
+      }
+
       const estimatedHeight = Math.min(
         maxHeight,
         options.length * 36 + (showPlaceholderOption && allowClear ? 44 : 0) + 12,
@@ -146,8 +160,10 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
         width: buttonRect.width,
         buttonRight: buttonRect.right,
         opensUp: shouldOpenUp,
+        parentLeft: parentRect.left,
+        parentWidth: parentRect.width,
       })
-    }, [allowClear, maxHeight, options.length, showPlaceholderOption])
+    }, [allowClear, maxHeight, options.length, showPlaceholderOption, alignToSelector])
 
     useLayoutEffect(() => {
       if ((!isOpen && !menuRef.current) || !buttonRef.current) return
@@ -267,6 +283,24 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                       align === "left" || (!align && !menuWidth) ?
                         menuPosition ? `${menuPosition.left}px`
                         : "0px"
+                      : align === "center" ?
+                        menuPosition ?
+                          (() => {
+                            const w =
+                              typeof menuWidth === "number" ? menuWidth : (
+                                (menuRef.current?.offsetWidth ?? menuPosition.width)
+                              )
+                            const baseLeft =
+                              menuPosition.parentLeft !== undefined ?
+                                menuPosition.parentLeft
+                              : menuPosition.left
+                            const baseWidth =
+                              menuPosition.parentWidth !== undefined ?
+                                menuPosition.parentWidth
+                              : menuPosition.width
+                            return `${baseLeft + (baseWidth - w) / 2}px`
+                          })()
+                        : "0px"
                       : undefined,
                     right:
                       align === "right" || (!align && menuWidth) ?
@@ -282,9 +316,10 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                       : undefined,
                     transformOrigin:
                       menuPosition?.opensUp ?
-                        align === "left" || (!align && !menuWidth) ?
-                          "bottom left"
+                        align === "center" ? "bottom center"
+                        : align === "left" || (!align && !menuWidth) ? "bottom left"
                         : "bottom right"
+                      : align === "center" ? "top center"
                       : align === "left" || (!align && !menuWidth) ? "top left"
                       : "top right",
                     visibility: menuPosition ? "visible" : "hidden",
