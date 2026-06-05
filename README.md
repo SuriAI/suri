@@ -13,7 +13,7 @@
 
 <p align="center">
   <strong>Facenox is offline-first face recognition software for real-time attendance tracking.</strong><br>
-  Built for privacy: biometric templates are encrypted client-side and decrypted only on your paired devices.
+  Built for privacy: Biometric templates are end-to-end encrypted (E2EE).
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 > This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
 
 > [!NOTE]  
-> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices: only your organization's paired kiosks hold the decryption keys.
+> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices: only your organization's paired devices hold the decryption keys.
 
 ## Why Facenox
 
@@ -115,7 +115,7 @@ Facenox Desktop continues to work locally when internet access is unavailable:
   (Completely optional; sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
-> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Kiosks encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay; we cannot read your data. Matching always stays on your local hardware.
+> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay; we cannot read your data. Matching always stays on your local hardware.
 
 ## How it works
 
@@ -149,7 +149,7 @@ Since Facenox operates 100% locally, we cannot recover your data if your device 
 >
 > - **Automated Audits:** GitHub CodeQL scans commits for security vulnerabilities on every push.
 > - **Build Transparency:** GitHub Actions compiles all release binaries from public source code.
-> - **Privacy First:** Kiosks encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay; we cannot read your data.
+> - **Privacy First:** Devices encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay; we cannot read your data.
 
 > **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 
