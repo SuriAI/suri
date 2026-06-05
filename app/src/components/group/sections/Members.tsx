@@ -38,6 +38,7 @@ export function Members({
   const resetEnrollment = useGroupUIStore((state) => state.resetEnrollment)
   const setEnrollmentState = useGroupUIStore((state) => state.setEnrollmentState)
   const jumpToEnrollment = useGroupUIStore((state) => state.jumpToEnrollment)
+  const showAddMemberModal = useGroupUIStore((state) => state.showAddMemberModal)
   const dialog = useDialog()
 
   const [memberSearch, setMemberSearch] = useState("")
@@ -50,6 +51,12 @@ export function Members({
   const [scrollTop, setScrollTop] = useState(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const outerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (showAddMemberModal) {
+      setSelectedIds(new Set())
+    }
+  }, [showAddMemberModal])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
