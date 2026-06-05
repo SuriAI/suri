@@ -313,9 +313,9 @@ export function Members({
     async (member: AttendanceMember) => {
       try {
         const confirmed = await dialog.confirm({
-          title: "Reset Face Data",
-          message: `Are you sure you want to clear the face data for ${member.name}? They will need to re-enroll to be recognized.`,
-          confirmText: "Reset",
+          title: "Remove Enrollment",
+          message: `Are you sure you want to remove the enrollment for ${member.name}? They will need to re-enroll to be recognized.`,
+          confirmText: "Remove",
           confirmVariant: "danger",
         })
 

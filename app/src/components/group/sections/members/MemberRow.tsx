@@ -86,7 +86,7 @@ export const MemberRow = React.memo(
                 )}
 
                 {isEnrolled && (
-                  <Tooltip content="Clear face data">
+                  <Tooltip content="Remove enrollment">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
