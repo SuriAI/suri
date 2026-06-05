@@ -242,6 +242,8 @@ function TablePagination({
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
 }) {
+  if (totalItems <= pageSize) return null
+
   return (
     <div className="flex shrink-0 items-center justify-between border-t border-white/6 bg-[rgba(16,21,28,0.98)] px-6 py-3">
       <div className="flex items-center gap-2 text-[11px] text-white/55">
