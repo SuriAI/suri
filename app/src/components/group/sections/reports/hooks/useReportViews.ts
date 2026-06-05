@@ -13,7 +13,7 @@ export function useReportViews(
   groupId: string,
   defaultColumns: ColumnKey[],
   defaultColumnPresets: ColumnKey[][] = [defaultColumns],
-  defaultPageSize = 50,
+  defaultPageSize = 25,
 ) {
   // Current settings state
   const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(defaultColumns)
