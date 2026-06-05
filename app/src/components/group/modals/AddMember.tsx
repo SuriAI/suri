@@ -286,6 +286,14 @@ export function AddMember({
               errors.push(`Failed: ${err.error}`)
             })
           }
+          if (res.members && res.members.length > 0) {
+            useGroupStore.setState({
+              members: [...useGroupStore.getState().members, ...res.members],
+            })
+            useAttendanceStore.setState({
+              groupMembers: [...useAttendanceStore.getState().groupMembers, ...res.members],
+            })
+          }
         }
 
         setBulkProgress({ current: totalItems, total: totalItems })

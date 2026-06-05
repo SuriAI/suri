@@ -115,6 +115,7 @@ export class AttendanceManager {
     success_count: number
     error_count: number
     errors: Array<{ person_id: string; error: string }>
+    members: AttendanceMember[]
   }> {
     return this.memberManager.addMembersBulk(members, groupId)
   }

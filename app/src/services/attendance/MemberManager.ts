@@ -76,6 +76,7 @@ export class MemberManager {
     success_count: number
     error_count: number
     errors: Array<{ person_id: string; error: string }>
+    members: AttendanceMember[]
   }> {
     const payload = {
       members: members.map((m) => ({
@@ -88,11 +89,20 @@ export class MemberManager {
       })),
     }
 
-    return await this.httpClient.post<{
+    const res = await this.httpClient.post<{
       success_count: number
       error_count: number
       errors: Array<{ person_id: string; error: string }>
+      members: AttendanceMember[]
     }>(`${this.apiEndpoints.members}/bulk`, payload)
+
+    return {
+      ...res,
+      members: (res.members || []).map((m) => ({
+        ...m,
+        joined_at: new Date(m.joined_at),
+      })),
+    }
   }
 
   async getMember(personId: string): Promise<AttendanceMember | undefined> {

@@ -119,6 +119,7 @@ async def add_members_bulk(
         success_count = 0
         error_count = 0
         errors = []
+        successful_members = []
 
         for res in bulk_results:
             if res.get("success", False):
@@ -130,6 +131,7 @@ async def add_members_bulk(
                     target_id=member.person_id,
                     details=f"Bulk add: Member '{member.name}' added to group {member.group_id}",
                 )
+                successful_members.append(member)
             else:
                 error_count += 1
                 errors.append(
@@ -142,12 +144,14 @@ async def add_members_bulk(
         await repo.session.commit()
 
         # Refresh successful members
-        for res in bulk_results:
-            if res.get("success", False):
-                await repo.session.refresh(res["member"])
+        for member in successful_members:
+            await repo.session.refresh(member)
 
         return BulkMemberResponse(
-            success_count=success_count, error_count=error_count, errors=errors
+            success_count=success_count,
+            error_count=error_count,
+            errors=errors,
+            members=successful_members,
         )
 
     except HTTPException:
