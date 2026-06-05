@@ -579,8 +579,6 @@ class AttendanceService:
         if not detections:
             raise ValueError("No detectable face found in image")
 
-        logger.info(f"Enrolling face for {person_id} in group {group_id}")
-
         result = await self.face_recognizer.enroll_person(
             person_id, image, landmarks_5, self.repo.organization_id
         )
