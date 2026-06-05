@@ -375,7 +375,7 @@ export function Database({
           </div>
         </div>
 
-        <div className="border-y border-white/5">
+        <div className="border-t border-white/5">
           <div
             className={`${isInitialLoad || filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
             <AnimatePresence mode="wait">
