@@ -89,7 +89,7 @@ export function ControlBar({
     const cyanStyle =
       "bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/25 hover:text-cyan-200 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.35)] tracking-wider"
 
-    const standardTooltip = hasCameraDevices ? "Start attendance logging" : "No camera detected"
+    const standardTooltip = hasCameraDevices ? "Start attendance tracking" : "No camera detected"
 
     return {
       label: "Start Scan",
