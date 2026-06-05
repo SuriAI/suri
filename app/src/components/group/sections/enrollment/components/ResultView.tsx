@@ -55,14 +55,6 @@ export function ResultView({
               </button>
             )}
           </div>
-
-          <div className="flex items-center gap-1 text-[9px] font-semibold tracking-[0.2em] text-white/40 uppercase">
-            <span>R</span>
-            <span>Retake</span>
-            <span className="px-1 text-white/20">|</span>
-            <span>Enter</span>
-            <span>Enroll</span>
-          </div>
         </div>
       </div>
     </div>
