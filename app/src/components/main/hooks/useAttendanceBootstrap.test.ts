@@ -62,14 +62,14 @@ describe("useAttendanceBootstrap", () => {
   beforeEach(() => {
     resetStores()
     mockBootstrapShellData.mockReset()
-    window.facenoxElectron.updateSplashDataStep.mockClear()
+    vi.mocked(window.facenoxElectron!.updateSplashDataStep).mockClear()
   })
 
   it("does nothing before UI hydration finishes", () => {
     renderHook(() => useAttendanceBootstrap())
 
     expect(mockBootstrapShellData).not.toHaveBeenCalled()
-    expect(window.facenoxElectron.updateSplashDataStep).not.toHaveBeenCalled()
+    expect(window.facenoxElectron!.updateSplashDataStep).not.toHaveBeenCalled()
     expect(useAttendanceStore.getState().isShellReady).toBe(false)
   })
 
@@ -79,14 +79,14 @@ describe("useAttendanceBootstrap", () => {
 
     renderHook(() => useAttendanceBootstrap())
 
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
 
     await waitFor(() => {
       expect(useAttendanceStore.getState().isShellReady).toBe(true)
     })
 
     expect(mockBootstrapShellData).toHaveBeenCalledTimes(1)
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenNthCalledWith(2, 9)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenNthCalledWith(2, 9)
     expect(useAttendanceStore.getState().isShellBootstrapping).toBe(false)
     expect(useAttendanceStore.getState().shellBootstrapError).toBeNull()
     expect(useUIStore.getState().error).toBeNull()
@@ -106,18 +106,18 @@ describe("useAttendanceBootstrap", () => {
     expect(useAttendanceStore.getState().isShellBootstrapping).toBe(false)
     expect(useAttendanceStore.getState().isPanelLoading).toBe(false)
     expect(useUIStore.getState().error).toBe("Startup data failed to load: backend offline")
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenCalledTimes(1)
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenCalledTimes(1)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
   })
 
-  it("stops before mutating final state if the hook unmounts during bootstrap", async () => {
+  it("completes bootstrap state mutation even if the hook unmounts (no cancellation)", async () => {
     useUIStore.setState({ isHydrated: true })
     const deferred = createDeferred<void>()
     mockBootstrapShellData.mockImplementation(() => deferred.promise)
 
     const { unmount } = renderHook(() => useAttendanceBootstrap())
 
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenNthCalledWith(1, 8)
 
     unmount()
 
@@ -127,8 +127,8 @@ describe("useAttendanceBootstrap", () => {
       await Promise.resolve()
     })
 
-    expect(window.facenoxElectron.updateSplashDataStep).toHaveBeenCalledTimes(1)
-    expect(useAttendanceStore.getState().isShellReady).toBe(false)
+    expect(window.facenoxElectron!.updateSplashDataStep).toHaveBeenCalledTimes(2)
+    expect(useAttendanceStore.getState().isShellReady).toBe(true)
     expect(useAttendanceStore.getState().shellBootstrapError).toBeNull()
     expect(useUIStore.getState().error).toBeNull()
   })
