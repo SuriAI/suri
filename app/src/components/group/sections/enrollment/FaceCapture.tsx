@@ -43,6 +43,7 @@ export function FaceCapture({
   const setEnrollmentInfoDismissed = useUIStore((state) => state.setEnrollmentInfoDismissed)
   const [showInfoModal, setShowInfoModal] = useState(false)
   const [dontShowAgainChecked, setDontShowAgainChecked] = useState(false)
+  const [successCountdown, setSuccessCountdown] = useState<number | null>(null)
 
   const memberStatus = useMemo(() => {
     const status = new Map<string, boolean>()
@@ -132,6 +133,31 @@ export function FaceCapture({
       setTimeout(() => setSelectedMemberId(""), 0)
     }
   }, [deselectMemberTrigger])
+
+  // Start countdown when successMessage is set
+  useEffect(() => {
+    if (successMessage) {
+      setSuccessCountdown(3)
+    } else {
+      setSuccessCountdown(null)
+    }
+  }, [successMessage])
+
+  // Count down every second and auto-dismiss on 0
+  useEffect(() => {
+    if (successCountdown === null) return
+    if (successCountdown <= 0) {
+      setSuccessMessage(null)
+      setSelectedMemberId("")
+      resetFrames()
+      resetEnrollment()
+      return
+    }
+    const timer = setTimeout(() => {
+      setSuccessCountdown((prev) => (prev !== null ? prev - 1 : null))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [successCountdown, setSuccessMessage, setSelectedMemberId, resetFrames, resetEnrollment])
 
   const handleCaptureFromCamera = useCallback(() => {
     if (!videoRef.current || !selectedMemberId) return
@@ -243,7 +269,13 @@ export function FaceCapture({
           </div>
           <p className="text-center text-sm font-medium text-cyan-200/60">{successMessage}</p>
 
-          <div className="mt-2 flex w-full justify-end">
+          <div className="mt-6 flex w-full items-center justify-between">
+            {/* Subtle countdown text on the left */}
+            <div className="flex items-center gap-1 text-[10px] font-medium text-white/30 select-none">
+              <span>Closing in</span>
+              <span className="font-bold text-white/50 tabular-nums">{successCountdown}s</span>
+            </div>
+
             <button
               onClick={() => {
                 setSuccessMessage(null)
@@ -252,7 +284,7 @@ export function FaceCapture({
                 // Close the overlay entirely — go back to the main members list
                 resetEnrollment()
               }}
-              className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-6 py-2 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/30">
+              className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-5 py-1.5 text-[11px] font-bold tracking-wider text-cyan-400 transition-all hover:bg-cyan-500/30">
               Done
             </button>
           </div>
