@@ -2,6 +2,7 @@ import { Fragment, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { RowData, ColumnKey } from "@/components/group/sections/reports/types"
 import { parseLocalDate, formatDuration } from "@/utils"
+import { Tooltip } from "@/components/shared"
 
 interface ReportTableProps {
   groupedRows: Record<string, RowData[]>
@@ -49,7 +50,7 @@ export function ReportTable({
   const getColWidthClass = (key: ColumnKey) => {
     switch (key) {
       case "name":
-        return "w-[20%] min-w-[150px]"
+        return "w-[240px] min-w-[200px]"
       case "date":
         return "w-[140px] min-w-[140px]"
       case "status":
@@ -60,8 +61,10 @@ export function ReportTable({
         return "w-[120px] min-w-[120px]"
       case "total_hours":
         return "w-[100px] min-w-[100px]"
+      case "late_minutes":
+        return "w-[100px] min-w-[100px]"
       case "notes":
-        return "min-w-[250px]"
+        return "w-[300px] min-w-[250px]"
       default:
         return ""
     }
@@ -78,7 +81,7 @@ export function ReportTable({
         WebkitMaskImage:
           "linear-gradient(to bottom, black calc(100% - 50px), transparent calc(100% - 10px), black calc(100% - 10px), black 100%)",
       }}>
-      <table className="w-full min-w-[900px] border-separate border-spacing-0 text-left">
+      <table className="w-full min-w-[900px] table-fixed border-separate border-spacing-0 text-left">
         <thead>
           <tr>
             {visibleColDefs.map((c) => {
@@ -95,7 +98,7 @@ export function ReportTable({
               )
             })}
             {onEditRow && (
-              <th className="sticky top-0 z-10 w-10 border-b border-white/6 bg-[rgba(16,21,28,0.98)]" />
+              <th className="sticky top-0 z-10 w-14 border-b border-white/6 bg-[rgba(16,21,28,0.98)]" />
             )}
           </tr>
         </thead>
@@ -163,7 +166,7 @@ export function ReportTable({
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}>
                 <td colSpan={visibleColDefs.length + (onEditRow ? 1 : 0)} className="p-0">
-                  <table className="w-full">
+                  <table className="w-full table-fixed">
                     <tbody>
                       {(() => {
                         let renderedCount = 0
@@ -288,9 +291,11 @@ export function ReportTable({
                                       )
                                     } else if (c.key === "name") {
                                       content = (
-                                        <span className="font-semibold text-white">
-                                          {val as string}
-                                        </span>
+                                        <Tooltip content={val as string} position="top">
+                                          <span className="block truncate font-semibold text-white">
+                                            {val as string}
+                                          </span>
+                                        </Tooltip>
                                       )
                                     } else if (c.key === "notes") {
                                       if (val) {
@@ -325,14 +330,14 @@ export function ReportTable({
                                     if (c.align === "center") alignClass = "text-center"
                                     else if (c.align === "right") alignClass = "text-right"
 
-                                    // Notes column should NOT be whitespace-nowrap
-                                    const isNotesCol = c.key === "notes"
+                                    // Notes and Name columns should NOT be whitespace-nowrap (Name truncates via the inner span)
+                                    const isNoWrapCol = c.key !== "notes" && c.key !== "name"
                                     const widthClass = getColWidthClass(c.key)
 
                                     return (
                                       <td
                                         key={c.key}
-                                        className={`border-b border-white/5 px-4 py-3.5 ${isNotesCol ? "max-w-[300px]" : "whitespace-nowrap"} ${alignClass} ${widthClass} ${cIdx === 0 ? "relative" : ""}`}>
+                                        className={`border-b border-white/5 px-4 py-3.5 ${isNoWrapCol ? "whitespace-nowrap" : ""} ${alignClass} ${widthClass} ${cIdx === 0 ? "relative" : ""}`}>
                                         {cIdx === 0 && (
                                           <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-cyan-500 opacity-0 transition-opacity group-hover:opacity-100" />
                                         )}
@@ -341,7 +346,7 @@ export function ReportTable({
                                     )
                                   })}
                                   {onEditRow && (
-                                    <td className="border-b border-white/5 px-3 py-3.5 text-right whitespace-nowrap">
+                                    <td className="w-14 border-b border-white/5 px-3 py-3.5 text-right whitespace-nowrap">
                                       <button
                                         type="button"
                                         onClick={() => onEditRow(row)}
