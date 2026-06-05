@@ -107,7 +107,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       setSuccess(
         nextConfig.connected ?
           "Remote sync settings saved. Auto-sync state updated."
-        : "Remote sync settings saved. You can connect this desktop whenever you're ready.",
+          : "Remote sync settings saved. You can connect this desktop whenever you're ready.",
       )
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save Remote Sync settings.")
@@ -186,8 +186,8 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
 
   const syncTone =
     config.lastSyncStatus === "success" ? "text-cyan-400/90"
-    : config.lastSyncStatus === "error" ? "text-red-400"
-    : "text-white/45"
+      : config.lastSyncStatus === "error" ? "text-red-400"
+        : "text-white/45"
 
   return (
     <div className="mx-auto w-full max-w-[900px] space-y-6 px-10 pt-8 pb-10">
@@ -258,7 +258,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   </button>
                 </div>
               </div>
-            : <div className="space-y-4">
+              : <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-white/90">Connected Device</div>
@@ -285,7 +285,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                     <div className={syncTone}>
                       {config.lastSyncedAt ?
                         `Last sync: ${new Date(config.lastSyncedAt).toLocaleString()}`
-                      : "No successful sync yet."}
+                        : "No successful sync yet."}
                     </div>
                     {config.lastSyncMessage && <div>Log: {config.lastSyncMessage}</div>}
                   </div>
@@ -400,8 +400,8 @@ function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundaries
           <div className="space-y-1">
             <div className="text-[13px] font-semibold text-white/90">Shared with Dashboard</div>
             <p className="text-[11px] leading-relaxed text-white/50">
-              Only standard roster names, roles, attendance timestamps, and device diagnostics are
-              synced to the dashboard.
+              Member names, roles, attendance logs, device diagnostics, and encrypted biometric
+              face vectors (embeddings) are synchronized to the dashboard.
             </p>
           </div>
 
@@ -409,11 +409,12 @@ function DataBoundariesModal({ isOpen, onClose, onNavigateToDB }: DataBoundaries
           <div className="space-y-2">
             <div className="text-[13px] font-semibold text-white/90">Stored Locally Only</div>
             <p className="text-[11px] leading-relaxed text-white/50">
-              Biometric face vectors are encrypted and kept strictly local.{" "}
-              <strong>No raw photos are ever saved or uploaded.</strong>
+              Raw photos and camera feeds are processed live in volatile memory and are{" "}
+              <strong>never saved or uploaded</strong>.
             </p>
             <p className="text-[11px] leading-relaxed text-white/50">
-              The camera feed is processed live in volatile memory and never recorded.
+              Decrypted biometric templates only exist in local memory; the dashboard only
+              stores and transfers them in encrypted form.
             </p>
           </div>
         </div>
