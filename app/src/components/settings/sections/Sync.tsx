@@ -262,9 +262,18 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-white/90">Connected Device</div>
-                    <p className="mt-0.5 text-xs text-white/65">
-                      Device connected. Attendance records are syncing automatically.
-                    </p>
+                    {config.remoteBaseUrl && config.remoteBaseUrl !== DEFAULT_REMOTE_BASE_URL ?
+                      <p className="mt-0.5 text-xs text-white/65">
+                        Device connected. Attendance records are syncing automatically to custom
+                        server:{" "}
+                        <span className="font-mono text-[11px] text-white/80 underline select-all">
+                          {config.remoteBaseUrl}
+                        </span>
+                      </p>
+                    : <p className="mt-0.5 text-xs text-white/65">
+                        Device connected. Attendance records are syncing automatically.
+                      </p>
+                    }
                   </div>
                   <button
                     onClick={() => setShowAdvanced((value) => !value)}
@@ -323,9 +332,21 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                   <div className="mt-4 grid gap-4 border-t border-white/5 pt-4">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
-                          Custom Server URL
-                        </label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-extrabold tracking-widest text-white/45 uppercase">
+                            Custom Server URL
+                          </label>
+                          {remoteBaseUrl &&
+                            remoteBaseUrl.trim() !== DEFAULT_REMOTE_BASE_URL &&
+                            !config.connected && (
+                              <button
+                                type="button"
+                                onClick={() => setRemoteBaseUrl("")}
+                                className="cursor-pointer text-[9px] font-bold tracking-wider text-cyan-400 transition-colors hover:text-cyan-300">
+                                Reset to Default
+                              </button>
+                            )}
+                        </div>
                         <input
                           type="url"
                           placeholder="Leave empty for official sync"
