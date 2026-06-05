@@ -34,37 +34,32 @@ export class MemberManager {
       hasConsent?: boolean
     },
   ): Promise<AttendanceMember> {
-    try {
-      const memberData: {
-        group_id: string
-        name: string
-        role?: string
-        email?: string
-        has_consent?: boolean
-        person_id?: string
-      } = {
-        group_id: groupId,
-        name,
-        role: options?.role,
-        email: options?.email,
-        has_consent: options?.hasConsent ?? false,
-      }
+    const memberData: {
+      group_id: string
+      name: string
+      role?: string
+      email?: string
+      has_consent?: boolean
+      person_id?: string
+    } = {
+      group_id: groupId,
+      name,
+      role: options?.role,
+      email: options?.email,
+      has_consent: options?.hasConsent ?? false,
+    }
 
-      if (options?.personId) {
-        memberData.person_id = options.personId
-      }
+    if (options?.personId) {
+      memberData.person_id = options.personId
+    }
 
-      const member = await this.httpClient.post<AttendanceMember>(
-        this.apiEndpoints.members,
-        memberData,
-      )
-      return {
-        ...member,
-        joined_at: new Date(member.joined_at),
-      }
-    } catch (error) {
-      console.error("Error adding member:", error)
-      throw error
+    const member = await this.httpClient.post<AttendanceMember>(
+      this.apiEndpoints.members,
+      memberData,
+    )
+    return {
+      ...member,
+      joined_at: new Date(member.joined_at),
     }
   }
 
@@ -82,27 +77,22 @@ export class MemberManager {
     error_count: number
     errors: Array<{ person_id: string; error: string }>
   }> {
-    try {
-      const payload = {
-        members: members.map((m) => ({
-          group_id: groupId,
-          name: m.name,
-          role: m.role || undefined,
-          email: m.email || undefined,
-          has_consent: m.hasConsent ?? false,
-          person_id: m.personId || undefined,
-        })),
-      }
-
-      return await this.httpClient.post<{
-        success_count: number
-        error_count: number
-        errors: Array<{ person_id: string; error: string }>
-      }>(`${this.apiEndpoints.members}/bulk`, payload)
-    } catch (error) {
-      console.error("Error adding bulk members:", error)
-      throw error
+    const payload = {
+      members: members.map((m) => ({
+        group_id: groupId,
+        name: m.name,
+        role: m.role || undefined,
+        email: m.email || undefined,
+        has_consent: m.hasConsent ?? false,
+        person_id: m.personId || undefined,
+      })),
     }
+
+    return await this.httpClient.post<{
+      success_count: number
+      error_count: number
+      errors: Array<{ person_id: string; error: string }>
+    }>(`${this.apiEndpoints.members}/bulk`, payload)
   }
 
   async getMember(personId: string): Promise<AttendanceMember | undefined> {

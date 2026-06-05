@@ -28,6 +28,17 @@ const waitForNextPaint = () =>
     requestAnimationFrame(() => resolve())
   })
 
+const formatValidationError = (
+  e: { type?: string; msg?: string; ctx?: { max_length?: number } },
+  multiple?: boolean,
+): string => {
+  if (e.type === "string_too_long") {
+    const prefix = multiple ? "Some names exceed" : "Name exceeds"
+    return `${prefix} ${e.ctx?.max_length ?? 100} characters`
+  }
+  return e.msg ?? "Invalid value"
+}
+
 /**
  * A modal dialog that allows enrollment of a single new member
  * or multiple new members in bulk via a comma-separated list or file import.
@@ -188,7 +199,18 @@ export function AddMember({
       onClose()
     } catch (err) {
       console.error("Error adding member:", err)
-      setError(err instanceof Error ? err.message : "Failed to add member")
+      const rawMessage = err instanceof Error ? err.message : ""
+      try {
+        const parsed = JSON.parse(rawMessage)
+        if (Array.isArray(parsed)) {
+          const msgs = [...new Set(parsed.map((e) => formatValidationError(e)))]
+          setError(msgs.join(". "))
+        } else {
+          setError(rawMessage || "Failed to add member")
+        }
+      } catch {
+        setError(rawMessage || "Failed to add member")
+      }
     } finally {
       singleSubmitInFlightRef.current = false
       setLoading(false)
@@ -278,8 +300,19 @@ export function AddMember({
         setBulkResults({ success, failed, errors })
       }
     } catch (err) {
-      console.error("Error bulk adding members:", err)
-      setError(err instanceof Error ? err.message : "Failed to bulk add members")
+      console.warn("Validation error on bulk add:", err)
+      const rawMessage = err instanceof Error ? err.message : ""
+      try {
+        const parsed = JSON.parse(rawMessage)
+        if (Array.isArray(parsed)) {
+          const msgs = [...new Set(parsed.map((e) => formatValidationError(e, parsed.length > 1)))]
+          setError(msgs.join(". "))
+        } else {
+          setError(rawMessage || "Failed to bulk add members")
+        }
+      } catch {
+        setError(rawMessage || "Failed to bulk add members")
+      }
     } finally {
       bulkSubmitInFlightRef.current = false
       setIsProcessingBulk(false)
