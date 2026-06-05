@@ -82,6 +82,7 @@ export interface MockFacenoxElectronAPI extends FacenoxElectronAPI {
   onUnmaximize: Mock
   onMinimize: Mock
   onRestore: Mock
+  onSystemResume: Mock
   getSystemStats: Mock
   exportHealth: Mock
   getVersion: Mock
@@ -225,6 +226,7 @@ export function createFacenoxElectronMock(): MockFacenoxElectronAPI {
     onUnmaximize: vi.fn().mockReturnValue(() => undefined),
     onMinimize: vi.fn().mockReturnValue(() => undefined),
     onRestore: vi.fn().mockReturnValue(() => undefined),
+    onSystemResume: vi.fn().mockReturnValue(() => undefined),
     getSystemStats: vi.fn().mockResolvedValue({
       cpu: 0,
       memory: { total: 0, free: 0, appUsage: 0 },

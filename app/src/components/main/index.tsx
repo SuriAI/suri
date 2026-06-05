@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react"
+import { useEffect, useRef, useCallback } from "react"
 import { AnimatePresence } from "framer-motion"
 import { Settings } from "@/components/settings"
 import { attendanceManager, WebSocketService } from "@/services"
@@ -36,7 +36,6 @@ import { DeleteConfirmationModal } from "@/components/main/components/DeleteConf
 import { CooldownOverlay } from "@/components/main/components/CooldownOverlay"
 import type { DetectionResult } from "@/components/main/types"
 import { soundEffects } from "@/services/SoundEffectsService"
-import type { AttendanceTimeHealth } from "@/types/recognition"
 
 let globalStopCamera: ((forceCleanup: boolean) => void) | null = null
 
@@ -64,7 +63,6 @@ export default function Main() {
   const lastFrameTimestampRef = useRef<number>(0)
   const processCurrentFrameRef = useRef<() => Promise<void>>(async () => {})
   const previousTrackingGroupIdRef = useRef<string | null | undefined>(undefined)
-  const [timeHealth, setTimeHealth] = useState<AttendanceTimeHealth | null>(null)
 
   const backendServiceReadyRef = useRef(false)
   const isScanningRef = useRef(false)
@@ -110,6 +108,8 @@ export default function Main() {
     dataRetentionDays,
     setDataRetentionDays,
     persistentCooldowns,
+    timeHealth,
+    setTimeHealth,
   } = useAttendanceStore()
 
   const {
@@ -486,6 +486,7 @@ export default function Main() {
     if (!isShellReady) return
 
     let isCancelled = false
+    let debounceTimer: number | null = null
 
     const loadTimeHealth = async () => {
       try {
@@ -500,7 +501,18 @@ export default function Main() {
       }
     }
 
+    const debouncedLoadTimeHealth = () => {
+      if (debounceTimer !== null) {
+        window.clearTimeout(debounceTimer)
+      }
+      debounceTimer = window.setTimeout(() => {
+        void loadTimeHealth()
+      }, 500)
+    }
+
+    // Initial load
     void loadTimeHealth()
+
     const interval = window.setInterval(
       () => {
         void loadTimeHealth()
@@ -508,11 +520,38 @@ export default function Main() {
       5 * 60 * 1000,
     )
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        debouncedLoadTimeHealth()
+      }
+    }
+
+    const handleOnline = () => {
+      debouncedLoadTimeHealth()
+    }
+
+    window.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("online", handleOnline)
+
+    // Hook into pure Electron native OS wake detection
+    let cleanupSystemResume: (() => void) | undefined
+    if (window.facenoxElectron?.onSystemResume) {
+      cleanupSystemResume = window.facenoxElectron.onSystemResume(() => {
+        debouncedLoadTimeHealth()
+      })
+    }
+
     return () => {
       isCancelled = true
       window.clearInterval(interval)
+      if (debounceTimer !== null) {
+        window.clearTimeout(debounceTimer)
+      }
+      window.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("online", handleOnline)
+      if (cleanupSystemResume) cleanupSystemResume()
     }
-  }, [isShellReady])
+  }, [isShellReady, setTimeHealth])
 
   const handleOpenTimeSettings = useCallback(() => {
     setSettingsInitialSection("database")
