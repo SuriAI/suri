@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "framer-motion"
 import { attendanceManager } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { FormInput, Modal } from "@/components/common"
-import { useGroupUIStore } from "@/components/group/stores"
+import { useGroupUIStore, useGroupStore } from "@/components/group/stores"
+import { useAttendanceStore } from "@/components/main/stores"
 
 /**
  * Properties for the AddMember component.
@@ -170,10 +171,18 @@ export function AddMember({
 
     try {
       await waitForNextPaint()
-      await attendanceManager.addMember(group.id, newMemberName.trim(), {
+      const newMember = await attendanceManager.addMember(group.id, newMemberName.trim(), {
         role: newMemberRole.trim() || undefined,
         hasConsent: true,
       })
+
+      useGroupStore.setState({
+        members: [...useGroupStore.getState().members, newMember],
+      })
+      useAttendanceStore.setState({
+        groupMembers: [...useAttendanceStore.getState().groupMembers, newMember],
+      })
+
       resetForm()
       onSuccess()
       onClose()
