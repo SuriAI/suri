@@ -75,6 +75,8 @@ export function Reports({
     setStatusFilter,
     search,
     setSearch,
+    pageSize,
+    setPageSize,
   } = useReportViews(group.id, defaultColumns, DEFAULT_COLUMN_PRESETS)
 
   const { groupedRows, daysTracked, allColumns } = useReportTransform(
@@ -201,6 +203,8 @@ export function Reports({
                 onResetSearch={() => setSearch("")}
                 onResetFilter={() => setStatusFilter("all")}
                 onEditRow={setEditingRow}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
               />
             </motion.div>
           }
