@@ -183,7 +183,7 @@ export const ManualEntryModal = ({
                 </span>
                 <InfoPopover
                   title="Not Enrolled"
-                  description='Members marked "Not Enrolled" weren&apos;t enrolled yet or were imported from another device. They must be enrolled on this device to be recognized by the camera.'
+                  description="Members marked 'Not Enrolled' do not have registered face templates (e.g., they were newly created or imported without biometric data). They must complete face enrollment to be recognized by the camera."
                   side="top"
                 />
               </div>
