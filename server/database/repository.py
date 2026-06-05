@@ -99,6 +99,9 @@ class AttendanceRepository:
         track_checkout = settings.get("track_checkout")
         if track_checkout is None:
             track_checkout = False
+        biometric_consent_certified = settings.get("biometric_consent_certified")
+        if biometric_consent_certified is None:
+            biometric_consent_certified = False
 
         group = AttendanceGroup(
             id=group_data["id"],
@@ -108,6 +111,7 @@ class AttendanceRepository:
             late_threshold_enabled=late_threshold_enabled,
             class_start_time=class_start_time,
             track_checkout=track_checkout,
+            biometric_consent_certified=biometric_consent_certified,
             organization_id=self.organization_id,
             is_active=True,
             is_deleted=False,
@@ -224,6 +228,10 @@ class AttendanceRepository:
                     group.class_start_time = value["class_start_time"]
                 if "track_checkout" in value:
                     group.track_checkout = value["track_checkout"]
+                if "biometric_consent_certified" in value:
+                    group.biometric_consent_certified = value[
+                        "biometric_consent_certified"
+                    ]
             elif hasattr(group, key):
                 setattr(group, key, value)
 

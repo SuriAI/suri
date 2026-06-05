@@ -61,6 +61,7 @@ class AttendanceGroup(Base, SyncMixin):
         String, default=lambda: datetime.now().strftime("%H:%M")
     )
     track_checkout: Mapped[bool] = mapped_column(Boolean, default=False)
+    biometric_consent_certified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     members: Mapped[List["AttendanceMember"]] = relationship(back_populates="group")
     records: Mapped[List["AttendanceRecord"]] = relationship(back_populates="group")
@@ -76,6 +77,7 @@ class AttendanceGroup(Base, SyncMixin):
             "late_threshold_enabled": self.late_threshold_enabled,
             "class_start_time": self.class_start_time,
             "track_checkout": self.track_checkout,
+            "biometric_consent_certified": self.biometric_consent_certified,
         }
 
 

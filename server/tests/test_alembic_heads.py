@@ -10,4 +10,4 @@ def test_alembic_has_single_head():
 
     script_dir = ScriptDirectory.from_config(alembic_cfg)
 
-    assert script_dir.get_heads() == ["d1e2f3a4b5c6"]
+    assert script_dir.get_heads() == ["e2f3a4b5c6d7"]

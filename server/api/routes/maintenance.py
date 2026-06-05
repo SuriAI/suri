@@ -154,11 +154,16 @@ async def import_metadata(
             existing_group = result.scalars().first()
 
             remote_id = group.remote_id or group.id
+            group_settings = group.settings or {}
+            if group.biometric_consent_certified is not None:
+                group_settings["biometric_consent_certified"] = (
+                    group.biometric_consent_certified
+                )
             group_payload = {
                 "id": group.id,
                 "name": group.name,
                 "is_active": group.is_active,
-                "settings": group.settings or {},
+                "settings": group_settings,
                 "remote_id": remote_id,
             }
             if group.created_at:
@@ -187,6 +192,10 @@ async def import_metadata(
                     existing_group.class_start_time = settings["class_start_time"]
                 if "track_checkout" in settings:
                     existing_group.track_checkout = settings["track_checkout"]
+                if group.biometric_consent_certified is not None:
+                    existing_group.biometric_consent_certified = (
+                        group.biometric_consent_certified
+                    )
 
                 # Re-assert group rule when reviving to prevent stale
                 # attendance config (thresholds, class start time, etc.)

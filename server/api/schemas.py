@@ -65,6 +65,7 @@ class GroupSettings(BaseModel):
     late_threshold_enabled: bool = False
     class_start_time: Optional[str] = None  # HH:MM, defaults to creation time
     track_checkout: bool = False
+    biometric_consent_certified: bool = False
 
 
 class AttendanceGroupCreate(BaseModel):
@@ -417,6 +418,7 @@ class ImportedGroup(BaseModel):
     settings: Optional[Dict] = None
     remote_id: Optional[str] = None
     created_at: Optional[datetime] = None
+    biometric_consent_certified: Optional[bool] = None
 
 
 class ImportedMember(BaseModel):
