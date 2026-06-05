@@ -74,7 +74,7 @@ export function ReportToolbar({
   }, [])
 
   return (
-    <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/5 px-4 pb-3">
+    <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3">
       {/* Date Range */}
       <div className="flex shrink-0 items-center gap-1.5">
         <input
