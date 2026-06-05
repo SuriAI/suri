@@ -116,10 +116,15 @@ export function GroupEntry({
               />
             : <div
                 onClick={(e) => {
+                  if (isPaired) return
                   e.stopPropagation()
                   onStartEditingGroup(group, "name")
                 }}
-                className="flex cursor-pointer items-center gap-2 truncate text-[13px] font-semibold text-white/90 transition-colors hover:text-white">
+                className={`flex items-center gap-2 truncate text-[13px] font-semibold transition-colors ${
+                  isPaired ?
+                    "text-white/70"
+                  : "cursor-pointer text-white/90 hover:text-white"
+                }`}>
                 {group.displayName || group.name}
                 {savingGroup === group.id && (
                   <i className="fa-solid fa-spinner fa-spin text-[10px] text-white/55"></i>
