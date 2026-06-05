@@ -19,19 +19,14 @@ export function EnrollmentInfoModal({
 }: EnrollmentInfoModalProps) {
   const slides = [
     {
-      title: "Use the Camera",
+      title: "Live or Upload Enrollment",
       description:
-        "Enrolling members using the scanner's actual camera ensures the captured face data matches the local lighting, environment, and camera sensor. This provides the most consistent and accurate recognition during daily scanning.",
+        "Enroll a member live using the camera or by uploading a photo file. Live scans provide the most consistent and accurate recognition by matching the local environment and camera sensor, while photo uploads are ideal for remote enrollment.",
     },
     {
       title: "Proper Framing & Pose",
       description:
         "Have the member face the camera directly with open eyes and a neutral expression. Avoid dim spaces, harsh shadows, or accessories (like hats or sunglasses) that obstruct the face for a clean scan.",
-    },
-    {
-      title: "Use File Upload",
-      description:
-        "If a member is not physically present, click 'Upload' at the bottom. Ensure the uploaded photo is sharp, well-lit, and front-facing so the system can detect and enroll the face cleanly.",
     },
   ] as const
 
