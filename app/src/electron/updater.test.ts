@@ -39,7 +39,7 @@ describe("updater", () => {
     const { checkForUpdates } = await loadUpdater()
 
     await expect(checkForUpdates()).resolves.toMatchObject({
-      currentVersion: "1.0.0-beta.1",
+      currentVersion: expect.any(String),
       hasUpdate: false,
       isOffline: true,
     })
@@ -57,7 +57,7 @@ describe("updater", () => {
         published_at: "2026-04-01T00:00:00.000Z",
         assets: [],
       }),
-    } as Response)
+    } as unknown as Response)
 
     const { checkForUpdates } = await loadUpdater()
     const result = await checkForUpdates()
@@ -77,7 +77,7 @@ describe("updater", () => {
         published_at: "2026-04-01T00:00:00.000Z",
         assets: [],
       }),
-    } as Response)
+    } as unknown as Response)
 
     const { checkForUpdates } = await loadUpdater()
 

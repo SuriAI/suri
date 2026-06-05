@@ -593,27 +593,15 @@ export default function Main() {
       <div className="pointer-events-none absolute top-6 left-1/2 z-100 w-full max-w-xl -translate-x-1/2 px-4">
         <AnimatePresence>
           {success && (
-            <FloatingAlert
-              message={success}
-              variant="success"
-              onDismiss={() => setSuccess(null)}
-            />
+            <FloatingAlert message={success} variant="success" onDismiss={() => setSuccess(null)} />
           )}
 
           {warning && (
-            <FloatingAlert
-              message={warning}
-              variant="warning"
-              onDismiss={() => setWarning(null)}
-            />
+            <FloatingAlert message={warning} variant="warning" onDismiss={() => setWarning(null)} />
           )}
 
           {error && (
-            <FloatingAlert
-              message={error}
-              variant="error"
-              onDismiss={() => setError(null)}
-            />
+            <FloatingAlert message={error} variant="error" onDismiss={() => setError(null)} />
           )}
         </AnimatePresence>
       </div>

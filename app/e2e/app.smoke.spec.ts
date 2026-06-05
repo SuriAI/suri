@@ -297,6 +297,8 @@ async function installRuntimeMocks(page: Page, { hasSeenIntro }: { hasSeenIntro:
             importData: async () => ({ success: true, message: "Imported" }),
             restartManager: async () => ({ success: true }),
             triggerNow: async () => ({ success: true, message: "Synced now" }),
+            triggerDebouncedSync: async () => undefined,
+            onDataChanged: () => () => undefined,
           },
         },
       })
