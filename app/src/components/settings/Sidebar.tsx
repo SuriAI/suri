@@ -57,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [])
 
   return (
-    <div className="flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[220px] lg:w-[240px]">
+    <div className="settings-sidebar flex w-[200px] shrink-0 flex-col border-r border-white/5 bg-[var(--bg-primary)] sm:w-[220px] lg:w-[240px]">
       {/* Workspace Switcher Header */}
       <div className="pt-6 pr-[16px] pb-2 pl-[16px]">
         <div className="flex items-center gap-1">
@@ -86,7 +86,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               buttonClassName="!h-8 !w-full !rounded-md !border-white/5 !bg-white/5 !px-3.5 !text-xs !font-bold !tracking-wide !text-white/80 !transition-colors hover:!bg-white/[0.08] hover:!border-white/10 focus:!border-white/20 dropdown-trigger !shadow-none"
               showPlaceholderOption={false}
               menuWidth={220}
-              align="left"
+              align="center"
+              alignToSelector=".settings-sidebar"
             />
           </div>
           {!isPaired && (
