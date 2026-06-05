@@ -3,7 +3,9 @@ import { useState } from "react"
 import { Modal } from "@/components/common"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
+import { useGroupStore } from "@/components/group/stores"
 import { getActiveWebSocketService } from "@/services/WebSocketService"
+import { getLocalDateString } from "@/utils"
 import type { AttendanceRecord } from "@/components/main/types"
 
 interface ManualCorrectionModalProps {
@@ -67,6 +69,13 @@ export function ManualCorrectionModal({
 
       setSuccess(`${displayName} attendance entry removed`)
       await Promise.resolve(onVoided())
+
+      // Refresh Overview cache so Activity Log shows up-to-date data immediately
+      if (record.group_id) {
+        const today = getLocalDateString(new Date())
+        await useGroupStore.getState().fetchOverviewData(record.group_id, today, today)
+      }
+
       handleClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove attendance entry.")

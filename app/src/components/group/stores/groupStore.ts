@@ -120,6 +120,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
   fetchOverviewData: async (groupId: string, start: string, end: string, forceLoading = false) => {
     const hasCachedStats = !!get().overviewStats[groupId]
     const hasCachedRecords = !!get().overviewRecords[groupId]?.[`${start}_${end}`]
+    const cacheKey = `${start}_${end}`
 
     if (forceLoading || !hasCachedStats || !hasCachedRecords) {
       set({ loading: true, error: null })
@@ -145,7 +146,7 @@ export const useGroupStore = create<GroupState>((set, get) => ({
           ...state.overviewRecords,
           [groupId]: {
             ...(state.overviewRecords[groupId] || {}),
-            [`${start}_${end}`]: records,
+            [`${cacheKey}`]: records,
           },
         },
       }))
