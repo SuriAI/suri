@@ -65,6 +65,8 @@ export interface MockElectronAPI extends BackendServiceAPI {
     importData: Mock
     restartManager: Mock
     triggerNow: Mock
+    triggerDebouncedSync: Mock
+    onDataChanged: Mock
   }
 }
 
@@ -86,6 +88,12 @@ export interface MockFacenoxElectronAPI extends FacenoxElectronAPI {
   onAppReady: Mock
 }
 
+/**
+ * Creates a mock synchronization configuration.
+ *
+ * This configuration is needed to simulate different synchronization states (like connected or offline)
+ * during unit and integration tests without depending on the real system config.
+ */
 export function createSyncConfig(overrides: Partial<MockSyncConfig> = {}): MockSyncConfig {
   return {
     enabled: false,
@@ -105,6 +113,12 @@ export function createSyncConfig(overrides: Partial<MockSyncConfig> = {}): MockS
   }
 }
 
+/**
+ * Creates a mock implementation of the main Electron API.
+ *
+ * This mock intercepts IPC calls in a test environment to prevent actual Electron process communication,
+ * allowing UI component testing in isolation.
+ */
 export function createElectronAPIMock(): MockElectronAPI {
   const defaultSyncConfig = createSyncConfig()
 
@@ -184,10 +198,18 @@ export function createElectronAPIMock(): MockElectronAPI {
       importData: vi.fn().mockResolvedValue({ success: true, message: "Imported" }),
       restartManager: vi.fn().mockResolvedValue({ success: true, config: defaultSyncConfig }),
       triggerNow: vi.fn().mockResolvedValue({ success: true, message: "Synced now" }),
+      triggerDebouncedSync: vi.fn().mockResolvedValue(undefined),
+      onDataChanged: vi.fn().mockReturnValue(() => undefined),
     },
   }
 }
 
+/**
+ * Creates a mock implementation of the Facenox-specific Electron window controls API.
+ *
+ * This mock isolates tests from window action commands (such as minimize or maximize) that require
+ * a running Electron window manager shell.
+ */
 export function createFacenoxElectronMock(): MockFacenoxElectronAPI {
   return {
     platform: "linux",
@@ -213,6 +235,12 @@ export function createFacenoxElectronMock(): MockFacenoxElectronAPI {
   }
 }
 
+/**
+ * Retrieves the currently active mocked Electron API from the global window context.
+ *
+ * This helper provides type-safe access to mock assertions (like checking if a mock function was called)
+ * during test validation phases.
+ */
 export function getElectronAPIMock(): MockElectronAPI {
   return window.electronAPI as MockElectronAPI
 }
