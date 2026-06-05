@@ -284,7 +284,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
                     "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
                   : "border-white/5 bg-white/5 text-white/50"
                 }`}>
-                {syncConfig.connected ? "Online" : "Offline"}
+                {syncConfig.connected ? "Synced" : "Local"}
               </div>
             </Tooltip>
           </div>
