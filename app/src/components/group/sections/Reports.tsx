@@ -176,7 +176,7 @@ export function Reports({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               className="flex min-w-0 flex-1 flex-col overflow-hidden bg-transparent">
-              <div className="shrink-0 px-10 pt-8 pb-4">
+              <div className="shrink-0 px-10 pt-8">
                 <ReportToolbar
                   startDate={reportStartDate}
                   endDate={reportEndDate}
