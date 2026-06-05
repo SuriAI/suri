@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import { Settings } from "@/components/settings"
 import { attendanceManager, WebSocketService } from "@/services"
 import {
@@ -26,6 +26,7 @@ import {
   useUIStore,
 } from "@/components/main/stores"
 import { useGroupUIStore } from "@/components/group/stores"
+import { FloatingAlert } from "@/components/common"
 
 import { ControlBar } from "@/components/main/components/ControlBar"
 import { VideoCanvas } from "@/components/main/components/VideoCanvas"
@@ -592,73 +593,27 @@ export default function Main() {
       <div className="pointer-events-none absolute top-6 left-1/2 z-100 w-full max-w-xl -translate-x-1/2 px-4">
         <AnimatePresence>
           {success && (
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-4 text-cyan-100/90 shadow-2xl">
-              <i className="fa-solid fa-circle-check mt-0.5 text-cyan-500"></i>
-              <div className="flex-1 text-sm leading-relaxed">
-                <span className="mr-1.5 font-semibold whitespace-nowrap text-cyan-500">
-                  Success:
-                </span>
-                {success}
-              </div>
-              <button
-                type="button"
-                onClick={() => setSuccess(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
-                aria-label="Dismiss success">
-                <i className="fa-solid fa-xmark text-xs"></i>
-              </button>
-            </motion.div>
+            <FloatingAlert
+              message={success}
+              variant="success"
+              onDismiss={() => setSuccess(null)}
+            />
           )}
 
           {warning && (
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto mb-3 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-200/90 shadow-2xl">
-              <i className="fa-solid fa-triangle-exclamation mt-0.5 text-amber-400"></i>
-              <div className="flex-1 text-sm leading-relaxed">
-                <span className="mr-1.5 font-semibold whitespace-nowrap text-amber-400">
-                  Warning:
-                </span>
-                {warning}
-              </div>
-              <button
-                type="button"
-                onClick={() => setWarning(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
-                aria-label="Dismiss warning">
-                <i className="fa-solid fa-xmark text-xs"></i>
-              </button>
-            </motion.div>
+            <FloatingAlert
+              message={warning}
+              variant="warning"
+              onDismiss={() => setWarning(null)}
+            />
           )}
 
           {error && (
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="pointer-events-auto flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-red-100/90 shadow-2xl">
-              <i className="fa-solid fa-circle-xmark mt-0.5 text-red-500"></i>
-              <div className="flex-1 text-sm leading-relaxed">
-                <span className="mr-1.5 font-semibold whitespace-nowrap text-red-500">Error:</span>
-                {error}
-              </div>
-              <button
-                type="button"
-                onClick={() => setError(null)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border-none bg-transparent p-0 text-white/55 shadow-none transition-all hover:bg-[rgba(22,28,36,0.62)] hover:text-white"
-                aria-label="Dismiss error">
-                <i className="fa-solid fa-xmark text-xs"></i>
-              </button>
-            </motion.div>
+            <FloatingAlert
+              message={error}
+              variant="error"
+              onDismiss={() => setError(null)}
+            />
           )}
         </AnimatePresence>
       </div>
