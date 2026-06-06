@@ -310,7 +310,7 @@ export class BackgroundSyncManager {
               if (
                 data.type === "POLICY_UPDATE" ||
                 data.type === "SYNC_REQUEST" ||
-                data.type === "ROSTER_UPDATE"
+                data.type === "MEMBERS_UPDATE"
               ) {
                 console.log("[Sync] Triggering immediate sync from real-time command.")
                 void this.performSync()

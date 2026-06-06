@@ -294,7 +294,7 @@ async def import_metadata(
             m.is_active = False
             m.is_deleted = True
 
-        # Prune orphan face embeddings for members that no longer exist in the roster
+        # Prune orphan face embeddings for members that no longer exist in the members list
         from database.models import Face
 
         pruned_faces = 0
