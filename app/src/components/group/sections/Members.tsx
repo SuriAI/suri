@@ -196,11 +196,12 @@ export function Members({
 
   const ITEM_HEIGHT = 60
 
-  // Calculate visible range
-  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - 5)
+  // Calculate visible range with a larger overscan buffer to prevent blanking on fast scrolls
+  const OVERSCAN = 20
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN)
   const endIndex = Math.min(
     filteredMembers.length - 1,
-    Math.floor((scrollTop + 800) / ITEM_HEIGHT) + 5,
+    Math.floor((scrollTop + 800) / ITEM_HEIGHT) + OVERSCAN,
   )
 
   const visibleMembers = filteredMembers.slice(startIndex, endIndex + 1)
