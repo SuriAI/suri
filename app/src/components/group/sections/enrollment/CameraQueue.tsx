@@ -5,6 +5,7 @@ import { generateDisplayNames } from "@/utils"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import { useCamera } from "@/components/group/sections/enrollment/hooks/useCamera"
 import { dataUrlToBlob } from "@/utils/dataUrl"
+import { validateAndGetBestFace } from "@/utils/faceValidation"
 import { CameraFeed } from "@/components/group/sections/enrollment/components/CameraFeed"
 
 type CaptureStatus = "pending" | "capturing" | "processing" | "completed" | "skipped" | "error"
@@ -141,6 +142,14 @@ export function CameraQueue({
     setBboxStyle(null)
   }, [currentMember?.personId])
 
+  // Automatically clear errors after a few seconds so they don't linger on the UI
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [error])
+
   const updateBboxStyle = useCallback(() => {
     if (!lastBbox || !cameraContainerRef.current) {
       return
@@ -268,29 +277,10 @@ export function CameraQueue({
         model_type: "face_detector",
       })
 
-      if (!detection.faces || detection.faces.length === 0) {
-        throw new Error(
-          "No biometric signature detected. Position yourself directly in front of the camera with adequate lighting.",
-        )
-      }
-
-      const bestFace = detection.faces.reduce(
-        (best, current) => ((current.confidence ?? 0) > (best.confidence ?? 0) ? current : best),
-        detection.faces[0],
-      )
-
-      if (!bestFace.bbox) {
-        throw new Error("Face detected but bounding box missing.")
-      }
-
-      if (bestFace.landmarks_5?.length !== 5) {
-        throw new Error(
-          "Biometric signature detected, but facial features are missing. Ensure the subject is clearly visible and try again.",
-        )
-      }
+      const bestFace = validateAndGetBestFace(detection)
 
       setLastBbox({
-        bbox: bestFace.bbox as [number, number, number, number],
+        bbox: bestFace.bbox,
         width,
         height,
         capturedAt: Date.now(),
@@ -459,18 +449,6 @@ export function CameraQueue({
 
   return (
     <div className="flex h-full flex-col overflow-hidden text-white">
-      {error && (
-        <div className="mx-6 mt-4 flex shrink-0 items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-          <div className="h-1 w-1 animate-pulse rounded-full bg-red-400" />
-          <span className="flex-1">{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="border-none bg-transparent p-0 text-red-200/50 shadow-none transition hover:text-red-100">
-            <i className="fa fa-times text-xs"></i>
-          </button>
-        </div>
-      )}
-
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           {memberQueue.length === 0 ?
