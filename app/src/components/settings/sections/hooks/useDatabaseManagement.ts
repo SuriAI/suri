@@ -295,7 +295,7 @@ export function useDatabaseManagement(
           await dialog.alert({
             title: "Cannot delete group",
             message:
-              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+              "Member list is managed from the Management Dashboard. Disconnect to manage locally.",
             variant: "default",
           })
         }
@@ -330,7 +330,7 @@ export function useDatabaseManagement(
           await dialog.alert({
             title: "Cannot delete member",
             message:
-              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+              "Member list is managed from the Management Dashboard. Disconnect to manage locally.",
             variant: "default",
           })
         }
@@ -398,7 +398,7 @@ export function useDatabaseManagement(
           await dialog.alert({
             title: "Cannot delete groups",
             message:
-              "Roster is managed from the Management Dashboard. Disconnect to manage locally.",
+              "Member list is managed from the Management Dashboard. Disconnect to manage locally.",
             variant: "default",
           })
         }
