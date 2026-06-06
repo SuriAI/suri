@@ -175,7 +175,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       if (result.success) {
         setSuccess(result.message)
       } else {
-        setError(result.message)
+        setError("Manual sync failed. Check the log below for details.")
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Manual sync failed.")
@@ -280,7 +280,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                         `Last sync: ${new Date(config.lastSyncedAt).toLocaleString()}`
                       : "No successful sync yet."}
                     </div>
-                    {config.lastSyncMessage && <div>Log: {config.lastSyncMessage}</div>}
+                    {config.lastSyncMessage && <div>{config.lastSyncMessage}</div>}
                   </div>
                 </div>
 
