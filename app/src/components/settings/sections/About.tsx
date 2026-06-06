@@ -60,7 +60,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-1">
             <div className="text-[13px] font-semibold text-white/90">Remote sync boundaries</div>
             <p className="text-[11px] leading-relaxed text-white/50">
-              Syncing with the management dashboard uploads roster metadata, attendance logs, and
+              Syncing with the management dashboard uploads member metadata, attendance logs, and
               encrypted biometric vectors (embeddings) to enable cross-device kiosk synchronization.
               Raw camera images/photos are never uploaded, and vectors are stored securely in their
               encrypted form on the cloud.
