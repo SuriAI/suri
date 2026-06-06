@@ -54,10 +54,9 @@ async def export_attendance_data(
         groups_orm = await repo.get_groups(active_only=False)
         settings_orm = await repo.get_settings()
 
-        members_query = (
-            select(AttendanceMember)
-            .where(AttendanceMember.is_deleted.is_(False))
-            .options(selectinload(AttendanceMember.group))
+        # Include ALL members (even soft-deleted)
+        members_query = select(AttendanceMember).options(
+            selectinload(AttendanceMember.group)
         )
         if repo.organization_id:
             members_query = members_query.where(
@@ -98,6 +97,15 @@ async def export_attendance_data(
         )
         sessions_orm = sessions_result.scalars().all()
 
+        serialized_members = []
+        for m in members_orm:
+            member_resp = AttendanceMemberResponse.model_validate(
+                m, from_attributes=True
+            )
+            if m.is_deleted:
+                member_resp.is_active = False
+            serialized_members.append(member_resp)
+
         return ExportDataResponse(
             groups=[
                 AttendanceGroupResponse.model_validate(g, from_attributes=True)
@@ -107,10 +115,7 @@ async def export_attendance_data(
                 AttendanceGroupRuleResponse.model_validate(r, from_attributes=True)
                 for r in group_rules_orm
             ],
-            members=[
-                AttendanceMemberResponse.model_validate(m, from_attributes=True)
-                for m in members_orm
-            ],
+            members=serialized_members,
             records=[
                 AttendanceRecordResponse.model_validate(r, from_attributes=True)
                 for r in records_orm
