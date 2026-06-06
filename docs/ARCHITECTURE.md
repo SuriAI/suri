@@ -85,7 +85,7 @@ This path does not require internet access.
 
 The desktop remains the system of record for biometrics and local attendance capture.
 
-When paired with a Dashboard, roster (groups and members) authority shifts to the Dashboard. Desktop roster mutations are blocked by the backend (HTTP 403). Groups and members flow one way: Dashboard → Desktop via pull. Attendance records and sessions are pushed Desktop → Dashboard.
+When paired with a Dashboard, members and groups authority shifts to the Dashboard. Desktop member/group mutations are blocked by the backend (HTTP 403). Groups and members flow one way: Dashboard → Desktop via pull. Attendance records and sessions are pushed Desktop → Dashboard.
 
 When multiple devices are paired to the same site, encrypted face templates can sync between them. Templates are encrypted with the organization's key before leaving the device and are decrypted only on destination devices in the same organization. The Dashboard acts as a blind relay: it stores encrypted blobs but cannot decrypt them.
 
@@ -108,7 +108,7 @@ The Remote Sync boundary is intentionally narrow.
 
 ### Data that is always sent in plaintext
 
-- group and member metadata (needed for roster management)
+- group and member metadata (needed for member/group management)
 - attendance records and sessions (needed for reporting)
 
 Groups and members are not sent to Dashboard via push. They are pulled from Dashboard to Desktop via `import-metadata` after each push.
@@ -118,9 +118,9 @@ Groups and members are not sent to Dashboard via push. They are pulled from Dash
 The current sync design is intentionally simple.
 
 - push-then-pull: desktop pushes attendance snapshots, then pulls groups and members metadata from dashboard
-- snapshot-based push with real-time event stream: attendance data is pushed as full snapshots; the desktop also maintains an SSE connection (`/api/sync/events`) for real-time sync triggers (`POLICY_UPDATE`, `ROSTER_UPDATE`, `SYNC_REQUEST`)
-- roster flow is one-way: Dashboard → Desktop. After each push, `import-metadata` upserts incoming groups/members and prunes any local group or member with a `remote_id` that no longer exists in the pull response
-- when paired, Desktop roster mutations are blocked by the local backend (HTTP 403). The Desktop Kiosk UI hides roster mutation buttons when paired.
+- snapshot-based push with real-time event stream: attendance data is pushed as full snapshots; the desktop also maintains an SSE connection (`/api/sync/events`) for real-time sync triggers (`POLICY_UPDATE`, `MEMBERS_UPDATE`, `SYNC_REQUEST`)
+- member/group flow is one-way: Dashboard → Desktop. After each push, `import-metadata` upserts incoming groups/members and prunes any local group or member with a `remote_id` that no longer exists in the pull response
+- when paired, Desktop member/group mutations are blocked by the local backend (HTTP 403). The Desktop Kiosk UI hides member/group mutation buttons when paired.
 - auto-sync available in the desktop app
 - manual `Sync Now` available as an override
 - initial sync runs immediately after pairing
@@ -134,7 +134,7 @@ This repository does not implement:
 
 - Remote-side biometric storage
 - Remote-side face matching
-- two-way sync for members or attendance edits (roster is intentionally one-way: Dashboard → Desktop)
+- two-way sync for members or attendance edits (member/group sync is intentionally one-way: Dashboard → Desktop)
 - payroll or HRIS integrations
 - mobile clients
 
