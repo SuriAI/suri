@@ -117,6 +117,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
     organizationName: string
     siteName: string
     remoteBaseUrl?: string
+    lastSyncStatus?: "idle" | "success" | "error"
   } | null>(null)
 
   useEffect(() => {
@@ -281,10 +282,16 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
               <div
                 className={`cursor-help rounded border px-2 py-0.5 text-[9px] font-extrabold tracking-widest uppercase transition-all duration-200 ${
                   syncConfig.connected ?
-                    "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
+                    syncConfig.lastSyncStatus === "error" ?
+                      "border-red-500/20 bg-red-500/10 text-red-400 shadow-[0_0_8px_rgba(239,68,68,0.1)]"
+                    : "border-cyan-500/20 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.1)]"
                   : "border-white/5 bg-white/5 text-white/50"
                 }`}>
-                {syncConfig.connected ? "Synced" : "Local"}
+                {syncConfig.connected ?
+                  syncConfig.lastSyncStatus === "error" ?
+                    "Sync Failed"
+                  : "Synced"
+                : "Local"}
               </div>
             </Tooltip>
           </div>
