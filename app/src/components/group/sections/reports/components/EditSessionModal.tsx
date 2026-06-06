@@ -222,7 +222,7 @@ export function EditSessionModal({
       maxWidth="sm">
       <div className="mt-1">
         {/* ── Scrollable Form Body (Close 'X' stays completely static) ───── */}
-        <div className="custom-scroll max-h-[50vh] space-y-5 overflow-x-hidden overflow-y-auto pr-1.5 pb-2">
+        <div className="custom-scroll -mx-5 max-h-[50vh] space-y-5 overflow-y-auto px-5 pb-2">
           {/* ── Original snapshot — no box, just a quiet grid ──────────────── */}
           <div>
             <p className="mb-3 text-[10px] font-semibold tracking-widest text-white/25 uppercase">
@@ -278,9 +278,9 @@ export function EditSessionModal({
                     onClick={() => handleStatusSelect(s)}
                     className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-center transition-all duration-150 ${
                       active ?
-                        isPresent ? "bg-cyan-500/10 ring-1 ring-cyan-500/30"
-                        : "bg-red-500/10 ring-1 ring-red-500/25"
-                      : "bg-white/[0.03] ring-1 ring-white/[0.06] hover:bg-white/[0.05]"
+                        isPresent ? "bg-cyan-500/10 ring-1 ring-cyan-500/30 ring-inset"
+                        : "bg-red-500/10 ring-1 ring-red-500/25 ring-inset"
+                      : "bg-white/[0.03] ring-1 ring-white/[0.06] ring-inset hover:bg-white/[0.05]"
                     }`}>
                     <span
                       className={`text-[12px] leading-none font-bold capitalize ${
