@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { attendanceManager, backendService } from "@/services"
 import type { AttendanceGroup, AttendanceMember } from "@/types/recognition"
 import type { DialogAPI } from "@/components/shared"
 import type { CapturedFrame } from "@/components/group/sections/enrollment/types"
 import { makeId } from "@/components/group/sections/enrollment/hooks/useImageProcessing"
 import { dataUrlToBlob } from "@/utils/dataUrl"
+import { validateAndGetBestFace } from "@/utils/faceValidation"
 
 export function useFaceCapture(
   group: AttendanceGroup | null,
@@ -16,6 +17,14 @@ export function useFaceCapture(
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isEnrolling, setIsEnrolling] = useState(false)
+
+  // Automatically clear errors after a few seconds so they don't linger on the UI
+  useEffect(() => {
+    if (globalError) {
+      const timer = setTimeout(() => setGlobalError(null), 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [globalError])
 
   const resetFrames = useCallback(() => {
     setFrames([])
@@ -57,24 +66,7 @@ export function useFaceCapture(
           enableLiveness: false, // Enrollment should not enforce liveness
         })
 
-        if (!detection.faces || detection.faces.length === 0) {
-          throw new Error("No face detected. Ensure face is clearly visible and in the frame.")
-        }
-
-        const bestFace = detection.faces.reduce(
-          (best, current) => ((current.confidence ?? 0) > (best.confidence ?? 0) ? current : best),
-          detection.faces[0],
-        )
-
-        if (!bestFace.bbox) {
-          throw new Error("Face detected but bounding box missing.")
-        }
-
-        if (bestFace.landmarks_5?.length !== 5) {
-          throw new Error(
-            "Biometric signature detected, but facial features are missing. Ensure the subject is clearly visible and try again.",
-          )
-        }
+        const bestFace = validateAndGetBestFace(detection)
 
         updateFrame(id, (frame) => ({
           ...frame,
