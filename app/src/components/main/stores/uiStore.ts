@@ -75,6 +75,10 @@ const loadInitialSettings = async () => {
   }
 }
 
+let errorTimer: NodeJS.Timeout | null = null
+let successTimer: NodeJS.Timeout | null = null
+let warningTimer: NodeJS.Timeout | null = null
+
 export const useUIStore = create<UIState>((set) => ({
   // Initial state
   error: null,
@@ -105,9 +109,27 @@ export const useUIStore = create<UIState>((set) => ({
   },
 
   // Actions
-  setError: (error) => set({ error }),
-  setSuccess: (success) => set({ success }),
-  setWarning: (warning) => set({ warning }),
+  setError: (error) => {
+    set({ error })
+    if (errorTimer) clearTimeout(errorTimer)
+    if (error) {
+      errorTimer = setTimeout(() => set({ error: null }), 4500)
+    }
+  },
+  setSuccess: (success) => {
+    set({ success })
+    if (successTimer) clearTimeout(successTimer)
+    if (success) {
+      successTimer = setTimeout(() => set({ success: null }), 4500)
+    }
+  },
+  setWarning: (warning) => {
+    set({ warning })
+    if (warningTimer) clearTimeout(warningTimer)
+    if (warning) {
+      warningTimer = setTimeout(() => set({ warning: null }), 4500)
+    }
+  },
   setShowSettings: (show) => set({ showSettings: show }),
   setGroupInitialSection: (section) => set({ groupInitialSection: section }),
   setSettingsInitialSection: (section) => set({ settingsInitialSection: section }),

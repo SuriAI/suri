@@ -616,11 +616,16 @@ export class BackgroundSyncManager {
       }
 
       if (!remoteResponse.ok) {
-        const detail =
+        let detail =
           typeof responsePayload?.error === "string" ?
             responsePayload.error
           : responseText || `HTTP ${remoteResponse.status}`
-        throw new Error(`Remote sync failed: ${detail}`)
+
+        if (detail.startsWith("Sync rejected: ")) {
+          detail = detail.replace("Sync rejected: ", "")
+        }
+
+        throw new Error(`Sync failed: ${detail}`)
       }
 
       console.log("[Sync] Background sync successful.")

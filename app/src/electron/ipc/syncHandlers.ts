@@ -310,7 +310,7 @@ export function registerSyncHandlers() {
           message:
             initialSyncResult.success ?
               "Device connected and initial sync completed."
-            : `Device connected, but the initial sync failed. Local attendance still works. ${initialSyncResult.message}`,
+            : "Device connected, but the initial sync failed. Check the sync log for details.",
         }
       } catch (error) {
         state.mainWindow?.webContents.send("sync:data-changed")
