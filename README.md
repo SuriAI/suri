@@ -20,39 +20,10 @@
   <img src="docs/assets/screenshots/02-face-recognition-live.png" alt="Facenox Desktop UI - Active Scan" width="100%">
 </p>
 
----
-
-> [!CAUTION]  
-> This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
-
-> [!NOTE]  
-> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices, with decryption keys stored exclusively on your paired hardware.
-
-## Why Facenox
-
-Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. Biometric matching stays local on the desktop.
-
-| Feature                 |  Facenox   | Cloud-Based Systems |
-| :---------------------- | :--------: | :-----------------: |
-| **Data Residency**      | Encrypted End-to-End with Optional Cross-Device Sync |    Remote Cloud     |
-| **Internet Dependency** |  Optional  |      Mandatory      |
-| **Latency**             | Real-time  |  Network Dependent  |
-| **Privacy Risk**        | Minimized  |        High         |
-
-## Features
-
-- **Local Biometrics:** Face detection, ByteTrack subject tracking, and ONNX liveness verification.
-- **Cross-Platform:** Native support for Windows, macOS, and Linux.
-- **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
-- **Subject Management:** Full control over group and member directories.
-- **Attendance Tracking:** Automated session recording and CSV/JSON exports.
-- **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
-- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, with your organization holding the master encryption key.
-
 ## Screenshots
 
 <details>
-<summary><strong>Click to expand UI Gallery</strong></summary>
+<summary><strong>UI Gallery</strong></summary>
 
 ### Main Interface
 
@@ -97,6 +68,35 @@ _Database settings panel detailing system clock accuracy validation and enrollme
 _Backup utilities for exporting and restoring the offline SQLite database and biometric profiles via encrypted archives._
 
 </details>
+
+---
+
+> [!CAUTION]  
+> This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
+
+> [!NOTE]  
+> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices, with decryption keys stored exclusively on your paired hardware.
+
+## Why Facenox
+
+Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. Biometric matching stays local on the desktop.
+
+| Feature                 |  Facenox   | Cloud-Based Systems |
+| :---------------------- | :--------: | :-----------------: |
+| **Data Residency**      | Encrypted End-to-End with Optional Cross-Device Sync |    Remote Cloud     |
+| **Internet Dependency** |  Optional  |      Mandatory      |
+| **Latency**             | Real-time  |  Network Dependent  |
+| **Privacy Risk**        | Minimized  |        High         |
+
+## Features
+
+- **Local Biometrics:** Face detection, ByteTrack subject tracking, and ONNX liveness verification.
+- **Cross-Platform:** Native support for Windows, macOS, and Linux.
+- **Consent-Aware:** Built-in support for biometric enrollment and deletion consent.
+- **Subject Management:** Full control over group and member directories.
+- **Attendance Tracking:** Automated session recording and CSV/JSON exports.
+- **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
+- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, with your organization holding the master encryption key.
 
 ## Performance
 
