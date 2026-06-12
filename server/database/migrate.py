@@ -58,12 +58,95 @@ def verify_and_repair_database():
                 )
 
 
+def check_and_stamp_baseline(db_path, alembic_cfg):
+    """Check the database schema to detect which Alembic migration revision
+    it matches, and stamp the database with that revision if the alembic_version
+    table is missing or empty. This prevents duplicate table/column creation errors.
+    """
+    if not db_path.exists():
+        return
+
+    try:
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
+
+        # Check if attendance_groups table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='attendance_groups';"
+        )
+        has_groups_table = cursor.fetchone() is not None
+
+        if not has_groups_table:
+            conn.close()
+            return
+
+        # Check if alembic_version table exists and has a row
+        has_version = False
+        try:
+            cursor.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';"
+            )
+            if cursor.fetchone() is not None:
+                cursor.execute("SELECT version_num FROM alembic_version;")
+                if cursor.fetchone() is not None:
+                    has_version = True
+        except sqlite3.OperationalError:
+            pass
+
+        if has_version:
+            conn.close()
+            return
+
+        # Detect the appropriate revision based on schema characteristics
+        # Get columns of attendance_groups
+        cursor.execute("PRAGMA table_info(attendance_groups);")
+        group_cols = [row[1] for row in cursor.fetchall()]
+
+        # Get columns of attendance_records
+        cursor.execute("PRAGMA table_info(attendance_records);")
+        record_cols = [row[1] for row in cursor.fetchall()]
+
+        # Check if attendance_group_rules table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='attendance_group_rules';"
+        )
+        has_rules_table = cursor.fetchone() is not None
+
+        conn.close()
+
+        target_revision = "9d9c0b4c6a01"  # Default to baseline schema
+
+        if "description" not in group_cols:
+            # Column 'description' was dropped in 2c0e0f2c3bf3
+            if "biometric_consent_certified" in group_cols:
+                target_revision = "e2f3a4b5c6d7"  # Head
+            elif "is_voided" in record_cols:
+                target_revision = "d1e2f3a4b5c6"
+            elif has_rules_table:
+                target_revision = (
+                    "c9d8e7f6a5b4"  # Merge node for rules and face settings
+                )
+            else:
+                target_revision = "2c0e0f2c3bf3"
+
+        logger.warning(
+            f"Database tables detected but no Alembic version found. "
+            f"Detected current schema matches revision '{target_revision}'. Stamping..."
+        )
+        command.stamp(alembic_cfg, target_revision)
+        logger.info(f"Database successfully stamped to '{target_revision}'.")
+
+    except Exception as e:
+        logger.error("Failed to check or stamp baseline version: %s", e, exc_info=True)
+
+
 def run_migrations():
     """Run alembic upgrade head programmatically."""
     # First, verify database integrity and perform self-healing if corrupted
     verify_and_repair_database()
 
-    logger.info("Checking for database migrations in %s...", DATA_DIR / "attendance.db")
+    db_path = DATA_DIR / "attendance.db"
+    logger.info("Checking for database migrations in %s...", db_path)
 
     alembic_cfg = Config(str(ALEMBIC_CONFIG_PATH))
 
@@ -78,6 +161,9 @@ def run_migrations():
             f"Multiple Alembic heads detected: {', '.join(heads)}. "
             "Create a merge revision before starting the backend."
         )
+
+    # Perform self-healing check if migrations are in an inconsistent/partially created state
+    check_and_stamp_baseline(db_path, alembic_cfg)
 
     try:
         command.upgrade(alembic_cfg, "head")
