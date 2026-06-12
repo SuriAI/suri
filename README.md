@@ -164,28 +164,31 @@ If you want to build from source, please follow the [Installation Guide](docs/IN
 Facenox is in active development. Until code-signing is finalized in a future release, you may encounter OS security prompts.
 
 > [!WARNING]  
-> **Windows SmartScreen:** If blocked, click **More info** then **Run anyway**.
+> **OS Security Prompts & Installation Warnings:**
+>
+> **Windows (SmartScreen):** If blocked, click **More info** then **Run anyway**.
 >
 > <img src="docs/assets/smartscreen_warning.png" alt="Windows SmartScreen warning" width="350">
-
-> [!TIP]  
-> **macOS Gatekeeper:** If blocked, **Right-click** the app, select **Open**, then confirm the prompt.
+>
+> **macOS (Gatekeeper):** If blocked, **Right-click** the app, select **Open**, then confirm the prompt.
 >
 > <img src="docs/assets/macos_gatekeeper_warning.png" alt="macOS Gatekeeper warning" width="350">
-
-> [!NOTE]  
-> **Linux (AppImage / Debian Package):** 
 >
-> **Using the AppImage:**
+> **Linux (AppImage / Debian Package):**
+>
+> *Using the AppImage:*
+> 1. Make the downloaded `.AppImage` file executable by right-clicking it -> **Properties** -> **Permissions** -> checking **Is executable** (or by running `chmod +x Facenox-Linux-*.AppImage` in the terminal).
+> 2. Double-click the file to execute it. If prompted with a security warning (e.g., in KDE Dolphin), click **Continue**.
 >
 > <img src="docs/assets/linux_warning.png" alt="Linux AppImage warning" width="500">
 >
-> 1. Make the downloaded `.AppImage` file executable by right-clicking it -> **Properties** -> **Permissions** -> checking **Is executable** (or by running `chmod +x Facenox-Linux-*.AppImage` in the terminal).
-> 2. Double-click the file to execute it. If prompted with a security warning (e.g., in KDE Dolphin), click **Continue**.
-> 
-> *Compatibility Note:* Modern Linux distributions (e.g., Ubuntu 22.04+) require `libfuse2` to mount and run AppImages. If the app fails to start, install it by running `sudo apt update && sudo apt install libfuse2` (do not install the package named `fuse` as it can conflict with your desktop environment).
+> *Compatibility Note:* Modern Linux distributions (e.g., Ubuntu 22.04+) require `libfuse2` to mount and run AppImages. If the app fails to start, install it by running:
+> ```bash
+> sudo apt update && sudo apt install libfuse2
+> ```
+> *(Warning: Do not install the package named `fuse` as it can conflict with your desktop environment.)*
 >
-> **Using the Debian Package (.deb):**
+> *Using the Debian Package (.deb):*
 > 1. Install by running the following commands in the terminal (recommended to automatically resolve dependencies):
 >    ```bash
 >    sudo apt update
@@ -193,9 +196,6 @@ Facenox is in active development. Until code-signing is finalized in a future re
 >    ```
 >    *(Note: The `./` prefix is required for `apt` to identify the file as a local package.)*
 > 2. Alternatively, double-click the `.deb` file to open it in your system's Software Center and click **Install**.
-
-
-
 
 ## Documentation
 
