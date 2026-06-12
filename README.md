@@ -7,6 +7,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-a5adb7?style=flat&logo=git&logoColor=f2f5f7&labelColor=0d1117" alt="License"></a>
   <a href="https://github.com/facenox/facenox/releases"><img src="https://img.shields.io/github/v/release/facenox/facenox?style=flat&logo=git&logoColor=f2f5f7&labelColor=0d1117&color=0891b2" alt="Version"></a>
+  <a href="https://github.com/facenox/facenox/releases"><img src="https://img.shields.io/github/downloads/facenox/facenox/total?style=flat&logo=github&logoColor=f2f5f7&labelColor=0d1117&color=22c55e" alt="Downloads"></a>
   <a href="https://github.com/facenox/facenox/stargazers"><img src="https://img.shields.io/github/stars/facenox/facenox?style=flat&logo=github&logoColor=f2f5f7&labelColor=0d1117&color=22d3ee" alt="Stars"></a>
   <a href="https://github.com/sponsors/facenox"><img src="https://img.shields.io/badge/sponsor-%E2%9D%A4-ff8a8a?style=flat&logo=github-sponsors&logoColor=f2f5f7&labelColor=0d1117" alt="Sponsor"></a>
 </p>
