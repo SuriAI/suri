@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Tooltip } from "@/components/shared"
+import { updaterService } from "@/services"
+import type { UpdateInfo } from "@/types/global"
 
 function formatRelativeTime(dateString: string | null): string {
   if (!dateString) return "Never"
@@ -30,6 +33,11 @@ function formatRelativeTime(dateString: string | null): string {
   }
 }
 
+/**
+ * Custom Title Bar Component
+ * Renders window controls, database sync status dot, and "Update Available" notification action.
+ * Leverages frameless window configuration under Electron drag regions.
+ */
 export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false)
   const [syncConfig, setSyncConfig] = useState<{
@@ -39,6 +47,7 @@ export default function WindowBar() {
     lastSyncStatus: "idle" | "success" | "error"
     lastSyncMessage: string | null
   } | null>(null)
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
 
   useEffect(() => {
     if (!window.electronAPI?.sync) return
@@ -55,6 +64,18 @@ export default function WindowBar() {
 
     return unsubscribe
   }, [])
+
+  useEffect(() => {
+    // Listen for updates found by background check cycles
+    const unsubscribe = updaterService.onUpdateInfoChanged((info) => {
+      setUpdateInfo(info)
+    })
+    return unsubscribe
+  }, [])
+
+  const handleOpenRelease = () => {
+    updaterService.openReleasePage(updateInfo?.releaseUrl)
+  }
 
   useEffect(() => {
     const handleMaximize = () => setIsMaximized(true)
@@ -125,33 +146,25 @@ export default function WindowBar() {
           className={`${isMac ? "-ml-4" : ""} pointer-events-none h-4 w-4 object-contain opacity-60`}
         />
         {(() => {
-          if (!syncConfig) return null
+          if (!syncConfig || !syncConfig.connected) return null
 
-          const isSyncEnabled = syncConfig.connected && syncConfig.enabled
+          const relativeTime = formatRelativeTime(syncConfig.lastSyncedAt)
           let dotColorClass: string
           let statusText: string
           let tooltipContent: string
 
-          if (!isSyncEnabled) {
-            dotColorClass = "bg-white/35"
-            statusText = "Local"
-            tooltipContent =
-              "Running in offline mode. Biometrics and attendance records are stored only on this device."
+          if (syncConfig.lastSyncStatus === "success") {
+            dotColorClass = "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+            statusText = "Synced"
+            tooltipContent = `Last synced: ${relativeTime}. ${syncConfig.lastSyncMessage || "All records are up to date."}`
+          } else if (syncConfig.lastSyncStatus === "error") {
+            dotColorClass = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+            statusText = "Sync Warning"
+            tooltipContent = `Failed to sync: ${syncConfig.lastSyncMessage || "Network connection issue."} (Last success: ${relativeTime})`
           } else {
-            const relativeTime = formatRelativeTime(syncConfig.lastSyncedAt)
-            if (syncConfig.lastSyncStatus === "success") {
-              dotColorClass = "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
-              statusText = "Synced"
-              tooltipContent = `Last synced: ${relativeTime}. ${syncConfig.lastSyncMessage || "All records are up to date."}`
-            } else if (syncConfig.lastSyncStatus === "error") {
-              dotColorClass = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-              statusText = "Sync Warning"
-              tooltipContent = `Failed to sync: ${syncConfig.lastSyncMessage || "Network connection issue."} (Last success: ${relativeTime})`
-            } else {
-              dotColorClass = "bg-cyan-500/50"
-              statusText = "Ready"
-              tooltipContent = "Paired with cloud. Waiting for next automatic sync cycle."
-            }
+            dotColorClass = "bg-cyan-500/50"
+            statusText = "Ready"
+            tooltipContent = "Paired with cloud. Waiting for next automatic sync cycle."
           }
 
           return (
@@ -164,6 +177,35 @@ export default function WindowBar() {
           )
         })()}
       </div>
+
+      <AnimatePresence>
+        {updateInfo?.hasUpdate && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, x: 8 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.96, x: 8 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            style={
+              {
+                WebkitAppRegion: "no-drag",
+                willChange: "transform, opacity",
+              } as React.CSSProperties
+            }
+            className="relative z-70 mr-3 flex items-center">
+            <Tooltip
+              content={`v${updateInfo?.currentVersion} ➜ v${updateInfo?.latestVersion}`}
+              position="bottom"
+              offset={6}>
+              <button
+                onClick={handleOpenRelease}
+                style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                className="relative flex cursor-pointer items-center gap-1.5 rounded-full border border-cyan-800/30 bg-cyan-950/45 px-3 py-1 text-[9px] font-bold tracking-wider text-cyan-400 uppercase shadow-[0_0_12px_rgba(6,182,212,0.15)] transition-all duration-200 select-none [webkit-app-region:no-drag] hover:border-cyan-700/50 hover:bg-cyan-900/60 hover:text-cyan-300">
+                Update Available
+              </button>
+            </Tooltip>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {!isMac && (
         <div

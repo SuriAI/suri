@@ -34,6 +34,21 @@ class UpdaterService {
 
       // Notify any subscribers that were waiting for initialization.
       this.emitUpdateInfo(this.cachedUpdateInfo)
+
+      // Bind the IPC update available listener immediately at startup so background checks propagate automatically.
+      if (window.electronAPI?.updater) {
+        window.electronAPI.updater.onUpdateAvailable(async (updateInfo) => {
+          this.cachedUpdateInfo = updateInfo
+          this.lastChecked = new Date()
+
+          await persistentSettings.setUpdaterInfo({
+            cachedInfo: updateInfo,
+            lastChecked: this.lastChecked.toISOString(),
+          })
+
+          this.emitUpdateInfo(updateInfo)
+        })
+      }
     } catch (error) {
       console.error("[UpdaterService] Initialization failed:", error)
     }

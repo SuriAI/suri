@@ -200,7 +200,6 @@ export function Reports({
                 allColumns={allColumns}
                 search={search}
                 statusFilter={statusFilter}
-                onResetSearch={() => setSearch("")}
                 onResetFilter={() => setStatusFilter("all")}
                 onEditRow={setEditingRow}
                 pageSize={pageSize}

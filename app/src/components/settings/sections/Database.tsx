@@ -8,6 +8,7 @@ import { GroupEntry } from "@/components/settings/sections/components/GroupEntry
 import { useDialog } from "@/components/shared"
 import { Modal } from "@/components/common/Modal"
 import { useUIStore } from "@/components/main/stores"
+import { EmptyState } from "@/components/group/shared"
 
 type BackupStatus = { type: "idle" } | { type: "loading"; action: "export" | "import" }
 
@@ -213,7 +214,10 @@ export function Database({
     : "Could not read the current time authority status."
 
   return (
-    <div className="mx-auto flex w-full max-w-[900px] flex-col space-y-16 px-10 pt-8 pb-20">
+    <motion.div
+      layout="position"
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="mx-auto flex w-full max-w-[900px] flex-col space-y-16 px-10 pt-8 pb-20">
       {/* Statistics Overview */}
       <section>
         <DatabaseStats
@@ -375,9 +379,9 @@ export function Database({
           </div>
         </div>
 
-        <div className="border-t border-white/5">
+        <div className={!isInitialLoad && filteredData.length > 0 ? "border-t border-white/5" : ""}>
           <div
-            className={`${isInitialLoad || filteredData.length === 0 ? "h-32" : "h-auto"} divide-y divide-white/5`}>
+            className={`${isInitialLoad || filteredData.length === 0 ? "min-h-[200px]" : "h-auto"} divide-y divide-white/5`}>
             <AnimatePresence mode="wait">
               {isInitialLoad ?
                 <motion.div
@@ -391,21 +395,21 @@ export function Database({
                   <div className="text-[12px] font-medium tracking-wide">Syncing directory...</div>
                 </motion.div>
               : filteredData.length === 0 ?
-                <motion.div
+                <EmptyState
                   key="empty"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col items-center justify-center py-12 text-white/20">
-                  <i className="fa-solid fa-folder-open mb-3 text-2xl opacity-30" />
-                  <div className="text-[12px] font-medium tracking-wide">No results found</div>
-                  {groups.length === 0 && (
-                    <div className="mt-1 text-[11px] text-white/40">
-                      Create a group to begin managing members.
-                    </div>
-                  )}
-                </motion.div>
+                  className="py-12"
+                  title={searchQuery.trim() ? "No results found" : "No groups found"}
+                  description={
+                    searchQuery.trim() ?
+                      `No groups matched "${searchQuery}"`
+                    : "Create a group to begin managing members."
+                  }
+                  iconClass={
+                    searchQuery.trim() ?
+                      "fa-solid fa-ghost text-2xl"
+                    : "fa-solid fa-folder-open text-2xl"
+                  }
+                />
               : <motion.div
                   key="results"
                   initial={{ opacity: 0, y: 6 }}
@@ -444,8 +448,11 @@ export function Database({
         </div>
       </section>
 
+      <span className="sr-only">Danger Zone Toggle</span>
       {/* Danger Zone */}
-      <section className="relative flex w-full flex-col items-center overflow-hidden pt-12 pb-2">
+      <motion.section
+        layout="position"
+        className="relative flex w-full flex-col items-center overflow-hidden pt-8 pb-2">
         {/* Sleek fading gradient divider to match the centered design */}
         <div className="absolute top-0 right-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
         {/* Sleek centered trigger */}
@@ -550,7 +557,7 @@ export function Database({
             </motion.div>
           )}
         </AnimatePresence>
-      </section>
+      </motion.section>
 
       {/* Password Prompt Modal */}
       <Modal
@@ -648,6 +655,6 @@ export function Database({
           </div>
         </div>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

@@ -331,37 +331,23 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                 className="flex h-full min-h-[200px] flex-col">
                 <AnimatePresence mode="wait">
                   {recentRecords.length === 0 ?
-                    <motion.div
+                    <EmptyState
                       key="no-activity"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="flex flex-1 flex-col items-center justify-center text-white/55">
-                      <i className="fa-solid fa-clock mb-3 text-2xl opacity-50" />
-                      <div className="text-[12px] font-medium">
-                        No activity recorded{" "}
-                        {dateFilter === "today" ?
-                          "today"
-                        : dateFilter === "yesterday" ?
-                          "yesterday"
-                        : "this week"}
-                      </div>
-                    </motion.div>
+                      title="No activity recorded"
+                      description={`No attendance records found for ${
+                        dateFilter === "today" ? "today"
+                        : dateFilter === "yesterday" ? "yesterday"
+                        : "this week"
+                      }.`}
+                      iconClass="fa-solid fa-clock text-2xl"
+                    />
                   : filteredRecords.length === 0 ?
-                    <motion.div
+                    <EmptyState
                       key="no-results"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="flex flex-1 flex-col items-center justify-center text-white/55">
-                      <i className="fa-solid fa-ghost mb-3 text-2xl" />
-                      <div className="text-[12px] font-medium">No results found</div>
-                      <div className="mt-1 text-[11px]">
-                        No activity matched &quot;{activitySearch}&quot;
-                      </div>
-                    </motion.div>
+                      title="No results found"
+                      description={`No activity matched "${activitySearch}"`}
+                      iconClass="fa-solid fa-ghost text-2xl"
+                    />
                   : <motion.div
                       key="results"
                       initial={{ opacity: 0, y: 6 }}

@@ -665,23 +665,31 @@ export function Members({
             }}>
             <AnimatePresence mode="wait">
               {filteredMembers.length === 0 ?
-                <motion.div
+                <EmptyState
                   key="empty"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex min-h-[300px] flex-1 flex-col items-center justify-center">
-                  <div className="text-[11px] font-medium tracking-wide text-white/55">
-                    {memberSearch.trim() ?
-                      `No results found for "${memberSearch}"`
+                  className="min-h-[300px]"
+                  title={
+                    memberSearch.trim() ? "No results found"
                     : enrollmentFilter === "enrolled" ?
                       "No enrolled members"
                     : enrollmentFilter === "non-enrolled" ?
                       "All members are enrolled"
-                    : "No members found in this group"}
-                  </div>
-                </motion.div>
+                    : "No members found"
+                  }
+                  description={
+                    memberSearch.trim() ? `No members matched "${memberSearch}"`
+                    : enrollmentFilter === "enrolled" ?
+                      "There are no enrolled members in this group."
+                    : enrollmentFilter === "non-enrolled" ?
+                      "All members in this group have been enrolled."
+                    : "There are no members added to this group yet."
+                  }
+                  iconClass={
+                    memberSearch.trim() ?
+                      "fa-solid fa-ghost text-2xl"
+                    : "fa-solid fa-user-slash text-2xl"
+                  }
+                />
               : <motion.div
                   key={`results-${enrollmentFilter}`}
                   initial={{ opacity: 0, y: 6 }}
