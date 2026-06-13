@@ -25,10 +25,24 @@ class UpdaterService {
   private async loadFromStore() {
     try {
       const info = await persistentSettings.getUpdaterInfo()
-      if (info) {
-        this.cachedUpdateInfo = info.cachedInfo
-        if (info.lastChecked) {
-          this.lastChecked = new Date(info.lastChecked)
+
+      if (info?.cachedInfo) {
+        const currentVersion = await window.electronAPI.updater.getVersion().catch(() => null)
+        const cachedCurrentVersion = info.cachedInfo.currentVersion
+
+        const isStale =
+          currentVersion && cachedCurrentVersion && currentVersion !== cachedCurrentVersion
+
+        if (!isStale) {
+          this.cachedUpdateInfo = info.cachedInfo
+          if (info.lastChecked) {
+            this.lastChecked = new Date(info.lastChecked)
+          }
+        } else {
+          console.log(
+            `[UpdaterService] Discarding stale update cache (was for v${cachedCurrentVersion}, now v${currentVersion})`,
+          )
+          await persistentSettings.delete("updater")
         }
       }
 

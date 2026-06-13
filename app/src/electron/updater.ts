@@ -222,8 +222,12 @@ export async function startBackgroundUpdateCheck(
 
     try {
       const updateInfo = await checkForUpdates()
-      if (updateInfo.hasUpdate && !updateInfo.isOffline) {
-        console.log(`[Updater] Update available: v${updateInfo.latestVersion}`)
+      if (!updateInfo.isOffline) {
+        if (updateInfo.hasUpdate) {
+          console.log(`[Updater] Update available: v${updateInfo.latestVersion}`)
+        } else {
+          console.log(`[Updater] App is up to date (v${updateInfo.currentVersion})`)
+        }
         notifyRenderer(mainWindow, updateInfo)
       }
     } catch (error) {
