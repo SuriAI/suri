@@ -27,22 +27,30 @@ class UpdaterService {
       const info = await persistentSettings.getUpdaterInfo()
 
       if (info?.cachedInfo) {
+        // Always fetch the runtime version to recompute `hasUpdate`.
+        // We cannot trust the persisted `hasUpdate` value because `currentVersion`
+        // changes on every install — the cached conclusion is only valid for the
+        // version it was computed for. `latestVersion` and `lastChecked` are still
+        // valid raw facts and are preserved.
         const currentVersion = await window.electronAPI.updater.getVersion().catch(() => null)
-        const cachedCurrentVersion = info.cachedInfo.currentVersion
 
-        const isStale =
-          currentVersion && cachedCurrentVersion && currentVersion !== cachedCurrentVersion
+        if (currentVersion) {
+          const hasUpdate = info.cachedInfo.latestVersion !== currentVersion
+          this.cachedUpdateInfo = { ...info.cachedInfo, currentVersion, hasUpdate }
 
-        if (!isStale) {
-          this.cachedUpdateInfo = info.cachedInfo
-          if (info.lastChecked) {
-            this.lastChecked = new Date(info.lastChecked)
+          if (hasUpdate !== info.cachedInfo.hasUpdate) {
+            console.log(
+              `[UpdaterService] Recomputed hasUpdate=${hasUpdate} for v${currentVersion} ` +
+                `(persisted value was ${info.cachedInfo.hasUpdate} for v${info.cachedInfo.currentVersion})`,
+            )
           }
         } else {
-          console.log(
-            `[UpdaterService] Discarding stale update cache (was for v${cachedCurrentVersion}, now v${currentVersion})`,
-          )
-          await persistentSettings.delete("updater")
+          // IPC unavailable — load persisted value as-is rather than silently dropping it.
+          this.cachedUpdateInfo = info.cachedInfo
+        }
+
+        if (info.lastChecked) {
+          this.lastChecked = new Date(info.lastChecked)
         }
       }
 
