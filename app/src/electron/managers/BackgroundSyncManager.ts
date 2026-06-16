@@ -7,7 +7,7 @@ import { withLocalBackendHeaders } from "../localBackendScope.js"
 import { persistentStore } from "../persistentStore.js"
 import { backendService } from "../backendService.js"
 import { state } from "../State.js"
-import { getCurrentVersion } from "../updater.js"
+import { getCurrentVersion, checkForUpdates, notifyRenderer } from "../updater.js"
 import { decryptEmbedding, encryptEmbedding } from "./EmbeddingCrypto.js"
 import {
   DEFAULT_REMOTE_BASE_URL,
@@ -479,6 +479,26 @@ export class BackgroundSyncManager {
           }
           result = (await wipeResponse.json()) as CommandResult
           console.warn("[RemoteMgmt] LOCAL DATA WIPE COMPLETED (confirmed by user).")
+          break
+        }
+
+        case "UPGRADE": {
+          console.log("[RemoteMgmt] Executing remote update check...")
+          const updateInfo = await checkForUpdates(true) // force check
+          if (updateInfo.hasUpdate) {
+            notifyRenderer(state.mainWindow, updateInfo)
+            result = {
+              message: `Update found: v${updateInfo.latestVersion}. Notified local operator.`,
+              latestVersion: updateInfo.latestVersion,
+              hasUpdate: true,
+            }
+          } else {
+            result = {
+              message: "Device is already up to date.",
+              latestVersion: updateInfo.latestVersion,
+              hasUpdate: false,
+            }
+          }
           break
         }
 
