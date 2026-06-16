@@ -257,21 +257,6 @@ Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before openin
 - [React](https://react.dev/)
 - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
-## Contributors
-
-<!-- readme: contributors -start -->
-<table>
-<tr>
-    <td align="center">
-        <a href="https://github.com/johnraivenolazo">
-            <img src="https://avatars.githubusercontent.com/u/137252774?v=4" width="80;" alt="johnraivenolazo"/>
-            <br />
-            <sub><b>johnraivenolazo</b></sub>
-        </a>
-    </td></tr>
-</table>
-<!-- readme: contributors -end -->
-
 ## License
 
 Facenox is licensed under the **GNU AGPL v3**. See [LICENSE](LICENSE) for details.
