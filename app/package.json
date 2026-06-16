@@ -50,7 +50,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "@vitest/coverage-v8": "^4.1.2",
     "electron": "^42.4.1",
-    "electron-builder": "^26.8.1",
+    "electron-builder": "^26.15.3",
     "electron-store": "^11.0.2",
     "electron-vite": "^5.0.0",
     "eslint": "^10.0.3",
