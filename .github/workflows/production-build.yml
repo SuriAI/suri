@@ -96,7 +96,7 @@ jobs:
           python build_backend.py
 
       - name: Upload Backend Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-${{ matrix.os }}-${{ matrix.arch }}
           path: server/dist/server*
@@ -162,7 +162,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Unsigned App
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unsigned-app-${{ matrix.os }}-${{ matrix.arch }}
           path: |
