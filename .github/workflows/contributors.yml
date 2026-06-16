@@ -18,5 +18,7 @@ jobs:
           use_username: true
           columns_per_row: 8
           image_size: 80
+          committer_username: github-actions[bot]
+          committer_email: 41898282+github-actions[bot]@users.noreply.github.com
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
