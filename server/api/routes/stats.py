@@ -108,6 +108,9 @@ async def get_group_stats(
 
 @router.get("/stats", response_model=DatabaseStatsResponse)
 async def get_database_stats(
+    last_synced_at: Optional[str] = Query(
+        None, description="ISO-8601 string of last sync time"
+    ),
     repo: AttendanceRepository = Depends(get_repository),
 ):
     """
@@ -118,6 +121,41 @@ async def get_database_stats(
     """
     try:
         stats = await repo.get_stats()
+
+        # Calculate unsynced counts if last_synced_at is provided
+        unsynced_records = None
+        unsynced_sessions = None
+        if last_synced_at:
+            try:
+                from datetime import datetime
+                from sqlalchemy import select, func
+                from database.models import AttendanceRecord, AttendanceSession
+
+                since_dt = datetime.fromisoformat(last_synced_at.replace("Z", "+00:00"))
+
+                unsynced_records = await repo.session.scalar(
+                    repo._apply_org_scope(
+                        select(func.count())
+                        .select_from(AttendanceRecord)
+                        .where(AttendanceRecord.last_modified_at > since_dt),
+                        AttendanceRecord,
+                    )
+                )
+
+                unsynced_sessions = await repo.session.scalar(
+                    repo._apply_org_scope(
+                        select(func.count())
+                        .select_from(AttendanceSession)
+                        .where(AttendanceSession.last_modified_at > since_dt),
+                        AttendanceSession,
+                    )
+                )
+            except Exception as se:
+                logger.warning(f"Failed to calculate unsynced stats: {se}")
+
+        stats["unsynced_records_count"] = unsynced_records
+        stats["unsynced_sessions_count"] = unsynced_sessions
+
         return DatabaseStatsResponse(**stats)
 
     except Exception as e:

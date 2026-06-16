@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+import re
 import time
 import hmac
 
@@ -27,16 +27,27 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Allow UUIDs, ULIDs, or short alphanumeric+dash identifiers (max 64 chars).
+_CLIENT_ID_RE = re.compile(r"^[a-zA-Z0-9_\-]{1,64}$")
+
+
+def _is_valid_client_id(client_id: str) -> bool:
+    """Validate client_id against a safe character set to prevent log injection."""
+    return bool(_CLIENT_ID_RE.match(client_id))
+
 
 def is_authorized_websocket(websocket: WebSocket) -> bool:
-    expected_token = os.getenv("FACENOX_API_TOKEN")
-    if not expected_token:
-        return True
+    """Validate WebSocket connections using the same token mechanism as HTTP.
+
+    Uses the effective token from main.py (env var or startup nonce) to ensure
+    WebSocket connections are never unauthenticated, even in development.
+    """
+    from main import _get_effective_token
 
     provided = websocket.query_params.get("token") or websocket.headers.get(
         "X-Facenox-Token", ""
     )
-    return hmac.compare_digest(provided, expected_token)
+    return hmac.compare_digest(provided, _get_effective_token())
 
 
 def get_websocket_organization_id(websocket: WebSocket) -> str | None:
@@ -45,11 +56,16 @@ def get_websocket_organization_id(websocket: WebSocket) -> str | None:
 
 async def handle_websocket_detect(websocket: WebSocket, client_id: str):
     """Handle WebSocket detection endpoint"""
-    logger.info(f"[WebSocket] Client {client_id} attempting to connect...")
+    if not _is_valid_client_id(client_id):
+        logger.warning("[WebSocket] Rejected connection with invalid client_id")
+        await websocket.close(code=1008)
+        return
+
+    logger.info("[WebSocket] Client %s attempting to connect...", client_id)
 
     if not is_authorized_websocket(websocket):
         logger.warning(
-            f"[WebSocket] Unauthorized client {client_id} attempted to connect"
+            "[WebSocket] Unauthorized client %s attempted to connect", client_id
         )
         await websocket.close(code=1008)
         return
@@ -57,7 +73,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
     organization_id = get_websocket_organization_id(websocket)
     live_stream_service = LiveStreamService(organization_id)
     await websocket.accept()
-    logger.info(f"[WebSocket] Client {client_id} connected successfully")
+    logger.info("[WebSocket] Client %s connected successfully", client_id)
 
     existing_ws = manager.active_connections.get(client_id)
     if existing_ws is not None and existing_ws is not websocket:
@@ -96,7 +112,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
             track_buffer=FACE_TRACKER_CONFIG["track_buffer"],
             frame_rate=FACE_TRACKER_CONFIG["frame_rate"],
         )
-        logger.info(f"[WebSocket] Created face tracker for client {client_id}")
+        logger.info("[WebSocket] Created face tracker for client %s", client_id)
 
     live_session_config = await live_stream_service.load_initial_config()
     logger.info(
@@ -115,9 +131,9 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                 }
             )
         )
-        logger.info(f"[WebSocket] Sent connection confirmation to client {client_id}")
+        logger.info("[WebSocket] Sent connection confirmation to client %s", client_id)
 
-        logger.info(f"[WebSocket] Starting message loop for client {client_id}")
+        logger.info("[WebSocket] Starting message loop for client %s", client_id)
 
         while True:
             try:
@@ -244,19 +260,24 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
 
             except WebSocketDisconnect:
                 logger.info(
-                    f"[WebSocket] Client {client_id} disconnected (inner loop - WebSocketDisconnect exception)"
+                    "[WebSocket] Client %s disconnected (inner loop - WebSocketDisconnect exception)",
+                    client_id,
                 )
                 break
             except Exception as e:
                 error_str = str(e).lower()
                 if "disconnect" in error_str or "close" in error_str:
                     logger.info(
-                        f"[WebSocket] Client {client_id} disconnected due to connection error: {e}"
+                        "[WebSocket] Client %s disconnected due to connection error: %s",
+                        client_id,
+                        e,
                     )
                     break
 
                 logger.error(
-                    f"[WebSocket] Detection processing error for client {client_id}: {e}"
+                    "[WebSocket] Detection processing error for client %s: %s",
+                    client_id,
+                    e,
                 )
                 try:
                     await websocket.send_text(
@@ -270,13 +291,16 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                     )
                 except (WebSocketDisconnect, RuntimeError) as send_error:
                     logger.info(
-                        f"[WebSocket] Client {client_id} disconnected during error handling: {send_error}"
+                        "[WebSocket] Client %s disconnected during error handling: %s",
+                        client_id,
+                        send_error,
                     )
                     break
 
     except WebSocketDisconnect:
         logger.info(
-            f"[WebSocket] Client {client_id} disconnected (outer exception - WebSocketDisconnect)"
+            "[WebSocket] Client %s disconnected (outer exception - WebSocketDisconnect)",
+            client_id,
         )
     except Exception as e:
         error_str = str(e).lower()
@@ -285,24 +309,34 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
             and "close" not in error_str
             and "send" not in error_str
         ):
-            logger.error(f"[WebSocket] Detection error for client {client_id}: {e}")
+            logger.error("[WebSocket] Detection error for client %s: %s", client_id, e)
         else:
             logger.info(
-                f"[WebSocket] Client {client_id} disconnected due to exception: {e}"
+                "[WebSocket] Client %s disconnected due to exception: %s",
+                client_id,
+                e,
             )
     finally:
         if lifespan.liveness_detector:
             lifespan.liveness_detector.clear_namespace(client_id)
         if manager.active_connections.get(client_id) is websocket:
             await manager.disconnect(client_id)
-        logger.info(f"[WebSocket] Detection endpoint closed for client {client_id}")
+        logger.info("[WebSocket] Detection endpoint closed for client %s", client_id)
 
 
 async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
     """Handle WebSocket notifications endpoint"""
+    if not _is_valid_client_id(client_id):
+        logger.warning(
+            "[WebSocket] Rejected notification connection with invalid client_id"
+        )
+        await websocket.close(code=1008)
+        return
+
     if not is_authorized_websocket(websocket):
         logger.warning(
-            f"[WebSocket] Unauthorized notifications client {client_id} attempted to connect"
+            "[WebSocket] Unauthorized notifications client %s attempted to connect",
+            client_id,
         )
         await websocket.close(code=1008)
         return
@@ -339,7 +373,7 @@ async def handle_websocket_notifications(websocket: WebSocket, client_id: str):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        logger.error(f"WebSocket notification error: {e}")
+        logger.error("WebSocket notification error: %s", e)
     finally:
         if notification_manager.active_connections.get(client_id) is websocket:
             await notification_manager.disconnect(client_id)

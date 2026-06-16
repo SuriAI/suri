@@ -1,6 +1,7 @@
 import hmac
 import logging
 import os
+import secrets
 import uvicorn
 
 from fastapi import FastAPI
@@ -31,11 +32,19 @@ logger = logging.getLogger(__name__)
 logger.info("Server script started")
 
 
+# When Electron does not inject FACENOX_API_TOKEN (e.g. direct
+# `python run.py` invocations), generate a one-time nonce so the
+# local API is never fully open.  The nonce is printed at startup.
+_STARTUP_NONCE: str = secrets.token_urlsafe(32)
+
+
+def _get_effective_token() -> str:
+    """Return the Electron-injected token or fall back to the startup nonce."""
+    return os.getenv("FACENOX_API_TOKEN") or _STARTUP_NONCE
+
+
 def is_valid_local_token(provided: str) -> bool:
-    expected_token = os.getenv("FACENOX_API_TOKEN")
-    if not expected_token:
-        return True
-    return hmac.compare_digest(provided, expected_token)
+    return hmac.compare_digest(provided, _get_effective_token())
 
 
 app = FastAPI(
@@ -61,16 +70,14 @@ async def verify_local_token(request: Request, call_next):
     if request.url.path == "/" or request.method == "OPTIONS":
         return await call_next(request)
 
-    expected_token = os.getenv("FACENOX_API_TOKEN")
-    if not expected_token:
-        # Token not configured — allow but warn once
-        if not getattr(app.state, "_token_warn_emitted", False):
+    if not getattr(app.state, "_token_warn_emitted", False):
+        if not os.getenv("FACENOX_API_TOKEN"):
             logger.warning(
-                "FACENOX_API_TOKEN is not set. API is accessible without authentication. "
-                "In production this variable is always injected by Electron."
+                "FACENOX_API_TOKEN is not set.  A startup nonce has been generated. "
+                "Use X-Facenox-Token: %s to authenticate during development.",
+                _STARTUP_NONCE,
             )
-            app.state._token_warn_emitted = True
-        return await call_next(request)
+        app.state._token_warn_emitted = True
 
     provided = request.headers.get("X-Facenox-Token", "")
     if not is_valid_local_token(provided):

@@ -155,6 +155,8 @@ declare global {
       lastSyncStatus: "idle" | "success" | "error"
       lastSyncMessage: string | null
       connected: boolean
+      unsyncedRecordsCount?: number
+      unsyncedSessionsCount?: number
     }>
     updateConfig: (updates: {
       enabled?: boolean
@@ -175,6 +177,8 @@ declare global {
       lastSyncStatus: "idle" | "success" | "error"
       lastSyncMessage: string | null
       connected: boolean
+      unsyncedRecordsCount?: number
+      unsyncedSessionsCount?: number
     }>
     pairDevice: (input: {
       remoteBaseUrl?: string
@@ -199,6 +203,8 @@ declare global {
         lastSyncStatus: "idle" | "success" | "error"
         lastSyncMessage: string | null
         connected: boolean
+        unsyncedRecordsCount?: number
+        unsyncedSessionsCount?: number
       }
     }>
     disconnectDevice: () => Promise<{
@@ -218,6 +224,8 @@ declare global {
         lastSyncStatus: "idle" | "success" | "error"
         lastSyncMessage: string | null
         connected: boolean
+        unsyncedRecordsCount?: number
+        unsyncedSessionsCount?: number
       }
     }>
     exportData: (password: string) => Promise<{

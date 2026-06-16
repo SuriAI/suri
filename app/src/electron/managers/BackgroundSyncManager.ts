@@ -442,7 +442,33 @@ export class BackgroundSyncManager {
     try {
       switch (cmd.command) {
         case "WIPE": {
-          // Call the comprehensive wipe endpoint in local Python backend
+          // Require confirmation before destroying local databases and embeddings
+          const { dialog } = await import("electron")
+          const parentWindow = state.mainWindow ?? undefined
+
+          const options: Electron.MessageBoxOptions = {
+            type: "warning",
+            title: "Remote Data Wipe Requested",
+            message: "The management dashboard has requested a full data wipe on this device.",
+            detail:
+              "This will permanently delete ALL local attendance records, sessions, and face embeddings. This action cannot be undone.\n\nDo you want to proceed?",
+            buttons: ["Cancel", "Wipe All Data"],
+            defaultId: 0,
+            cancelId: 0,
+            noLink: true,
+          }
+
+          const { response } = await (parentWindow ?
+            dialog.showMessageBox(parentWindow, options)
+          : dialog.showMessageBox(options))
+
+          if (response !== 1) {
+            console.warn("[RemoteMgmt] LOCAL DATA WIPE REJECTED by user.")
+            status = "rejected"
+            result = { message: "Wipe rejected by local operator." }
+            break
+          }
+
           const wipeResponse = await fetch(`${backendService.getUrl()}/attendance/wipe`, {
             method: "POST",
             headers: authHeaders({ "Content-Type": "application/json" }),
@@ -452,7 +478,7 @@ export class BackgroundSyncManager {
             throw new Error(`Wipe failed on local backend: ${wipeResponse.status}`)
           }
           result = (await wipeResponse.json()) as CommandResult
-          console.warn("[RemoteMgmt] LOCAL DATA WIPE COMPLETED.")
+          console.warn("[RemoteMgmt] LOCAL DATA WIPE COMPLETED (confirmed by user).")
           break
         }
 
@@ -526,7 +552,12 @@ export class BackgroundSyncManager {
     console.log("[Sync] Triggering background auto-sync...")
 
     try {
-      const exportUrl = `${backendService.getUrl()}/attendance/export`
+      const { lastSyncedAt } = this.getSyncConfig()
+      let exportUrl = `${backendService.getUrl()}/attendance/export`
+      if (lastSyncedAt) {
+        exportUrl += `?since=${encodeURIComponent(lastSyncedAt)}`
+      }
+
       const response = await fetch(exportUrl, {
         method: "POST",
         headers: authHeaders({ "Content-Type": "application/json" }),

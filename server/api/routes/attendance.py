@@ -1,4 +1,5 @@
 import base64
+from typing import Optional
 
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
@@ -17,6 +18,7 @@ from api.schemas import (
     ExportDataResponse,
 )
 from database.models import (
+    AttendanceGroup,
     AttendanceGroupRule,
     AttendanceMember,
     AttendanceRecord,
@@ -47,11 +49,33 @@ router.include_router(maintenance.router)
 
 @router.post("/export", response_model=ExportDataResponse)
 async def export_attendance_data(
+    since: Optional[str] = None,
     repo: AttendanceRepository = Depends(get_repository),
 ):
-    """Export attendance-related data without biometric templates."""
+    """Export attendance-related data without biometric templates, supporting delta sync via the 'since' parameter."""
     try:
-        groups_orm = await repo.get_groups(active_only=False)
+        since_dt = None
+        if since:
+            try:
+                from datetime import datetime
+
+                since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+            except ValueError:
+                pass
+
+        # Select all groups (even soft-deleted) to propagate deletions
+        groups_query = select(AttendanceGroup)
+        if repo.organization_id:
+            groups_query = groups_query.where(
+                AttendanceGroup.organization_id == repo.organization_id
+            )
+        if since_dt:
+            groups_query = groups_query.where(
+                AttendanceGroup.last_modified_at > since_dt
+            )
+        groups_result = await repo.session.execute(groups_query)
+        groups_orm = groups_result.scalars().all()
+
         settings_orm = await repo.get_settings()
 
         # Include ALL members (even soft-deleted)
@@ -62,6 +86,10 @@ async def export_attendance_data(
             members_query = members_query.where(
                 AttendanceMember.organization_id == repo.organization_id
             )
+        if since_dt:
+            members_query = members_query.where(
+                AttendanceMember.last_modified_at > since_dt
+            )
         members_result = await repo.session.execute(members_query)
         members_orm = members_result.scalars().all()
 
@@ -69,6 +97,10 @@ async def export_attendance_data(
         if repo.organization_id:
             group_rules_query = group_rules_query.where(
                 AttendanceGroupRule.organization_id == repo.organization_id
+            )
+        if since_dt:
+            group_rules_query = group_rules_query.where(
+                AttendanceGroupRule.last_modified_at > since_dt
             )
         group_rules_result = await repo.session.execute(
             group_rules_query.order_by(
@@ -82,6 +114,10 @@ async def export_attendance_data(
             records_query = records_query.where(
                 AttendanceRecord.organization_id == repo.organization_id
             )
+        if since_dt:
+            records_query = records_query.where(
+                AttendanceRecord.last_modified_at > since_dt
+            )
         records_result = await repo.session.execute(
             records_query.order_by(AttendanceRecord.timestamp.desc())
         )
@@ -91,6 +127,10 @@ async def export_attendance_data(
         if repo.organization_id:
             sessions_query = sessions_query.where(
                 AttendanceSession.organization_id == repo.organization_id
+            )
+        if since_dt:
+            sessions_query = sessions_query.where(
+                AttendanceSession.last_modified_at > since_dt
             )
         sessions_result = await repo.session.execute(
             sessions_query.order_by(AttendanceSession.date.desc())

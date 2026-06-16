@@ -369,6 +369,8 @@ class DatabaseStatsResponse(BaseModel):
     database_path: str
     database_size_bytes: int
     database_size_mb: float
+    unsynced_records_count: Optional[int] = None
+    unsynced_sessions_count: Optional[int] = None
 
 
 # Bulk Operations Models

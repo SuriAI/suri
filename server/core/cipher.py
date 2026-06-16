@@ -72,6 +72,8 @@ def get_machine_key() -> bytes:
         return _machine_key_windows()
     elif system == "Darwin":
         return _machine_key_macos()
+    elif system == "Linux":
+        return _machine_key_linux()
     else:
         return _machine_key_file()
 
@@ -157,6 +159,43 @@ def _machine_key_macos() -> bytes:
     except Exception as e:
         logger.warning(
             "macOS Keychain access failed via keyring (%s). "
+            "Falling back to local file-based machine key to ensure service availability.",
+            e,
+        )
+        return _machine_key_file()
+
+
+def _machine_key_linux() -> bytes:
+    """Linux system keyring-stored key using the keyring library.
+
+    Attempts to query Gnome Keyring / KWallet via D-Bus Secret Service,
+    falling back to file-based key storage on headless/unauthenticated hosts.
+    """
+    try:
+        import keyring
+        import base64
+
+        service = "facenox-biometric-key"
+        account = "machine-key"
+
+        # Fail early to fallback to file storage if keyring is not available
+        from keyring.backends.fail import Keyring as FailKeyring
+
+        backend = keyring.get_keyring()
+        if isinstance(backend, FailKeyring):
+            raise RuntimeError("No native keyring available.")
+
+        password = keyring.get_password(service, account)
+        if password is not None:
+            return base64.b64decode(password.strip())
+
+        raw_key = os.urandom(KEY_SIZE)
+        encoded = base64.b64encode(raw_key).decode()
+        keyring.set_password(service, account, encoded)
+        return raw_key
+    except Exception as e:
+        logger.warning(
+            "Linux Keyring access failed (%s). "
             "Falling back to local file-based machine key to ensure service availability.",
             e,
         )

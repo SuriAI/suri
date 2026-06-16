@@ -768,6 +768,11 @@ class AttendanceRepository:
 
         stmt = sqlite_insert(AttendanceSession)
         dynamic_set = {col: getattr(stmt.excluded, col) for col in update_cols}
+        # Explicitly update last_modified_at on conflict updates to support delta sync
+        from sqlalchemy import func
+
+        dynamic_set["last_modified_at"] = func.current_timestamp()
+
         upsert_stmt = stmt.on_conflict_do_update(
             index_elements=["member_id", "date"],
             set_=dynamic_set,

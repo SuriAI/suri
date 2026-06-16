@@ -16,6 +16,8 @@ export interface MockSyncConfig {
   lastSyncStatus: "idle" | "success" | "error"
   lastSyncMessage: string | null
   connected: boolean
+  unsyncedRecordsCount?: number
+  unsyncedSessionsCount?: number
 }
 
 export interface MockElectronAPI extends BackendServiceAPI {
@@ -110,6 +112,8 @@ export function createSyncConfig(overrides: Partial<MockSyncConfig> = {}): MockS
     lastSyncStatus: "idle",
     lastSyncMessage: null,
     connected: false,
+    unsyncedRecordsCount: 0,
+    unsyncedSessionsCount: 0,
     ...overrides,
   }
 }

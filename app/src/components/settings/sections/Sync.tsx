@@ -23,6 +23,8 @@ type RemoteSyncConfig = {
   lastSyncStatus: "idle" | "success" | "error"
   lastSyncMessage: string | null
   connected: boolean
+  unsyncedRecordsCount?: number
+  unsyncedSessionsCount?: number
 }
 
 const defaultConfig: RemoteSyncConfig = {
@@ -39,6 +41,8 @@ const defaultConfig: RemoteSyncConfig = {
   lastSyncStatus: "idle",
   lastSyncMessage: null,
   connected: false,
+  unsyncedRecordsCount: 0,
+  unsyncedSessionsCount: 0,
 }
 
 interface SyncProps {
@@ -281,6 +285,19 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                       : "No successful sync yet."}
                     </div>
                     {config.lastSyncMessage && <div>{config.lastSyncMessage}</div>}
+                    {config.unsyncedRecordsCount !== undefined && config.unsyncedRecordsCount > 0 ?
+                      <div className="mt-1 flex items-center justify-end gap-1.5 font-semibold text-amber-400/90">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+                        </span>
+                        <span>{config.unsyncedRecordsCount} record(s) queued</span>
+                      </div>
+                    : <div className="mt-1 flex items-center justify-end gap-1.5 font-medium text-cyan-400/90">
+                        <i className="fa-solid fa-circle-check text-[10px]" />
+                        <span>All synced</span>
+                      </div>
+                    }
                   </div>
                 </div>
 

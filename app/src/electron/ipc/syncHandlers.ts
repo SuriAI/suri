@@ -147,9 +147,40 @@ function decryptBackup(blob: Buffer, password: string): Buffer {
   }
 }
 
+async function getExtendedSyncStatus() {
+  const status = getRemoteSyncStatus()
+  let unsyncedRecordsCount = 0
+  let unsyncedSessionsCount = 0
+  if (status.lastSyncedAt) {
+    try {
+      const statsUrl = `${backendService.getUrl()}/stats?last_synced_at=${encodeURIComponent(status.lastSyncedAt)}`
+      const response = await fetch(statsUrl, {
+        method: "GET",
+        headers: authHeaders(),
+        signal: AbortSignal.timeout(5000),
+      })
+      if (response.ok) {
+        const stats = (await response.json()) as {
+          unsynced_records_count?: number
+          unsynced_sessions_count?: number
+        }
+        unsyncedRecordsCount = stats.unsynced_records_count ?? 0
+        unsyncedSessionsCount = stats.unsynced_sessions_count ?? 0
+      }
+    } catch (err) {
+      console.warn("[Sync] Failed to fetch unsynced counts:", err)
+    }
+  }
+  return {
+    ...status,
+    unsyncedRecordsCount,
+    unsyncedSessionsCount,
+  }
+}
+
 // IPC Registration
 export function registerSyncHandlers() {
-  ipcMain.handle("sync:restart-manager", () => {
+  ipcMain.handle("sync:restart-manager", async () => {
     const status = getRemoteSyncStatus()
     if (status.enabled && status.connected) {
       syncManager.start()
@@ -158,7 +189,7 @@ export function registerSyncHandlers() {
     }
     return {
       success: true,
-      config: getRemoteSyncStatus(),
+      config: await getExtendedSyncStatus(),
     }
   })
 
@@ -170,8 +201,8 @@ export function registerSyncHandlers() {
     syncManager.triggerDebouncedSync()
   })
 
-  ipcMain.handle("sync:get-config", () => {
-    return getRemoteSyncStatus()
+  ipcMain.handle("sync:get-config", async () => {
+    return await getExtendedSyncStatus()
   })
 
   ipcMain.handle("sync:update-config", async (_event, updates: Record<string, unknown> = {}) => {
@@ -200,7 +231,7 @@ export function registerSyncHandlers() {
 
     state.mainWindow?.webContents.send("sync:data-changed")
 
-    return status
+    return await getExtendedSyncStatus()
   })
 
   ipcMain.handle(
@@ -305,7 +336,7 @@ export function registerSyncHandlers() {
 
         return {
           success: true,
-          config: getRemoteSyncStatus(),
+          config: await getExtendedSyncStatus(),
           initialSyncSucceeded: initialSyncResult.success,
           message:
             initialSyncResult.success ?
@@ -380,7 +411,7 @@ export function registerSyncHandlers() {
     return {
       success: true,
       warning,
-      config: getRemoteSyncStatus(),
+      config: await getExtendedSyncStatus(),
     }
   })
 
