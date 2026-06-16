@@ -1,5 +1,6 @@
 import type { UpdateInfo } from "@/types/global"
 import { persistentSettings } from "./PersistentSettingsService"
+import { compareVersions } from "@/electron/updaterUtils"
 
 class UpdaterService {
   private cachedVersion: string | null = null
@@ -35,15 +36,8 @@ class UpdaterService {
         const currentVersion = await window.electronAPI.updater.getVersion().catch(() => null)
 
         if (currentVersion) {
-          const hasUpdate = info.cachedInfo.latestVersion !== currentVersion
+          const hasUpdate = compareVersions(info.cachedInfo.latestVersion, currentVersion) > 0
           this.cachedUpdateInfo = { ...info.cachedInfo, currentVersion, hasUpdate }
-
-          if (hasUpdate !== info.cachedInfo.hasUpdate) {
-            console.log(
-              `[UpdaterService] Recomputed hasUpdate=${hasUpdate} for v${currentVersion} ` +
-                `(persisted value was ${info.cachedInfo.hasUpdate} for v${info.cachedInfo.currentVersion})`,
-            )
-          }
         } else {
           // IPC unavailable — load persisted value as-is rather than silently dropping it.
           this.cachedUpdateInfo = info.cachedInfo
