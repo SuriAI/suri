@@ -257,6 +257,11 @@ Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before openin
 - [React](https://react.dev/)
 - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 
+## Contributors
+
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
+
 ## License
 
 Facenox is licensed under the **GNU AGPL v3**. See [LICENSE](LICENSE) for details.
