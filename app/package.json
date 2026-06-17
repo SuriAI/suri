@@ -56,7 +56,7 @@
     "eslint": "^10.0.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
     "knip": "^5.86.0",
