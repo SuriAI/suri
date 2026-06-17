@@ -1,6 +1,7 @@
 import { Tray, Menu, app, nativeImage } from "electron"
 import { state } from "../State.js"
 import { getTrayIconPath } from "../iconPaths.js"
+import { openReleasePage } from "../updater.js"
 
 export class TrayManager {
   static createTray(): void {
@@ -11,17 +12,7 @@ export class TrayManager {
       const tray = new Tray(icon)
 
       tray.setToolTip("Facenox")
-
-      const contextMenu = Menu.buildFromTemplate([
-        {
-          label: "Quit",
-          click: () => {
-            app.quit()
-          },
-        },
-      ])
-
-      tray.setContextMenu(contextMenu)
+      tray.setContextMenu(this.buildMenu(null))
 
       tray.on("click", () => {
         this.toggleWindow()
@@ -31,6 +22,46 @@ export class TrayManager {
     } catch (e) {
       console.warn("Failed to instantiate Tray:", e)
     }
+  }
+
+  static setUpdateAvailable(version: string | null): void {
+    if (!state.tray || state.tray.isDestroyed()) return
+
+    if (version) {
+      state.tray.setToolTip(`Facenox — Update v${version} available`)
+    } else {
+      state.tray.setToolTip("Facenox")
+    }
+
+    state.tray.setContextMenu(this.buildMenu(version))
+  }
+
+  private static buildMenu(version: string | null): Electron.Menu {
+    const items: Electron.MenuItemConstructorOptions[] = []
+
+    if (version) {
+      items.push({
+        label: `Update v${version} Available`,
+        click: () => {
+          openReleasePage()
+        },
+      })
+      items.push({ type: "separator" })
+    }
+
+    items.push({
+      label: "Show Facenox",
+      click: () => this.showWindow(),
+    })
+
+    items.push({
+      label: "Quit",
+      click: () => {
+        app.quit()
+      },
+    })
+
+    return Menu.buildFromTemplate(items)
   }
 
   static destroyTray(): void {
@@ -57,5 +88,11 @@ export class TrayManager {
     } else {
       state.mainWindow.focus()
     }
+  }
+
+  private static showWindow(): void {
+    if (!state.mainWindow) return
+    state.mainWindow.show()
+    state.mainWindow.focus()
   }
 }

@@ -21,6 +21,7 @@ const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
 const NETWORK_TIMEOUT_MS = 8000 // 8 seconds - fail fast if no internet
 let lastCheckTime = 0
 let cachedUpdateInfo: UpdateInfo | null = null
+let pendingCheckPromise: Promise<UpdateInfo> | null = null
 
 export interface UpdateInfo {
   currentVersion: string
@@ -92,93 +93,106 @@ async function fetchLatestRelease(): Promise<GitHubRelease | null> {
 }
 
 export async function checkForUpdates(force = false): Promise<UpdateInfo> {
-  const currentVersion = app.getVersion()
-  const now = Date.now()
-
-  if (!force && cachedUpdateInfo && now - lastCheckTime < CHECK_INTERVAL_MS) {
-    return cachedUpdateInfo
+  // Deduplicate concurrent calls — piggyback on an in-flight check instead
+  // of issuing a second API request.
+  if (pendingCheckPromise) {
+    return pendingCheckPromise
   }
 
-  if (!isOnline()) {
-    return {
-      currentVersion,
-      latestVersion: currentVersion,
-      hasUpdate: false,
-      releaseUrl: GITHUB_RELEASES_PAGE,
-      releaseNotes: "",
-      publishedAt: "",
-      downloadUrl: null,
-      isOffline: true,
+  pendingCheckPromise = (async (): Promise<UpdateInfo> => {
+    const currentVersion = app.getVersion()
+    const now = Date.now()
+
+    if (!force && cachedUpdateInfo && now - lastCheckTime < CHECK_INTERVAL_MS) {
+      return cachedUpdateInfo
     }
-  }
 
-  console.log(`[Updater] Checking for updates (current: v${currentVersion})`)
-
-  const release = await fetchLatestRelease()
-
-  if (!release) {
-    // Network error or no releases - return gracefully
-    const noUpdateInfo: UpdateInfo = {
-      currentVersion,
-      latestVersion: currentVersion,
-      hasUpdate: false,
-      releaseUrl: GITHUB_RELEASES_PAGE,
-      releaseNotes: "",
-      publishedAt: "",
-      downloadUrl: null,
+    if (!isOnline()) {
+      return {
+        currentVersion,
+        latestVersion: currentVersion,
+        hasUpdate: false,
+        releaseUrl: GITHUB_RELEASES_PAGE,
+        releaseNotes: "",
+        publishedAt: "",
+        downloadUrl: null,
+        isOffline: true,
+      }
     }
-    // Cache this result to avoid hammering the API
-    cachedUpdateInfo = noUpdateInfo
-    lastCheckTime = now
-    return noUpdateInfo
-  }
 
-  const latestVersion = extractSemverLikeVersion(release.tag_name)
+    console.log(`[Updater] Checking for updates (current: v${currentVersion})`)
 
-  if (!latestVersion) {
-    const unknownVersionInfo: UpdateInfo = {
+    const release = await fetchLatestRelease()
+
+    if (!release) {
+      const noUpdateInfo: UpdateInfo = {
+        currentVersion,
+        latestVersion: currentVersion,
+        hasUpdate: false,
+        releaseUrl: GITHUB_RELEASES_PAGE,
+        releaseNotes: "",
+        publishedAt: "",
+        downloadUrl: null,
+      }
+      cachedUpdateInfo = noUpdateInfo
+      lastCheckTime = now
+      return noUpdateInfo
+    }
+
+    const latestVersion = extractSemverLikeVersion(release.tag_name)
+
+    if (!latestVersion) {
+      const unknownVersionInfo: UpdateInfo = {
+        currentVersion,
+        latestVersion: currentVersion,
+        hasUpdate: false,
+        releaseUrl: release.html_url,
+        releaseNotes: release.body || "",
+        publishedAt: release.published_at,
+        downloadUrl: getDownloadUrlForPlatform(release.assets),
+        error:
+          "Latest release tag did not contain a semantic version (expected something like v2.0.0)",
+      }
+
+      cachedUpdateInfo = unknownVersionInfo
+      lastCheckTime = now
+      console.log(`[Updater] Latest release tag has no semver (tag: ${release.tag_name})`)
+      return unknownVersionInfo
+    }
+
+    const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
+
+    const updateInfo: UpdateInfo = {
       currentVersion,
-      latestVersion: currentVersion,
-      hasUpdate: false,
+      latestVersion,
+      hasUpdate,
       releaseUrl: release.html_url,
       releaseNotes: release.body || "",
       publishedAt: release.published_at,
       downloadUrl: getDownloadUrlForPlatform(release.assets),
-      error:
-        "Latest release tag did not contain a semantic version (expected something like v2.0.0)",
     }
 
-    cachedUpdateInfo = unknownVersionInfo
+    cachedUpdateInfo = updateInfo
     lastCheckTime = now
-    console.log(`[Updater] Latest release tag has no semver (tag: ${release.tag_name})`)
-    return unknownVersionInfo
+
+    console.log(
+      `[Updater] Latest: v${latestVersion}, Current: v${currentVersion}, Update available: ${hasUpdate}`,
+    )
+
+    return updateInfo
+  })()
+
+  try {
+    return await pendingCheckPromise
+  } finally {
+    pendingCheckPromise = null
   }
-
-  const hasUpdate = compareVersions(latestVersion, currentVersion) > 0
-
-  const updateInfo: UpdateInfo = {
-    currentVersion,
-    latestVersion,
-    hasUpdate,
-    releaseUrl: release.html_url,
-    releaseNotes: release.body || "",
-    publishedAt: release.published_at,
-    downloadUrl: getDownloadUrlForPlatform(release.assets),
-  }
-
-  cachedUpdateInfo = updateInfo
-  lastCheckTime = now
-
-  console.log(
-    `[Updater] Latest: v${latestVersion}, Current: v${currentVersion}, Update available: ${hasUpdate}`,
-  )
-
-  return updateInfo
 }
 
 export function __resetUpdateStateForTests(): void {
   lastCheckTime = 0
   cachedUpdateInfo = null
+  pendingCheckPromise = null
 }
 
 /**
@@ -213,6 +227,7 @@ const BACKGROUND_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours between bac
 export async function startBackgroundUpdateCheck(
   mainWindow: BrowserWindow | null,
   delayMs = 60000, // 1 minute after startup
+  onUpdateAvailable?: (latestVersion: string | null) => void,
 ): Promise<void> {
   async function runCheck() {
     if (!isOnline()) {
@@ -225,8 +240,10 @@ export async function startBackgroundUpdateCheck(
       if (!updateInfo.isOffline) {
         if (updateInfo.hasUpdate) {
           console.log(`[Updater] Update available: v${updateInfo.latestVersion}`)
+          onUpdateAvailable?.(updateInfo.latestVersion)
         } else {
           console.log(`[Updater] App is up to date (v${updateInfo.currentVersion})`)
+          onUpdateAvailable?.(null)
         }
         notifyRenderer(mainWindow, updateInfo)
       }

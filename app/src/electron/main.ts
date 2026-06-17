@@ -153,7 +153,9 @@ app.whenReady().then(async () => {
   TrayManager.createTray()
 
   if (!isDev()) {
-    startBackgroundUpdateCheck(state.mainWindow, 60000)
+    startBackgroundUpdateCheck(state.mainWindow, 60000, (version) =>
+      TrayManager.setUpdateAvailable(version),
+    )
   }
 
   unsubscribeStartupProgress()
