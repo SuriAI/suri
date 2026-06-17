@@ -208,13 +208,13 @@ export function notifyRenderer(mainWindow: BrowserWindow | null, updateInfo: Upd
  * Background update check - runs periodically after app startup
  * This is completely non-blocking and offline-safe
  */
+const BACKGROUND_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours between background checks
+
 export async function startBackgroundUpdateCheck(
   mainWindow: BrowserWindow | null,
   delayMs = 60000, // 1 minute after startup
 ): Promise<void> {
-  // Initial delayed check
-  setTimeout(async () => {
-    // Only check if online
+  async function runCheck() {
     if (!isOnline()) {
       console.log("[Updater] Skipping background check - offline")
       return
@@ -231,8 +231,20 @@ export async function startBackgroundUpdateCheck(
         notifyRenderer(mainWindow, updateInfo)
       }
     } catch (error) {
-      // Silently ignore all errors - update checks should never affect app
       console.log("[Updater] Background check failed (non-critical):", error)
     }
+  }
+
+  function scheduleNext() {
+    setTimeout(async () => {
+      await runCheck()
+      scheduleNext()
+    }, BACKGROUND_CHECK_INTERVAL_MS)
+  }
+
+  // First check after delayMs, then every 24 hours
+  setTimeout(async () => {
+    await runCheck()
+    scheduleNext()
   }, delayMs)
 }

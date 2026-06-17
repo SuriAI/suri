@@ -19,6 +19,21 @@ vi.mock("electron", () => ({
   BrowserWindow: class BrowserWindow {},
 }))
 
+function mockReleaseResponse(tagName: string, overrides: Record<string, unknown> = {}) {
+  vi.mocked(fetch).mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: vi.fn().mockResolvedValue({
+      tag_name: tagName,
+      body: "",
+      html_url: "https://example.com/release",
+      published_at: "2026-04-01T00:00:00.000Z",
+      assets: [],
+      ...overrides,
+    }),
+  } as unknown as Response)
+}
+
 async function loadUpdater() {
   vi.resetModules()
   const module = await import("@/electron/updater")
@@ -47,17 +62,7 @@ describe("updater", () => {
   })
 
   it("returns a graceful error payload for non-semver release tags", async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: vi.fn().mockResolvedValue({
-        tag_name: "latest-release",
-        body: "notes",
-        html_url: "https://example.com/release",
-        published_at: "2026-04-01T00:00:00.000Z",
-        assets: [],
-      }),
-    } as unknown as Response)
+    mockReleaseResponse("latest-release", { body: "notes" })
 
     const { checkForUpdates } = await loadUpdater()
     const result = await checkForUpdates()
@@ -67,17 +72,7 @@ describe("updater", () => {
   })
 
   it("reuses cached results when not forced", async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: vi.fn().mockResolvedValue({
-        tag_name: "v1.0.1",
-        body: "",
-        html_url: "https://example.com/release",
-        published_at: "2026-04-01T00:00:00.000Z",
-        assets: [],
-      }),
-    } as unknown as Response)
+    mockReleaseResponse("v1.0.1")
 
     const { checkForUpdates } = await loadUpdater()
 
@@ -85,6 +80,86 @@ describe("updater", () => {
     await checkForUpdates()
 
     expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it("bypasses cache when force is true", async () => {
+    mockReleaseResponse("v1.0.1")
+
+    const { checkForUpdates } = await loadUpdater()
+
+    await checkForUpdates()
+    await checkForUpdates(true)
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  it("detects when an update is available", async () => {
+    mockGetVersion.mockReturnValue("1.0.0")
+    mockReleaseResponse("v2.0.0")
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(true)
+    expect(result.latestVersion).toBe("2.0.0")
+    expect(result.currentVersion).toBe("1.0.0")
+  })
+
+  it("returns no update when current version equals latest", async () => {
+    mockGetVersion.mockReturnValue("1.0.0")
+    mockReleaseResponse("v1.0.0")
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(false)
+    expect(result.latestVersion).toBe("1.0.0")
+  })
+
+  it("handles fetch failure gracefully", async () => {
+    vi.mocked(fetch).mockRejectedValue(new TypeError("Failed to fetch"))
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(false)
+    expect(result.currentVersion).toBe("1.0.0-beta.1")
+  })
+
+  it("handles request timeout (AbortError) gracefully", async () => {
+    const abortError = new DOMException("The operation was aborted.", "AbortError")
+    vi.mocked(fetch).mockRejectedValue(abortError)
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(false)
+  })
+
+  it("handles non-ok HTTP responses gracefully", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: "Rate Limit Exceeded",
+    } as unknown as Response)
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(false)
+  })
+
+  it("handles 404 (no releases) gracefully", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+    } as unknown as Response)
+
+    const { checkForUpdates } = await loadUpdater()
+    const result = await checkForUpdates()
+
+    expect(result.hasUpdate).toBe(false)
   })
 
   it("delegates release page opening to Electron shell", async () => {
