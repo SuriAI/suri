@@ -48,8 +48,9 @@ export function IntroModal() {
             <strong>entirely on this device</strong>.
           </p>
           <p className="text-xs leading-relaxed text-white/65">
-            Your biometric face template never leaves this machine. Only basic profile info (like
-            names) and attendance logs are shared if you choose to sync with the dashboard.
+            Your biometric face template never leaves this machine unencrypted. Basic profile info
+            (like names) and attendance logs are also shared if you choose to sync with the
+            dashboard.
           </p>
         </div>
       ),
