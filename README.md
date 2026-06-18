@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>Facenox is an open-source, offline-first face recognition software for real-time attendance tracking.</strong><br>
-  Built for privacy: Biometric templates are end-to-end encrypted (E2EE).
+  Built for privacy: No photos are saved. Biometric templates are end-to-end encrypted (E2EE).
 </p>
 
 <p align="center">
