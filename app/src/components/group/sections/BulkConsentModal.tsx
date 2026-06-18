@@ -59,7 +59,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
           {pendingMembers.map((member, idx) => (
             <label
               key={member.person_id || `member-${idx}`}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-200 ${
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-200 focus-within:border-cyan-500/30 focus-within:bg-cyan-500/10 ${
                 checkedIds.has(member.person_id) ?
                   "border-cyan-500/30 bg-cyan-500/10"
                 : "border-white/8 bg-white/3 hover:border-white/15"
@@ -71,7 +71,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
                   onChange={() => toggle(member.person_id)}
                   className="peer sr-only"
                 />
-                <div className="h-4 w-4 rounded border border-white/20 bg-[rgba(22,28,36,0.62)] transition-all peer-checked:border-cyan-500 peer-checked:bg-cyan-500/20" />
+                <div className="h-4 w-4 rounded border border-white/20 bg-[rgba(22,28,36,0.62)] transition-all peer-checked:border-cyan-500 peer-checked:bg-cyan-500/20 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-400 peer-focus-visible:border-cyan-400" />
                 <i className="fa-solid fa-check absolute text-[8px] text-cyan-400 opacity-0 transition-opacity peer-checked:opacity-100" />
               </div>
               <div className="min-w-0 flex-1">
@@ -92,7 +92,7 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
             <button
               type="button"
               onClick={() => setCheckedIds(new Set(pendingMembers.map((m) => m.person_id)))}
-              className="text-white/55 underline transition-colors hover:text-white/70">
+              className="text-white/55 underline transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:text-white rounded px-1">
               Select all
             </button>
           )}
@@ -103,14 +103,14 @@ export function BulkConsentModal({ isOpen, onClose, onConfirm, members }: BulkCo
         <button
           type="button"
           onClick={handleClose}
-          className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
+          className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none">
           Cancel
         </button>
         <button
           type="button"
           onClick={handleConfirm}
           disabled={checkedIds.size === 0}
-          className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97] disabled:opacity-30">
+          className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97] disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none">
           Grant Consent ({checkedIds.size})
         </button>
       </div>

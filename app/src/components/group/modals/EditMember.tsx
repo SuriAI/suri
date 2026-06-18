@@ -32,7 +32,7 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
   }, [isConsentCertified])
 
   useEffect(() => {
-    if (inputRef.current) {
+    if (isOpen && inputRef.current) {
       const focusInput = () => {
         if (inputRef.current) {
           inputRef.current.focus()
@@ -44,7 +44,7 @@ export function EditMember({ isOpen, member, onClose, onSuccess }: EditMemberPro
         setTimeout(focusInput, 50)
       })
     }
-  }, [])
+  }, [isOpen])
 
   const handleClose = () => {
     setName(member.name)
