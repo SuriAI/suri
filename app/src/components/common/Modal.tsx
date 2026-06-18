@@ -28,10 +28,42 @@ export function Modal({
   const windowBarHeightPx = 32
 
   useEffect(() => {
-    if (!isOpen || !onClose) return
+    if (!isOpen) return
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape" && onClose) {
+        onClose()
+        return
+      }
+
+      if (e.key === "Tab") {
+        if (!modalRef.current) return
+
+        const focusableSelector =
+          'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        const focusableElements = Array.from(
+          modalRef.current.querySelectorAll(focusableSelector),
+        ) as HTMLElement[]
+
+        if (focusableElements.length === 0) return
+
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus()
+            e.preventDefault()
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus()
+            e.preventDefault()
+          }
+        }
+      }
     }
+
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isOpen, onClose])

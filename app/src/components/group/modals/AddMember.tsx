@@ -353,7 +353,7 @@ export function AddMember({
                 setBulkMembersText("")
                 setConfirmDuplicate(false)
               }}
-              className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
+              className={`relative rounded border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none focus-visible:text-white focus-visible:ring-2 focus-visible:ring-cyan-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none ${
                 !isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
               }`}>
               Single
@@ -372,7 +372,7 @@ export function AddMember({
                 setNewMemberRole("")
                 setConfirmDuplicate(false)
               }}
-              className={`relative border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none ${
+              className={`relative rounded border-none bg-transparent pb-3 text-[12px] font-medium transition-colors outline-none focus-visible:text-white focus-visible:ring-2 focus-visible:ring-cyan-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none ${
                 isBulkMode ? "text-cyan-400" : "text-white/55 hover:text-white/80"
               }`}>
               Multiple
@@ -463,7 +463,7 @@ export function AddMember({
                         onChange={(e) => setHasConsent(e.target.checked)}
                         className="peer sr-only"
                       />
-                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
+                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-focus-visible:border-cyan-400 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-400">
                         <svg
                           className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
                             hasConsent ? "opacity-100" : "opacity-0"
@@ -476,7 +476,7 @@ export function AddMember({
                         </svg>
                       </div>
                     </div>
-                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
+                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65 peer-focus-visible:text-white">
                       I certify that explicit biometric consent has been obtained for this member in
                       accordance with the Data Privacy Act.
                     </span>
@@ -533,7 +533,7 @@ export function AddMember({
                         onChange={(e) => setHasConsent(e.target.checked)}
                         className="peer sr-only"
                       />
-                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500">
+                      <div className="flex h-4 w-4 items-center justify-center rounded border border-white/10 bg-white/5 transition-all duration-150 group-hover:border-white/20 peer-checked:border-cyan-500 peer-checked:bg-cyan-500 peer-focus-visible:border-cyan-400 peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-400">
                         <svg
                           className={`h-2.5 w-2.5 text-slate-950 transition-opacity duration-150 ${
                             hasConsent ? "opacity-100" : "opacity-0"
@@ -546,7 +546,7 @@ export function AddMember({
                         </svg>
                       </div>
                     </div>
-                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65">
+                    <span className="text-[11px] leading-relaxed text-white/45 transition-colors duration-150 group-hover:text-white/65 peer-focus-visible:text-white">
                       I certify that explicit biometric consent has been obtained for all imported
                       individuals in accordance with the Data Privacy Act.
                     </span>
@@ -602,7 +602,7 @@ export function AddMember({
                   resetForm()
                   onClose()
                 }}
-                className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
+                className="rounded-lg bg-cyan-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]">
                 Close
               </button>
             : <>
@@ -611,7 +611,7 @@ export function AddMember({
                     resetForm()
                     onClose()
                   }}
-                  className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
+                  className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]">
                   Cancel
                 </button>
                 <button
@@ -623,10 +623,10 @@ export function AddMember({
                     (!isBulkMode && !newMemberName.trim()) ||
                     (isBulkMode && !bulkMembersText.trim())
                   }
-                  className={`min-w-[120px] rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:opacity-30 ${
+                  className={`min-w-[120px] rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97] disabled:opacity-30 ${
                     confirmDuplicate && !isBulkMode ?
-                      "bg-amber-500 text-slate-950 hover:bg-amber-400"
-                    : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                      "bg-amber-500 text-slate-950 hover:bg-amber-400 focus-visible:ring-amber-400"
+                    : "bg-cyan-500 text-slate-950 hover:bg-cyan-400 focus-visible:ring-cyan-400"
                   }`}>
                   {loading || isProcessingBulk ?
                     bulkProgress ?
