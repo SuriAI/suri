@@ -87,7 +87,7 @@ The desktop remains the system of record for biometrics and local attendance cap
 
 When paired with a Dashboard, members and groups authority shifts to the Dashboard. Desktop member/group mutations are blocked by the backend (HTTP 403). Groups and members flow one way: Dashboard → Desktop via pull. Attendance records and sessions are pushed Desktop → Dashboard.
 
-When multiple devices are paired to the same site, encrypted face templates can sync between them. Templates are encrypted with the organization's key before leaving the device and are decrypted only on destination devices in the same organization. The Dashboard acts as a blind relay: it stores encrypted blobs but cannot decrypt them.
+When multiple devices are paired to the same site, encrypted face templates can sync between them. Templates are encrypted before leaving the device and decrypted on destination devices in the same organization. The Dashboard stores these encrypted blobs in the database to sync them.
 
 ## Desktop and Remote Sync Boundary
 
@@ -101,7 +101,7 @@ The Remote Sync boundary is intentionally narrow.
 
 ### Data that may be sent encrypted to Facenox Management Dashboard
 
-- **encrypted face templates** (AES-256-GCM encrypted with your organization's key, which the Dashboard cannot decrypt)
+- **encrypted face templates** (AES-256-GCM encrypted, decrypted only on your devices)
 - organization, site, and device identifiers
 - attendance records and sessions
 - sync status and device health metadata

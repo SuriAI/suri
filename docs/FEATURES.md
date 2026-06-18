@@ -68,7 +68,7 @@ Management Dashboard Beta connects a Facenox desktop instance to a separate Face
 
 ### What gets synced (encrypted)
 
-- **biometric templates**: AES-256-GCM encrypted with your organization's key before transmission. The Dashboard stores them as a blind relay, and only your devices can decrypt them.
+- **biometric templates**: AES-256-GCM encrypted before transmission and stored in encrypted form in the database for sync. Decryption happens on your paired devices.
 
 ## Not in Scope
 

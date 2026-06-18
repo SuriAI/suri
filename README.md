@@ -77,7 +77,7 @@ _Backup utilities for exporting and restoring the offline SQLite database and bi
 > This is the official open source repository for Facenox. Treat other repositories, installers, and downloads as unverified unless they come from official sources.
 
 > [!NOTE]  
-> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices, with decryption keys stored exclusively on your paired hardware.
+> **Privacy First:** Facenox processes face detection, tracking, and template matching locally. Encrypted face templates can optionally sync between your devices, with decryption keys stored on your paired hardware and encrypted in the cloud database.
 
 ## Why Facenox
 
@@ -98,7 +98,7 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 - **Subject Management:** Full control over group and member directories.
 - **Attendance Tracking:** Automated session recording and CSV/JSON exports.
 - **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
-- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, with your organization holding the master encryption key.
+- **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, using site-specific encryption keys.
 
 ## Performance
 
@@ -117,7 +117,7 @@ Facenox Desktop continues to work locally when internet access is unavailable:
   (Completely optional, as sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
-> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud acts as a blind relay, ensuring your data remains completely unreadable to anyone, including us. Matching always stays on your local hardware.
+> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud database only stores face templates in encrypted form. Matching always stays on your local hardware. (Keys are escrowed securely in the cloud database to enable seamless pairing of new devices.)
 
 ## How it works
 
@@ -151,7 +151,7 @@ As Facenox is designed to run locally, we do not have access to your database an
 >
 > - **Automated Audits:** GitHub CodeQL scans commits for security vulnerabilities on every push.
 > - **Build Transparency:** GitHub Actions compiles all release binaries from public source code.
-> - **Privacy First:** Devices encrypt all outbound templates with AES-256-GCM. The database serves as a blind relay, ensuring your data remains completely unreadable to us.
+> - **Privacy First:** Devices encrypt all outbound templates with AES-256-GCM. The database only stores templates in encrypted form.
 
 > **Management Dashboard:** The **official Facenox Dashboard** is an optional service for centralized reporting. This repository contains the source for the **desktop client** only.
 
