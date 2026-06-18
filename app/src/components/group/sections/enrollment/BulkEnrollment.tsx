@@ -90,19 +90,19 @@ export function BulkEnrollment({
               <div className="flex items-center justify-end gap-4">
                 <button
                   onClick={() => void handleDismissDuplicates()}
-                  className="text-[11px] font-medium text-white/40 transition-colors hover:text-white/70">
+                  className="rounded px-1 text-[11px] font-medium text-white/40 transition-colors hover:text-white/70 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
                   Cancel
                 </button>
                 {pendingDuplicates.newFiles.length > 0 && (
                   <button
                     onClick={() => void handleCancelDuplicates()}
-                    className="text-[11px] font-medium text-white/55 transition-colors hover:text-white">
+                    className="rounded px-1 text-[11px] font-medium text-white/55 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
                     Skip duplicates
                   </button>
                 )}
                 <button
                   onClick={() => void handleConfirmDuplicates()}
-                  className="text-[11px] font-semibold text-amber-400 transition-colors hover:text-amber-300">
+                  className="rounded px-1 text-[11px] font-semibold text-amber-400 transition-colors hover:text-amber-300 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none">
                   Add anyway
                 </button>
               </div>
@@ -118,7 +118,7 @@ export function BulkEnrollment({
           <span className="flex-1">{error}</span>
           <button
             onClick={() => setError(null)}
-            className="text-red-400/50 transition-colors hover:text-red-400">
+            className="rounded p-0.5 text-red-400/50 transition-colors hover:text-red-400 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:outline-none">
             <i className="fa-solid fa-xmark text-[10px]" />
           </button>
         </div>
@@ -165,7 +165,7 @@ export function BulkEnrollment({
           <button
             onClick={handleBulkEnroll}
             disabled={isEnrolling}
-            className="flex w-full items-center justify-center gap-2.5 py-2.5 text-[13px] font-semibold text-cyan-400 transition-all hover:text-cyan-300 disabled:text-white/20">
+            className="flex w-full items-center justify-center gap-2.5 rounded-lg py-2.5 text-[13px] font-semibold text-cyan-400 transition-all hover:text-cyan-300 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none disabled:text-white/20">
             {isEnrolling ?
               <>
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/15 border-t-cyan-400/60" />

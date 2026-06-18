@@ -86,7 +86,7 @@ export const AuditLogExportModal: React.FC<AuditLogExportModalProps> = ({
                 key={preset.id}
                 type="button"
                 onClick={() => setActivePreset(preset.id)}
-                className={`relative py-1 text-xs font-semibold tracking-wide transition-colors duration-200 ${
+                className={`relative rounded px-1 py-1 text-xs font-semibold tracking-wide transition-colors duration-200 focus-visible:text-white focus-visible:ring-2 focus-visible:ring-cyan-500/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none ${
                   isActive ? "font-bold text-cyan-400" : "text-white/40 hover:text-white/70"
                 }`}>
                 <span>{preset.label}</span>
@@ -120,7 +120,7 @@ export const AuditLogExportModal: React.FC<AuditLogExportModalProps> = ({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2 text-xs font-semibold text-white/80 transition-all duration-200 outline-none focus:border-cyan-500/20 focus:bg-cyan-500/[0.01] focus:text-white"
+                    className="w-full rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2 text-xs font-semibold text-white/80 transition-all duration-200 outline-none focus:border-cyan-500/20 focus:bg-cyan-500/[0.01] focus:text-white focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
                   />
                 </div>
                 <div className="flex shrink-0 items-center justify-center pt-4 text-white/20">
@@ -134,7 +134,7 @@ export const AuditLogExportModal: React.FC<AuditLogExportModalProps> = ({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2 text-xs font-semibold text-white/80 transition-all duration-200 outline-none focus:border-cyan-500/20 focus:bg-cyan-500/[0.01] focus:text-white"
+                    className="w-full rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2 text-xs font-semibold text-white/80 transition-all duration-200 outline-none focus:border-cyan-500/20 focus:bg-cyan-500/[0.01] focus:text-white focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
                   />
                 </div>
               </div>
@@ -147,14 +147,14 @@ export const AuditLogExportModal: React.FC<AuditLogExportModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-[11px] font-semibold tracking-wide text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/85 active:scale-[0.97]">
+            className="rounded-lg px-4 py-2 text-[11px] font-semibold tracking-wide text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/85 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]">
             Cancel
           </button>
           <button
             type="button"
             onClick={handleExportClick}
             disabled={isExporting}
-            className="flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 text-[11px] font-bold tracking-wide text-slate-950 transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97] disabled:opacity-40">
+            className="flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 text-[11px] font-bold tracking-wide text-slate-950 transition-all duration-200 hover:bg-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97] disabled:opacity-40">
             {isExporting ?
               <>
                 <i className="fa-solid fa-circle-notch fa-spin" />

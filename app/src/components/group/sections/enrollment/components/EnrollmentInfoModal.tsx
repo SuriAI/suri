@@ -115,7 +115,7 @@ export function EnrollmentInfoModal({
               type="checkbox"
               checked={dontShowAgain}
               onChange={(event) => onDontShowAgainChange(event.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-transparent accent-cyan-500"
+              className="h-4 w-4 rounded border-white/20 bg-transparent accent-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none"
             />
             {"Don't show this again"}
           </label>
@@ -125,13 +125,13 @@ export function EnrollmentInfoModal({
               type="button"
               disabled={step === 0}
               onClick={() => navigateToStep(step - 1)}
-              className="flex h-9 w-24 items-center justify-center rounded-lg text-[10px] font-semibold tracking-[0.16em] text-white/55 uppercase transition-all duration-200 hover:bg-white/5 hover:text-white/85 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-30">
+              className="flex h-9 w-24 items-center justify-center rounded-lg text-[10px] font-semibold tracking-[0.16em] text-white/55 uppercase transition-all duration-200 hover:bg-white/5 hover:text-white/85 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-30">
               Back
             </button>
             <button
               type="button"
               onClick={isLastStep ? handleConfirm : () => navigateToStep(step + 1)}
-              className="flex h-9 w-24 items-center justify-center rounded-lg bg-cyan-500 text-[10px] font-semibold tracking-[0.16em] text-slate-950 uppercase transition-all duration-200 hover:bg-cyan-400 active:scale-[0.97]">
+              className="flex h-9 w-24 items-center justify-center rounded-lg bg-cyan-500 text-[10px] font-semibold tracking-[0.16em] text-slate-950 uppercase transition-all duration-200 hover:bg-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]">
               {isLastStep ? "Continue" : "Next"}
             </button>
           </div>

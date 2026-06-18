@@ -64,7 +64,7 @@ export function DeleteConfirmationModal({
                 value={confirmationInput}
                 onChange={(e) => setConfirmationInput(e.target.value)}
                 placeholder={groupSnapshot.name}
-                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)] focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
               />
             </div>
           </div>
@@ -75,7 +75,7 @@ export function DeleteConfirmationModal({
                 setConfirmationInput("")
                 cancelDeleteGroup()
               }}
-              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]">
+              className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]">
               Cancel
             </button>
             <button
@@ -84,7 +84,7 @@ export function DeleteConfirmationModal({
                 confirmDeleteGroup()
               }}
               disabled={!isConfirmationMatch}
-              className="btn-error rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
+              className="btn-error rounded-lg px-6 py-2 text-[11px] font-bold tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
               Delete Group
             </button>
           </div>

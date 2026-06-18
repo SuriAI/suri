@@ -25,8 +25,16 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref,
   ) => {
-    const focusStyles =
-      focusColor.includes("red") ? "focus:border-red-500/30" : "focus:border-white/20"
+    let focusStyles: string
+    if (focusColor.includes("red")) {
+      focusStyles = "focus:border-red-500/30 focus-visible:ring-2 focus-visible:ring-red-500/50"
+    } else if (focusColor.includes("amber")) {
+      focusStyles = "focus:border-amber-500/30 focus-visible:ring-2 focus-visible:ring-amber-500/50"
+    } else if (focusColor.includes("cyan")) {
+      focusStyles = "focus:border-cyan-500/30 focus-visible:ring-2 focus-visible:ring-cyan-500/50"
+    } else {
+      focusStyles = "focus:border-white/20 focus-visible:ring-2 focus-visible:ring-white/20"
+    }
 
     return (
       <input

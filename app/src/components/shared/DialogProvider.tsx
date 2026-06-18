@@ -24,10 +24,10 @@ type ActiveDialogState =
 
 function getButtonClasses(variant: DialogVariant): string {
   if (variant === "danger") {
-    return "rounded-lg bg-red-500 text-slate-950 hover:bg-red-400 transition-all duration-200 active:scale-[0.97]"
+    return "rounded-lg bg-red-500 text-slate-950 hover:bg-red-400 transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)]"
   }
 
-  return "rounded-lg bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-all duration-200 active:scale-[0.97]"
+  return "rounded-lg bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)]"
 }
 
 export function DialogProvider({ children }: { children: ReactNode }) {
@@ -123,7 +123,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
           {active?.type === "confirm" && active.options.requireTypedConfirmation && (
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-white/50">
+              <label className="text-xs font-medium text-white/55">
                 {active.options.requireTypedConfirmation.label ||
                   `Type "${active.options.requireTypedConfirmation.value}" to continue`}
               </label>
@@ -132,7 +132,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                 value={typedConfirmation}
                 onChange={(event) => setTypedConfirmation(event.target.value)}
                 placeholder={active.options.requireTypedConfirmation.placeholder || ""}
-                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)]"
+                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)] focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
               />
             </div>
           )}
@@ -141,7 +141,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
             {active?.type === "confirm" && (
               <button
                 type="button"
-                className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97]"
+                className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97]"
                 onClick={() => {
                   active.resolve(false)
                   close()

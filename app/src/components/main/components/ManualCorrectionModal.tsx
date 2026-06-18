@@ -118,7 +118,7 @@ export function ManualCorrectionModal({
             placeholder="Example: Wrong member selected"
             rows={4}
             disabled={isSubmitting}
-            className="custom-scroll min-h-24 w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs leading-relaxed text-white transition-all outline-none placeholder:text-white/40 focus:border-amber-500/30 focus:bg-[rgba(28,35,44,0.82)]"
+            className="custom-scroll min-h-24 w-full rounded-xl border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2.5 text-xs leading-relaxed text-white transition-all outline-none placeholder:text-white/40 focus:border-amber-500/30 focus:bg-[rgba(28,35,44,0.82)] focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:outline-none"
           />
         </div>
 
@@ -133,14 +133,14 @@ export function ManualCorrectionModal({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
+            className="rounded-lg px-4 py-2 text-[11px] font-medium text-white/55 transition-all duration-200 hover:bg-white/5 hover:text-white/80 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
             Cancel
           </button>
           <button
             type="button"
             onClick={() => void handleSubmit()}
             disabled={isSubmitting || !trimmedReason}
-            className="rounded-lg bg-amber-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-amber-400 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
+            className="rounded-lg bg-amber-500 px-6 py-2 text-[11px] font-bold tracking-wider text-slate-950 transition-all duration-200 hover:bg-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30">
             {isSubmitting ? "Removing..." : "Remove Entry"}
           </button>
         </div>

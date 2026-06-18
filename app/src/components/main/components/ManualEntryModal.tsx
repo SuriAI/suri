@@ -148,7 +148,7 @@ export const ManualEntryModal = ({
               placeholder="Search members..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`h-9 w-full ${onAddMember ? "rounded-r-none border-r-0" : "rounded-r-lg"} rounded-l-lg border border-white/5 bg-white/5 pr-4 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]`}
+              className={`h-9 w-full ${onAddMember ? "rounded-r-none border-r-0" : "rounded-r-lg"} rounded-l-lg border border-white/5 bg-white/5 pr-4 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none`}
             />
           </div>
           {onAddMember && (
@@ -158,7 +158,7 @@ export const ManualEntryModal = ({
                   handleClose()
                   onAddMember()
                 }}
-                className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all group-focus-within/bar:border-white/20 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus:outline-none">
+                className="group/add flex h-9 w-9 shrink-0 items-center justify-center rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 text-white/65 transition-all group-focus-within/bar:border-white/20 hover:border-white/10 hover:bg-white/[0.08] hover:text-white focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
                 <i className="fa-solid fa-plus text-xs transition-transform group-hover/add:scale-110"></i>
               </button>
             </Tooltip>
@@ -198,7 +198,7 @@ export const ManualEntryModal = ({
             placeholder="Add a reason / note for manual entry (Optional)..."
             value={manualNote}
             onChange={(e) => setManualNote(e.target.value)}
-            className="h-9 w-full rounded-lg border border-white/5 bg-white/5 pr-4 pl-9 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
+            className="h-9 w-full rounded-lg border border-white/5 bg-white/5 pr-4 pl-9 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
           />
         </div>
 
@@ -235,8 +235,15 @@ export const ManualEntryModal = ({
                     return (
                       <div
                         key={member.person_id || `member-${idx}`}
+                        tabIndex={isPresent ? -1 : 0}
                         onClick={() => !isPresent && handleManualEntry(member.person_id)}
-                        className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors ${
+                        onKeyDown={(e) => {
+                          if (!isPresent && (e.key === "Enter" || e.key === " ")) {
+                            e.preventDefault()
+                            handleManualEntry(member.person_id)
+                          }
+                        }}
+                        className={`group/item flex items-center justify-between rounded-lg px-3.5 py-2.5 transition-colors focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-cyan-500/30 focus-visible:outline-none ${
                           isPresent ?
                             "cursor-default bg-transparent"
                           : "cursor-pointer hover:bg-white/5 active:scale-[0.995]"

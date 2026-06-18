@@ -69,7 +69,7 @@ export function IntroModal() {
               href="https://github.com/facenox/facenox"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-400/80 underline decoration-cyan-400/30 underline-offset-4 transition-colors hover:text-cyan-400">
+              className="rounded px-0.5 text-cyan-400/80 underline decoration-cyan-400/30 underline-offset-4 transition-colors hover:text-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-500/30 focus-visible:outline-none">
               open-source
             </a>
             , offering complete transparency into how we manage and secure local assets.
@@ -80,7 +80,7 @@ export function IntroModal() {
               href="https://github.com/facenox/facenox/blob/main/docs/PRIVACY.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-white/55 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/65">
+              className="rounded px-0.5 text-[11px] text-white/55 underline decoration-white/10 underline-offset-2 transition-colors hover:text-white/65 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
               View Full Privacy Manual
             </a>
           </div>
@@ -148,7 +148,7 @@ export function IntroModal() {
             <button
               onClick={handleBack}
               disabled={step === 0}
-              className={`border-none! bg-transparent! px-8 pr-5 text-[11px] font-medium shadow-none! transition-all ${
+              className={`rounded-lg border-none! bg-transparent! px-8 pr-5 text-[11px] font-medium shadow-none! transition-all focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none ${
                 step === 0 ? "pointer-events-none opacity-0" : "text-white/55 hover:text-white"
               }`}>
               Back
@@ -167,7 +167,7 @@ export function IntroModal() {
 
             <button
               onClick={handleNext}
-              className="btn-premium btn-premium-primary px-8! py-2! text-[11px]! font-bold! tracking-wider active:scale-95">
+              className="btn-premium btn-premium-primary px-8! py-2! text-[11px]! font-bold! tracking-wider focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-95">
               {step === steps.length - 1 ? "Finish" : "Next"}
             </button>
           </div>
