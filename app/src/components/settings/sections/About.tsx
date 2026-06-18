@@ -285,8 +285,8 @@ export const About: React.FC = () => {
   }, [])
 
   const handleDownload = useCallback(() => {
-    updaterService.openReleasePage(updateInfo?.releaseUrl)
-  }, [updateInfo])
+    updaterService.openReleasePage("https://facenox.com/download")
+  }, [])
 
   const openLink = (url: string) => () => updaterService.openReleasePage(url)
 

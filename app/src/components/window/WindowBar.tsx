@@ -74,7 +74,7 @@ export default function WindowBar() {
   }, [])
 
   const handleOpenRelease = () => {
-    updaterService.openReleasePage(updateInfo?.releaseUrl)
+    updaterService.openReleasePage("https://facenox.com/download")
   }
 
   useEffect(() => {

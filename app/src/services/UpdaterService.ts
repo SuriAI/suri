@@ -152,7 +152,7 @@ class UpdaterService {
     } catch (error) {
       console.error("[UpdaterService] Failed to open release page:", error)
 
-      window.open(url || "https://github.com/facenox/facenox/releases/latest", "_blank")
+      window.open(url || "https://facenox.com/download", "_blank")
     }
   }
 
