@@ -513,7 +513,7 @@ export function Attendance({
                   <input
                     type="text"
                     inputMode="numeric"
-                    value={attendanceSettings.dataRetentionDays ?? 0}
+                    value={Math.max(0, attendanceSettings.dataRetentionDays ?? 0)}
                     disabled={isPaired}
                     onChange={(e) => {
                       const raw = e.target.value.replace(/\D/g, "")

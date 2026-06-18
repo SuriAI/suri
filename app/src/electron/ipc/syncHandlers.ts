@@ -83,6 +83,12 @@ function clearRemoteConnection() {
   persistentStore.set("sync.deviceId", "")
   persistentStore.set("sync.deviceToken", "")
   persistentStore.set("sync.lastSyncedAt", null)
+  persistentStore.delete("sync.policy.forceLiveness")
+  persistentStore.delete("sync.policy.trackCheckout")
+  persistentStore.delete("sync.policy.lateThresholdEnabled")
+  persistentStore.delete("sync.policy.lateThresholdMinutes")
+  persistentStore.delete("sync.policy.attendanceCooldownSeconds")
+  persistentStore.delete("sync.policy.dataRetentionDays")
 }
 
 // Cryptographic Constants

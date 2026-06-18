@@ -90,7 +90,9 @@ async def unpair_local_database(
         from sqlalchemy import update
 
         await repo.session.execute(
-            update(AttendanceSettings).values(organization_id=None)
+            update(AttendanceSettings).values(
+                organization_id=None, data_retention_days=0
+            )
         )
         await repo.session.commit()
 
