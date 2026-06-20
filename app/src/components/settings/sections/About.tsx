@@ -291,10 +291,10 @@ export const About: React.FC = () => {
   const openLink = (url: string) => () => updaterService.openReleasePage(url)
 
   return (
-    <div className="custom-scroll relative h-full overflow-y-auto">
+    <div className="relative min-h-full w-full">
       <PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
 
-      <div className="mx-auto flex h-full max-w-lg flex-col items-center px-10 pt-8 pb-10 text-center">
+      <div className="mx-auto flex min-h-full max-w-lg flex-col items-center px-10 pt-8 pb-10 text-center">
         <div className="w-full flex-1 space-y-9">
           <div className="flex flex-col items-center gap-3">
             <div className="flex h-22 w-22 items-center justify-center">
@@ -376,17 +376,17 @@ export const About: React.FC = () => {
           <div className="mb-5 flex items-center justify-center gap-6">
             <button
               onClick={openLink("https://github.com/facenox/facenox/releases")}
-              className="rounded px-1 text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
+              className="w-20 rounded px-1 text-center text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
               Releases
             </button>
             <button
               onClick={openLink("https://github.com/facenox/facenox/issues")}
-              className="rounded px-1 text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
+              className="w-20 rounded px-1 text-center text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
               Support
             </button>
             <button
               onClick={openLink("https://github.com/facenox/facenox#readme")}
-              className="rounded px-1 text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
+              className="w-20 rounded px-1 text-center text-[11px] font-semibold text-white/65 transition-colors hover:text-white/90 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none">
               Docs
             </button>
           </div>
