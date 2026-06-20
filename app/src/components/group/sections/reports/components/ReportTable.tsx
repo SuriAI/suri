@@ -12,9 +12,11 @@ interface ReportTableProps {
   search?: string
   statusFilter?: string
   onResetFilter?: () => void
+  onResetDates?: () => void
   onEditRow?: (row: RowData) => void
   pageSize: number
   onPageSizeChange: (size: number) => void
+  error?: string | null
 }
 
 const COL_WIDTHS: Record<ColumnKey, string> = {
@@ -165,11 +167,41 @@ function EmptyTableState({
   search,
   statusFilter,
   onResetFilter,
+  onResetDates,
+  error,
 }: {
   search?: string
   statusFilter?: string
   onResetFilter?: () => void
+  onResetDates?: () => void
+  error?: string | null
 }) {
+  if (error) {
+    const isInvalidRange = error === "The start date must be before the end date."
+    return (
+      <EmptyState
+        title={isInvalidRange ? "Invalid date range" : "Unable to generate report"}
+        description={error}
+        iconClass="fa-solid fa-triangle-exclamation text-2xl text-red-400/80">
+        <div className="flex flex-col items-center gap-3">
+          {!isInvalidRange && (
+            <span className="text-[11px] font-semibold text-white/55">
+              Please check the error message or try resetting your filters.
+            </span>
+          )}
+          {isInvalidRange && onResetDates && (
+            <button
+              type="button"
+              onClick={onResetDates}
+              className="mt-1 rounded-lg border border-white/6 bg-[rgba(22,28,36,0.64)] px-4 py-2 text-xs font-medium text-white/55 transition-all hover:bg-[rgba(28,35,44,0.82)] hover:text-white/80">
+              Reset to Today
+            </button>
+          )}
+        </div>
+      </EmptyState>
+    )
+  }
+
   return (
     <EmptyState
       title={
@@ -295,9 +327,11 @@ export function ReportTable({
   search,
   statusFilter,
   onResetFilter,
+  onResetDates,
   onEditRow,
   pageSize,
   onPageSizeChange,
+  error,
 }: ReportTableProps) {
   const [page, setPage] = useState(0)
 
@@ -336,7 +370,7 @@ export function ReportTable({
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <AnimatePresence mode="wait">
-        {items.length === 0 ?
+        {items.length === 0 || error ?
           <motion.div
             key="empty-state"
             initial={{ opacity: 0, y: 6 }}
@@ -348,6 +382,8 @@ export function ReportTable({
               search={search}
               statusFilter={statusFilter}
               onResetFilter={onResetFilter}
+              onResetDates={onResetDates}
+              error={error}
             />
           </motion.div>
         : <motion.div
