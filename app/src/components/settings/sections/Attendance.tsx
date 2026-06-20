@@ -419,7 +419,8 @@ export function Attendance({
                       "Select a group to enable this feature"
                     : attendanceSettings.biometricConsentCertified ?
                       "Bypass manual consent checkboxes when adding or editing members."
-                    : "Require manual consent checkbox certification when adding or editing members."}
+                    : "Require manual consent checkbox certification when adding or editing members."
+                    }
                   </motion.div>
                 </AnimatePresence>
               </div>
