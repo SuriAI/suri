@@ -140,10 +140,50 @@ def check_and_stamp_baseline(db_path, alembic_cfg):
         logger.error("Failed to check or stamp baseline version: %s", e, exc_info=True)
 
 
+def cleanup_orphaned_alembic_tables():
+    """Clean up leftover temp tables from failed/interrupted migrations.
+
+    Alembic uses batch copy-and-move strategy for SQLite migrations, which leaves
+    orphaned '_alembic_tmp_*' tables on abrupt termination, blocking subsequent boots.
+    """
+    db_path = DATA_DIR / "attendance.db"
+    if not db_path.exists():
+        return
+
+    try:
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
+
+        # Identify temporary tables to avoid sqlite3.OperationalError: table already exists.
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '_alembic_tmp_%';"
+        )
+        temp_tables = [row[0] for row in cursor.fetchall()]
+
+        if temp_tables:
+            logger.warning(
+                "Orphaned Alembic temporary tables detected: %s. Cleaning up...",
+                temp_tables,
+            )
+            for table in temp_tables:
+                cursor.execute(f"DROP TABLE IF EXISTS {table};")
+            conn.commit()
+            logger.info("Successfully removed all orphaned temporary tables.")
+
+        conn.close()
+    except Exception as e:
+        logger.error(
+            "Failed to clean up orphaned Alembic temporary tables: %s", e, exc_info=True
+        )
+
+
 def run_migrations():
     """Run alembic upgrade head programmatically."""
     # First, verify database integrity and perform self-healing if corrupted
     verify_and_repair_database()
+
+    # Clean up any leftover temporary tables to prevent migration lockups
+    cleanup_orphaned_alembic_tables()
 
     db_path = DATA_DIR / "attendance.db"
     logger.info("Checking for database migrations in %s...", db_path)
