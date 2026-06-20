@@ -27,7 +27,7 @@
     "dist:win": "npm run build && electron-builder --win --x64",
     "dist:mac": "npm run build && electron-builder --mac --arm64",
     "dist:linux": "npm run build && electron-builder --linux --x64",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "node ./scripts/postinstall.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.35.1",
