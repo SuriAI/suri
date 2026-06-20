@@ -63,8 +63,17 @@ vi.mock("@/components/group/sections/reports/components/ReportToolbar", () => ({
 }))
 
 vi.mock("@/components/group/sections/reports/components/ReportTable", () => ({
-  ReportTable: ({ groupedRows }: { groupedRows: Record<string, unknown[]> }) => (
-    <div>Mock Report Table ({Object.keys(groupedRows).length})</div>
+  ReportTable: ({
+    groupedRows,
+    error,
+  }: {
+    groupedRows: Record<string, unknown[]>
+    error?: string | null
+  }) => (
+    <div>
+      {error && <div>{error}</div>}
+      <div>Mock Report Table ({Object.keys(groupedRows).length})</div>
+    </div>
   ),
 }))
 
