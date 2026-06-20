@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import { Modal } from "@/components/common"
+import { InfoPopover } from "@/components/shared"
 import { attendanceManager } from "@/services/AttendanceManager"
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
 import { useGroupStore } from "@/components/group/stores"
@@ -90,23 +91,27 @@ export function ManualCorrectionModal({
       onClose={() => {
         if (!isSubmitting) handleClose()
       }}
-      title={<span className="text-[15px] font-semibold text-white/92">Remove Attendance</span>}
-      maxWidth="sm">
-      <div className="space-y-4">
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-          <p className="text-sm leading-relaxed break-words text-amber-100/90">
-            This will remove the attendance entry for{" "}
-            <strong className="break-all">{displayName}</strong> and update today&apos;s status.
+      title={
+        <div>
+          <h3 className="text-base font-semibold text-white">Remove Attendance</h3>
+          <p className="mt-0.5 text-xs text-white/40">
+            Removing entry for <span className="font-medium text-white/60">{displayName}</span>
           </p>
         </div>
-
+      }
+      maxWidth="sm">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-xs font-bold tracking-wide text-white/65 uppercase">
-            Reason Required
-          </label>
-          <p className="text-xs leading-relaxed text-white/55">
-            Add a short note explaining why this attendance entry should be removed.
-          </p>
+          <div className="flex items-center gap-1.5">
+            <label className="text-[10px] font-bold tracking-wide text-white/55 uppercase">
+              Reason Required
+            </label>
+            <InfoPopover
+              title="Reason Required"
+              description="Add a short note explaining why this attendance entry should be removed."
+              side="top"
+            />
+          </div>
           <textarea
             value={reason}
             onChange={(event) => {
