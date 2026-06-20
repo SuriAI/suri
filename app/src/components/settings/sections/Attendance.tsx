@@ -451,15 +451,12 @@ export function Attendance({
                 <InfoPopover
                   title="Data Retention"
                   description="Controls how long attendance records and biometric signatures are stored in the local database."
+                  details={[
+                    "Pruning occurs automatically every 24 hours.",
+                    "Expired records are permanently deleted.",
+                    "Setting this to 0 disables automatic deletion.",
+                  ]}
                   detailsNode={[
-                    <div key="how-it-works" className="space-y-1.5">
-                      <div className="font-semibold text-white/90">How it works:</div>
-                      <ul className="list-disc space-y-1 pl-4 text-white/65">
-                        <li>Pruning occurs automatically every 24 hours.</li>
-                        <li>Expired records are permanently deleted.</li>
-                        <li>Setting this to 0 disables automatic deletion.</li>
-                      </ul>
-                    </div>,
                     <div
                       key="tip"
                       data-hide-chevron

@@ -100,17 +100,17 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
   const isSearchExpanded = activitySearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const dropdownWidthClass =
     dateFilter === "today" ? "w-[98px]"
-      : dateFilter === "yesterday" ? "w-[120px]"
-        : "w-[130px]"
+    : dateFilter === "yesterday" ? "w-[120px]"
+    : "w-[130px]"
 
   const searchBarMaxWidthClass =
     isSearchExpanded ?
       dateFilter === "today" ? "max-w-[320px]"
-        : dateFilter === "yesterday" ? "max-w-[340px]"
-          : "max-w-[350px]"
-      : dateFilter === "today" ? "max-w-[260px]"
-        : dateFilter === "yesterday" ? "max-w-[280px]"
-          : "max-w-[290px]"
+      : dateFilter === "yesterday" ? "max-w-[340px]"
+      : "max-w-[350px]"
+    : dateFilter === "today" ? "max-w-[260px]"
+    : dateFilter === "yesterday" ? "max-w-[280px]"
+    : "max-w-[290px]"
 
   const { start, end } = useMemo(() => getDateRange(dateFilter), [dateFilter])
   const cacheKey = `${start}_${end}`
@@ -175,7 +175,7 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
         description={
           isPaired ?
             "Members are managed from the Management Dashboard."
-            : "View group activity history and attendance metrics."
+          : "View group activity history and attendance metrics."
         }
         action={
           !isPaired && onAddMember ?
@@ -184,7 +184,7 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
               onClick: onAddMember,
               iconClass: "fa-solid fa-user-plus text-[10px]",
             }
-            : undefined
+          : undefined
         }
       />
     )
@@ -233,7 +233,7 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
             {(() => {
               const absent = Math.max(0, (stats.total_members ?? 0) - (stats.present_today ?? 0))
               return absent > 0 ?
-                <p className="mt-1.5 text-[11px] text-white/55">{absent} absent</p>
+                  <p className="mt-1.5 text-[11px] text-white/55">{absent} absent</p>
                 : null
             })()}
           </div>
@@ -246,8 +246,9 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
               disabledTooltipText={
                 <span>
                   Late tracking is disabled. Go to{" "}
-                  <span className="font-medium text-cyan-400">General</span> and enable <span className="font-medium text-cyan-400">Late Tracking</span> to set
-                  a threshold.
+                  <span className="font-medium text-cyan-400">General</span> and enable{" "}
+                  <span className="font-medium text-cyan-400">Late Tracking</span> to set a
+                  threshold.
                 </span>
               }
             />
@@ -331,10 +332,11 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                             setDateFilter(filter)
                             setFilterDropdownOpen(false)
                           }}
-                          className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${dateFilter === filter ?
-                            "bg-cyan-500/10 font-semibold text-cyan-400"
+                          className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
+                            dateFilter === filter ?
+                              "bg-cyan-500/10 font-semibold text-cyan-400"
                             : "text-white/65 hover:bg-white/5 hover:text-white"
-                            }`}>
+                          }`}>
                           {DATE_FILTER_LABELS[filter]}
                         </button>
                       ))}
@@ -364,7 +366,7 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                 className="flex items-center justify-center py-12 text-white/20">
                 <Spinner size="sm" color="muted" />
               </motion.div>
-              : <motion.div
+            : <motion.div
                 key={dateFilter}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -376,54 +378,55 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                     <EmptyState
                       key="no-activity"
                       title="No activity recorded"
-                      description={`No attendance records found for ${dateFilter === "today" ? "today"
+                      description={`No attendance records found for ${
+                        dateFilter === "today" ? "today"
                         : dateFilter === "yesterday" ? "yesterday"
-                          : "this week"
-                        }.`}
+                        : "this week"
+                      }.`}
                       iconClass="fa-solid fa-clock text-2xl"
                     />
-                    : filteredRecords.length === 0 ?
-                      <EmptyState
-                        key="no-results"
-                        title="No results found"
-                        description={`No activity matched "${activitySearch}"`}
-                        iconClass="fa-solid fa-ghost text-2xl"
-                      />
-                      : <motion.div
-                        key="results"
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="space-y-1">
-                        {filteredRecords.slice(0, 50).map((record, idx) => {
-                          const displayName = displayNameMap.get(record.person_id) || "Unknown"
+                  : filteredRecords.length === 0 ?
+                    <EmptyState
+                      key="no-results"
+                      title="No results found"
+                      description={`No activity matched "${activitySearch}"`}
+                      iconClass="fa-solid fa-ghost text-2xl"
+                    />
+                  : <motion.div
+                      key="results"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      className="space-y-1">
+                      {filteredRecords.slice(0, 50).map((record, idx) => {
+                        const displayName = displayNameMap.get(record.person_id) || "Unknown"
 
-                          return (
-                            <div
-                              key={record.id || `record-${idx}`}
-                              className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
-                              <div className="flex items-center gap-4">
-                                <div className="flex flex-col">
-                                  <span className="text-[13px] font-medium text-white transition-colors">
-                                    {displayName}
-                                  </span>
-                                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
-                                    <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
-                                    <span>{formatTime(record.timestamp)}</span>
-                                  </div>
+                        return (
+                          <div
+                            key={record.id || `record-${idx}`}
+                            className="group/item flex items-center justify-between rounded-lg border border-transparent bg-transparent px-4 py-3 transition-colors hover:bg-white/[0.02]">
+                            <div className="flex items-center gap-4">
+                              <div className="flex flex-col">
+                                <span className="text-[13px] font-medium text-white transition-colors">
+                                  {displayName}
+                                </span>
+                                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-white/65">
+                                  <i className="fa-regular fa-clock text-[10px] opacity-70"></i>
+                                  <span>{formatTime(record.timestamp)}</span>
                                 </div>
                               </div>
-
-                              <div className="flex items-center gap-4">
-                                <span className="text-[12px] font-medium text-white/55">
-                                  {getRelativeTime(record.timestamp)}
-                                </span>
-                              </div>
                             </div>
-                          )
-                        })}
-                      </motion.div>
+
+                            <div className="flex items-center gap-4">
+                              <span className="text-[12px] font-medium text-white/55">
+                                {getRelativeTime(record.timestamp)}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </motion.div>
                   }
                 </AnimatePresence>
               </motion.div>

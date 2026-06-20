@@ -184,12 +184,12 @@ export function InfoPopover({
                   <p className="text-xs leading-relaxed text-white/70">{description}</p>
 
                   {(details && details.length > 0) || (detailsNode && detailsNode.length > 0) ?
-                    <ul className="space-y-1 border-t border-white/8 pt-2">
+                    <ul className="space-y-1 pt-1.5">
                       {details?.map((detail, index) => (
                         <li
                           key={index}
                           className="flex items-start gap-1.5 text-[10.5px] text-white/65">
-                          <span className="mt-0.5 text-cyan-500/40">&gt;</span>
+                          <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-cyan-400/40" />
                           <span>{detail}</span>
                         </li>
                       ))}
@@ -199,7 +199,9 @@ export function InfoPopover({
                           className="flex items-start gap-1.5 text-[10.5px] text-white/65">
                           {!(node as { props?: Record<string, unknown> })?.props?.[
                             "data-hide-chevron"
-                          ] && <span className="mt-0.5 text-cyan-500/40">&gt;</span>}
+                          ] && (
+                            <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-cyan-400/40" />
+                          )}
                           <span>{node}</span>
                         </li>
                       ))}
