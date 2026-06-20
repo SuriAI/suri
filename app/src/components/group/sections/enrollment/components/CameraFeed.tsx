@@ -1,5 +1,6 @@
 import { Dropdown } from "@/components/shared"
 import type { CaptureSource } from "@/components/group/sections/enrollment/types"
+import { formatCameraDevices } from "@/utils/cameraConstraints"
 
 interface CameraFeedProps {
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -41,10 +42,7 @@ export function CameraFeed({
       {/* Compact Camera Selection Overlay */}
       <div className="absolute top-4 right-4 z-30 w-64">
         <Dropdown
-          options={cameraDevices.map((device, index) => ({
-            value: device.deviceId,
-            label: device.label || `Camera ${index + 1}`,
-          }))}
+          options={formatCameraDevices(cameraDevices)}
           value={selectedCamera}
           onChange={(deviceId) => {
             if (deviceId) {

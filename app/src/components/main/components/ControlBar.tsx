@@ -1,4 +1,5 @@
 import { Dropdown, Tooltip } from "@/components/shared"
+import { formatCameraDevices } from "@/utils/cameraConstraints"
 
 interface ControlBarProps {
   cameraDevices: MediaDeviceInfo[]
@@ -109,10 +110,7 @@ export function ControlBar({
             <div className="flex flex-col items-start space-y-1">
               <div className="min-w-50">
                 <Dropdown
-                  options={cameraDevices.map((device, index) => ({
-                    value: device.deviceId,
-                    label: device.label || `Camera ${index + 1}`,
-                  }))}
+                  options={formatCameraDevices(cameraDevices)}
                   value={selectedCamera}
                   onChange={(deviceId) => {
                     if (deviceId) setSelectedCamera(String(deviceId))

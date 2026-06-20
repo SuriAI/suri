@@ -155,7 +155,9 @@ export function ReportToolbar({
             />
             <span
               onMouseDown={(e) => e.preventDefault()}
-              className="text-[10px] font-bold tracking-wider text-white/30 uppercase">to</span>
+              className="text-[10px] font-bold tracking-wider text-white/30 uppercase">
+              to
+            </span>
             <input
               type="date"
               value={endDate}
