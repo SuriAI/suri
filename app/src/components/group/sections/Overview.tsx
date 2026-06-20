@@ -84,9 +84,20 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [showSpinner, setShowSpinner] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
 
-  const isSearchExpanded = activitySearch.trim().length > 0 || isSearchFocused
+  useEffect(() => {
+    if (filterDropdownOpen) {
+      if (isSearchFocused || activitySearch.trim().length > 0) {
+        setShouldKeepExpanded(true)
+      }
+    } else {
+      setShouldKeepExpanded(false)
+    }
+  }, [filterDropdownOpen, isSearchFocused, activitySearch])
+
+  const isSearchExpanded = activitySearch.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const dropdownWidthClass =
     dateFilter === "today" ? "w-[98px]"
     : dateFilter === "yesterday" ? "w-[120px]"
@@ -292,6 +303,7 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
               <div className="relative shrink-0" ref={filterDropdownRef}>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setFilterDropdownOpen((o) => !o)}
                   className={`flex h-9 transform-gpu items-center justify-between gap-1.5 rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 px-2.5 text-[12px] font-semibold text-white/80 transition-colors duration-300 outline-none group-focus-within/bar:border-white/20 focus-within:bg-white/[0.08] hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] ${dropdownWidthClass}`}>
                   <span className="flex min-w-0 items-center gap-1.5">
@@ -315,9 +327,9 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
                         <button
                           key={filter}
                           type="button"
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => {
                             setDateFilter(filter)
-                            setActivitySearch("")
                             setFilterDropdownOpen(false)
                           }}
                           className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${

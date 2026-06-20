@@ -74,6 +74,33 @@ export function ReportToolbar({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  const [shouldKeepExpanded, setShouldKeepExpanded] = useState(false)
+  const dateBlurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleDateFocus = () => {
+    if (dateBlurTimeoutRef.current) {
+      clearTimeout(dateBlurTimeoutRef.current)
+      dateBlurTimeoutRef.current = null
+    }
+    if (isSearchFocused || search.trim().length > 0 || shouldKeepExpanded) {
+      setShouldKeepExpanded(true)
+    }
+  }
+
+  const handleDateBlur = () => {
+    dateBlurTimeoutRef.current = setTimeout(() => {
+      setShouldKeepExpanded(false)
+    }, 150)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (dateBlurTimeoutRef.current) {
+        clearTimeout(dateBlurTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handleSearchFocus = () => {
     setIsSearchFocused(true)
   }
@@ -84,7 +111,7 @@ export function ReportToolbar({
     }, 150)
   }
 
-  const isSearchExpanded = search.trim().length > 0 || isSearchFocused
+  const isSearchExpanded = search.trim().length > 0 || isSearchFocused || shouldKeepExpanded
   const searchBarMaxWidthClass = isSearchExpanded ? "max-w-[560px]" : "max-w-[500px]"
 
   return (
@@ -121,14 +148,20 @@ export function ReportToolbar({
               type="date"
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
+              onFocus={handleDateFocus}
+              onBlur={handleDateBlur}
               className="h-full w-[112px] cursor-pointer border-0 bg-transparent text-[11px] font-bold tracking-wider text-white outline-none hover:text-cyan-400 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0"
               style={{ colorScheme: "dark" } as React.CSSProperties}
             />
-            <span className="text-[10px] font-bold tracking-wider text-white/30 uppercase">to</span>
+            <span
+              onMouseDown={(e) => e.preventDefault()}
+              className="text-[10px] font-bold tracking-wider text-white/30 uppercase">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
+              onFocus={handleDateFocus}
+              onBlur={handleDateBlur}
               className="h-full w-[112px] cursor-pointer border-0 bg-transparent text-[11px] font-bold tracking-wider text-white outline-none hover:text-cyan-400 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0"
               style={{ colorScheme: "dark" } as React.CSSProperties}
             />
