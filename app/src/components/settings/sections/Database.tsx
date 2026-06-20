@@ -359,21 +359,30 @@ export function Database({
             </h3>
           </div>
           <div className="group/search relative h-9 min-w-[280px]">
-            <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-white/20 transition-colors group-focus-within/search:text-white/45">
-              <i className="fa-solid fa-magnifying-glass text-[11px]"></i>
-            </div>
+            <svg
+              className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search group name or ID..."
-              className="h-full w-full rounded-lg border border-white/5 bg-white/5 pr-8 pl-8.5 text-xs font-medium text-white placeholder-white/30 transition-all outline-none focus:border-white/20 focus:bg-white/[0.08]"
+              className="h-full w-full rounded-lg border border-white/5 bg-white/5 py-2 pr-7 pl-9 text-xs font-medium text-white transition-all duration-300 outline-none group-focus-within/search:border-white/20 placeholder:text-white/30 focus:bg-white/[0.08]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute top-1/2 right-2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md text-white/20 hover:bg-white/10 hover:text-white">
-                <i className="fa-solid fa-xmark text-[10px]"></i>
+                className="absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-white/55 hover:text-white">
+                <i className="fa-solid fa-xmark text-[9px]" />
               </button>
             )}
           </div>
