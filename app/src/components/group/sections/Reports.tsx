@@ -138,7 +138,7 @@ export function Reports({
                 <span className="text-sm font-medium text-white/65">Generating Report</span>
               </div>
             </motion.div>
-          : !loading && members.length === 0 ?
+          : !loading && members.length === 0 && !error ?
             <motion.div
               key="empty"
               initial={{ opacity: 0 }}
