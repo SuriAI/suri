@@ -55,6 +55,7 @@ export function ReportToolbar({
 }: ReportToolbarProps) {
   const [showOptions, setShowOptions] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const optionsRef = useRef<HTMLDivElement>(null)
   const filterRef = useRef<HTMLDivElement>(null)
 
@@ -73,49 +74,69 @@ export function ReportToolbar({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true)
+  }
+
+  const handleSearchBlur = () => {
+    setTimeout(() => {
+      setIsSearchFocused(false)
+    }, 150)
+  }
+
+  const isSearchExpanded = search.trim().length > 0 || isSearchFocused
+  const searchBarMaxWidthClass = isSearchExpanded ? "max-w-[560px]" : "max-w-[500px]"
+
   return (
-    <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-3">
-      {/* Date Range */}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => onStartDateChange(e.target.value)}
-          className="h-9 w-[124px] cursor-pointer rounded-lg border border-white/5 bg-white/5 px-3 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none hover:bg-white/10 focus:border-white/10 focus:bg-white/[0.08] [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
-          style={
-            {
-              colorScheme: "dark",
-            } as React.CSSProperties
-          }
-        />
-        <span className="px-1.5 text-[11px] font-bold tracking-wider text-white/45">To</span>
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => onEndDateChange(e.target.value)}
-          className="h-9 w-[124px] cursor-pointer rounded-lg border border-white/5 bg-white/5 px-3 text-[11px] font-bold tracking-wider text-white transition-all duration-300 outline-none hover:bg-white/10 focus:border-white/10 focus:bg-white/[0.08] [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:ml-1 [&::-webkit-calendar-picker-indicator]:p-0"
-          style={
-            {
-              colorScheme: "dark",
-            } as React.CSSProperties
-          }
-        />
+    <div className="flex flex-wrap items-center justify-between gap-4 pb-3">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+        <div
+          className={`group/bar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
+          <div className="relative flex-1">
+            <svg
+              className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/bar:text-white/45"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search name, status, notes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-9 text-xs font-medium text-white transition-all duration-300 outline-none group-focus-within/bar:border-white/20 placeholder:text-white/30 focus:bg-white/[0.08]"
+            />
+          </div>
+
+          <div className="flex h-9 items-center gap-1.5 rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 px-2.5 transition-all duration-300 group-focus-within/bar:border-white/20 focus-within:bg-white/[0.08] hover:bg-white/[0.08]">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => onStartDateChange(e.target.value)}
+              className="h-full w-[112px] cursor-pointer border-0 bg-transparent text-[11px] font-bold tracking-wider text-white outline-none hover:text-cyan-400 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0"
+              style={{ colorScheme: "dark" } as React.CSSProperties}
+            />
+            <span className="text-[10px] font-bold tracking-wider text-white/30 uppercase">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => onEndDateChange(e.target.value)}
+              className="h-full w-[112px] cursor-pointer border-0 bg-transparent text-[11px] font-bold tracking-wider text-white outline-none hover:text-cyan-400 [&::-webkit-calendar-picker-indicator]:m-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:p-0"
+              style={{ colorScheme: "dark" } as React.CSSProperties}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* ── Right Controls ── */}
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
-        <div className="group/search relative h-9 max-w-[200px] min-w-0 flex-1">
-          <i className="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45" />
-          <input
-            type="search"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-full w-full min-w-0 rounded-lg border border-white/5 bg-white/5 pr-3 pl-8.5 text-xs font-medium text-white transition-all duration-300 outline-none placeholder:text-white/30 focus:border-white/20 focus:bg-white/[0.08]"
-          />
-        </div>
-
-        {/* Filter */}
+      <div className="flex shrink-0 items-center gap-1">
         <div className="relative" ref={filterRef}>
           <Tooltip
             content={
@@ -166,7 +187,6 @@ export function ReportToolbar({
           </AnimatePresence>
         </div>
 
-        {/* Options */}
         <div className="relative" ref={optionsRef}>
           <Tooltip content="Options" position="bottom">
             <button
@@ -176,7 +196,7 @@ export function ReportToolbar({
                   "bg-cyan-500/[0.08] text-cyan-400"
                 : "text-white/55 hover:bg-white/5 hover:text-white"
               }`}>
-              <i className="fa-solid fa-pen text-[11px]" />
+              <i className="fa-solid fa-sliders text-[11px]" />
             </button>
           </Tooltip>
 
@@ -189,7 +209,6 @@ export function ReportToolbar({
                 transition={{ duration: 0.1, ease: "easeOut" }}
                 className="absolute right-0 z-50 mt-2 flex w-56 flex-col overflow-hidden rounded-lg border border-white/10 bg-[#0d1117]/95 shadow-xl"
                 style={{ maxHeight: "360px" }}>
-                {/* Columns */}
                 <div className="px-3 pt-3 pb-2">
                   <span className="text-[11px] font-bold tracking-wider text-white/65">
                     Columns
@@ -227,7 +246,6 @@ export function ReportToolbar({
 
                 <div className="h-px bg-white/5" />
 
-                {/* Group By */}
                 <div className="flex items-center justify-between gap-3 px-3 py-3">
                   <span className="shrink-0 text-[11px] font-bold tracking-wider text-white/65">
                     Group by

@@ -83,7 +83,23 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
   const [dateFilter, setDateFilter] = useState<DateFilter>("today")
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false)
   const [showSpinner, setShowSpinner] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const filterDropdownRef = useRef<HTMLDivElement>(null)
+
+  const isSearchExpanded = activitySearch.trim().length > 0 || isSearchFocused
+  const dropdownWidthClass =
+    dateFilter === "today" ? "w-[98px]"
+    : dateFilter === "yesterday" ? "w-[120px]"
+    : "w-[130px]"
+
+  const searchBarMaxWidthClass =
+    isSearchExpanded ?
+      dateFilter === "today" ? "max-w-[320px]"
+      : dateFilter === "yesterday" ? "max-w-[340px]"
+      : "max-w-[350px]"
+    : dateFilter === "today" ? "max-w-[260px]"
+    : dateFilter === "yesterday" ? "max-w-[280px]"
+    : "max-w-[290px]"
 
   const { start, end } = useMemo(() => getDateRange(dateFilter), [dateFilter])
   const cacheKey = `${start}_${end}`
@@ -240,66 +256,82 @@ export function Overview({ group, members, onAddMember, isPaired }: OverviewProp
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            {/* Search */}
-            <div className="group/search relative h-9">
-              <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-white/25 transition-colors group-focus-within/search:text-white/45">
-                <i className="fa-solid fa-magnifying-glass text-[11px]"></i>
-              </div>
-              <input
-                type="text"
-                value={activitySearch}
-                onChange={(e) => setActivitySearch(e.target.value)}
-                placeholder="Search..."
-                className="h-full w-36 rounded-lg border border-white/5 bg-white/5 pr-7 pl-8.5 text-xs font-medium text-white placeholder-white/30 transition-all outline-none focus:w-48 focus:border-white/20 focus:bg-white/[0.08]"
-              />
-              {activitySearch && (
-                <button
-                  onClick={() => setActivitySearch("")}
-                  className="absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-white/55 hover:text-white">
-                  <i className="fa-solid fa-xmark text-[9px]"></i>
-                </button>
-              )}
-            </div>
-
-            {/* Date filter dropdown */}
-            <div className="relative" ref={filterDropdownRef}>
-              <button
-                onClick={() => setFilterDropdownOpen((o) => !o)}
-                className="flex items-center gap-1.5 rounded-md border border-white/5 bg-white/5 px-2.5 py-1.5 text-[12px] font-semibold text-white/80 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] active:scale-95">
-                <i className="fa-regular fa-calendar text-[10px]" />
-                {DATE_FILTER_LABELS[dateFilter]}
-                <i
-                  className={`fa-solid fa-chevron-down text-[9px] text-white/55 transition-transform duration-150 ${filterDropdownOpen ? "rotate-180" : ""}`}
+            <div
+              className={`group/bar flex w-full items-center transition-all duration-300 ease-out ${searchBarMaxWidthClass}`}>
+              <div className="relative flex-1">
+                <svg
+                  className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/bar:text-white/45"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  value={activitySearch}
+                  onChange={(e) => setActivitySearch(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
+                  placeholder="Search..."
+                  className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-7 pl-9 text-xs font-medium text-white transition-all duration-300 outline-none group-focus-within/bar:border-white/20 placeholder:text-white/30 focus:bg-white/[0.08]"
                 />
-              </button>
-
-              <AnimatePresence>
-                {filterDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/5 bg-[#0d1117]/95 p-1 shadow-xl">
-                    {(["today", "yesterday", "week"] as DateFilter[]).map((filter) => (
-                      <button
-                        key={filter}
-                        onClick={() => {
-                          setDateFilter(filter)
-                          setActivitySearch("")
-                          setFilterDropdownOpen(false)
-                        }}
-                        className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
-                          dateFilter === filter ?
-                            "bg-cyan-500/10 font-semibold text-cyan-400"
-                          : "text-white/65 hover:bg-white/5 hover:text-white"
-                        }`}>
-                        {DATE_FILTER_LABELS[filter]}
-                      </button>
-                    ))}
-                  </motion.div>
+                {activitySearch && (
+                  <button
+                    onClick={() => setActivitySearch("")}
+                    className="absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-sm text-white/55 hover:text-white">
+                    <i className="fa-solid fa-xmark text-[9px]" />
+                  </button>
                 )}
-              </AnimatePresence>
+              </div>
+
+              <div className="relative shrink-0" ref={filterDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setFilterDropdownOpen((o) => !o)}
+                  className={`flex h-9 transform-gpu items-center justify-between gap-1.5 rounded-l-none rounded-r-lg border border-l-0 border-white/5 bg-white/5 px-2.5 text-[12px] font-semibold text-white/80 transition-colors duration-300 outline-none group-focus-within/bar:border-white/20 focus-within:bg-white/[0.08] hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08] ${dropdownWidthClass}`}>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <i className="fa-regular fa-calendar text-[10px]" />
+                    <span className="truncate">{DATE_FILTER_LABELS[dateFilter]}</span>
+                  </span>
+                  <i
+                    className={`fa-solid fa-chevron-down shrink-0 text-[9px] text-white/55 transition-transform duration-150 ${filterDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {filterDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute top-full right-0 z-50 mt-1.5 min-w-[128px] overflow-hidden rounded-lg border border-white/5 bg-[#0d1117]/95 p-1 shadow-xl">
+                      {(["today", "yesterday", "week"] as DateFilter[]).map((filter) => (
+                        <button
+                          key={filter}
+                          type="button"
+                          onClick={() => {
+                            setDateFilter(filter)
+                            setActivitySearch("")
+                            setFilterDropdownOpen(false)
+                          }}
+                          className={`flex w-full items-center rounded px-3 py-1.5 text-left text-[12px] transition-all duration-150 ${
+                            dateFilter === filter ?
+                              "bg-cyan-500/10 font-semibold text-cyan-400"
+                            : "text-white/65 hover:bg-white/5 hover:text-white"
+                          }`}>
+                          {DATE_FILTER_LABELS[filter]}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
