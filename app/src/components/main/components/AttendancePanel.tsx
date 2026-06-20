@@ -486,50 +486,59 @@ export const AttendancePanel = memo(function AttendancePanel({
 
       {!isPanelLoading && !isPanelSwitchPending && recentAttendance.length > 0 && (
         <div className="shrink-0 px-3 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="group/bar flex min-w-0 flex-1 items-center">
-              <div className="group/search relative h-9 flex-1 rounded-l-lg border border-r-0 border-white/5 bg-white/5 transition-colors duration-200 group-focus-within/bar:border-white/20 focus-within:border-white/20">
-                <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[11px] text-white/25 transition-colors group-focus-within/search:text-white/45" />
-                <input
-                  type="text"
-                  placeholder="Search name..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="h-full w-full border-0 bg-transparent pr-3 pl-8.5 text-xs font-medium text-white transition-all placeholder:text-white/30 focus:outline-none"
+          <div className="group/bar flex min-w-0 flex-1 items-center">
+            <div className="relative flex-1">
+              <svg
+                className="absolute top-1/2 left-3.5 h-3.5 w-3.5 -translate-y-1/2 text-white/25 transition-colors group-focus-within/bar:text-white/45"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
-              </div>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search name..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="h-9 w-full rounded-l-lg rounded-r-none border border-r-0 border-white/5 bg-white/5 py-2 pr-3 pl-9 text-xs font-medium text-white transition-all duration-300 outline-none group-focus-within/bar:border-white/20 placeholder:text-white/30 focus:bg-white/[0.08]"
+              />
+            </div>
 
-              <div className="shrink-0">
-                <Tooltip
-                  content={`Show: ${
-                    recordScope === "today" ? "Today"
-                    : recordScope === "yesterday" ? "Yesterday"
-                    : recordScope === "week" ? "This Week"
-                    : "All records"
-                  }`}
-                  position="top">
-                  <Dropdown
-                    className="w-9"
-                    options={[
-                      { value: "today", label: "Today" },
-                      { value: "yesterday", label: "Yesterday" },
-                      { value: "week", label: "This Week" },
-                      { value: "all", label: "All" },
-                    ]}
-                    value={recordScope}
-                    onChange={(val) => handleRecordScopeChange(val as AttendanceRecordScope)}
-                    trigger={
-                      <span className="inline-flex h-4 w-4 items-center justify-center">
-                        <i className={`fa-solid fa-calendar-day ${sidebarActionIconClassName}`} />
-                      </span>
-                    }
-                    menuWidth={120}
-                    buttonClassName={`h-9 w-full !border-white/5 !bg-white/5 group-focus-within/bar:!border-white/20 border border-l-0 rounded-l-none rounded-r-lg px-0 text-white/45 transition-all duration-200 hover:!bg-white/[0.08] hover:text-white focus:!border-white/20 focus:text-white focus:outline-none`}
-                    showPlaceholderOption={false}
-                    allowClear={false}
-                  />
-                </Tooltip>
-              </div>
+            <div className="shrink-0">
+              <Tooltip
+                content={`Show: ${
+                  recordScope === "today" ? "Today"
+                  : recordScope === "yesterday" ? "Yesterday"
+                  : recordScope === "week" ? "This Week"
+                  : "All records"
+                }`}
+                position="top">
+                <Dropdown
+                  className="w-9"
+                  options={[
+                    { value: "today", label: "Today" },
+                    { value: "yesterday", label: "Yesterday" },
+                    { value: "week", label: "This Week" },
+                    { value: "all", label: "All" },
+                  ]}
+                  value={recordScope}
+                  onChange={(val) => handleRecordScopeChange(val as AttendanceRecordScope)}
+                  trigger={
+                    <span className="inline-flex h-4 w-4 items-center justify-center">
+                      <i className={`fa-solid fa-calendar-day ${sidebarActionIconClassName}`} />
+                    </span>
+                  }
+                  menuWidth={120}
+                  buttonClassName={`h-9 w-full !border-white/5 !bg-white/5 group-focus-within/bar:!border-white/20 border border-l-0 rounded-l-none rounded-r-lg px-0 text-white/45 transition-all duration-200 hover:!bg-white/[0.08] hover:text-white focus:!border-white/20 focus:text-white focus:outline-none`}
+                  showPlaceholderOption={false}
+                  allowClear={false}
+                />
+              </Tooltip>
             </div>
           </div>
         </div>
