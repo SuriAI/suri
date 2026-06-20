@@ -247,7 +247,13 @@ class AttendanceService:
 
             first_record = person_records[0]
             timestamp = first_record.timestamp  # earliest check-in for the day
-            selected_rule = self._select_effective_rule(rule_history, timestamp)
+            # Get the rule in effect at the end of the target day, so settings updates made during the day apply to the day's session
+            rule_effective_time = timestamp.replace(
+                hour=23, minute=59, second=59, microsecond=999999
+            )
+            selected_rule = self._select_effective_rule(
+                rule_history, rule_effective_time
+            )
             normalized_rule = self._normalize_rule(
                 selected_rule,
                 late_threshold_minutes=late_threshold_minutes,
@@ -436,21 +442,10 @@ class AttendanceService:
 
         await self.repo.add_record(record_data)
 
-        session_rule = None
-        if existing_session and getattr(existing_session, "applied_rule_id", None):
-            session_rule = await self.repo.get_group_rule(
-                existing_session.applied_rule_id
-            )
-
-        if session_rule is None:
-            rule_effective_at = (
-                existing_session.check_in_time
-                if existing_session and existing_session.check_in_time
-                else current_time
-            )
-            session_rule = await self.repo.get_effective_group_rule(
-                member.group_id, rule_effective_at
-            )
+        # Always fetch the effective rule at the current event time to support settings changes midway through the day
+        session_rule = await self.repo.get_effective_group_rule(
+            member.group_id, current_time
+        )
 
         normalized_rule = self._normalize_rule(
             session_rule,
