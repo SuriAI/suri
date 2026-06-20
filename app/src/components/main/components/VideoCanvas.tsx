@@ -1,8 +1,9 @@
-import { memo } from "react"
+import { memo, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { RefObject } from "react"
 import { StartTimeChip } from "./StartTimeChip"
 import type { QuickSettings } from "@/components/settings"
+import type { AttendanceGroup } from "@/types/recognition"
 
 interface VideoCanvasProps {
   videoRef: RefObject<HTMLVideoElement | null>
@@ -19,6 +20,10 @@ interface VideoCanvasProps {
   lateTrackingEnabled?: boolean
   classStartTime?: string | null
   onStartTimeChange?: (newTime: string) => void
+  currentGroup?: AttendanceGroup | null
+  enableSpoofDetection?: boolean
+  attendanceCooldownSeconds?: number
+  maxRecognitionFacesPerFrame?: number
 }
 
 export const VideoCanvas = memo(function VideoCanvas({
@@ -34,9 +39,61 @@ export const VideoCanvas = memo(function VideoCanvas({
   hasGroups = false,
   hasMembers = false,
   lateTrackingEnabled,
-  classStartTime,
+  classStartTime = null,
   onStartTimeChange,
+  currentGroup = null,
+  enableSpoofDetection = false,
+  attendanceCooldownSeconds = 30,
+  maxRecognitionFacesPerFrame = 5,
 }: VideoCanvasProps) {
+  const [showSettings, setShowSettings] = useState(false)
+
+  const formatCooldown = (secs: number) => {
+    if (secs < 60) return `${secs}s`
+    return `${secs / 60}m`
+  }
+
+  const tooltipContent =
+    currentGroup ?
+      <div className="flex min-w-48 flex-col gap-1.5 p-1 text-[11px] text-white/60 select-none">
+        <div className="mb-0.5 text-[10px] font-bold tracking-wider text-white/30 uppercase">
+          Active Settings
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Entry & Exit</span>
+          <span className="text-right font-medium text-white/80">
+            {currentGroup.settings?.track_checkout ? "Track check-outs" : "Arrivals only"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Late Tracking</span>
+          <span className="text-right font-medium text-white/80">
+            {currentGroup.settings?.late_threshold_enabled ?
+              `${currentGroup.settings?.late_threshold_minutes}m`
+            : "Disabled"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Duplicate Prevention</span>
+          <span className="text-right font-medium text-white/80">
+            {formatCooldown(attendanceCooldownSeconds)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Recognition Limit</span>
+          <span className="text-right font-medium text-white/80">
+            {maxRecognitionFacesPerFrame > 0 ? maxRecognitionFacesPerFrame : "Unlimited"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span>Liveness Verification</span>
+          <span className="text-right font-medium text-white/80">
+            {enableSpoofDetection ? "Enabled" : "Disabled"}
+          </span>
+        </div>
+      </div>
+    : null
+
   const isTimeOutdated = (): boolean => {
     try {
       if (!classStartTime) return false
@@ -170,6 +227,40 @@ export const VideoCanvas = memo(function VideoCanvas({
                   </div>
                 </motion.div>
               }
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {!isStreaming && currentGroup && tooltipContent && (
+          <motion.div
+            key="settings-info-btn"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-4 right-4 z-50 h-7 w-7"
+            onMouseEnter={() => setShowSettings(true)}
+            onMouseLeave={() => setShowSettings(false)}>
+            <div
+              className={`flex h-full w-full cursor-help items-center justify-center transition-all select-none ${showSettings ? "text-white/65" : "text-white/25 hover:text-white/65"}`}>
+              <i className="fa-solid fa-sliders text-xs" />
+            </div>
+
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                  transition={{ duration: 0.1, ease: "easeOut" }}
+                  className="absolute top-full right-0 z-50 pt-1.5">
+                  <div className="rounded-lg border border-white/10 bg-[rgba(15,19,25,0.98)] p-2.5 shadow-2xl backdrop-blur-md">
+                    {tooltipContent}
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
           </motion.div>
         )}

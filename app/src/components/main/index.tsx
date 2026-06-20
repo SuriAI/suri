@@ -663,6 +663,10 @@ export default function Main() {
               lateTrackingEnabled={!!currentGroup?.settings?.late_threshold_enabled}
               classStartTime={currentGroup?.settings?.class_start_time}
               onStartTimeChange={handleStartTimeChange}
+              currentGroup={currentGroup}
+              enableSpoofDetection={enableSpoofDetection}
+              attendanceCooldownSeconds={attendanceCooldownSeconds}
+              maxRecognitionFacesPerFrame={maxRecognitionFacesPerFrame}
             />
 
             {/* New Cooldown Overlay */}
