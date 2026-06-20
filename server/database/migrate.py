@@ -39,23 +39,42 @@ def verify_and_repair_database():
             exc_info=True,
         )
 
-        # Archive corrupted database file
-        corrupt_backup_path = DATA_DIR / f"attendance.db.corrupt_{int(time.time())}"
-        try:
-            db_path.rename(corrupt_backup_path)
-            logger.warning(
-                f"[DB_CORRUPTION] Successfully archived corrupted database to {corrupt_backup_path.name}"
-            )
-        except Exception as rename_err:
-            logger.error(
-                f"[DB_CORRUPTION] Failed to archive corrupted database: {rename_err}. Deleting file."
-            )
-            try:
-                db_path.unlink(missing_ok=True)
-            except Exception as unlink_err:
-                logger.critical(
-                    f"[DB_CORRUPTION] Fatal: Unable to remove corrupted database file: {unlink_err}"
-                )
+        # Archive corrupted database file and its sidecar files (WAL, SHM, journal) to prevent
+        # the new database connection from trying to parse mismatched/orphaned journal files.
+        timestamp = int(time.time())
+        db_files = [
+            (db_path, DATA_DIR / f"attendance.db.corrupt_{timestamp}"),
+            (
+                db_path.with_name(db_path.name + "-wal"),
+                DATA_DIR / f"attendance.db-wal.corrupt_{timestamp}",
+            ),
+            (
+                db_path.with_name(db_path.name + "-shm"),
+                DATA_DIR / f"attendance.db-shm.corrupt_{timestamp}",
+            ),
+            (
+                db_path.with_name(db_path.name + "-journal"),
+                DATA_DIR / f"attendance.db-journal.corrupt_{timestamp}",
+            ),
+        ]
+
+        for src, dest in db_files:
+            if src.exists():
+                try:
+                    src.rename(dest)
+                    logger.warning(
+                        f"[DB_CORRUPTION] Successfully archived {src.name} to {dest.name}"
+                    )
+                except Exception as rename_err:
+                    logger.error(
+                        f"[DB_CORRUPTION] Failed to archive {src.name}: {rename_err}. Deleting file."
+                    )
+                    try:
+                        src.unlink(missing_ok=True)
+                    except Exception as unlink_err:
+                        logger.critical(
+                            f"[DB_CORRUPTION] Fatal: Unable to remove {src.name}: {unlink_err}"
+                        )
 
 
 def check_and_stamp_baseline(db_path, alembic_cfg):

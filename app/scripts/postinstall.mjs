@@ -12,8 +12,7 @@ try {
   const hasElectronBuilder = fs.existsSync(path.join(appRoot, "node_modules", "electron-builder"))
   if (hasElectronBuilder) {
     console.log("Running electron-builder install-app-deps...")
-    // Native dependencies must be compiled against the Electron headers.
-    // We run install-app-deps only if electron-builder is present to avoid failures in pruned environments.
+    // Rebuild native dependencies against current Electron headers.
     execSync("npx electron-builder install-app-deps", { cwd: appRoot, stdio: "inherit" })
   } else {
     console.log("electron-builder not found, skipping native dependency installation.")
@@ -26,8 +25,7 @@ try {
   const electronInstallPath = path.join(appRoot, "node_modules", "electron", "install.js")
   if (fs.existsSync(electronInstallPath)) {
     console.log("Verifying/Downloading Electron binary...")
-    // electron-vite directly reads path.txt and bypasses Electron's entrypoint.
-    // We must manually trigger the download script to ensure the binary is downloaded.
+    // Force download of Electron binary since pnpm can skip lifecycle scripts.
     execSync(`node "${electronInstallPath}"`, { cwd: appRoot, stdio: "inherit" })
   } else {
     console.log("electron package not found in node_modules, skipping binary download.")
