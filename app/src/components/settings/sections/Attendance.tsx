@@ -392,10 +392,10 @@ export function Attendance({
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <div className="text-sm font-medium text-white/90">Global Group Consent</div>
+                <div className="text-sm font-medium text-white/90">Group Biometric Consent</div>
                 <InfoPopover
-                  title="Global Group Consent"
-                  description="Certifies that biometric consent is managed off-system. Enabling this bypasses manual consent confirmation checkboxes during member enrollment."
+                  title="Group Biometric Consent"
+                  description="Certifies that biometric consent is managed off-system. Enabling this bypasses manual consent confirmation checkboxes when adding or editing members."
                   details={[
                     "Certifies that consent is managed off-system.",
                     "Removes manual checkbox prompts on member add/edit.",
@@ -418,8 +418,8 @@ export function Attendance({
                     : !hasSelectedGroup ?
                       "Select a group to enable this feature"
                     : attendanceSettings.biometricConsentCertified ?
-                      "Bypass manual consent checkboxes during member enrollment."
-                    : "Require manual consent checkbox certification for each member."}
+                      "Bypass manual consent checkboxes when adding or editing members."
+                    : "Require manual consent checkbox certification when adding or editing members."}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -429,7 +429,7 @@ export function Attendance({
               checked={attendanceSettings.biometricConsentCertified}
               onChange={(checked) => onBiometricConsentToggle?.(checked)}
               disabled={!hasSelectedGroup || isPaired}
-              ariaLabel="Global Group Consent">
+              ariaLabel="Group Biometric Consent">
               {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
             </Switch>
           </div>
