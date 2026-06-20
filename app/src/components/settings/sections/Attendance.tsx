@@ -43,13 +43,13 @@ export function Attendance({
       <div className="overflow-hidden">
         <div className="pt-6 pb-2">
           <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-            Attendance
+            Group Settings
           </h3>
         </div>
 
         <div className="py-2">
           <div className="flex flex-col">
-            <div className={`flex items-center gap-4 py-4 ${hasSelectedGroup ? "" : ""}`}>
+            <div className="flex items-center gap-4 py-4">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <div className="text-sm font-medium text-white/90">Entry & Exit Tracking</div>
@@ -186,6 +186,62 @@ export function Attendance({
 
           <div className="h-px w-full bg-white/8" />
 
+          <div className="flex items-center gap-4 py-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <div className="text-sm font-medium text-white/90">Group Biometric Consent</div>
+                <InfoPopover
+                  title="Group Biometric Consent"
+                  description="Certifies that biometric consent is managed off-system. Enabling this bypasses manual consent confirmation checkboxes when adding or editing members."
+                  details={[
+                    "Certifies that consent is managed off-system.",
+                    "Removes manual checkbox prompts on member add/edit.",
+                    "Enables immediate one-click enrollment.",
+                  ]}
+                  side="right"
+                />
+              </div>
+              <div className="relative min-h-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${hasSelectedGroup}-${attendanceSettings.biometricConsentCertified}`}
+                    initial={{ opacity: 0, y: -2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 2 }}
+                    transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
+                    className="text-xs font-normal text-white/65">
+                    {isPaired ?
+                      "Managed by your organization."
+                    : !hasSelectedGroup ?
+                      "Select a group to enable this feature"
+                    : attendanceSettings.biometricConsentCertified ?
+                      "Bypass manual consent checkboxes when adding or editing members."
+                    : "Require manual consent checkbox certification when adding or editing members."
+                    }
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <Switch
+              checked={attendanceSettings.biometricConsentCertified}
+              onChange={(checked) => onBiometricConsentToggle?.(checked)}
+              disabled={!hasSelectedGroup || isPaired}
+              ariaLabel="Group Biometric Consent">
+              {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
+            </Switch>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden">
+        <div className="pt-6 pb-2">
+          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
+            Global Settings
+          </h3>
+        </div>
+
+        <div className="py-2">
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -330,17 +386,9 @@ export function Attendance({
               )}
             </AnimatePresence>
           </div>
-        </div>
-      </div>
 
-      <div className="overflow-hidden">
-        <div className="pt-6 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
-            Security & Compliance
-          </h3>
-        </div>
+          <div className="h-px w-full bg-white/8" />
 
-        <div className="py-2">
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -389,62 +437,6 @@ export function Attendance({
 
           <div className="h-px w-full bg-white/8" />
 
-          <div className="flex items-center gap-4 py-4">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <div className="text-sm font-medium text-white/90">Group Biometric Consent</div>
-                <InfoPopover
-                  title="Group Biometric Consent"
-                  description="Certifies that biometric consent is managed off-system. Enabling this bypasses manual consent confirmation checkboxes when adding or editing members."
-                  details={[
-                    "Certifies that consent is managed off-system.",
-                    "Removes manual checkbox prompts on member add/edit.",
-                    "Enables immediate one-click enrollment.",
-                  ]}
-                  side="right"
-                />
-              </div>
-              <div className="relative min-h-4">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${hasSelectedGroup}-${attendanceSettings.biometricConsentCertified}`}
-                    initial={{ opacity: 0, y: -2 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 2 }}
-                    transition={{ duration: SETTINGS_STATUS_SWAP_DURATION }}
-                    className="text-xs font-normal text-white/65">
-                    {isPaired ?
-                      "Managed by your organization."
-                    : !hasSelectedGroup ?
-                      "Select a group to enable this feature"
-                    : attendanceSettings.biometricConsentCertified ?
-                      "Bypass manual consent checkboxes when adding or editing members."
-                    : "Require manual consent checkbox certification when adding or editing members."
-                    }
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <Switch
-              checked={attendanceSettings.biometricConsentCertified}
-              onChange={(checked) => onBiometricConsentToggle?.(checked)}
-              disabled={!hasSelectedGroup || isPaired}
-              ariaLabel="Group Biometric Consent">
-              {isPaired && <i className="fa-solid fa-lock text-[8px] text-cyan-900/60" />}
-            </Switch>
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-hidden">
-        <div className="pt-10 pb-2">
-          <h3 className="text-[10px] font-extrabold tracking-[0.25em] text-white/55 uppercase">
-            Data Retention
-          </h3>
-        </div>
-
-        <div className="py-2">
           <div className="flex items-center gap-4 py-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
