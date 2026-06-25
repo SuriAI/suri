@@ -130,8 +130,7 @@ export function useGroupData(
       hasLoadedGroupsRef.current = true
       fetchGroups()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEmbedded]) // Only run once on mount in standalone mode
+  }, [isEmbedded, fetchGroups]) // Only run once on mount in standalone mode
 
   // Load group details when selected group changes
   useEffect(() => {

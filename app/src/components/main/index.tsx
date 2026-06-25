@@ -139,16 +139,22 @@ export default function Main() {
   const showEditGroupModal = useGroupUIStore((state) => state.showEditGroupModal)
 
   // Auto-open Settings → Sync when user chose "Connect to Cloud" during onboarding
+  const hasCheckedCloudSetupRef = useRef(false)
   useEffect(() => {
-    if (pendingCloudSetup) {
+    if (!hasCheckedCloudSetupRef.current && pendingCloudSetup) {
+      hasCheckedCloudSetupRef.current = true
       setSettingsInitialSection("remote-sync")
       setGroupInitialSection(undefined)
       setShowSettings(true)
       setPendingCloudSetup(false)
     }
-    // Only fire on mount — pendingCloudSetup is consumed immediately
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [
+    pendingCloudSetup,
+    setSettingsInitialSection,
+    setGroupInitialSection,
+    setShowSettings,
+    setPendingCloudSetup,
+  ])
 
   // Preload sound to minimize delay on first recognition
   useEffect(() => {
