@@ -130,11 +130,25 @@ export default function Main() {
     audioSettings,
     setAudioSettings,
     setSidebarCollapsed,
+    pendingCloudSetup,
+    setPendingCloudSetup,
   } = useUIStore()
   const showAddMemberModal = useGroupUIStore((state) => state.showAddMemberModal)
   const showEditMemberModal = useGroupUIStore((state) => state.showEditMemberModal)
   const showCreateGroupModal = useGroupUIStore((state) => state.showCreateGroupModal)
   const showEditGroupModal = useGroupUIStore((state) => state.showEditGroupModal)
+
+  // Auto-open Settings → Sync when user chose "Connect to Cloud" during onboarding
+  useEffect(() => {
+    if (pendingCloudSetup) {
+      setSettingsInitialSection("remote-sync")
+      setGroupInitialSection(undefined)
+      setShowSettings(true)
+      setPendingCloudSetup(false)
+    }
+    // Only fire on mount — pendingCloudSetup is consumed immediately
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Preload sound to minimize delay on first recognition
   useEffect(() => {

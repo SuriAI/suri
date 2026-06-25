@@ -24,6 +24,7 @@ export interface PersistentSettingsSchema {
     lastEnrollmentSource: string | null
     lastEnrollmentMode: string | null
     hasSeenIntro: boolean
+    pendingCloudSetup: boolean
     activeGroupSection: string | null
     antiSpoofDetectionInfoDismissed: boolean
     enrollmentInfoDismissed: boolean
@@ -87,6 +88,7 @@ export const defaultSettings: PersistentSettingsSchema = {
     lastEnrollmentSource: null,
     lastEnrollmentMode: null,
     hasSeenIntro: false,
+    pendingCloudSetup: false,
     activeGroupSection: null,
     antiSpoofDetectionInfoDismissed: false,
     enrollmentInfoDismissed: false,

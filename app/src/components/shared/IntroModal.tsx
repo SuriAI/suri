@@ -3,10 +3,23 @@ import { useUIStore } from "@/components/main/stores/uiStore"
 import { Modal } from "@/components/common"
 import { motion, AnimatePresence } from "framer-motion"
 
+/**
+ * First-launch intro flow that educates users about privacy and then
+ * presents them with a choice between offline-only usage and cloud
+ * dashboard connectivity.
+ *
+ * Steps 1–4: Privacy education (existing)
+ * Step 5: "How would you like to use Facenox?" — offline vs cloud choice
+ *
+ * The cloud choice is presented AFTER privacy context so the user can make
+ * an informed decision about data sharing. Both options are equally weighted.
+ */
 export function IntroModal() {
-  const { setHasSeenIntro } = useUIStore()
+  const { setHasSeenIntro, setPendingCloudSetup } = useUIStore()
   const [step, setStep] = useState(0)
   const [isOpen, setIsOpen] = useState(true)
+  const [hoveredCard, setHoveredCard] = useState<"offline" | "cloud" | null>(null)
+  const [selectedPath, setSelectedPath] = useState<"offline" | "cloud">("offline")
 
   const steps = [
     {
@@ -86,22 +99,41 @@ export function IntroModal() {
           </div>
 
           <p className="pt-1 text-center text-[11px] text-white/55 italic">
-            By clicking &quot;Finish&quot;, you acknowledge the on-device management of your
-            personal information.
+            By proceeding, you acknowledge the on-device management of your personal information.
+          </p>
+        </div>
+      ),
+    },
+    {
+      title: "How would you like to use Facenox?",
+      isChoiceStep: true,
+      content: (
+        <div className="space-y-3">
+          <p className="text-[12.5px] leading-relaxed text-white/55">
+            Choose how this device operates. You can always change this later in{" "}
+            <span className="font-medium text-white/70">Settings → Sync</span>.
           </p>
         </div>
       ),
     },
   ]
 
+  /** Completes the intro and optionally sets the cloud setup flag. */
+  const handleFinish = (choice: "offline" | "cloud") => {
+    if (choice === "cloud") {
+      setPendingCloudSetup(true)
+    }
+    setIsOpen(false)
+    setTimeout(() => {
+      setHasSeenIntro(true)
+    }, 250)
+  }
+
   const handleNext = () => {
     if (step < steps.length - 1) {
       setStep(step + 1)
     } else {
-      setIsOpen(false)
-      setTimeout(() => {
-        setHasSeenIntro(true)
-      }, 250)
+      handleFinish(selectedPath)
     }
   }
 
@@ -112,9 +144,10 @@ export function IntroModal() {
   }
 
   const currentStep = steps[step]
+  const isLastStep = step === steps.length - 1
 
   return (
-    <Modal isOpen={isOpen} maxWidth="md" hideCloseButton={true}>
+    <Modal isOpen={isOpen} maxWidth={isLastStep ? "max-w-[620px]" : "md"} hideCloseButton={true}>
       <div className="relative -m-5 overflow-hidden bg-[var(--bg-secondary)]">
         {/* Progress Bar */}
         <div className="absolute top-0 right-0 left-0 h-1 bg-[rgba(255,255,255,0.06)]">
@@ -137,9 +170,95 @@ export function IntroModal() {
                 <h2 className="mb-6 text-2xl font-bold tracking-tight text-white">
                   {currentStep.title}
                 </h2>
-                <div className="flex min-h-[120px] flex-col justify-center">
+                <div
+                  className={`flex flex-col justify-center ${isLastStep ? "" : "min-h-[120px]"}`}>
                   {currentStep.content}
                 </div>
+
+                {/* Choice cards — only on the final step */}
+                {isLastStep && (
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    {/* Offline Card */}
+                    <button
+                      onClick={() => setSelectedPath("offline")}
+                      onMouseEnter={() => setHoveredCard("offline")}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      className={`group relative flex flex-col rounded-xl border p-5 text-left transition-all duration-200 focus-visible:ring-2 focus-visible:ring-cyan-400/40 focus-visible:outline-none active:scale-[0.98] ${
+                        selectedPath === "offline" ? "border-white/20 bg-white/[0.04]"
+                        : hoveredCard === "offline" ? "border-white/12 bg-white/[0.02]"
+                        : "border-white/6 bg-white/[0.01] opacity-70"
+                      }`}>
+                      <div className="mb-3 flex items-center gap-2">
+                        <i
+                          className={`fa-solid fa-shield-halved text-sm transition-colors ${
+                            selectedPath === "offline" || hoveredCard === "offline" ?
+                              "text-white"
+                            : "text-white/60"
+                          }`}
+                        />
+                        <span className="text-[14px] font-semibold text-white">Use Offline</span>
+                        <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white/60">
+                          Default
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-[11.5px] leading-relaxed text-white/50">
+                        No setup. All data stays local to this computer.
+                      </p>
+                      {/* Active border indicator */}
+                      <motion.div
+                        className="pointer-events-none absolute inset-0 rounded-xl border-2 border-white/20"
+                        initial={false}
+                        animate={{ opacity: selectedPath === "offline" ? 1 : 0 }}
+                        transition={{ duration: 0.15 }}
+                      />
+                    </button>
+
+                    {/* Cloud Card */}
+                    <button
+                      onClick={() => setSelectedPath("cloud")}
+                      onMouseEnter={() => setHoveredCard("cloud")}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      className={`group relative flex flex-col rounded-xl border p-5 text-left transition-all duration-200 focus-visible:ring-2 focus-visible:ring-cyan-400/40 focus-visible:outline-none active:scale-[0.98] ${
+                        selectedPath === "cloud" ? "border-cyan-400/30 bg-cyan-500/[0.05]"
+                        : hoveredCard === "cloud" ? "border-cyan-400/20 bg-cyan-500/[0.02]"
+                        : "border-white/6 bg-white/[0.01] opacity-70"
+                      }`}>
+                      <div className="mb-3 flex items-center gap-2">
+                        <i
+                          className={`fa-solid fa-cloud text-sm transition-colors ${
+                            selectedPath === "cloud" || hoveredCard === "cloud" ?
+                              "text-cyan-400"
+                            : "text-white/60"
+                          }`}
+                        />
+                        <span className="text-[14px] font-semibold text-white">
+                          Connect to Cloud
+                        </span>
+                      </div>
+                      <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-white/50">
+                        <li className="flex items-start gap-1.5">
+                          <i className="fa-solid fa-check mt-[3px] text-[8px] text-cyan-400/60" />
+                          <span>Access reports from any device</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <i className="fa-solid fa-check mt-[3px] text-[8px] text-cyan-400/60" />
+                          <span>Sync data across multiple PCs</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <i className="fa-solid fa-check mt-[3px] text-[8px] text-cyan-400/60" />
+                          <span>Manage members remotely</span>
+                        </li>
+                      </ul>
+                      {/* Active border indicator */}
+                      <motion.div
+                        className="pointer-events-none absolute inset-0 rounded-xl border-2 border-cyan-400/30"
+                        initial={false}
+                        animate={{ opacity: selectedPath === "cloud" ? 1 : 0 }}
+                        transition={{ duration: 0.15 }}
+                      />
+                    </button>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -168,7 +287,7 @@ export function IntroModal() {
             <button
               onClick={handleNext}
               className="btn-premium btn-premium-primary px-8! py-2! text-[11px]! font-bold! tracking-wider focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-secondary)] focus-visible:outline-none active:scale-95">
-              {step === steps.length - 1 ? "Finish" : "Next"}
+              {isLastStep ? "Finish" : "Next"}
             </button>
           </div>
         </div>
