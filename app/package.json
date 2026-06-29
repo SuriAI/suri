@@ -59,7 +59,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "jsdom": "^29.0.1",
-    "knip": "^5.86.0",
+    "knip": "^6.23.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "rimraf": "^6.1.3",
