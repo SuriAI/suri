@@ -1,4 +1,4 @@
-import type { UpdateInfo } from "@/types/global"
+import type { UpdateInfo } from "@/types/updater"
 import { persistentSettings } from "./PersistentSettingsService"
 import { compareVersions } from "@/electron/updaterUtils"
 

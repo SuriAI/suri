@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tooltip } from "@/components/shared"
 import { updaterService } from "@/services"
-import type { UpdateInfo } from "@/types/global"
+import type { UpdateInfo } from "@/types/updater"
 import { useUIStore } from "@/components/main/stores"
 import { Modal, Spinner } from "@/components/common"
 

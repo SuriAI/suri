@@ -6,20 +6,7 @@ import type {
   PersonListResponse,
   DatabaseClearResponse,
 } from "@/types/recognition"
-
-export {}
-
-export interface UpdateInfo {
-  currentVersion: string
-  latestVersion: string
-  hasUpdate: boolean
-  releaseUrl: string
-  releaseNotes: string
-  publishedAt: string
-  downloadUrl: string | null
-  error?: string
-  isOffline?: boolean
-}
+import type { UpdateInfo } from "@/types/updater"
 
 declare global {
   interface FacenoxWSClientAPI {
