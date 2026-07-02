@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback } from "react"
 import { AnimatePresence } from "framer-motion"
-import { Settings } from "@/components/settings"
 import { attendanceManager, WebSocketService } from "@/services"
 import {
   useStreamState,
@@ -31,8 +30,7 @@ import { FloatingAlert } from "@/components/common"
 import { ControlBar } from "@/components/main/components/ControlBar"
 import { VideoCanvas } from "@/components/main/components/VideoCanvas"
 import { Sidebar } from "@/components/main/components/Sidebar"
-import { GroupManagementModal } from "@/components/main/components/GroupManagementModal"
-import { DeleteConfirmationModal } from "@/components/main/components/DeleteConfirmationModal"
+import { MainModals } from "@/components/main/components/MainModals"
 import { CooldownOverlay } from "@/components/main/components/CooldownOverlay"
 import type { DetectionResult } from "@/components/main/types"
 import { soundEffects } from "@/services/SoundEffectsService"
@@ -93,20 +91,10 @@ export default function Main() {
     setAttendanceGroups,
     groupMembers,
     isShellReady,
-    showGroupManagement,
     setShowGroupManagement,
-    showDeleteConfirmation,
-    groupToDelete,
-    newGroupName,
-    setNewGroupName,
     attendanceCooldownSeconds,
-    setAttendanceCooldownSeconds,
     enableSpoofDetection,
-    setEnableSpoofDetection,
     maxRecognitionFacesPerFrame,
-    setMaxRecognitionFacesPerFrame,
-    dataRetentionDays,
-    setDataRetentionDays,
     persistentCooldowns,
     timeHealth,
     setTimeHealth,
@@ -121,14 +109,10 @@ export default function Main() {
     setWarning,
     showSettings,
     setShowSettings,
-    groupInitialSection,
     setGroupInitialSection,
-    settingsInitialSection,
     setSettingsInitialSection,
     quickSettings,
-    setQuickSettings,
     audioSettings,
-    setAudioSettings,
     setSidebarCollapsed,
     pendingCloudSetup,
     setPendingCloudSetup,
@@ -722,157 +706,11 @@ export default function Main() {
         />
       </div>
 
-      <GroupManagementModal
-        showGroupManagement={showGroupManagement}
-        setShowGroupManagement={setShowGroupManagement}
-        newGroupName={newGroupName}
-        setNewGroupName={setNewGroupName}
+      <MainModals
         handleCreateGroup={handleCreateGroup}
-      />
-
-      <AnimatePresence>
-        {showSettings && (
-          <Settings
-            key="settings-modal"
-            onBack={() => {
-              setShowSettings(false)
-              setGroupInitialSection(undefined)
-              setSettingsInitialSection(undefined)
-              useGroupUIStore.getState().resetEnrollment()
-              loadAttendanceDataRef.current()
-            }}
-            isModal={true}
-            quickSettings={quickSettings}
-            onQuickSettingsChange={setQuickSettings}
-            audioSettings={audioSettings}
-            onAudioSettingsChange={setAudioSettings}
-            attendanceSettings={{
-              lateThresholdEnabled: currentGroup?.settings?.late_threshold_enabled ?? false,
-              lateThresholdMinutes: currentGroup?.settings?.late_threshold_minutes ?? 15,
-              classStartTime: currentGroup?.settings?.class_start_time ?? "08:00",
-              attendanceCooldownSeconds: attendanceCooldownSeconds,
-              enableSpoofDetection: enableSpoofDetection,
-              maxRecognitionFacesPerFrame: maxRecognitionFacesPerFrame,
-              trackCheckout: currentGroup?.settings?.track_checkout ?? false,
-              dataRetentionDays: dataRetentionDays,
-              biometricConsentCertified:
-                currentGroup?.settings?.biometric_consent_certified ?? false,
-            }}
-            onAttendanceSettingsChange={async (updates) => {
-              if (updates.enableSpoofDetection !== undefined) {
-                setEnableSpoofDetection(updates.enableSpoofDetection)
-              }
-
-              if (updates.maxRecognitionFacesPerFrame !== undefined) {
-                setMaxRecognitionFacesPerFrame(updates.maxRecognitionFacesPerFrame)
-              }
-
-              if (updates.biometricConsentCertified !== undefined && currentGroup) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  biometric_consent_certified: updates.biometricConsentCertified,
-                }
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, {
-                    settings: updatedSettings,
-                  })
-                  syncUpdatedGroupLocally({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  })
-                } catch (error) {
-                  console.error("Failed to update biometric consent certification setting:", error)
-                }
-              }
-
-              if (updates.trackCheckout !== undefined && currentGroup) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  track_checkout: updates.trackCheckout,
-                }
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, {
-                    settings: updatedSettings,
-                  })
-                  syncUpdatedGroupLocally({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  })
-                } catch (error) {
-                  console.error("Failed to update track checkout setting:", error)
-                }
-              }
-
-              if (updates.attendanceCooldownSeconds !== undefined) {
-                setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds)
-                try {
-                  await attendanceManager.updateSettings({
-                    attendance_cooldown_seconds: updates.attendanceCooldownSeconds,
-                  })
-                } catch (error) {
-                  console.error("Failed to update cooldown setting:", error)
-                }
-              }
-
-              if (updates.dataRetentionDays !== undefined) {
-                setDataRetentionDays(updates.dataRetentionDays)
-                try {
-                  await attendanceManager.updateSettings({
-                    data_retention_days: updates.dataRetentionDays,
-                  })
-                } catch (error) {
-                  console.error("Failed to update data retention setting:", error)
-                }
-              }
-
-              if (
-                currentGroup &&
-                (updates.lateThresholdEnabled !== undefined ||
-                  updates.lateThresholdMinutes !== undefined ||
-                  updates.classStartTime !== undefined)
-              ) {
-                const updatedSettings = {
-                  ...currentGroup.settings,
-                  ...(updates.lateThresholdEnabled !== undefined && {
-                    late_threshold_enabled: updates.lateThresholdEnabled,
-                  }),
-                  ...(updates.lateThresholdMinutes !== undefined && {
-                    late_threshold_minutes: updates.lateThresholdMinutes,
-                  }),
-                  ...(updates.classStartTime !== undefined && {
-                    class_start_time: updates.classStartTime,
-                  }),
-                }
-                try {
-                  await attendanceManager.updateGroup(currentGroup.id, {
-                    settings: updatedSettings,
-                  })
-                  syncUpdatedGroupLocally({
-                    ...currentGroup,
-                    settings: updatedSettings,
-                  })
-                } catch (error) {
-                  console.error("Failed to update attendance settings:", error)
-                }
-              }
-            }}
-            initialGroupSection={groupInitialSection}
-            initialSection={settingsInitialSection}
-            currentGroup={currentGroup}
-            currentGroupMembers={groupMembers}
-            onGroupSelect={handleSelectGroup}
-            onGroupsChanged={() => loadAttendanceDataRef.current()}
-            initialGroups={attendanceGroups}
-          />
-        )}
-      </AnimatePresence>
-
-      <DeleteConfirmationModal
-        showDeleteConfirmation={showDeleteConfirmation}
-        groupToDelete={groupToDelete}
-        currentGroup={currentGroup}
-        cancelDeleteGroup={cancelDeleteGroup}
         confirmDeleteGroup={confirmDeleteGroup}
+        cancelDeleteGroup={cancelDeleteGroup}
+        loadAttendanceDataRef={loadAttendanceDataRef}
       />
     </div>
   )

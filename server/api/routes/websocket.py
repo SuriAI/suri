@@ -4,20 +4,12 @@ import re
 import time
 import hmac
 
-import cv2
-import numpy as np
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from api.deps import normalize_organization_id
-from config.models import FACE_DETECTOR_CONFIG
-from utils import serialize_faces
-from hooks import (
-    process_face_detection,
-    process_face_tracking,
-    process_liveness_detection,
-)
 from utils.websocket_manager import manager, notification_manager
 from services.live_stream_service import LiveStreamService
+from services.detection_pipeline import DetectionPipeline, FrameDecodeError
 from time_utils import local_now
 import core.lifespan as lifespan
 
@@ -72,6 +64,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
 
     organization_id = get_websocket_organization_id(websocket)
     live_stream_service = LiveStreamService(organization_id)
+    pipeline = DetectionPipeline(live_stream_service)
     await websocket.accept()
     logger.info("[WebSocket] Client %s connected successfully", client_id)
 
@@ -186,73 +179,26 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         manager.connection_metadata[client_id]["last_activity"] = (
                             local_now()
                         )
-                    start_time = time.time()
                     frame_bytes = message_data["bytes"]
 
-                    nparr = np.frombuffer(frame_bytes, np.uint8)
-                    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-                    if image is None:
+                    try:
+                        response_data, attendance_messages = await pipeline.process_frame(
+                            frame_bytes,
+                            client_id,
+                            live_session_config,
+                            manager.update_fps,
+                        )
+                    except FrameDecodeError as decode_err:
                         await websocket.send_text(
                             json.dumps(
                                 {
                                     "type": "error",
-                                    "message": "Failed to decode frame",
+                                    "message": str(decode_err),
                                     "timestamp": time.time(),
                                 }
                             )
                         )
                         continue
-
-                    min_face_size = FACE_DETECTOR_CONFIG["min_face_size"]
-
-                    faces = await process_face_detection(
-                        image,
-                        confidence_threshold=FACE_DETECTOR_CONFIG["score_threshold"],
-                        nms_threshold=FACE_DETECTOR_CONFIG["nms_threshold"],
-                        min_face_size=min_face_size,
-                        enable_liveness=live_session_config.enable_liveness_detection,
-                    )
-
-                    current_fps = manager.update_fps(client_id)
-                    faces = process_face_tracking(faces, image, current_fps, client_id)
-                    faces = await process_liveness_detection(
-                        faces,
-                        image,
-                        live_session_config.enable_liveness_detection,
-                        tracking_namespace=client_id,
-                    )
-
-                    attendance_messages = (
-                        await live_stream_service.process_live_recognition(
-                            image, faces, live_session_config, client_id
-                        )
-                    )
-
-                    serialized_faces = serialize_faces(faces, "websocket")
-
-                    processing_time = time.time() - start_time
-
-                    current_timestamp = time.time()
-                    response_data = {
-                        "type": "detection_response",
-                        "faces": serialized_faces,
-                        "model_used": "face_detector",
-                        "processing_time": processing_time,
-                        "timestamp": current_timestamp,
-                        "frame_timestamp": current_timestamp,
-                        "success": True,
-                    }
-
-                    # Calculate suggested_skip based on processing time
-                    if processing_time * 1000 > 50:
-                        suggested_skip = 2
-                    elif processing_time * 1000 > 30:
-                        suggested_skip = 1
-                    else:
-                        suggested_skip = 0
-
-                    response_data["suggested_skip"] = suggested_skip
 
                     await websocket.send_text(json.dumps(response_data))
                     for attendance_message in attendance_messages:

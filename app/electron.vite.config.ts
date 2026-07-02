@@ -55,10 +55,18 @@ export default defineConfig({
       rollupOptions: {
         input: resolve(__dirname, "index.html"),
         output: {
-          manualChunks: {
-            react: ["react", "react-dom"],
-            motion: ["framer-motion"],
-            state: ["zustand", "zod"],
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("react") || id.includes("react-dom")) {
+                return "react"
+              }
+              if (id.includes("framer-motion")) {
+                return "motion"
+              }
+              if (id.includes("zustand") || id.includes("zod")) {
+                return "state"
+              }
+            }
           },
           assetFileNames: (assetInfo) => {
             if (
