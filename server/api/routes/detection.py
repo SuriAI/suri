@@ -36,12 +36,24 @@ async def detect_faces(
     start_time = time.time()
 
     try:
-        contents = await image.read()
-        if len(contents) > MAX_IMAGE_SIZE:
+        # Early size check to prevent memory exhaustion DoS
+        file_size = image.size if image.size is not None else 0
+        if file_size == 0:
+            try:
+                image.file.seek(0, 2)
+                file_size = image.file.tell()
+                image.file.seek(0)
+            except Exception:
+                pass
+
+        if file_size > MAX_IMAGE_SIZE:
             raise HTTPException(
                 status_code=413,
-                detail=f"Image too large ({len(contents)} bytes). Max {MAX_IMAGE_SIZE} bytes.",
+                detail=f"Image too large ({file_size} bytes). Max {MAX_IMAGE_SIZE} bytes.",
             )
+
+        contents = await image.read()
+
         nparr = np.frombuffer(contents, np.uint8)
         image_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
