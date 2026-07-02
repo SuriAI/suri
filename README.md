@@ -263,10 +263,10 @@ Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before openin
 <table>
 <tr>
     <td align="center">
-        <a href="https://github.com/johnraivenolazo">
-            <img src="https://avatars.githubusercontent.com/u/137252774?v=4" width="80;" alt="johnraivenolazo"/>
+        <a href="https://github.com/avenolazo">
+            <img src="https://avatars.githubusercontent.com/u/137252774?v=4" width="80;" alt="avenolazo"/>
             <br />
-            <sub><b>johnraivenolazo</b></sub>
+            <sub><b>avenolazo</b></sub>
         </a>
     </td></tr>
 </table>
