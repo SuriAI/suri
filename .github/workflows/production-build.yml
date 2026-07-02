@@ -12,7 +12,7 @@ jobs:
     name: Lint & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -20,7 +20,7 @@ jobs:
           node-version: "22"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
 
@@ -75,7 +75,7 @@ jobs:
           - os: ubuntu-24.04
             arch: x64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -117,7 +117,7 @@ jobs:
           - os: ubuntu-24.04
             arch: x64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -125,12 +125,12 @@ jobs:
           node-version: "22"
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
 
       - name: Download Backend Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: backend-${{ matrix.os }}-${{ matrix.arch }}
           path: server/dist/
@@ -179,7 +179,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       # Windows Signing (Placeholder/Optional)
       - name: Submit to SignPath (Windows)
@@ -197,7 +197,7 @@ jobs:
 
       # Download all original artifacts for fallback
       - name: Download Original Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: original-artifacts/
 
