@@ -396,7 +396,7 @@ export default function WindowBar() {
               <i className="fa-solid fa-check text-xl" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-white">You're up to date!</p>
+              <p className="text-sm font-semibold text-white">You&apos;re up to date!</p>
               <p className="text-xs text-white/50">
                 Facenox v{checkedUpdateInfo?.currentVersion} is the latest version available.
               </p>
@@ -422,7 +422,7 @@ export default function WindowBar() {
               </p>
             </div>
             {checkedUpdateInfo?.releaseNotes && (
-              <div className="custom-scroll max-h-32 w-full overflow-y-auto rounded-lg border border-white/5 bg-white/5 p-3 text-left text-xs text-white/60 font-mono">
+              <div className="custom-scroll max-h-32 w-full overflow-y-auto rounded-lg border border-white/5 bg-white/5 p-3 text-left font-mono text-xs text-white/60">
                 {checkedUpdateInfo.releaseNotes}
               </div>
             )}
