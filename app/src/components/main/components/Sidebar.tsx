@@ -8,7 +8,7 @@ import { DetectionPanel } from "@/components/main/components/DetectionPanel"
 
 import { useAttendanceStore, useUIStore } from "@/components/main/stores"
 import { updaterService } from "@/services"
-import type { UpdateInfo } from "@/types/global"
+import type { UpdateInfo } from "@/types/updater"
 
 interface SidebarProps {
   currentDetections: DetectionResult | null

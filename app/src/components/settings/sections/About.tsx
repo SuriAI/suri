@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { updaterService } from "@/services"
-import type { UpdateInfo } from "@/types/global"
+import type { UpdateInfo } from "@/types/updater"
 import { Modal, Spinner } from "@/components/common"
 
 interface PrivacyModalProps {
