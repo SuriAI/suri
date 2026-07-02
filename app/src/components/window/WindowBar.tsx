@@ -150,24 +150,32 @@ export default function WindowBar() {
             alt="Facenox"
             className={`${isMac ? "-ml-4" : ""} pointer-events-none h-4 w-4 object-contain opacity-60`}
           />
-          <div className="relative [webkit-app-region:no-drag] pointer-events-auto flex items-center">
+          <div
+            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+            className="relative pointer-events-auto flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`flex h-5 w-5 items-center justify-center rounded border border-transparent bg-transparent text-white/40 transition-all duration-150 hover:border-white/10 hover:bg-white/5 hover:text-white/80 active:scale-95 focus:outline-none ${
                 isMenuOpen ? "border-white/10 bg-white/5 text-white/80" : ""
               }`}
+              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
               title="App Menu">
               <i className="fa-solid fa-ellipsis-vertical text-[10px]" />
             </button>
             <AnimatePresence>
               {isMenuOpen && (
                 <>
-                  <div className="fixed inset-0 z-80" onClick={() => setIsMenuOpen(false)} />
+                  <div
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                    className="fixed inset-0 z-80"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: -4 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.12, ease: "easeOut" }}
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                     className="absolute left-0 top-[22px] w-48 rounded-lg border border-white/10 bg-[#161c24]/90 backdrop-blur-md p-1 shadow-xl z-90">
                     <button
                       onClick={async () => {
