@@ -36,6 +36,7 @@ class LiveSessionConfig:
     client_id: Optional[str] = None
     group_context: LiveGroupContext = field(default_factory=LiveGroupContext)
     attendance_cooldowns: Dict[str, float] = field(default_factory=dict)
+    is_refreshing: bool = False
 
     def reset_group(self, group_id: Optional[str]) -> None:
         self.active_group_id = group_id
@@ -44,6 +45,7 @@ class LiveSessionConfig:
             max_recognition_faces_per_frame=self.max_recognition_faces_per_frame,
         )
         self.attendance_cooldowns.clear()
+        self.is_refreshing = False
 
 
 class LiveStreamService:
@@ -211,30 +213,27 @@ class LiveStreamService:
                 config.max_recognition_faces_per_frame
             )
 
-    async def ensure_group_context(self, config: LiveSessionConfig) -> LiveGroupContext:
-        if not config.active_group_id:
-            return config.group_context
+    async def _fetch_group_context(
+        self, active_group_id: str, max_recognition_faces_per_frame: int
+    ) -> LiveGroupContext:
+        """Fetch group details and members from the database to build a fast-matching vector matrix.
 
-        should_refresh = (
-            config.group_context.group_id != config.active_group_id
-            or time.time() - config.group_context.loaded_at > LIVE_CONTEXT_TTL_SECONDS
-        )
-        if not should_refresh:
-            return config.group_context
-
+        This handles the synchronous database interaction and caches them inside LiveGroupContext to bypass
+        repeated SQLite lookups in the hot path.
+        """
         from database.repository import AttendanceRepository
         from database.session import AsyncSessionLocal
 
         group_context = LiveGroupContext(
-            group_id=config.active_group_id,
-            max_recognition_faces_per_frame=config.max_recognition_faces_per_frame,
+            group_id=active_group_id,
+            max_recognition_faces_per_frame=max_recognition_faces_per_frame,
             loaded_at=time.time(),
         )
 
         async with AsyncSessionLocal() as session:
             repo = AttendanceRepository(session, organization_id=self.organization_id)
             settings = await repo.get_settings()
-            group = await repo.get_group(config.active_group_id)
+            group = await repo.get_group(active_group_id)
 
             group_context.attendance_cooldown_seconds = (
                 settings.attendance_cooldown_seconds or 300
@@ -246,10 +245,9 @@ class LiveStreamService:
             )
 
             if group:
-                members = await repo.get_group_members(config.active_group_id)
+                members = await repo.get_group_members(active_group_id)
                 group_context.group_exists = True
 
-                # Use a set for O(1) membership checks to prevent O(G*M) bottlenecks
                 group_context.allowed_person_ids = {m.person_id for m in members}
 
                 group_context.members_by_person_id = {
@@ -283,8 +281,51 @@ class LiveStreamService:
                         group_context.group_matrix = np.stack(valid_embeddings)
                         group_context.person_index_map = valid_person_ids
 
-        config.group_context = group_context
         return group_context
+
+    async def _bg_refresh_group_context(self, config: LiveSessionConfig) -> None:
+        """Asynchronously refresh the group context in the background to avoid stalling the active stream."""
+        try:
+            new_context = await self._fetch_group_context(
+                config.active_group_id, config.max_recognition_faces_per_frame
+            )
+            # Prevent swapping settings if the active group was modified concurrently.
+            if config.active_group_id == new_context.group_id:
+                config.group_context = new_context
+        except Exception as e:
+            logger.warning(
+                "[LiveStreamService] Background group context refresh failed: %s", e
+            )
+        finally:
+            config.is_refreshing = False
+
+    async def ensure_group_context(self, config: LiveSessionConfig) -> LiveGroupContext:
+        """Ensure group settings are populated, lazy-loading changes asynchronously to keep real-time video smooth."""
+        if not config.active_group_id:
+            return config.group_context
+
+        is_group_switch = config.group_context.group_id != config.active_group_id
+
+        if is_group_switch:
+            # We must load the initial context synchronously because the active group has changed
+            # and no fallback matrix exists.
+            config.group_context = await self._fetch_group_context(
+                config.active_group_id, config.max_recognition_faces_per_frame
+            )
+            config.is_refreshing = False
+            return config.group_context
+
+        # Trigger non-blocking re-validation only if the TTL window has elapsed.
+        should_refresh = (
+            time.time() - config.group_context.loaded_at > LIVE_CONTEXT_TTL_SECONDS
+        )
+        if should_refresh and not config.is_refreshing:
+            import asyncio
+
+            config.is_refreshing = True
+            asyncio.create_task(self._bg_refresh_group_context(config))
+
+        return config.group_context
 
     async def process_live_recognition(
         self,
