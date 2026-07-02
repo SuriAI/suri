@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class FrameDecodeError(Exception):
     """Raised when frame bytes cannot be converted into an image by OpenCV."""
+
     pass
 
 

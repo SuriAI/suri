@@ -5,7 +5,6 @@ import { updaterService } from "@/services"
 import type { UpdateInfo } from "@/types/global"
 import { useUIStore } from "@/components/main/stores"
 
-
 function formatRelativeTime(dateString: string | null): string {
   if (!dateString) return "Never"
   try {
@@ -43,6 +42,7 @@ function formatRelativeTime(dateString: string | null): string {
 export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false)
   const setShowSettings = useUIStore((state) => state.setShowSettings)
   const [syncConfig, setSyncConfig] = useState<{
     connected: boolean
@@ -152,10 +152,10 @@ export default function WindowBar() {
           />
           <div
             style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            className="relative pointer-events-auto flex items-center">
+            className="pointer-events-auto relative flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`flex h-5 w-5 items-center justify-center rounded border border-transparent bg-transparent text-white/40 transition-all duration-150 hover:border-white/10 hover:bg-white/5 hover:text-white/80 active:scale-95 focus:outline-none ${
+              className={`flex h-5 w-5 items-center justify-center rounded border border-transparent bg-transparent text-white/40 transition-all duration-150 hover:border-white/10 hover:bg-white/5 hover:text-white/80 focus:outline-none active:scale-95 ${
                 isMenuOpen ? "border-white/10 bg-white/5 text-white/80" : ""
               }`}
               style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
@@ -176,13 +176,13 @@ export default function WindowBar() {
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.12, ease: "easeOut" }}
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                    className="absolute left-0 top-[22px] w-48 rounded-lg border border-white/10 bg-[#161c24]/90 backdrop-blur-md p-1 shadow-xl z-90">
+                    className="absolute top-[22px] left-0 z-90 w-48 rounded-lg border border-white/10 bg-[#161c24]/90 p-1 shadow-xl backdrop-blur-md">
                     <button
                       onClick={async () => {
                         setIsMenuOpen(false)
                         await window.facenoxElectron?.openDataDir()
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
                       <i className="fa-regular fa-folder-open w-4 text-[11px]" />
                       Open Data Folder
                     </button>
@@ -191,7 +191,7 @@ export default function WindowBar() {
                         setIsMenuOpen(false)
                         await window.facenoxElectron?.openInstallDir()
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
                       <i className="fa-regular fa-folder w-4 text-[11px]" />
                       Open Install Folder
                     </button>
@@ -201,16 +201,43 @@ export default function WindowBar() {
                         setIsMenuOpen(false)
                         setShowSettings(true)
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
                       <i className="fa-solid fa-gear w-4 text-[11px]" />
                       Settings
+                    </button>
+                    <button
+                      disabled={isCheckingUpdates}
+                      onClick={async () => {
+                        setIsMenuOpen(false)
+                        setIsCheckingUpdates(true)
+                        try {
+                          const info = await updaterService.checkForUpdates(true)
+                          if (info.hasUpdate) {
+                            // Badge will pop up in the titlebar automatically
+                          } else if (info.isOffline) {
+                            alert("Cannot check for updates: Offline mode.")
+                          } else if (info.error) {
+                            alert("Failed to check for updates.")
+                          } else {
+                            alert(`Facenox is up to date! (v${info.currentVersion})`)
+                          }
+                        } catch (err) {
+                          console.error(err)
+                          alert("Failed to check for updates.")
+                        } finally {
+                          setIsCheckingUpdates(false)
+                        }
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50">
+                      <i className="fa-solid fa-cloud-arrow-up w-4 text-[11px]" />
+                      {isCheckingUpdates ? "Checking..." : "Check for Updates"}
                     </button>
                     <button
                       onClick={() => {
                         setIsMenuOpen(false)
                         window.location.reload()
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
                       <i className="fa-solid fa-rotate w-4 text-[11px]" />
                       Reload Application
                     </button>
