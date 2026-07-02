@@ -46,3 +46,4 @@ app/coverage/
 *.suo
 *.sln
 *.sw?
+server/tests/lfw_images/*
