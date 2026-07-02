@@ -203,7 +203,7 @@ export default function WindowBar() {
                       }}
                       className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
                       <i className="fa-solid fa-gear w-4 text-[11px]" />
-                      Preferences
+                      Settings
                     </button>
                     <button
                       onClick={() => {
