@@ -1,4 +1,5 @@
-import { ipcMain, shell } from "electron"
+import { ipcMain, shell, app } from "electron"
+import path from "path"
 import { diagnosticsService } from "../services/DiagnosticsService.js"
 
 export function registerSystemHandlers() {
@@ -21,5 +22,17 @@ export function registerSystemHandlers() {
     const path = await diagnosticsService.exportReportToDisk(report)
     shell.showItemInFolder(path)
     return { success: true, path }
+  })
+
+  ipcMain.handle("system:open-data-dir", async () => {
+    const userDataPath = app.getPath("userData")
+    await shell.openPath(userDataPath)
+    return { success: true, path: userDataPath }
+  })
+
+  ipcMain.handle("system:open-install-dir", async () => {
+    const installPath = app.isPackaged ? path.dirname(process.execPath) : app.getAppPath()
+    await shell.openPath(installPath)
+    return { success: true, path: installPath }
   })
 }

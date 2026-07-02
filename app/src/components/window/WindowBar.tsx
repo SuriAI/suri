@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Tooltip } from "@/components/shared"
 import { updaterService } from "@/services"
 import type { UpdateInfo } from "@/types/global"
+import { useUIStore } from "@/components/main/stores"
+
 
 function formatRelativeTime(dateString: string | null): string {
   if (!dateString) return "Never"
@@ -40,6 +42,8 @@ function formatRelativeTime(dateString: string | null): string {
  */
 export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const setShowSettings = useUIStore((state) => state.setShowSettings)
   const [syncConfig, setSyncConfig] = useState<{
     connected: boolean
     enabled: boolean
@@ -139,12 +143,75 @@ export default function WindowBar() {
       {/* Spacer for Mac native traffic lights */}
       {isMac && <div className="w-[80px] shrink-0" />}
 
-      <div className="relative z-40 ml-3 flex flex-1 items-center gap-3">
-        <img
-          src="./icons/logo-transparent.png"
-          alt="Facenox"
-          className={`${isMac ? "-ml-4" : ""} pointer-events-none h-4 w-4 object-contain opacity-60`}
-        />
+      <div className="relative z-40 ml-3 flex flex-1 items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <img
+            src="./icons/logo-transparent.png"
+            alt="Facenox"
+            className={`${isMac ? "-ml-4" : ""} pointer-events-none h-4 w-4 object-contain opacity-60`}
+          />
+          <div className="relative [webkit-app-region:no-drag] pointer-events-auto flex items-center">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`flex h-5 w-5 items-center justify-center rounded border border-transparent bg-transparent text-white/40 transition-all duration-150 hover:border-white/10 hover:bg-white/5 hover:text-white/80 active:scale-95 focus:outline-none ${
+                isMenuOpen ? "border-white/10 bg-white/5 text-white/80" : ""
+              }`}
+              title="App Menu">
+              <i className="fa-solid fa-ellipsis-vertical text-[10px]" />
+            </button>
+            <AnimatePresence>
+              {isMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-80" onClick={() => setIsMenuOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.12, ease: "easeOut" }}
+                    className="absolute left-0 top-[22px] w-48 rounded-lg border border-white/10 bg-[#161c24]/90 backdrop-blur-md p-1 shadow-xl z-90">
+                    <button
+                      onClick={async () => {
+                        setIsMenuOpen(false)
+                        await window.facenoxElectron?.openDataDir()
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      <i className="fa-regular fa-folder-open w-4 text-[11px]" />
+                      Open Data Folder
+                    </button>
+                    <button
+                      onClick={async () => {
+                        setIsMenuOpen(false)
+                        await window.facenoxElectron?.openInstallDir()
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      <i className="fa-regular fa-folder w-4 text-[11px]" />
+                      Open Install Folder
+                    </button>
+                    <div className="my-1 border-t border-white/5" />
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setShowSettings(true)
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      <i className="fa-solid fa-gear w-4 text-[11px]" />
+                      Preferences
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        window.location.reload()
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                      <i className="fa-solid fa-rotate w-4 text-[11px]" />
+                      Reload Application
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
         {(() => {
           if (!syncConfig || !syncConfig.connected) return null
 
