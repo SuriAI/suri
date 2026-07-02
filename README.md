@@ -135,7 +135,7 @@ cd server
 ```
 *(The script will automatically download the test faces, run the simulation, and clean up afterwards.)*
 
-*Note on scaling:* The benchmark above represents a worst-case scenario, searching all 500 profiles with no filtering. In actual use, Facenox limits face searches to the active group's members only, making real-world performance significantly better and faster.
+*Note on scaling:* The benchmark above represents a worst-case scenario, searching all 500 profiles with no filtering. In actual use, Facenox limits face searches to the active group's members only, reducing both search time and false match risk in practice.
 
 ## Offline-First Behavior
 
