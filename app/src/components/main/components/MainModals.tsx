@@ -1,0 +1,239 @@
+import { useCallback } from "react"
+import { AnimatePresence } from "framer-motion"
+import { useAttendanceStore, useUIStore } from "@/components/main/stores"
+import { useGroupUIStore } from "@/components/group/stores"
+import { attendanceManager } from "@/services"
+import { GroupManagementModal } from "./GroupManagementModal"
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal"
+import { Settings } from "@/components/settings"
+
+interface MainModalsProps {
+  /** Callback to submit a new group creation to the backend. */
+  handleCreateGroup: () => void
+  /** Callback to run the deletion sequence on the selected group. */
+  confirmDeleteGroup: () => void
+  /** Callback to abort the group deletion prompt. */
+  cancelDeleteGroup: () => void
+  /** Ref to invoke database reload updates inside settings callbacks. */
+  loadAttendanceDataRef: React.MutableRefObject<() => Promise<void>>
+}
+
+/**
+ * MainModals coordinates all modal overlays for the primary dashboard.
+ * 
+ * Separating this layout block from Main.tsx prevents high-frequency updates 
+ * (like video stream rendering) from triggering unnecessary modal render computations.
+ */
+export function MainModals({
+  handleCreateGroup,
+  confirmDeleteGroup,
+  cancelDeleteGroup,
+  loadAttendanceDataRef,
+}: MainModalsProps) {
+  const {
+    currentGroup,
+    setCurrentGroup,
+    attendanceGroups,
+    setAttendanceGroups,
+    groupMembers,
+    showGroupManagement,
+    setShowGroupManagement,
+    showDeleteConfirmation,
+    groupToDelete,
+    newGroupName,
+    setNewGroupName,
+    attendanceCooldownSeconds,
+    setAttendanceCooldownSeconds,
+    enableSpoofDetection,
+    setEnableSpoofDetection,
+    maxRecognitionFacesPerFrame,
+    setMaxRecognitionFacesPerFrame,
+    dataRetentionDays,
+    setDataRetentionDays,
+  } = useAttendanceStore()
+
+  const {
+    showSettings,
+    setShowSettings,
+    groupInitialSection,
+    setGroupInitialSection,
+    settingsInitialSection,
+    setSettingsInitialSection,
+    quickSettings,
+    setQuickSettings,
+    audioSettings,
+    setAudioSettings,
+  } = useUIStore()
+
+  const { resetEnrollment } = useGroupUIStore.getState()
+
+  // Local helper to synchronize changes when settings update group attributes
+  const syncUpdatedGroupLocally = useCallback(
+    (updatedGroup: typeof currentGroup) => {
+      setCurrentGroup(updatedGroup)
+      if (!updatedGroup) return
+
+      setAttendanceGroups(
+        attendanceGroups.map((g) => (g.id === updatedGroup.id ? updatedGroup : g)),
+      )
+    },
+    [attendanceGroups, setAttendanceGroups, setCurrentGroup],
+  )
+
+  return (
+    <>
+      <GroupManagementModal
+        showGroupManagement={showGroupManagement}
+        setShowGroupManagement={setShowGroupManagement}
+        newGroupName={newGroupName}
+        setNewGroupName={setNewGroupName}
+        handleCreateGroup={handleCreateGroup}
+      />
+
+      <AnimatePresence>
+        {showSettings && (
+          <Settings
+            key="settings-modal"
+            onBack={() => {
+              setShowSettings(false)
+              setGroupInitialSection(undefined)
+              setSettingsInitialSection(undefined)
+              resetEnrollment()
+              loadAttendanceDataRef.current()
+            }}
+            isModal={true}
+            quickSettings={quickSettings}
+            onQuickSettingsChange={setQuickSettings}
+            audioSettings={audioSettings}
+            onAudioSettingsChange={setAudioSettings}
+            attendanceSettings={{
+              lateThresholdEnabled: currentGroup?.settings?.late_threshold_enabled ?? false,
+              lateThresholdMinutes: currentGroup?.settings?.late_threshold_minutes ?? 15,
+              classStartTime: currentGroup?.settings?.class_start_time ?? "08:00",
+              attendanceCooldownSeconds: attendanceCooldownSeconds,
+              enableSpoofDetection: enableSpoofDetection,
+              maxRecognitionFacesPerFrame: maxRecognitionFacesPerFrame,
+              trackCheckout: currentGroup?.settings?.track_checkout ?? false,
+              dataRetentionDays: dataRetentionDays,
+              biometricConsentCertified:
+                currentGroup?.settings?.biometric_consent_certified ?? false,
+            }}
+            onAttendanceSettingsChange={async (updates) => {
+              if (updates.enableSpoofDetection !== undefined) {
+                setEnableSpoofDetection(updates.enableSpoofDetection)
+              }
+
+              if (updates.maxRecognitionFacesPerFrame !== undefined) {
+                setMaxRecognitionFacesPerFrame(updates.maxRecognitionFacesPerFrame)
+              }
+
+              if (updates.biometricConsentCertified !== undefined && currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  biometric_consent_certified: updates.biometricConsentCertified,
+                }
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, {
+                    settings: updatedSettings,
+                  })
+                  syncUpdatedGroupLocally({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  })
+                } catch (error) {
+                  console.error("Failed to update biometric consent certification setting:", error)
+                }
+              }
+
+              if (updates.trackCheckout !== undefined && currentGroup) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  track_checkout: updates.trackCheckout,
+                }
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, {
+                    settings: updatedSettings,
+                  })
+                  syncUpdatedGroupLocally({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  })
+                } catch (error) {
+                  console.error("Failed to update track checkout setting:", error)
+                }
+              }
+
+              if (updates.attendanceCooldownSeconds !== undefined) {
+                setAttendanceCooldownSeconds(updates.attendanceCooldownSeconds)
+                try {
+                  await attendanceManager.updateSettings({
+                    attendance_cooldown_seconds: updates.attendanceCooldownSeconds,
+                  })
+                } catch (error) {
+                  console.error("Failed to update cooldown setting:", error)
+                }
+              }
+
+              if (updates.dataRetentionDays !== undefined) {
+                setDataRetentionDays(updates.dataRetentionDays)
+                try {
+                  await attendanceManager.updateSettings({
+                    data_retention_days: updates.dataRetentionDays,
+                  })
+                } catch (error) {
+                  console.error("Failed to update data retention setting:", error)
+                }
+              }
+
+              if (
+                currentGroup &&
+                (updates.lateThresholdEnabled !== undefined ||
+                  updates.lateThresholdMinutes !== undefined ||
+                  updates.classStartTime !== undefined)
+              ) {
+                const updatedSettings = {
+                  ...currentGroup.settings,
+                  ...(updates.lateThresholdEnabled !== undefined && {
+                    late_threshold_enabled: updates.lateThresholdEnabled,
+                  }),
+                  ...(updates.lateThresholdMinutes !== undefined && {
+                    late_threshold_minutes: updates.lateThresholdMinutes,
+                  }),
+                  ...(updates.classStartTime !== undefined && {
+                    class_start_time: updates.classStartTime,
+                  }),
+                }
+                try {
+                  await attendanceManager.updateGroup(currentGroup.id, {
+                    settings: updatedSettings,
+                  })
+                  syncUpdatedGroupLocally({
+                    ...currentGroup,
+                    settings: updatedSettings,
+                  })
+                } catch (error) {
+                  console.error("Failed to update attendance settings:", error)
+                }
+              }
+            }}
+            initialGroupSection={groupInitialSection}
+            initialSection={settingsInitialSection}
+            currentGroup={currentGroup}
+            currentGroupMembers={groupMembers}
+            onGroupSelect={syncUpdatedGroupLocally}
+            onGroupsChanged={() => loadAttendanceDataRef.current()}
+            initialGroups={attendanceGroups}
+          />
+        )}
+      </AnimatePresence>
+
+      <DeleteConfirmationModal
+        showDeleteConfirmation={showDeleteConfirmation}
+        groupToDelete={groupToDelete}
+        currentGroup={currentGroup}
+        cancelDeleteGroup={cancelDeleteGroup}
+        confirmDeleteGroup={confirmDeleteGroup}
+      />
+    </>
+  )
+}
