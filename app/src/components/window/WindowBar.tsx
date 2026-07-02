@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tooltip } from "@/components/shared"
 import { updaterService } from "@/services"
 import type { UpdateInfo } from "@/types/global"
 import { useUIStore } from "@/components/main/stores"
+import { Modal, Spinner } from "@/components/common"
 
 function formatRelativeTime(dateString: string | null): string {
   if (!dateString) return "Never"
@@ -42,8 +43,33 @@ function formatRelativeTime(dateString: string | null): string {
 export default function WindowBar() {
   const [isMaximized, setIsMaximized] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [updateCheckState, setUpdateCheckState] = useState<
+    "idle" | "checking" | "up-to-date" | "available" | "error" | "offline"
+  >("idle")
+  const [checkedUpdateInfo, setCheckedUpdateInfo] = useState<UpdateInfo | null>(null)
   const setShowSettings = useUIStore((state) => state.setShowSettings)
+
+  const handleCheckUpdates = useCallback(async () => {
+    setIsUpdateModalOpen(true)
+    setUpdateCheckState("checking")
+    try {
+      const info = await updaterService.checkForUpdates(true)
+      setCheckedUpdateInfo(info)
+      if (info.hasUpdate) {
+        setUpdateCheckState("available")
+      } else if (info.isOffline) {
+        setUpdateCheckState("offline")
+      } else if (info.error) {
+        setUpdateCheckState("error")
+      } else {
+        setUpdateCheckState("up-to-date")
+      }
+    } catch (err) {
+      console.error(err)
+      setUpdateCheckState("error")
+    }
+  }, [])
   const [syncConfig, setSyncConfig] = useState<{
     connected: boolean
     enabled: boolean
@@ -206,31 +232,13 @@ export default function WindowBar() {
                       Settings
                     </button>
                     <button
-                      disabled={isCheckingUpdates}
-                      onClick={async () => {
+                      onClick={() => {
                         setIsMenuOpen(false)
-                        setIsCheckingUpdates(true)
-                        try {
-                          const info = await updaterService.checkForUpdates(true)
-                          if (info.hasUpdate) {
-                            // Badge will pop up in the titlebar automatically
-                          } else if (info.isOffline) {
-                            alert("Cannot check for updates: Offline mode.")
-                          } else if (info.error) {
-                            alert("Failed to check for updates.")
-                          } else {
-                            alert(`Facenox is up to date! (v${info.currentVersion})`)
-                          }
-                        } catch (err) {
-                          console.error(err)
-                          alert("Failed to check for updates.")
-                        } finally {
-                          setIsCheckingUpdates(false)
-                        }
+                        handleCheckUpdates()
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50">
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
                       <i className="fa-solid fa-cloud-arrow-up w-4 text-[11px]" />
-                      {isCheckingUpdates ? "Checking..." : "Check for Updates"}
+                      Check for Updates
                     </button>
                     <button
                       onClick={() => {
@@ -365,6 +373,107 @@ export default function WindowBar() {
           </button>
         </div>
       )}
+
+      <Modal
+        isOpen={isUpdateModalOpen}
+        onClose={updateCheckState !== "checking" ? () => setIsUpdateModalOpen(false) : undefined}
+        title="App Update"
+        maxWidth="sm"
+        hideCloseButton={updateCheckState === "checking"}>
+        {updateCheckState === "checking" && (
+          <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+            <Spinner size="md" color="cyan" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">Checking for updates...</p>
+              <p className="text-xs text-white/50">Connecting to the update server. Please wait.</p>
+            </div>
+          </div>
+        )}
+
+        {updateCheckState === "up-to-date" && (
+          <div className="flex flex-col items-center justify-center gap-4 py-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-400">
+              <i className="fa-solid fa-check text-xl" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">You're up to date!</p>
+              <p className="text-xs text-white/50">
+                Facenox v{checkedUpdateInfo?.currentVersion} is the latest version available.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsUpdateModalOpen(false)}
+              className="mt-2 rounded-lg bg-cyan-500 px-6 py-2 text-xs font-bold text-slate-950 transition-all hover:bg-cyan-400 active:scale-95">
+              Close
+            </button>
+          </div>
+        )}
+
+        {updateCheckState === "available" && (
+          <div className="flex flex-col items-center justify-center gap-4 py-4 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-400">
+              <i className="fa-solid fa-cloud-arrow-down text-xl" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">New Version Available!</p>
+              <p className="text-xs text-white/50">
+                v{checkedUpdateInfo?.currentVersion} ➜{" "}
+                <span className="font-bold text-cyan-400">v{checkedUpdateInfo?.latestVersion}</span>
+              </p>
+            </div>
+            {checkedUpdateInfo?.releaseNotes && (
+              <div className="custom-scroll max-h-32 w-full overflow-y-auto rounded-lg border border-white/5 bg-white/5 p-3 text-left text-xs text-white/60 font-mono">
+                {checkedUpdateInfo.releaseNotes}
+              </div>
+            )}
+            <div className="mt-2 flex gap-3">
+              <button
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="rounded-lg border border-white/10 bg-transparent px-5 py-2 text-xs font-semibold text-white/70 transition-all hover:bg-white/5 hover:text-white">
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsUpdateModalOpen(false)
+                  updaterService.openReleasePage(
+                    checkedUpdateInfo?.releaseUrl || "https://facenox.com/download",
+                  )
+                }}
+                className="rounded-lg bg-cyan-500 px-5 py-2 text-xs font-bold text-slate-950 transition-all hover:bg-cyan-400 active:scale-95">
+                Download Update
+              </button>
+            </div>
+          </div>
+        )}
+
+        {(updateCheckState === "error" || updateCheckState === "offline") && (
+          <div className="flex flex-col items-center justify-center gap-4 py-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 text-red-400">
+              <i className="fa-solid fa-circle-exclamation text-xl" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">Update Check Failed</p>
+              <p className="text-xs text-white/50">
+                {updateCheckState === "offline" ?
+                  "No internet connection detected."
+                : "Could not reach the update server."}
+              </p>
+            </div>
+            <div className="mt-2 flex gap-3">
+              <button
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="rounded-lg border border-white/10 bg-transparent px-5 py-2 text-xs font-semibold text-white/70 transition-all hover:bg-white/5 hover:text-white">
+                Close
+              </button>
+              <button
+                onClick={handleCheckUpdates}
+                className="rounded-lg bg-cyan-500 px-5 py-2 text-xs font-bold text-slate-950 transition-all hover:bg-cyan-400 active:scale-95">
+                Try Again
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
