@@ -182,7 +182,10 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                     frame_bytes = message_data["bytes"]
 
                     try:
-                        response_data, attendance_messages = await pipeline.process_frame(
+                        (
+                            response_data,
+                            attendance_messages,
+                        ) = await pipeline.process_frame(
                             frame_bytes,
                             client_id,
                             live_session_config,

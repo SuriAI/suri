@@ -20,8 +20,8 @@ interface MainModalsProps {
 
 /**
  * MainModals coordinates all modal overlays for the primary dashboard.
- * 
- * Separating this layout block from Main.tsx prevents high-frequency updates 
+ *
+ * Separating this layout block from Main.tsx prevents high-frequency updates
  * (like video stream rendering) from triggering unnecessary modal render computations.
  */
 export function MainModals({
