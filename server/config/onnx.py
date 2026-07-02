@@ -22,4 +22,3 @@ except (ImportError, AttributeError):
         "intra_op_num_threads": 2,
         "log_severity_level": 3,
     }
-

@@ -11,7 +11,6 @@ engine = create_async_engine(
 )
 
 
-
 # Enable SQLite WAL (Write-Ahead Logging) mode and optimize synchronous settings.
 # WAL allows concurrent reads and writes, solving common 'database is locked' errors.
 @event.listens_for(engine.sync_engine, "connect")
