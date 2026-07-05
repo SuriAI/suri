@@ -64,7 +64,7 @@ export function DeleteConfirmationModal({
                 value={confirmationInput}
                 onChange={(e) => setConfirmationInput(e.target.value)}
                 placeholder={groupSnapshot.name}
-                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/20 focus:bg-[rgba(28,35,44,0.82)] focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none"
+                className="w-full rounded-lg border border-white/10 bg-[rgba(22,28,36,0.68)] px-3 py-2 text-xs text-white transition-all duration-300 outline-none focus:border-white/30 focus:bg-[rgba(28,35,44,0.82)] focus:outline-none"
               />
             </div>
           </div>
