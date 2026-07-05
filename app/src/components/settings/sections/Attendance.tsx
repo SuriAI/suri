@@ -250,7 +250,7 @@ export function Attendance({
                   title="Duplicate Prevention"
                   description="Automatically filters out repeated scans from the same person to keep reports clean."
                   details={[
-                    "Always active to ensure accurate attendance and reporting.",
+                    "Always active to ensure clean and consolidated attendance records.",
                     "Short Window: Best for high-traffic areas or tracking movement.",
                     "Long Window: Recommended for simple daily attendance.",
                   ]}
@@ -268,7 +268,7 @@ export function Attendance({
                     className="text-xs font-normal text-white/65">
                     {isPaired ?
                       "Managed by your organization."
-                    : "Automatically filters out repeated scans from the same person to maintain clean, accurate reports."
+                    : "Automatically filters out repeated scans from the same person to keep reports clean."
                     }
                   </motion.div>
                 </AnimatePresence>
