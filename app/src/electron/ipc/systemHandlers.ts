@@ -1,6 +1,7 @@
 import { ipcMain, shell, app } from "electron"
 import path from "path"
 import { diagnosticsService } from "../services/DiagnosticsService.js"
+import isDev from "../util.js"
 
 export function registerSystemHandlers() {
   ipcMain.handle("system:get-stats", () => {
@@ -25,9 +26,9 @@ export function registerSystemHandlers() {
   })
 
   ipcMain.handle("system:open-data-dir", async () => {
-    const userDataPath = app.getPath("userData")
-    await shell.openPath(userDataPath)
-    return { success: true, path: userDataPath }
+    const dataPath = isDev() ? path.join(app.getAppPath(), "..", "data") : app.getPath("userData")
+    await shell.openPath(dataPath)
+    return { success: true, path: dataPath }
   })
 
   ipcMain.handle("system:open-install-dir", async () => {

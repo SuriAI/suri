@@ -15,7 +15,11 @@ const main_filename = fileURLToPath(import.meta.url)
 const main_dirname = path.dirname(main_filename)
 const FACENOX_APP_ID = "com.facenox.app"
 
-app.setName("Facenox")
+if (isDev()) {
+  app.setName("Facenox-dev")
+} else {
+  app.setName("Facenox")
+}
 
 if (process.platform === "win32") {
   app.setAppUserModelId(FACENOX_APP_ID)
