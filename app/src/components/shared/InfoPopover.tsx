@@ -23,6 +23,8 @@ interface InfoPopoverProps {
   }
   /** Preferred side to open. Defaults to "right" (good for inline settings). */
   side?: "top" | "bottom" | "left" | "right"
+  /** Custom width class. Defaults to "w-80" (320px). */
+  widthClass?: string
 }
 
 const OFFSET = 12
@@ -37,6 +39,7 @@ export function InfoPopover({
   detailsNode,
   media,
   side = "right",
+  widthClass = "w-80",
 }: InfoPopoverProps) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
@@ -143,7 +146,7 @@ export function InfoPopover({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 4 }}
               transition={{ duration: POPOVER_ANIMATION_DURATION, ease: "easeOut" }}
-              className="pointer-events-auto fixed z-99999 w-64"
+              className={`pointer-events-auto fixed z-99999 ${widthClass}`}
               onMouseEnter={cancelHide}
               onMouseLeave={hide}
               style={{
