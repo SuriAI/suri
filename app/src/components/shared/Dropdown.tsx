@@ -217,10 +217,19 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
       setIsOpen(!isOpen)
     }
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const { onDrag, onDragStart, onDragEnd, onAnimationStart, ...cleanProps } = props
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+
     return (
-      <div className={`relative min-w-0 ${className}`} ref={internalRef} {...props}>
+      <motion.div
+        layout
+        className={`relative min-w-0 ${className}`}
+        ref={internalRef}
+        {...cleanProps}>
         {trigger ?
-          <div
+          <motion.div
+            layout
             ref={buttonRef as React.RefObject<HTMLDivElement | null>}
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleToggle}
@@ -230,16 +239,17 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                 (buttonClassName.includes("bg-transparent") || buttonClassName.includes("border-0"))
               ) ?
                 "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
-              : "w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+              : "w-full rounded-lg border border-white/5 bg-white/5 px-3 py-2 text-left text-sm text-white transition-all hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
             } ${buttonClassName} `}>
             {trigger}
-          </div>
+          </motion.div>
         : <Tooltip
             content={displayText}
             offset={4}
             disabled={!shouldShowCustomTooltip(displayText)}
             className="!px-2.5 !py-1.5 text-center break-all">
-            <button
+            <motion.button
+              layout
               type="button"
               ref={buttonRef as React.RefObject<HTMLButtonElement | null>}
               onMouseDown={(e) => e.preventDefault()}
@@ -252,16 +262,20 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
                     buttonClassName.includes("border-0"))
                 ) ?
                   "justify-center border-0 bg-transparent p-0 hover:bg-transparent focus:bg-transparent"
-                : "dropdown-trigger w-full rounded-lg border border-white/5 bg-white/5 py-2 ps-3 pe-2 text-left text-sm text-white transition-colors hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
+                : "dropdown-trigger w-full rounded-lg border border-white/5 bg-white/5 px-3 py-2 text-left text-sm text-white transition-colors hover:border-white/10 hover:bg-white/[0.08] focus:border-white/20 focus:bg-white/[0.08]"
               } ${buttonClassName} `}>
-              <span className="min-w-0 flex-1 truncate text-left">{displayText}</span>
-              <span className="ms-2 flex h-4 w-[10px] shrink-0 items-center justify-center">
+              <motion.span layout="position" className="min-w-0 flex-1 truncate text-left">
+                {displayText}
+              </motion.span>
+              <motion.span
+                layout="position"
+                className="ms-3 flex h-4 w-[10px] shrink-0 items-center justify-center">
                 <i
                   className={`fa-solid fa-chevron-down text-xs text-white/65 transition-transform duration-200 ${
                     isOpen ? "rotate-180" : ""
                   } ${iconClassName}`}></i>
-              </span>
-            </button>
+              </motion.span>
+            </motion.button>
           </Tooltip>
         }
 
@@ -381,7 +395,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps<string | number
           </AnimatePresence>,
           document.body,
         )}
-      </div>
+      </motion.div>
     )
   },
 )

@@ -9,6 +9,12 @@ vi.mock("framer-motion", () => ({
     div: ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
       <div {...props}>{children}</div>
     ),
+    button: ({ children, ...props }: HTMLAttributes<HTMLButtonElement>) => (
+      <button {...props}>{children}</button>
+    ),
+    span: ({ children, ...props }: HTMLAttributes<HTMLSpanElement>) => (
+      <span {...props}>{children}</span>
+    ),
   },
 }))
 
