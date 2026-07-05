@@ -350,6 +350,59 @@ export function Database({
         </div>
       </section>
 
+      {/* Local Storage */}
+      <section className="space-y-8">
+        <div className="pt-2 pb-2">
+          <h3 className="text-[10px] font-extrabold tracking-[0.2em] text-white/55 uppercase">
+            Local Storage
+          </h3>
+        </div>
+
+        <div className="space-y-10">
+          {/* Data Folder */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-[15px] font-semibold text-white/90">Open Database Folder</h4>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
+                Access local database files, logs, and biometric signatures on this device.
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                await window.facenoxElectron?.openDataDir()
+              }}
+              className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
+              <i className="fa-regular fa-folder-open text-[11px] opacity-40" />
+              Open Folder
+            </button>
+          </div>
+
+          {/* Install Folder */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0 flex-1">
+              <h4 className="text-[15px] font-semibold text-white/90">
+                Open Installation Directory
+              </h4>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/65">
+                View the core application resources and executable binary files.
+              </p>
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] leading-tight text-amber-500/80">
+                <i className="fa-solid fa-triangle-exclamation shrink-0" />
+                <span>Modifying these files is not recommended.</span>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                await window.facenoxElectron?.openInstallDir()
+              }}
+              className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-2 text-[12px] font-bold tracking-wide text-white/70 transition-all duration-200 hover:border-white/25 hover:bg-white/5 active:scale-[0.97]">
+              <i className="fa-regular fa-folder text-[11px] opacity-40" />
+              Open Folder
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* All Groups */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">

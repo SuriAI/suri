@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Tooltip } from "@/components/shared"
 import { updaterService } from "@/services"
 import type { UpdateInfo } from "@/types/updater"
-import { useUIStore } from "@/components/main/stores"
 import { Modal, Spinner } from "@/components/common"
 
 function formatRelativeTime(dateString: string | null): string {
@@ -48,7 +47,6 @@ export default function WindowBar() {
     "idle" | "checking" | "up-to-date" | "available" | "error" | "offline"
   >("idle")
   const [checkedUpdateInfo, setCheckedUpdateInfo] = useState<UpdateInfo | null>(null)
-  const setShowSettings = useUIStore((state) => state.setShowSettings)
 
   const handleCheckUpdates = useCallback(async () => {
     setIsUpdateModalOpen(true)
@@ -202,35 +200,7 @@ export default function WindowBar() {
                     exit={{ opacity: 0, scale: 0.95, y: -4 }}
                     transition={{ duration: 0.12, ease: "easeOut" }}
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                    className="absolute top-[22px] left-0 z-90 w-48 rounded-lg border border-white/10 bg-[#161c24]/90 p-1 shadow-xl backdrop-blur-md">
-                    <button
-                      onClick={async () => {
-                        setIsMenuOpen(false)
-                        await window.facenoxElectron?.openDataDir()
-                      }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
-                      <i className="fa-regular fa-folder-open w-4 text-[11px]" />
-                      Open Data Folder
-                    </button>
-                    <button
-                      onClick={async () => {
-                        setIsMenuOpen(false)
-                        await window.facenoxElectron?.openInstallDir()
-                      }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
-                      <i className="fa-regular fa-folder w-4 text-[11px]" />
-                      Open Install Folder
-                    </button>
-                    <div className="my-1 border-t border-white/5" />
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false)
-                        setShowSettings(true)
-                      }}
-                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-white/70 transition-colors hover:bg-white/5 hover:text-white">
-                      <i className="fa-solid fa-gear w-4 text-[11px]" />
-                      Settings
-                    </button>
+                    className="absolute top-[22px] left-0 z-90 w-[168px] rounded-lg border border-white/10 bg-[#161c24]/90 p-1 shadow-xl backdrop-blur-md">
                     <button
                       onClick={() => {
                         setIsMenuOpen(false)
