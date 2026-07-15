@@ -228,10 +228,11 @@ async def import_embedding(
             detail=f"Expected {request.embedding_dimension}-dim embedding, got {len(embedding)}",
         )
 
-    if not face_recognizer.db_manager:
+    db_manager = face_recognizer._get_db_manager(repo.organization_id)
+    if not db_manager:
         raise HTTPException(status_code=503, detail="Face database not available")
 
-    success = await face_recognizer.db_manager.add_person(
+    success = await db_manager.add_person(
         person_id=request.person_id,
         embedding=embedding,
         image_hash=None,

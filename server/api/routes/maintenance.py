@@ -151,7 +151,10 @@ async def import_metadata(
             # Query without is_deleted filter to find soft-deleted groups too.
             # Using repo.get_group() would miss deleted rows, causing a
             # UNIQUE constraint violation on re-insert.
-            stmt = select(AttendanceGroup).where(AttendanceGroup.id == group.id)
+            stmt = select(AttendanceGroup).where(
+                AttendanceGroup.id == group.id,
+                AttendanceGroup.organization_id == repo.organization_id,
+            )
             result = await repo.session.execute(stmt)
             existing_group = result.scalars().first()
 
@@ -247,7 +250,8 @@ async def import_metadata(
                 # Ensure local group exists for SQLite FK constraints
                 # Query without is_deleted filter to catch soft-deleted rows
                 grp_stmt = select(AttendanceGroup).where(
-                    AttendanceGroup.id == member.group_id
+                    AttendanceGroup.id == member.group_id,
+                    AttendanceGroup.organization_id == repo.organization_id,
                 )
                 grp_result = await repo.session.execute(grp_stmt)
                 group_exists = grp_result.scalars().first()
@@ -300,11 +304,16 @@ async def import_metadata(
         from database.models import Face
 
         pruned_faces = 0
-        if pulled_member_ids:
-            faces_to_prune = select(Face).where(
-                Face.person_id.notin_(pulled_member_ids),
-                Face.organization_id == repo.organization_id,
-            )
+        if pulled_member_ids is not None:
+            if pulled_member_ids:
+                faces_to_prune = select(Face).where(
+                    Face.person_id.notin_(pulled_member_ids),
+                    Face.organization_id == repo.organization_id,
+                )
+            else:
+                faces_to_prune = select(Face).where(
+                    Face.organization_id == repo.organization_id,
+                )
             face_result = await repo.session.execute(faces_to_prune)
             for face in face_result.scalars().all():
                 await repo.session.delete(face)

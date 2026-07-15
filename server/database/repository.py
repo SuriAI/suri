@@ -49,6 +49,8 @@ class AttendanceRepository:
     def _apply_org_scope(self, query, model):
         if self.organization_id:
             query = query.where(model.organization_id == self.organization_id)
+        else:
+            query = query.where(model.organization_id.is_(None))
         return query
 
     def _settings_payload(
@@ -1181,6 +1183,8 @@ class FaceRepository:
         query = select(Face)
         if self.organization_id:
             query = query.where(Face.organization_id == self.organization_id)
+        else:
+            query = query.where(Face.organization_id.is_(None))
         result = await self.session.execute(query)
         faces = result.scalars().all()
         for f in faces:
@@ -1191,5 +1195,7 @@ class FaceRepository:
         query = select(func.count()).select_from(Face).where(Face.is_deleted.is_(False))
         if self.organization_id:
             query = query.where(Face.organization_id == self.organization_id)
+        else:
+            query = query.where(Face.organization_id.is_(None))
         count = await self.session.scalar(query)
         return {"total_faces": count}

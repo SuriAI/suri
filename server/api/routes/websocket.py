@@ -244,7 +244,7 @@ async def handle_websocket_detect(websocket: WebSocket, client_id: str):
                         client_id,
                         send_error,
                     )
-                    break
+                break
 
     except WebSocketDisconnect:
         logger.info(

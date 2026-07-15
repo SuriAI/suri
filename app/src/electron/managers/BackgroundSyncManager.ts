@@ -442,32 +442,7 @@ export class BackgroundSyncManager {
     try {
       switch (cmd.command) {
         case "WIPE": {
-          // Require confirmation before destroying local databases and embeddings
-          const { dialog } = await import("electron")
-          const parentWindow = state.mainWindow ?? undefined
-
-          const options: Electron.MessageBoxOptions = {
-            type: "warning",
-            title: "Remote Data Wipe Requested",
-            message: "The management dashboard has requested a full data wipe on this device.",
-            detail:
-              "This will permanently delete ALL local attendance records, sessions, and face embeddings. This action cannot be undone.\n\nDo you want to proceed?",
-            buttons: ["Cancel", "Wipe All Data"],
-            defaultId: 0,
-            cancelId: 0,
-            noLink: true,
-          }
-
-          const { response } = await (parentWindow ?
-            dialog.showMessageBox(parentWindow, options)
-          : dialog.showMessageBox(options))
-
-          if (response !== 1) {
-            console.warn("[RemoteMgmt] LOCAL DATA WIPE REJECTED by user.")
-            status = "rejected"
-            result = { message: "Wipe rejected by local operator." }
-            break
-          }
+          console.warn("[RemoteMgmt] REMOTE DATA WIPE RECEIVED. Executing programmatically.")
 
           const wipeResponse = await fetch(`${backendService.getUrl()}/attendance/wipe`, {
             method: "POST",
@@ -478,7 +453,23 @@ export class BackgroundSyncManager {
             throw new Error(`Wipe failed on local backend: ${wipeResponse.status}`)
           }
           result = (await wipeResponse.json()) as CommandResult
-          console.warn("[RemoteMgmt] LOCAL DATA WIPE COMPLETED (confirmed by user).")
+          console.warn("[RemoteMgmt] LOCAL DATA WIPE COMPLETED.")
+
+          const { dialog } = await import("electron")
+          const parentWindow = state.mainWindow ?? undefined
+          const options: Electron.MessageBoxOptions = {
+            type: "info",
+            title: "Data Wiped",
+            message: "A remote wipe has been executed on this device.",
+            detail:
+              "All local database tables and biometric keys have been successfully erased by the organization administrator.",
+            buttons: ["OK"],
+          }
+          if (parentWindow) {
+            dialog.showMessageBox(parentWindow, options).catch(() => {})
+          } else {
+            dialog.showMessageBox(options).catch(() => {})
+          }
           break
         }
 
