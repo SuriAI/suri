@@ -130,8 +130,8 @@ class AttendanceRecord(Base, SyncMixin):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     person_id: Mapped[str] = mapped_column(String, nullable=False)
-    member_id: Mapped[str] = mapped_column(
-        String, ForeignKey("attendance_members.id"), nullable=False
+    member_id: Mapped[Optional[str]] = mapped_column(
+        String, ForeignKey("attendance_members.id"), nullable=True
     )
     group_id: Mapped[str] = mapped_column(
         String, ForeignKey("attendance_groups.id"), nullable=False
@@ -164,8 +164,8 @@ class AttendanceSession(Base, SyncMixin):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     person_id: Mapped[str] = mapped_column(String, nullable=False)
-    member_id: Mapped[str] = mapped_column(
-        String, ForeignKey("attendance_members.id"), nullable=False
+    member_id: Mapped[Optional[str]] = mapped_column(
+        String, ForeignKey("attendance_members.id"), nullable=True
     )
     group_id: Mapped[str] = mapped_column(
         String, ForeignKey("attendance_groups.id"), nullable=False

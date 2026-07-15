@@ -566,13 +566,12 @@ class AttendanceRepository:
     # Record Methods
     async def add_record(self, record_data: Dict[str, Any]) -> AttendanceRecord:
         member = await self.get_member(record_data["person_id"])
-        if not member:
-            raise ValueError("Member not found")
+        member_id = member.id if member else None
 
         record = AttendanceRecord(
             id=record_data["id"],
             person_id=record_data["person_id"],
-            member_id=member.id,
+            member_id=member_id,
             group_id=record_data["group_id"],
             timestamp=record_data["timestamp"],
             confidence=record_data["confidence"],
@@ -659,8 +658,7 @@ class AttendanceRepository:
     # Session Methods
     async def upsert_session(self, session_data: Dict[str, Any]) -> AttendanceSession:
         member = await self.get_member(session_data["person_id"])
-        if not member:
-            raise ValueError("Member not found")
+        member_id = member.id if member else None
 
         session_obj = await self.get_session(
             session_data["person_id"], session_data["date"]
@@ -683,7 +681,7 @@ class AttendanceRepository:
             session_obj = AttendanceSession(
                 id=session_data["id"],
                 person_id=session_data["person_id"],
-                member_id=member.id,
+                member_id=member_id,
                 group_id=session_data["group_id"],
                 applied_rule_id=session_data.get("applied_rule_id"),
                 date=session_data["date"],
