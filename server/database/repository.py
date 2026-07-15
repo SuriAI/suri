@@ -1112,6 +1112,14 @@ class FaceRepository:
         dimension: int,
         image_hash: Optional[str] = None,
     ) -> Face:
+        from config.models import FACE_RECOGNIZER_CONFIG
+
+        expected = FACE_RECOGNIZER_CONFIG.get("embedding_dimension", 512)
+        if dimension != expected:
+            raise ValueError(
+                f"Invalid embedding dimension: expected {expected}, got {dimension}"
+            )
+
         query = select(Face).where(Face.person_id == person_id)
         if self.organization_id:
             query = query.where(Face.organization_id == self.organization_id)

@@ -67,6 +67,25 @@ def get_machine_key() -> bytes:
       macOS    -> macOS Keychain via the `security` CLI
       Linux    -> 0600-mode file fallback
     """
+    env_key = os.getenv("FACENOX_MACHINE_KEY")
+    if env_key:
+        try:
+            import base64
+
+            # Try Base64 decoding
+            try:
+                decoded = base64.b64decode(env_key.strip(), validate=True)
+                if len(decoded) == KEY_SIZE:
+                    return decoded
+            except Exception:
+                pass
+            # Try Hex decoding
+            decoded = bytes.fromhex(env_key.strip())
+            if len(decoded) == KEY_SIZE:
+                return decoded
+        except Exception as e:
+            logger.error("Failed to decode FACENOX_MACHINE_KEY from environment: %s", e)
+
     system = platform.system()
     if system == "Windows":
         return _machine_key_windows()
