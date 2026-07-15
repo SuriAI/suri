@@ -1,7 +1,7 @@
 {
   "name": "facenox-root",
   "private": true,
-  "version": "1.0.0-beta.8",
+  "version": "1.1.0-beta.8",
   "scripts": {
     "dev": "pnpm --filter facenox dev",
     "build:app": "pnpm --filter facenox build",
