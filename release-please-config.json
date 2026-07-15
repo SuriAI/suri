@@ -6,6 +6,7 @@
       "include-v-in-tag": true,
       "include-component-in-tag": false,
       "bump-patch-for-minor-pre-major": true,
+      "release-as": "1.0.0-beta.9",
       "skip-github-release": true,
       "extra-files": [
         {
