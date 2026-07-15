@@ -1,0 +1,17 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "prerelease": "beta",
+      "include-v-in-tag": true,
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "app/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
