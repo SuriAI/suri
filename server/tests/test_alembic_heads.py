@@ -10,4 +10,6 @@ def test_alembic_has_single_head():
 
     script_dir = ScriptDirectory.from_config(alembic_cfg)
 
-    assert script_dir.get_heads() == ["e2f3a4b5c6d7"]
+    heads = script_dir.get_heads()
+    assert len(heads) == 1, f"Expected a single migration head, found: {heads}"
+    assert heads == ["e3b4c5d6e7f8"]

@@ -275,7 +275,7 @@ export class WebSocketService {
         try {
           handler(data)
         } catch (e) {
-          console.error(`Error in WebSocket handler for ${topic}:`, e)
+          console.error("Error in WebSocket handler for %s:", topic, e)
         }
       })
     }

@@ -1,4 +1,4 @@
-import { spawn, exec, execSync, type ChildProcess } from "child_process"
+import { spawn, exec, execSync, execFile, type ChildProcess } from "child_process"
 import { randomBytes } from "crypto"
 import { app } from "electron"
 import path from "path"
@@ -8,6 +8,7 @@ import isDev from "../util.js"
 
 const sleep = promisify(setTimeout)
 const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 export interface BackendConfig {
   port: number
@@ -520,11 +521,11 @@ export class BackendProcessManager {
     for (const p of possiblePaths) {
       try {
         if (fs.existsSync(p)) {
-          const result = await execAsync(`"${p}" --version`)
+          const result = await execFileAsync(p, ["--version"])
           if (result.stdout.includes("Python")) return p
         } else if (!p.includes("\\") && !p.includes("/")) {
           try {
-            const result = await execAsync(`${p} --version`)
+            const result = await execFileAsync(p, ["--version"])
             if (result.stdout.includes("Python")) return p
           } catch {
             /* silent */
