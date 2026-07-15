@@ -4,6 +4,8 @@
       "release-type": "node",
       "prerelease": "beta",
       "include-v-in-tag": true,
+      "include-component-in-tag": false,
+      "bump-patch-for-minor-pre-major": true,
       "skip-github-release": true,
       "extra-files": [
         {
