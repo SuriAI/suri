@@ -153,6 +153,14 @@ class TrackLivenessMemory:
 
         self.namespace_last_cleanup_frame[namespace_key] = current_frame
 
+        # Clean up the namespace itself if it has no active tracks and is not global
+        has_active_tracks = any(
+            key[0] == namespace_key for key in self.track_states.keys()
+        )
+        if not has_active_tracks and namespace_key != "__global__":
+            self.namespace_frames.pop(namespace_key, None)
+            self.namespace_last_cleanup_frame.pop(namespace_key, None)
+
     def cleanup_stale_tracks(self, force: bool = False, namespace: str | None = None):
         if namespace is not None:
             namespace_key = self._normalize_namespace(namespace)

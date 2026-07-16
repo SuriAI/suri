@@ -209,7 +209,17 @@ async def get_available_models():
 
 
 if __name__ == "__main__":
+    import argparse
     from database.migrate import run_migrations
+
+    parser = argparse.ArgumentParser(description="Face Detection API Backend")
+    parser.add_argument(
+        "--port", type=int, default=7400, help="Port to run the server on"
+    )
+    parser.add_argument(
+        "--host", type=str, default="127.0.0.1", help="Host to run the server on"
+    )
+    args = parser.parse_known_args()[0]
 
     run_migrations()
 
@@ -219,7 +229,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="127.0.0.1",
-        port=7400,
+        host=args.host,
+        port=args.port,
         log_config=logging_config,
     )

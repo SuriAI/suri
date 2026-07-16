@@ -1,7 +1,55 @@
 import { ipcMain } from "electron"
 import fs from "node:fs"
+import path from "node:path"
 import { backendService } from "../backendService.js"
 import { withLocalBackendHeaders } from "../localBackendScope.js"
+
+function isSafePath(filePath: string): boolean {
+  try {
+    const resolved = path.resolve(filePath)
+    if (!path.isAbsolute(resolved)) {
+      return false
+    }
+    const parts = resolved.split(path.sep)
+    if (parts.some((part) => part.startsWith(".") && part !== "." && part !== "..")) {
+      return false
+    }
+    const systemDirs = [
+      "/etc",
+      "/var",
+      "/boot",
+      "/sys",
+      "/proc",
+      "/dev",
+      "/run",
+      "/bin",
+      "/sbin",
+      "/lib",
+      "/lib64",
+      "/usr/lib",
+      "/usr/lib64",
+      "/usr/local/lib",
+      "/usr/local/sbin",
+      "/root",
+    ]
+    if (systemDirs.some((dir) => resolved === dir || resolved.startsWith(dir + path.sep))) {
+      return false
+    }
+    if (process.platform === "win32") {
+      const lowerResolved = resolved.toLowerCase()
+      if (lowerResolved.startsWith("c:\\windows") || lowerResolved.startsWith("c:\\system32")) {
+        return false
+      }
+    }
+    const stats = fs.lstatSync(resolved)
+    if (!stats.isFile()) {
+      return false
+    }
+    return true
+  } catch {
+    return false
+  }
+}
 
 /** Build auth headers for all direct fetch calls to the local backend. */
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -131,6 +179,9 @@ export function registerBackendHandlers() {
         for (const file of files) {
           let blob: Blob
           if (file.path) {
+            if (!isSafePath(file.path)) {
+              throw new Error(`Access Denied: Path is not allowed: ${file.path}`)
+            }
             const buffer = fs.readFileSync(file.path)
             blob = new Blob([new Uint8Array(buffer)], { type: file.mimeType })
           } else if (file.buffer) {

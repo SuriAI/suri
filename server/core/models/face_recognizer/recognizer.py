@@ -60,6 +60,7 @@ class FaceRecognizer:
         self._cache_ttl = (
             60.0  # Increased from 1.0 to reduce DB load during recognition
         )
+        self._cache_locks: Dict[str, asyncio.Lock] = {}
 
     async def initialize(self):
         """Initialize the recognizer: migrate legacy data and load cache"""
@@ -135,22 +136,25 @@ class FaceRecognizer:
         Returns:
             Dictionary mapping person_id to embedding
         """
-        current_time = time.time()
-
         cache_key = self._cache_key(organization_id)
-        cache_timestamp = self._cache_timestamp.get(cache_key, 0)
-        if (
-            cache_key not in self._persons_cache
-            or (current_time - cache_timestamp) > self._cache_ttl
-        ):
-            db_manager = self._get_db_manager(organization_id)
-            if db_manager:
-                self._persons_cache[cache_key] = await db_manager.get_all_persons()
-            else:
-                self._persons_cache[cache_key] = {}
-            self._cache_timestamp[cache_key] = current_time
+        if cache_key not in self._cache_locks:
+            self._cache_locks[cache_key] = asyncio.Lock()
 
-        return self._persons_cache[cache_key]
+        async with self._cache_locks[cache_key]:
+            current_time = time.time()
+            cache_timestamp = self._cache_timestamp.get(cache_key, 0)
+            if (
+                cache_key not in self._persons_cache
+                or (current_time - cache_timestamp) > self._cache_ttl
+            ):
+                db_manager = self._get_db_manager(organization_id)
+                if db_manager:
+                    self._persons_cache[cache_key] = await db_manager.get_all_persons()
+                else:
+                    self._persons_cache[cache_key] = {}
+                self._cache_timestamp[cache_key] = current_time
+
+            return self._persons_cache[cache_key]
 
     async def _find_best_match(
         self,

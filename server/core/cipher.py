@@ -190,6 +190,12 @@ def _machine_key_linux() -> bytes:
     Attempts to query Gnome Keyring / KWallet via D-Bus Secret Service,
     falling back to file-based key storage on headless/unauthenticated hosts.
     """
+    if not os.environ.get("DBUS_SESSION_BUS_ADDRESS"):
+        logger.info(
+            "Headless Linux environment detected (no D-Bus). Bypassing keyring access."
+        )
+        return _machine_key_file()
+
     try:
         import keyring
         import base64
