@@ -760,43 +760,31 @@ export class BackgroundSyncManager {
             console.log(`[Sync] Automatic metadata pull completed.${pullMsg}`)
             state.mainWindow?.webContents.send("sync:data-changed")
 
-            // Import face embeddings from cloud
+            // Import face embeddings from cloud using batch endpoint
             const { encryptionKey } = this.getSyncConfig()
             if (encryptionKey && pullPayload.face_embeddings?.length) {
-              let importedCount = 0
+              const batchEmbeddings: Array<{
+                person_id: string
+                embedding_bytes: string
+                embedding_dimension: number
+              }> = []
               let consecutiveDecryptFailures = 0
               const MAX_CONSECUTIVE_DECRYPT_FAILURES = 3
 
               for (const fe of pullPayload.face_embeddings) {
                 try {
                   const rawBytes = decryptEmbedding(fe.embedding_encrypted, encryptionKey)
-                  // Reset streak on successful decryption
                   consecutiveDecryptFailures = 0
                   const b64 = Buffer.from(rawBytes).toString("base64")
-                  const embImportResponse = await fetch(
-                    `${backendService.getUrl()}/attendance/import-embedding`,
-                    {
-                      method: "POST",
-                      headers: authHeaders({ "Content-Type": "application/json" }),
-                      body: JSON.stringify({
-                        person_id: fe.person_id,
-                        embedding_bytes: b64,
-                        embedding_dimension: fe.embedding_dimension,
-                      }),
-                      signal: AbortSignal.timeout(15000),
-                    },
-                  )
-                  const embResponse = await embImportResponse.json()
-                  if (embImportResponse.ok) {
-                    importedCount++
-                  } else {
-                    console.warn(`[Sync] import-embedding failed for ${fe.person_id}:`, embResponse)
-                  }
+                  batchEmbeddings.push({
+                    person_id: fe.person_id,
+                    embedding_bytes: b64,
+                    embedding_dimension: fe.embedding_dimension,
+                  })
                 } catch (err) {
                   consecutiveDecryptFailures++
-                  console.warn(`[Sync] Failed to import embedding for ${fe.person_id}:`, err)
+                  console.warn(`[Sync] Failed to decrypt embedding for ${fe.person_id}:`, err)
 
-                  // Abort early on suspected key mismatch to prevent log spam
                   if (consecutiveDecryptFailures >= MAX_CONSECUTIVE_DECRYPT_FAILURES) {
                     console.error(
                       `[Sync] Aborting embedding import: ${MAX_CONSECUTIVE_DECRYPT_FAILURES} consecutive decryption failures. Possible encryption key mismatch.`,
@@ -806,9 +794,28 @@ export class BackgroundSyncManager {
                   }
                 }
               }
-              if (importedCount > 0) {
-                pullMsg += ` Imported ${importedCount} face embeddings.`
-                console.log(`[Sync] ${pullMsg}`)
+
+              if (batchEmbeddings.length > 0) {
+                try {
+                  const embBatchResponse = await fetch(
+                    `${backendService.getUrl()}/attendance/import-embeddings-batch`,
+                    {
+                      method: "POST",
+                      headers: authHeaders({ "Content-Type": "application/json" }),
+                      body: JSON.stringify({ embeddings: batchEmbeddings }),
+                      signal: AbortSignal.timeout(30000),
+                    },
+                  )
+                  const embBatchResult = await embBatchResponse.json()
+                  if (embBatchResponse.ok && embBatchResult.imported_count > 0) {
+                    pullMsg += ` Imported ${embBatchResult.imported_count} face embeddings.`
+                    console.log(`[Sync] ${pullMsg}`)
+                  } else if (!embBatchResponse.ok) {
+                    console.warn("[Sync] import-embeddings-batch failed:", embBatchResult)
+                  }
+                } catch (batchErr) {
+                  console.warn("[Sync] Failed to post batch embeddings:", batchErr)
+                }
               }
             }
           } else {

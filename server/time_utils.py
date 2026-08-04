@@ -7,12 +7,32 @@ def get_local_timezone():
     return datetime.now().astimezone().tzinfo or timezone.utc
 
 
+def authoritative_local_now() -> datetime:
+    """
+    Return local time derived from monotonic TimeAuthorityService to prevent system clock tampering.
+    Falls back to standard datetime.now() if TimeAuthorityService is uninitialized.
+    """
+    try:
+        from services.time_authority_service import get_time_authority
+
+        return get_time_authority().current_time_local()
+    except Exception:
+        return datetime.now(get_local_timezone())
+
+
 def local_now() -> datetime:
-    return datetime.now(get_local_timezone())
+    """Return current local time backed by monotonic time authority to prevent OS clock manipulation."""
+    return authoritative_local_now()
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    """Return current UTC time backed by monotonic time authority."""
+    try:
+        from services.time_authority_service import get_time_authority
+
+        return get_time_authority().current_time_utc()
+    except Exception:
+        return datetime.now(timezone.utc)
 
 
 def ensure_local_aware(value: datetime) -> datetime:

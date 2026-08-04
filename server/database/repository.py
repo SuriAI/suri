@@ -498,6 +498,16 @@ class AttendanceRepository:
         if face:
             await self.session.delete(face)
 
+        from core.lifespan import face_recognizer
+
+        if face_recognizer:
+            try:
+                await face_recognizer.refresh_cache(self.organization_id)
+            except Exception as err:
+                logger.error(
+                    f"Failed to refresh face_recognizer cache after removing member {person_id}: {err}"
+                )
+
         return True
 
     async def remove_members_bulk(self, person_ids: List[str]) -> List[dict]:
@@ -533,6 +543,16 @@ class AttendanceRepository:
             member.is_deleted = True
 
             results.append({"success": True, "person_id": pid})
+
+        from core.lifespan import face_recognizer
+
+        if face_recognizer:
+            try:
+                await face_recognizer.refresh_cache(self.organization_id)
+            except Exception as err:
+                logger.error(
+                    f"Failed to refresh face_recognizer cache after bulk member removal: {err}"
+                )
 
         return results
 

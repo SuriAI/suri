@@ -1,12 +1,13 @@
 import base64
-from typing import Optional
+import logging
+from typing import List, Optional
 
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
-
 from sqlalchemy.orm import selectinload
+
 from api.deps import get_repository
 from api.schemas import (
     AttendanceGroupResponse,
@@ -35,6 +36,8 @@ from api.routes import (
     config,
     maintenance,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/attendance")
 
@@ -244,3 +247,60 @@ async def import_embedding(
     await face_recognizer.refresh_cache(repo.organization_id)
 
     return {"success": True}
+
+
+class ImportEmbeddingsBatchRequest(BaseModel):
+    embeddings: List[ImportEmbeddingRequest]
+
+
+@router.post("/import-embeddings-batch")
+async def import_embeddings_batch(
+    request: ImportEmbeddingsBatchRequest,
+    repo: AttendanceRepository = Depends(get_repository),
+):
+    """Import multiple decrypted face embeddings in a single atomic batch transaction."""
+    from core.lifespan import face_recognizer
+
+    if not face_recognizer:
+        raise HTTPException(status_code=503, detail="Face recognizer not available")
+
+    db_manager = face_recognizer._get_db_manager(repo.organization_id)
+    if not db_manager:
+        raise HTTPException(status_code=503, detail="Face database not available")
+
+    success_count = 0
+    failed_count = 0
+
+    for item in request.embeddings:
+        try:
+            raw_bytes = base64.b64decode(item.embedding_bytes)
+            embedding = np.frombuffer(raw_bytes, dtype=np.float32)
+
+            if len(embedding) != item.embedding_dimension:
+                failed_count += 1
+                continue
+
+            imported = await db_manager.add_person(
+                person_id=item.person_id,
+                embedding=embedding,
+                image_hash=None,
+            )
+            if imported:
+                success_count += 1
+            else:
+                failed_count += 1
+        except Exception as err:
+            logger.error(
+                f"Failed to import embedding for person {item.person_id}: {err}"
+            )
+            failed_count += 1
+
+    if success_count > 0:
+        await face_recognizer.refresh_cache(repo.organization_id)
+
+    return {
+        "success": True,
+        "imported_count": success_count,
+        "failed_count": failed_count,
+        "total": len(request.embeddings),
+    }
