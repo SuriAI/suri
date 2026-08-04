@@ -6,8 +6,8 @@
     "build": "python build_backend.py",
     "clean": "npx rimraf build dist .ruff_cache .pytest_cache && python -c \"from pathlib import Path; import shutil; [shutil.rmtree(p) for p in Path('.').rglob('__pycache__')]; [p.unlink() for p in Path('.').rglob('*.py[co]')]\"",
     "test": "pytest",
-    "lint": "ruff check --fix",
-    "format": "ruff format",
+    "lint": "python -m ruff check --fix",
+    "format": "python -m ruff format",
     "fix": "npm run lint && npm run format"
   }
 }
