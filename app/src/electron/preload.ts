@@ -1,9 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron"
 
 contextBridge.exposeInMainWorld("electronAPI", {
-  invoke: (channel: string, ...args: unknown[]) => {
-    return ipcRenderer.invoke(channel, ...args)
-  },
   backend_ready: {
     isReady: () => {
       return ipcRenderer.invoke("backend:is-ready")
@@ -39,6 +36,19 @@ contextBridge.exposeInMainWorld("electronAPI", {
     },
     clearDatabase: () => {
       return ipcRenderer.invoke("backend:clear-database")
+    },
+    postMultipart: (
+      endpoint: string,
+      files: Array<{
+        name: string
+        filename: string
+        path?: string
+        buffer?: ArrayBuffer
+        mimeType: string
+      }>,
+      extraFields?: Record<string, string>,
+    ) => {
+      return ipcRenderer.invoke("backend:post-multipart", endpoint, files, extraFields)
     },
   },
   store: {

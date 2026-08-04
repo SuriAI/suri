@@ -99,7 +99,7 @@ export class HttpClient {
   }
 
   async postMultipart<T>(endpoint: string, formData: FormData): Promise<T> {
-    if (window.electronAPI?.invoke) {
+    if (window.electronAPI?.backend?.postMultipart) {
       try {
         const files: {
           name: string
@@ -152,12 +152,7 @@ export class HttpClient {
           }
         }
 
-        return (await window.electronAPI.invoke(
-          "backend:post-multipart",
-          endpoint,
-          files,
-          extraFields,
-        )) as T
+        return (await window.electronAPI.backend.postMultipart(endpoint, files, extraFields)) as T
       } catch (ipcError) {
         console.error(
           "[HttpClient] Electron IPC postMultipart failed, falling back to renderer fetch:",

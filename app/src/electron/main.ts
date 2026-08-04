@@ -1,6 +1,6 @@
-import { app, protocol, BrowserWindow, nativeTheme, powerMonitor } from "electron"
+import { app, protocol, BrowserWindow, nativeTheme, powerMonitor, net } from "electron"
 import path from "path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { backendService } from "./backendService.js"
 import { startBackgroundUpdateCheck } from "./updater.js"
 import isDev from "./util.js"
@@ -61,31 +61,34 @@ app.whenReady().then(async () => {
     WindowManager.updateSplashProgress(update.progress)
   })
 
-  // Custom protocol for static file access
-  protocol.registerFileProtocol("app", (request, callback) => {
-    const url = request.url.replace("app://", "")
-    const relativeUrl = url.replace(/^\/+/, "")
+  // Custom protocol for static file access using modern protocol.handle and net.fetch
+  protocol.handle("app", (request) => {
+    try {
+      const urlObj = new URL(request.url)
+      const relativeUrl = decodeURIComponent(urlObj.pathname.replace(/^\/+/, ""))
 
-    let baseDir: string
-    if (isDev()) {
-      baseDir = path.join(main_dirname, "../../public")
-    } else {
-      const appPath = app.getAppPath()
-      baseDir = path.join(appPath, "dist-react")
+      let baseDir: string
+      if (isDev()) {
+        baseDir = path.join(main_dirname, "../../public")
+      } else {
+        const appPath = app.getAppPath()
+        baseDir = path.join(appPath, "dist-react")
+      }
+
+      const resolvedBaseDir = path.resolve(baseDir)
+      const resolvedFilePath = path.resolve(resolvedBaseDir, relativeUrl)
+
+      if (
+        resolvedFilePath !== resolvedBaseDir &&
+        !resolvedFilePath.startsWith(resolvedBaseDir + path.sep)
+      ) {
+        return new Response("Access Denied", { status: 403 })
+      }
+
+      return net.fetch(pathToFileURL(resolvedFilePath).toString())
+    } catch {
+      return new Response("Not Found", { status: 404 })
     }
-
-    const resolvedBaseDir = path.resolve(baseDir)
-    const resolvedFilePath = path.resolve(resolvedBaseDir, relativeUrl)
-
-    if (
-      resolvedFilePath !== resolvedBaseDir &&
-      !resolvedFilePath.startsWith(resolvedBaseDir + path.sep)
-    ) {
-      callback({ error: -6 })
-      return
-    }
-
-    callback({ path: resolvedFilePath })
   })
 
   WindowManager.createSplashWindow()

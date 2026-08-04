@@ -111,6 +111,17 @@ declare global {
     getAllPersons: () => Promise<PersonListResponse>
     setThreshold: (threshold: number) => Promise<SimilarityThresholdResponse>
     clearDatabase: () => Promise<DatabaseClearResponse>
+    postMultipart: (
+      endpoint: string,
+      files: Array<{
+        name: string
+        filename: string
+        path?: string
+        buffer?: ArrayBuffer
+        mimeType: string
+      }>,
+      extraFields?: Record<string, string>,
+    ) => Promise<unknown>
   }
 
   interface BackendReadyAPI {
@@ -270,7 +281,6 @@ declare global {
     loadFaceDatabase: () => Promise<unknown>
     removeFacePerson: (personId: string) => Promise<unknown>
     getAllFacePersons: () => Promise<unknown>
-    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
     backend_ready: BackendReadyAPI
     backend: BackendAPI
     store: StoreAPI
