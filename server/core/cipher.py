@@ -15,6 +15,7 @@ import logging
 import platform
 import hashlib
 import hmac
+from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from config.paths import DATA_DIR
@@ -59,6 +60,9 @@ def decrypt_backup(blob: bytes, password: str) -> bytes:
     return AESGCM(_derive_key(password, salt)).decrypt(iv, ciphertext, None)
 
 
+_CACHED_MACHINE_KEY: Optional[bytes] = None
+
+
 def get_machine_key() -> bytes:
     """Get or create the machine-specific AES key for local database encryption.
 
@@ -67,6 +71,10 @@ def get_machine_key() -> bytes:
       macOS    -> macOS Keychain via the `security` CLI
       Linux    -> 0600-mode file fallback
     """
+    global _CACHED_MACHINE_KEY
+    if _CACHED_MACHINE_KEY is not None:
+        return _CACHED_MACHINE_KEY
+
     env_key = os.getenv("FACENOX_MACHINE_KEY")
     if env_key:
         try:
@@ -76,25 +84,30 @@ def get_machine_key() -> bytes:
             try:
                 decoded = base64.b64decode(env_key.strip(), validate=True)
                 if len(decoded) == KEY_SIZE:
+                    _CACHED_MACHINE_KEY = decoded
                     return decoded
             except Exception:
                 pass
             # Try Hex decoding
             decoded = bytes.fromhex(env_key.strip())
             if len(decoded) == KEY_SIZE:
+                _CACHED_MACHINE_KEY = decoded
                 return decoded
         except Exception as e:
             logger.error("Failed to decode FACENOX_MACHINE_KEY from environment: %s", e)
 
     system = platform.system()
     if system == "Windows":
-        return _machine_key_windows()
+        key = _machine_key_windows()
     elif system == "Darwin":
-        return _machine_key_macos()
+        key = _machine_key_macos()
     elif system == "Linux":
-        return _machine_key_linux()
+        key = _machine_key_linux()
     else:
-        return _machine_key_file()
+        key = _machine_key_file()
+
+    _CACHED_MACHINE_KEY = key
+    return key
 
 
 # ---------------------------------------------------------------------------
