@@ -23,8 +23,7 @@ interface DetectionState {
   ) => void
   setTrackedFaces: (
     faces:
-      | Map<string, TrackedFace>
-      | ((prev: Map<string, TrackedFace>) => Map<string, TrackedFace>),
+      Map<string, TrackedFace> | ((prev: Map<string, TrackedFace>) => Map<string, TrackedFace>),
   ) => void
   resetDetectionState: () => void
 }

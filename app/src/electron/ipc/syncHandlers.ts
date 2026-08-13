@@ -51,10 +51,7 @@ function getRemoteSyncStatus() {
     (persistentStore.get("sync.intervalMinutes") as number) || DEFAULT_SYNC_INTERVAL_MINUTES
   const lastSyncedAt = (persistentStore.get("sync.lastSyncedAt") as string | null) || null
   const lastSyncStatus = ((persistentStore.get("sync.lastSyncStatus") as
-    | "idle"
-    | "success"
-    | "error"
-    | undefined) ?? "idle") as "idle" | "success" | "error"
+    "idle" | "success" | "error" | undefined) ?? "idle") as "idle" | "success" | "error"
   const lastSyncMessage = (persistentStore.get("sync.lastSyncMessage") as string | null) || null
 
   return {

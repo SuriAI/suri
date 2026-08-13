@@ -37,8 +37,7 @@ export function useBulkEnrollment(
     async (
       imageDataUrl: string,
       bbox:
-        | { x: number; y: number; width: number; height: number }
-        | [number, number, number, number],
+        { x: number; y: number; width: number; height: number } | [number, number, number, number],
     ): Promise<string> => {
       return new Promise((resolve) => {
         const img = new Image()

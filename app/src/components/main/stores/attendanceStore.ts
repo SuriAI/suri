@@ -57,8 +57,7 @@ interface AttendanceState {
   setNewGroupName: (name: string) => void
   setPersistentCooldowns: (
     cooldowns:
-      | Map<string, CooldownInfo>
-      | ((prev: Map<string, CooldownInfo>) => Map<string, CooldownInfo>),
+      Map<string, CooldownInfo> | ((prev: Map<string, CooldownInfo>) => Map<string, CooldownInfo>),
   ) => void
   setAttendanceCooldownSeconds: (seconds: number) => void
   setEnableSpoofDetection: (enabled: boolean) => void

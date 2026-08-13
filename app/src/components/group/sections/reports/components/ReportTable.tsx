@@ -41,8 +41,7 @@ const STATUS_STYLE: Record<string, { color: string; label: string }> = {
 const PAGE_SIZES = [25, 50, 100]
 
 type FlatItem =
-  | { kind: "group"; label: string; count: number }
-  | { kind: "row"; data: RowData; key: string }
+  { kind: "group"; label: string; count: number } | { kind: "row"; data: RowData; key: string }
 
 function alignClass(align?: string) {
   if (align === "center") return "text-center"

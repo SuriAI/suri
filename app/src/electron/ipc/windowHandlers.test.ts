@@ -88,8 +88,7 @@ describe("registerWindowHandlers", () => {
     registerWindowHandlers()
 
     const appReadyListener = mockOn.mock.calls.find(([channel]) => channel === "app:ready")?.[1] as
-      | (() => void)
-      | undefined
+      (() => void) | undefined
     const splashRenderedListener = mockOn.mock.calls.find(
       ([channel]) => channel === "splash:rendered-progress",
     )?.[1] as ((_event: unknown, progress: number) => void) | undefined

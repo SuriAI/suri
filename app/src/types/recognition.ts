@@ -109,13 +109,7 @@ export interface FaceWithRecognition {
     spoof_logit?: number
     confidence?: number
     status:
-      | "real"
-      | "spoof"
-      | "candidate_real"
-      | "unknown"
-      | "error"
-      | "move_closer"
-      | "center_face"
+      "real" | "spoof" | "candidate_real" | "unknown" | "error" | "move_closer" | "center_face"
     label?: string
     attack_type?: string
     message?: string
