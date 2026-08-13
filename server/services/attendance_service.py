@@ -20,6 +20,7 @@ from time_utils import (
 )
 
 logger = logging.getLogger(__name__)
+_background_tasks: set = set()
 
 
 class AttendanceService:
@@ -523,7 +524,9 @@ class AttendanceService:
                     },
                 },
             }
-            asyncio.create_task(self.ws_manager.broadcast(broadcast_message))
+            task = asyncio.create_task(self.ws_manager.broadcast(broadcast_message))
+            _background_tasks.add(task)
+            task.add_done_callback(_background_tasks.discard)
 
         return AttendanceEventResponse(
             id=record_id,

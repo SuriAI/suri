@@ -359,6 +359,7 @@ export function useBackendService(options: UseBackendServiceOptions) {
     )
 
     webSocketServiceRef.current.onMessage("connection", (data: WebSocketConnectionMessage) => {
+      detectionInFlightRef.current = false
       if (data.status === "connected") {
         backendServiceReadyRef.current = true
         setWebsocketStatus("connected")

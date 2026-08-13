@@ -137,7 +137,7 @@ export function useVideoStream(options: UseVideoStreamOptions) {
               })
           },
           "image/jpeg",
-          0.9,
+          0.8,
         )
       } catch {
         resolve(null)

@@ -51,6 +51,7 @@ class LiveSessionConfig:
 class LiveStreamService:
     def __init__(self, organization_id: Optional[str]):
         self.organization_id = organization_id
+        self._background_tasks: set = set()
 
     @staticmethod
     def _extract_face_area(face: Dict[str, Any]) -> float:
@@ -323,7 +324,9 @@ class LiveStreamService:
             import asyncio
 
             config.is_refreshing = True
-            asyncio.create_task(self._bg_refresh_group_context(config))
+            task = asyncio.create_task(self._bg_refresh_group_context(config))
+            self._background_tasks.add(task)
+            task.add_done_callback(self._background_tasks.discard)
 
         return config.group_context
 
