@@ -90,12 +90,12 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 ## Features
 
-- **On-Device AI Inference** — Real-time face detection with recognition, ByteTrack multi-subject tracking, and liveness verification running entirely on local machine.
-- **Cross-Platform** — Supports Windows, macOS, and Linux.
-- **Consent-Aware** — Built-in compliance for biometric enrollment and deletion consent.
-- **Directory Management** — Full control over group and member directories.
-- **Attendance Tracking** — Automated session recording and CSV/JSON exports.
-- **Secure Storage** — Encrypted local biometric storage and password-protected `.facenox` backups.
+- **On-Device AI Inference:** Real-time face detection with recognition, ByteTrack multi-subject tracking, and liveness verification running entirely on local machine.
+- **Cross-Platform:** Supports Windows, macOS, and Linux.
+- **Consent-Aware:** Built-in compliance for biometric enrollment and deletion consent.
+- **Directory Management:** Full control over group and member directories.
+- **Attendance Tracking:** Automated session recording and CSV/JSON exports.
+- **Secure Storage:** Encrypted local biometric storage and password-protected `.facenox` backups.
 - **Optional Sync:** Secure pairing with Facenox Dashboard for centralized reporting. Encrypted face templates can sync between devices, using site-specific encryption keys.
 
 ## Performance
