@@ -108,28 +108,26 @@ Most face recognition systems rely on cloud-based biometrics. Facenox doesn't. B
 
 ### Performance Benchmark
 
-We tested Facenox on a database of **500 registered people** (using the standard LFW face dataset) to see how it performs in real-world conditions. 
+Evaluated on the standard **LFW (Labeled Faces in the Wild)** dataset with **500 registered identities** on an Intel Core i5-8350U CPU without a dedicated GPU:
 
 ![LFW Benchmark Face Grid](docs/assets/screenshots/lfw_benchmark_grid.png)
-
-Here are the results running on a standard computer cpu (i5-8350U) no GPU:
 
 | Metric | Result | Target | Status |
 | :--- | :---: | :---: | :---: |
 | **Average search latency** | `14.56 ms` | < 50 ms | Passed |
 | **Max search latency** | `52.34 ms` | < 150 ms | Passed |
-| **Security (False match rate)** | `0.0%` | 0.0% (Zero errors) | Passed |
+| **Security (False match rate)** | `0.0%` | < 0.1% | Passed |
 | **Rejection accuracy (TNR)** | `100.0%` | > 99.0% | Passed |
 | **Recognition accuracy (TPR)** | `94.0%` | > 90.0% | Passed |
 
-- **Security**: The system did not commit a single false match. An unregistered stranger will never be mistaken for a registered member.
-- **Speed**: It takes less than 0.02 seconds to search and match a face against all 500 profiles in the database.
-- **Accuracy**: It successfully recognizes registered members on the first try, even with changes in pose, expression, or lighting conditions.
+- **Security:** The system did not commit a single false match. An unregistered stranger will never be mistaken for a registered member.
+- **Speed:** It takes less than 0.02 seconds to search and match a face against all 500 profiles in the database.
+- **Accuracy:** It successfully recognizes registered members on the first try, even with changes in pose, expression, or lighting conditions.
 
-To run the exact same test on your local machine:
+To run the exact same test locally:
 ```bash
 cd server
-../venv/bin/python tests/stress_test_recognition.py
+python tests/stress_test_recognition.py
 ```
 *(The script will automatically download the test faces, run the simulation, and clean up afterwards.)*
 
@@ -165,7 +163,7 @@ It's designed for standard CPUs and has been tested on hardware as old as 2nd-ge
 
 ### How do I protect my data?
 
-As Facenox is designed to run locally, we do not have access to your database and cannot recover your data if your device is lost or corrupted. We provide a built-in backup utility that exports an encrypted `.facenox` archive, and we recommend keeping regular backups on external storage or your own secure cloud.
+Because Facenox operates locally, no external servers have access to your database. Built-in backup utilities allow exporting encrypted `.facenox` archives for secure local or remote storage.
 
 ## Roadmap
 
