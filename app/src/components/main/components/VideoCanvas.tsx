@@ -122,9 +122,13 @@ export const VideoCanvas = memo(function VideoCanvas({
     : "Create a group to begin attendance tracking."
 
   return (
-    <div className="relative h-full min-h-65 w-full overflow-hidden rounded-lg border border-white/10 bg-[var(--bg-canvas)]">
+    <div
+      role="region"
+      aria-label="Live camera feed and face recognition canvas"
+      className="relative h-full min-h-65 w-full overflow-hidden rounded-lg border border-white/10 bg-[var(--bg-canvas)]">
       <video
         ref={videoRef}
+        aria-label="Real-time camera capture feed"
         className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
           isStreaming && !isVideoLoading ? "opacity-100" : "opacity-0"
         } ${quickSettings.cameraMirrored ? "scale-x-[-1]" : ""}`}
@@ -133,6 +137,8 @@ export const VideoCanvas = memo(function VideoCanvas({
       />
       <canvas
         ref={overlayCanvasRef}
+        role="img"
+        aria-label="Face detection bounding box and liveness verification overlay"
         className="pointer-events-none absolute top-0 left-0 z-10 h-full w-full"
         style={{
           mixBlendMode: "normal",

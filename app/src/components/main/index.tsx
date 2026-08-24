@@ -617,6 +617,35 @@ export default function Main() {
 
   const hasEnrolledFaces = groupMembers.length > 0 && groupMembers.some((m) => m.has_face_data)
 
+  // Keyboard shortcut: Space toggles Start/Stop Scan
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement
+      const isInput =
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          activeEl.tagName === "SELECT" ||
+          (activeEl as HTMLElement).isContentEditable)
+
+      if (isInput || showSettings || hasBlockingGroupModalOpen) {
+        return
+      }
+
+      if (e.code === "Space") {
+        e.preventDefault()
+        if (isStreamingRef.current) {
+          stopCamera(false)
+        } else {
+          startCameraGuarded()
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [hasBlockingGroupModalOpen, showSettings, startCameraGuarded, stopCamera])
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[var(--bg-primary)] text-white">
       {!showSettings && timeHealth?.online_verification_status === "drift_detected" && (

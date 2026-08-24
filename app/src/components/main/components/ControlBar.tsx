@@ -133,6 +133,7 @@ export function ControlBar({
             <button
               onClick={handlePrimaryAction}
               disabled={!buttonState.enabled}
+              aria-label={buttonState.label}
               className={`flex min-w-28 items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-all duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-50 ${buttonState.className}`}>
               {buttonState.label}
             </button>

@@ -256,6 +256,9 @@ export function DetectionPanel({
         </motion.div>
       : <motion.div
           key="detections-list"
+          role="region"
+          aria-live="polite"
+          aria-label="Real-time facial detection and recognition results"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
