@@ -149,4 +149,13 @@ async def lifespan(app: FastAPI):
     yield
 
     logger.info("Shutting down...")
+    try:
+        from database.session import AsyncSessionLocal
+        from sqlalchemy import text
+
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("PRAGMA wal_checkpoint(TRUNCATE);"))
+            logger.info("SQLite WAL checkpoint truncated successfully.")
+    except Exception as cp_err:
+        logger.warning("WAL checkpoint truncation on shutdown skipped: %s", cp_err)
     logger.info("Shutdown complete")
