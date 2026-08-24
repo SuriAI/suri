@@ -44,6 +44,10 @@ export class BackendProcessManager {
   private token: string = ""
   private stdoutBuffer = ""
   private startupProgressListeners = new Set<(update: BackendStartupProgress) => void>()
+  private isStoppingManually = false
+  private crashTimestamps: number[] = []
+  private readonly MAX_CRASHES_PER_WINDOW = 5
+  private readonly CRASH_WINDOW_MS = 60_000
 
   constructor(config: BackendConfig, status: BackendStatus) {
     this.config = config
@@ -118,6 +122,7 @@ export class BackendProcessManager {
   }
 
   private async _start(): Promise<void> {
+    this.isStoppingManually = false
     if (this.status.isRunning) return
 
     // Generate a fresh per-session token before spawning the backend.
@@ -209,6 +214,32 @@ export class BackendProcessManager {
       )
       this.status.isRunning = false
       if (this.process !== null) this.cleanup()
+
+      if (!this.isStoppingManually && code !== 0) {
+        const now = Date.now()
+        this.crashTimestamps = this.crashTimestamps.filter((t) => now - t < this.CRASH_WINDOW_MS)
+        this.crashTimestamps.push(now)
+
+        if (this.crashTimestamps.length <= this.MAX_CRASHES_PER_WINDOW) {
+          const delay = Math.min(10000, Math.pow(2, this.crashTimestamps.length) * 500)
+          console.warn(
+            `[BackendProcessManager] Unexpected crash detected. Auto-restarting in ${delay}ms...`,
+          )
+          setTimeout(async () => {
+            if (!this.isStoppingManually && !this.status.isRunning) {
+              const pid = await this.findListeningPid()
+              if (pid) await this.terminatePid(pid)
+              void this.start().catch((err) => {
+                console.error("[BackendProcessManager] Auto-restart failed:", err)
+              })
+            }
+          }, delay)
+        } else {
+          console.error(
+            "[BackendProcessManager] Crash loop limit reached (>5 crashes in 60s). Halting auto-restart.",
+          )
+        }
+      }
     })
   }
 
@@ -258,6 +289,7 @@ export class BackendProcessManager {
   }
 
   async stop(): Promise<void> {
+    this.isStoppingManually = true
     const pid = this.process?.pid ?? (await this.findListeningPid())
     if (pid) {
       await this.terminatePid(pid)
@@ -270,6 +302,7 @@ export class BackendProcessManager {
   }
 
   killSync(): void {
+    this.isStoppingManually = true
     const pid = this.process?.pid ?? this.findListeningPidSync()
     if (pid) {
       this.terminatePidSync(pid)
