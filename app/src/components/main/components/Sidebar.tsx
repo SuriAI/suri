@@ -22,7 +22,7 @@ interface SidebarProps {
   refreshAttendanceData: () => Promise<void>
 }
 
-const MIN_WIDTH = 50
+const MIN_WIDTH = 56
 const MIN_EXPANDED_WIDTH = 240
 const MAX_WIDTH = 340
 
@@ -253,7 +253,7 @@ export const Sidebar = memo(function Sidebar({
               offset={-10}>
               <button
                 onClick={toggleSidebar}
-                className="sidebar-toggle-btn group flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.03] transition-all duration-200 hover:border-white/20 hover:bg-white/5 active:scale-95"
+                className="sidebar-toggle-btn group flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent transition-all duration-200 hover:bg-white/[0.06] active:scale-95"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
                 <SidebarToggleIcon collapsed={false} />
               </button>
@@ -277,7 +277,7 @@ export const Sidebar = memo(function Sidebar({
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="flex items-center justify-center text-white/45 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/65 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },
@@ -338,11 +338,11 @@ export const Sidebar = memo(function Sidebar({
         </div>
 
         {isCollapsed && (
-          <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-2 pt-2 pb-0">
+          <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-2 pt-1 pb-0">
             <Tooltip content="Expand sidebar" position="left">
               <button
                 onClick={toggleSidebar}
-                className="sidebar-toggle-btn group flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.03] transition-all duration-200 hover:border-white/20 hover:bg-white/5 active:scale-95"
+                className="sidebar-toggle-btn group flex h-8 w-8 items-center justify-center rounded-lg border-none bg-transparent transition-all duration-200 hover:bg-white/[0.06] active:scale-95"
                 aria-label="Expand sidebar">
                 <SidebarToggleIcon collapsed={true} />
               </button>
@@ -363,7 +363,7 @@ export const Sidebar = memo(function Sidebar({
                 initial="initial"
                 whileHover="hover">
                 <motion.div
-                  className="flex items-center justify-center text-white/45 transition-colors group-hover:text-white"
+                  className="flex items-center justify-center text-white/65 transition-colors group-hover:text-white"
                   variants={{
                     initial: { rotate: 0 },
                     hover: { rotate: 90 },
