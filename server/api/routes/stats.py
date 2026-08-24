@@ -152,6 +152,9 @@ async def get_database_stats(
                 )
             except Exception as se:
                 logger.warning(f"Failed to calculate unsynced stats: {se}")
+        else:
+            unsynced_records = stats.get("total_records", 0)
+            unsynced_sessions = stats.get("total_sessions", 0)
 
         stats["unsynced_records_count"] = unsynced_records
         stats["unsynced_sessions_count"] = unsynced_sessions

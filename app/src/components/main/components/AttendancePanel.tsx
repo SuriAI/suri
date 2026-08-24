@@ -356,6 +356,10 @@ export const AttendancePanel = memo(function AttendancePanel({
     setShowSettings(true)
   }, [setGroupInitialSection, setSettingsInitialSection, setShowSettings])
 
+  const unenrolledMembersCount = useMemo(() => {
+    return groupMembers.filter((m) => m.is_active && !m.has_face_data).length
+  }, [groupMembers])
+
   const [searchQuery, setSearchQuery] = useState("")
   const [recordScope, setRecordScope] = useState<AttendanceRecordScope>("today")
   const [displayLimit, setDisplayLimit] = useState(20)
@@ -466,6 +470,27 @@ export const AttendancePanel = memo(function AttendancePanel({
               </button>
             </Tooltip>
           </div>
+
+          {/* Biometric Enrollment Handoff Banner */}
+          {currentGroup && unenrolledMembersCount > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-3 py-2 text-xs">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-400" />
+                <span className="truncate text-[11.5px] font-medium text-amber-300/90">
+                  {unenrolledMembersCount} member{unenrolledMembersCount === 1 ? "" : "s"} need face
+                  enrollment
+                </span>
+              </div>
+              <button
+                onClick={handleOpenSettingsForEnrollment}
+                className="shrink-0 rounded-md border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-[10.5px] font-bold tracking-wider text-amber-300 uppercase transition-all duration-150 hover:border-amber-500/50 hover:bg-amber-500/25 active:scale-95">
+                Enroll →
+              </button>
+            </motion.div>
+          )}
         </div>
       : <div className="flex min-h-0 flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center space-y-3">

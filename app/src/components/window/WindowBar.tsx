@@ -74,6 +74,8 @@ export default function WindowBar() {
     lastSyncedAt: string | null
     lastSyncStatus: "idle" | "success" | "error"
     lastSyncMessage: string | null
+    unsyncedRecordsCount?: number
+    unsyncedSessionsCount?: number
   } | null>(null)
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
 
@@ -229,22 +231,30 @@ export default function WindowBar() {
           if (!syncConfig || !syncConfig.connected) return null
 
           const relativeTime = formatRelativeTime(syncConfig.lastSyncedAt)
+          const pendingCount =
+            (syncConfig.unsyncedRecordsCount ?? 0) + (syncConfig.unsyncedSessionsCount ?? 0)
           let dotColorClass: string
           let statusText: string
           let tooltipContent: string
 
           if (syncConfig.lastSyncStatus === "success") {
             dotColorClass = "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
-            statusText = "Synced"
-            tooltipContent = `Last synced: ${relativeTime}. ${syncConfig.lastSyncMessage || "All records are up to date."}`
+            statusText = pendingCount > 0 ? `Synced (${pendingCount} queued)` : "Synced"
+            tooltipContent =
+              pendingCount > 0 ?
+                `Last synced: ${relativeTime}. ${pendingCount} new record${pendingCount === 1 ? "" : "s"} queued for next sync.`
+              : `Last synced: ${relativeTime}. ${syncConfig.lastSyncMessage || "All records are up to date."}`
           } else if (syncConfig.lastSyncStatus === "error") {
             dotColorClass = "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-            statusText = "Sync Warning"
-            tooltipContent = `Failed to sync: ${syncConfig.lastSyncMessage || "Network connection issue."} (Last success: ${relativeTime})`
+            statusText = pendingCount > 0 ? `${pendingCount} pending` : "Sync Warning"
+            tooltipContent = `Failed to sync: ${syncConfig.lastSyncMessage || "Network connection issue."} • ${pendingCount} record${pendingCount === 1 ? "" : "s"} saved locally. (Last success: ${relativeTime})`
           } else {
             dotColorClass = "bg-cyan-500/50"
-            statusText = "Ready"
-            tooltipContent = "Paired with cloud. Waiting for next automatic sync cycle."
+            statusText = pendingCount > 0 ? `${pendingCount} queued` : "Ready"
+            tooltipContent =
+              pendingCount > 0 ?
+                `${pendingCount} record${pendingCount === 1 ? "" : "s"} waiting for next sync.`
+              : "Paired with cloud. Waiting for next automatic sync cycle."
           }
 
           return (

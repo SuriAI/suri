@@ -154,25 +154,26 @@ async function getExtendedSyncStatus() {
   const status = getRemoteSyncStatus()
   let unsyncedRecordsCount = 0
   let unsyncedSessionsCount = 0
-  if (status.lastSyncedAt) {
-    try {
-      const statsUrl = `${backendService.getUrl()}/stats?last_synced_at=${encodeURIComponent(status.lastSyncedAt)}`
-      const response = await fetch(statsUrl, {
-        method: "GET",
-        headers: authHeaders(),
-        signal: AbortSignal.timeout(5000),
-      })
-      if (response.ok) {
-        const stats = (await response.json()) as {
-          unsynced_records_count?: number
-          unsynced_sessions_count?: number
-        }
-        unsyncedRecordsCount = stats.unsynced_records_count ?? 0
-        unsyncedSessionsCount = stats.unsynced_sessions_count ?? 0
+  try {
+    const statsUrl =
+      status.lastSyncedAt ?
+        `${backendService.getUrl()}/stats?last_synced_at=${encodeURIComponent(status.lastSyncedAt)}`
+      : `${backendService.getUrl()}/stats`
+    const response = await fetch(statsUrl, {
+      method: "GET",
+      headers: authHeaders(),
+      signal: AbortSignal.timeout(5000),
+    })
+    if (response.ok) {
+      const stats = (await response.json()) as {
+        unsynced_records_count?: number
+        unsynced_sessions_count?: number
       }
-    } catch (err) {
-      console.warn("[Sync] Failed to fetch unsynced counts:", err)
+      unsyncedRecordsCount = stats.unsynced_records_count ?? 0
+      unsyncedSessionsCount = stats.unsynced_sessions_count ?? 0
     }
+  } catch (err) {
+    console.warn("[Sync] Failed to fetch unsynced counts:", err)
   }
   return {
     ...status,
