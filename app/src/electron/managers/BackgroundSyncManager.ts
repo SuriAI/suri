@@ -701,17 +701,8 @@ export class BackgroundSyncManager {
           )
         }
         if (typeof policy.dataRetentionDays === "number") {
+          // Cloud data retention policy only informs cloud dashboard retention, preserving local SQLite permanence
           persistentStore.set("sync.policy.dataRetentionDays", policy.dataRetentionDays)
-          try {
-            await fetch(`${backendService.getUrl()}/attendance/settings`, {
-              method: "PUT",
-              headers: authHeaders({ "Content-Type": "application/json" }),
-              body: JSON.stringify({ data_retention_days: policy.dataRetentionDays }),
-              signal: AbortSignal.timeout(10000),
-            })
-          } catch (settingsError) {
-            console.warn("[Sync] Failed to apply data retention policy to backend:", settingsError)
-          }
         }
       }
       const syncedAt = new Date().toISOString()
