@@ -110,11 +110,11 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       syncFromConfig(nextConfig)
       setSuccess(
         nextConfig.connected ?
-          "Remote sync settings saved. Auto-sync state updated."
-        : "Remote sync settings saved. You can connect this desktop whenever you're ready.",
+          "Cloud sync settings saved. Auto-sync state updated."
+        : "Cloud sync settings saved. You can connect this desktop whenever you're ready.",
       )
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not save Remote Sync settings.")
+      setError(error instanceof Error ? error.message : "Could not save cloud sync settings.")
     } finally {
       setBusyAction(null)
     }
@@ -158,9 +158,9 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
       syncFromConfig(result.config)
       setPairingCode("")
       if (result.warning) {
-        setError(`Disconnected locally, but the dashboard returned a warning: ${result.warning}`)
+        setError(`Disconnected locally, but the cloud returned a warning: ${result.warning}`)
       } else {
-        setSuccess("Device disconnected from Management Dashboard.")
+        setSuccess("Device disconnected from Facenox Cloud.")
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not disconnect this device.")
@@ -200,19 +200,19 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
         <div className="flex items-start justify-between gap-4 border-b border-white/5 pt-6 pb-4">
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-medium text-white/90">
-              {!config.connected ? "Connect Device" : "Connected Device"}
+              {!config.connected ? "Connect to Facenox Cloud" : "Connected to Facenox Cloud"}
             </h3>
             {!config.connected ?
               <p className="mt-0.5 text-xs text-white/65">
-                Generate a code in the{" "}
+                Generate a pairing code in{" "}
                 <a
-                  href="https://app.facenox.com"
+                  href="https://facenox.com"
                   onClick={(e) => {
                     e.preventDefault()
-                    updaterService.openReleasePage("https://app.facenox.com")
+                    updaterService.openReleasePage("https://facenox.com")
                   }}
                   className="text-white transition-colors hover:underline">
-                  Management Dashboard
+                  Facenox Cloud
                 </a>{" "}
                 and enter it below to connect this device.
               </p>
@@ -224,7 +224,7 @@ export function Sync({ onNavigateToDB, onStatusChange }: SyncProps = {}) {
                 </span>
               </p>
             : <p className="mt-0.5 text-xs text-white/65">
-                Device connected. Attendance records are syncing automatically.
+                Device connected. Attendance records are syncing automatically with Facenox Cloud.
               </p>
             }
           </div>

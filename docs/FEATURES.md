@@ -39,15 +39,15 @@ This page covers the shipped desktop feature set and the scope of the current Ma
 - Desktop settings for camera, attendance, updater, and sync behavior
 - Offline-first operation for the core attendance workflow
 
-## Management Dashboard Beta Integration
+## Facenox Cloud Integration
 
-Management Dashboard Beta connects a Facenox desktop instance to a separate Facenox Management Dashboard deployment for reporting and device visibility.
+Facenox Cloud connects offline Facenox desktop kiosks to a unified cloud control plane for backup, automated DTR reporting, and multi-location management.
 
 ### What the desktop app supports
 
-- store a Remote Sync URL
+- store a custom cloud URL
 - redeem a short-lived pairing code
-- connect a desktop instance to an organization and site
+- connect a desktop instance to an organization and branch/site
 - show pairing state, last sync state, and sync messages
 - run background auto-sync
 - run manual sync on demand

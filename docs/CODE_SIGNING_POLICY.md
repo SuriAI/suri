@@ -57,9 +57,9 @@ Privacy and data handling are documented here:
 
 In short:
 
-- Facenox desktop does not send biometric templates, embeddings, or raw face images to other networked systems.
-- Facenox desktop may, if enabled by the operator, send attendance snapshots and related sync metadata to a separately deployed Facenox Management Dashboard service.
-- Local recognition and attendance workflows continue to work without Remote Sync connectivity.
+- Facenox desktop does not send raw face images to other networked systems.
+- Facenox desktop may, if enabled by the operator, send attendance snapshots and encrypted biometric templates to Facenox Cloud.
+- Local recognition and attendance workflows continue to work without Facenox Cloud connectivity.
 
 ## Release Artifacts
 

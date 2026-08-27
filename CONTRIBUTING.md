@@ -72,7 +72,7 @@ The current rules are simple:
 
 - local attendance must keep working without internet
 - biometrics stay local unless a change explicitly documents and justifies otherwise
-- Remote Sync must not block attendance capture
+- Cloud Sync must not block attendance capture
 
 ### 2. Prefer direct language in code and docs
 
@@ -86,7 +86,7 @@ If your change affects any of these, update the docs in the same pull request:
 - storage behavior
 - consent behavior
 - backup or restore behavior
-- Management Dashboard Beta behavior
+- Facenox Cloud integration behavior
 - security or privacy expectations
 
 ### 4. Keep performance in mind

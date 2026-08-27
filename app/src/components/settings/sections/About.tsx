@@ -58,12 +58,12 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
 
           {/* Section 4 */}
           <div className="space-y-1">
-            <div className="text-[13px] font-semibold text-white/90">Remote sync boundaries</div>
+            <div className="text-[13px] font-semibold text-white/90">Cloud sync data boundary</div>
             <p className="text-[11px] leading-relaxed text-white/50">
-              Syncing with the management dashboard uploads member metadata, attendance logs, and
-              encrypted biometric vectors (embeddings) to enable cross-device kiosk synchronization.
-              Raw camera images/photos are never uploaded, and vectors are stored securely in their
-              encrypted form on the cloud.
+              Connecting to Facenox Cloud synchronizes employee metadata, attendance logs, and
+              encrypted biometric vectors (embeddings) to enable multi-device sync and automatic
+              backup. Raw camera frames are processed locally and are never persisted to disk or
+              uploaded.
             </p>
           </div>
 

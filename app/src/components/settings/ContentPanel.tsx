@@ -175,7 +175,7 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
       display: "Display",
       notifications: "Notifications",
       database: "Database",
-      "remote-sync": "Sync",
+      "remote-sync": "Cloud Sync",
       about: "About",
     }
     if (isGroupSection) {
@@ -275,8 +275,8 @@ export const ContentPanel: React.FC<ContentPanelProps> = ({
             <Tooltip
               content={
                 syncConfig.connected ?
-                  `Linked to ${syncConfig.organizationName || "Remote Server"} • Site Location: ${syncConfig.siteName || "Default Site"}`
-                : "Operating locally. Remote syncing is disabled."
+                  `Linked to ${syncConfig.organizationName || "Facenox Cloud"} • Location: ${syncConfig.siteName || "Default Branch"}`
+                : "Operating locally • Not connected to Facenox Cloud"
               }
               position="bottom">
               <div

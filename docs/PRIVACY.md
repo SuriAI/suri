@@ -34,9 +34,9 @@ Facenox extracts 512-dimension float32 vectors from face scans. The local databa
 ### How biometric data is handled
 
 Facenox is not designed as a raw face-image archive. 
-- **Enrollment/Matching:** Face scans are processed in volatile memory (RAM). The pipeline discards the raw photo immediately after extracting the encrypted embedding.
-- **Liveness Detection:** Anti-spoofing analysis happens entirely in **volatile memory (RAM)**. No photos or video frames used for liveness checks are ever written to disk.
-- **Storage:** Templates are encrypted at rest using **AES-256**.
+- **Enrollment & Matching:** Raw camera frames are processed locally and are never persisted to disk or uploaded to the cloud. The pipeline extracts mathematical embeddings directly from camera frames.
+- **Liveness Detection:** Anti-spoofing analysis executes locally on-device. No photos or video frames used for liveness checks are ever written to disk.
+- **Storage:** Templates are encrypted at rest locally using **AES-256**.
 
 ## Consent Rules
 
@@ -61,27 +61,28 @@ The open source desktop app does not include analytics, ads, or hidden backgroun
 
 That does not automatically make every surrounding deployment private. If you add hosting, external logs, monitoring, or third-party infrastructure, those systems need their own review.
 
-## Official Facenox Dashboard boundary
+## Facenox Cloud data boundary
 
-The desktop app can optionally pair with a separate Facenox Management Dashboard deployment.
+The desktop app can optionally pair with **Facenox Cloud** for automatic backup, DTR generation, and multi-device synchronization.
 
-### Data NOT sent to the Facenox Dashboard
+### Data NOT sent to Facenox Cloud
 
 - raw face images (never leave the device)
+- video or camera recordings
 - face matching and recognition decisions
 
-### Data that MAY be sent (encrypted) to the Facenox Dashboard
+### Data that MAY be sent (encrypted) to Facenox Cloud
 
-- **encrypted biometric templates**: AES-256-GCM encrypted before transmission and stored in encrypted form in the database for sync. Decryption happens on your paired devices.
+- **encrypted biometric templates**: AES-256-GCM encrypted before transmission and stored in encrypted form in the database for multi-device sync.
 
-### Data that MAY be sent (plaintext) to the Facenox Dashboard
+### Data that MAY be sent to Facenox Cloud
 
 - organization, site, and device identifiers
 - groups and member directory data needed for reports
 - attendance records and sessions
 - sync status and device health metadata
 
-The desktop app uses snapshot-based sync. Encrypted biometric templates can sync between devices in the same organization so that enrolling on one device is sufficient for all devices at that site.
+The desktop app uses event-driven and snapshot sync. Encrypted biometric templates can sync between paired devices in the same organization so that enrolling on one device is sufficient for all devices across that site.
 
 ## Offline Operation
 
@@ -92,7 +93,7 @@ The core desktop workflow remains offline-capable:
 - attendance capture works locally
 - local settings and backup operations work locally
 
-If the internet is unavailable, Management Dashboard Beta stops updating until connectivity returns, but local attendance continues.
+If the internet is unavailable, Facenox Cloud synchronization stops updating until connectivity returns, but local attendance continues uninterrupted.
 
 ## Security Notes
 

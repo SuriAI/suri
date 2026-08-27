@@ -151,7 +151,7 @@ describe("Sync", () => {
 
     expect(
       await screen.findByText(
-        "Remote sync settings saved. You can connect this desktop whenever you're ready.",
+        "Cloud sync settings saved. You can connect this desktop whenever you're ready.",
       ),
     ).toBeInTheDocument()
 
@@ -159,7 +159,7 @@ describe("Sync", () => {
     fireEvent.click(screen.getByRole("button", { name: /Save Configuration/i }))
 
     expect(
-      await screen.findByText("Remote sync settings saved. Auto-sync state updated."),
+      await screen.findByText("Cloud sync settings saved. Auto-sync state updated."),
     ).toBeInTheDocument()
   })
 

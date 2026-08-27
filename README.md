@@ -139,13 +139,13 @@ python tests/stress_test_recognition.py
 Facenox Desktop continues to work locally when internet access is unavailable:
 
 - Recognition and liveness verification remain functional.
-- Attendance is recorded and stored in a local SQLite database.
+- Attendance is recorded and stored permanently in a local SQLite database.
 - Settings, backups, and member management remain accessible.
-- Remote Sync and Dashboard pairing resume automatically when connectivity returns.
-  (Completely optional, as sync is disabled by default and only active when your device is paired.)
+- Facenox Cloud sync resumes automatically when connectivity returns.
+  (Completely optional, as cloud sync is disabled by default and only active when your device is paired.)
 
 > [!NOTE]  
-> **Privacy Assurance:** Facenox never uploads raw face images to the cloud. Devices encrypt face vectors with AES-256-GCM before sync. The cloud database only stores face templates in encrypted form. Matching always stays on your local hardware. (Keys are escrowed securely in the cloud database to enable seamless pairing of new devices.)
+> **Privacy Assurance:** Facenox does not store or upload raw face photos. Raw camera frames are processed locally and are never persisted to disk. Biometric embeddings are encrypted with AES-256-GCM before optional cloud synchronization to enable multi-device sync and automatic backup. Matching always stays on your local hardware.
 
 ## How it works
 
